@@ -432,34 +432,39 @@ testable class {
             let source = airship.getSourceForPackage("test").copy(
                 dependencies: [dependency], defaultExports: Array<DefaultExport>()
             )
-            // Dependency test exports are irrelevant, so must not reject root
-            // compilation. Production exports remain explicitly unsupported.
+            // Dependency test exports are irrelevant; only production defaults
+            // enter the root compilation's configured import contract.
             let args = airship.installService.getFlatcInstallArguments("test", source)
             expect(args.contains("-default-static-import")).toBe(false)
             child.package.mainSource = child.package.mainSource.copy(
-                defaultExports: [DefaultExport("flat/test/Test", true)]
+                defaultExports: [DefaultExport("flat/io", false), DefaultExport("flat/test/Test", true)]
             )
             child.package.testSource = child.package.testSource.copy(
                 defaultExports: Array<DefaultExport>()
             )
-            expectAsync(async { airship.installService.getFlatcInstallArguments("test", source) })
-                .toThrowWithMessage(ExecutionFailureException.class, "Flat compiler default imports are not supported")
+            let productionArgs = airship.installService.getFlatcInstallArguments("test", source)
+            expect(productionArgs[productionArgs.indexOf("-default-import") + 1]).toBe("flat/io")
+            expect(productionArgs[productionArgs.indexOf("-default-static-import") + 1]).toBe("flat/test/Test")
         } finally {
             child.package.mainSource = main
             child.package.testSource = tests
         }
     }
 
-    test async `Flat root test dependencies retain Test production default import rejection`() {
+    test async `Flat root test dependencies forward Test production default imports`() {
         let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
         let packages = airship.getWorkspacePackagesDirectory()
         let dependency = LocalDependency(packages.normalizedLocation + "/Test")
         let source = airship.getSourceForPackage("test").copy(
             dependencies: [dependency], defaultExports: Array<DefaultExport>()
         )
-        expect(airship.dependencyService.getCompilationDependencyPackage(dependency).package.mainSource.defaultExports.count > 0).toBe(true)
-        expectAsync(async { airship.installService.getFlatcInstallArguments("test", source) })
-            .toThrowWithMessage(ExecutionFailureException.class, "Flat compiler default imports are not supported")
+        let defaults = airship.dependencyService.getCompilationDependencyPackage(dependency).package.mainSource.defaultExports
+        expect(defaults.count > 0).toBe(true)
+        let args = airship.installService.getFlatcInstallArguments("test", source)
+        for (value in defaults) {
+            let flag = value.staticImport ? "-default-static-import" : "-default-import"
+            expect(args[args.indexOf(value.location) - 1]).toBe(flag)
+        }
     }
 
     test async `selects the workspace Flat compiler artifact rather than the global bin`() {
@@ -490,12 +495,17 @@ testable class {
         expect(args.contains("-o")).toBe(false)
     }
 
-    test async `rejects unsupported Flat default imports before selecting the compiler`() {
+    test async `forwards Flat root default import owner paths and staticness`() {
         let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
-        let source = airship.getSourceForPackage("main").copy(defaultExports: [DefaultExport("flat/io", false)], dependencies: Array<Dependency>())
+        let source = airship.getSourceForPackage("main").copy(
+            defaultExports: [DefaultExport("flat/io", false), DefaultExport("flat/test/Test", true)],
+            dependencies: Array<Dependency>()
+        )
+        let args = airship.installService.getFlatcInstallArguments("main", source)
 
-        expectAsync(async { airship.installService.getFlatcInstallArguments("main", source) })
-            .toThrowWithMessage(ExecutionFailureException.class, "Flat compiler default imports are not supported")
+        expect(args[args.indexOf("-default-import") + 1]).toBe("flat/io")
+        expect(args[args.indexOf("-default-static-import") + 1]).toBe("flat/test/Test")
+        expect(args.contains(airship.packageLocation.normalizedLocation + "/flat/io")).toBe(false)
     }
 
     test `preserves declared Git transport`() {

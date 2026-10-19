@@ -35,6 +35,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Test isolated bootstrap harness (not self-host acceptance)
+        run: python3 -B -m unittest discover -s packages/Airship/test -p test_stage_bootstrap.py
+
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:

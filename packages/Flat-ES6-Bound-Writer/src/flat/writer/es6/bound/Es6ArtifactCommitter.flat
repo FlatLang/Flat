@@ -12,11 +12,21 @@ class {
         // a predictable path that may belong to another commit or caller.
         let staging = Es6ArtifactFiles.createCommitDirectory(destination)
         let temporary = File(staging, "artifact")
+        var Exception failure
         try {
             Es6ArtifactFiles.write(temporary, code)
             Es6ArtifactFiles.replace(temporary, destination)
+        } catch (Exception error) {
+            failure = error
         } finally {
-            Es6ArtifactFiles.remove(staging)
+            try {
+                Es6ArtifactFiles.remove(staging)
+            } catch (Exception cleanupError) {
+                // A failed publication owns the primary failure. If publication
+                // succeeded, cleanup failure is still reported to the caller.
+                if (!failure) failure = cleanupError
+            }
         }
+        if (failure) throw failure
     }
 }

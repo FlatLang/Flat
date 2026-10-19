@@ -3,7 +3,11 @@ package flat/compiler
 import flat/io
 import flat/writer/es6/bound
 
-/** Filesystem sink using same-directory atomic artifact commits. */
+/**
+ * Filesystem sink using atomic artifact commits and normalized relative identities.
+ * Lexical validation is not a sandbox: the caller owns/trusts root and its
+ * directory tree, including symlinks. No realpath/TOCTOU containment is promised.
+ */
 class extends CompilerArtifactSink {
     var CompilerArtifact[] values = CompilerArtifact[]
     public construct(visible File root) {
@@ -14,9 +18,22 @@ class extends CompilerArtifactSink {
         if (!artifact || values.any({ _.identity == artifact.identity })) {
             throw Exception("Filesystem artifact sink requires unique artifact")
         }
+        validateIdentity(artifact.identity)
         Es6ArtifactCommitter().commit(File(root, artifact.identity), artifact.code)
         values.add(artifact)
         values = values.sort({ _a.identity.compareTo(_b.identity) })
+    }
+    /** Shared filesystem/spool identity policy; valid directories are preserved. */
+    public static validateIdentity(String identity) {
+        if (!identity || identity.count == 0 || identity.startsWith("/") ||
+            identity.endsWith("/") || identity.contains("\\") || identity.contains(":") ||
+            identity.contains("\0") || identity.contains("//")) {
+            throw Exception("Artifact requires normalized root-relative identity")
+        }
+        let components = identity.split("/")
+        if (components.any({ _.count == 0 || _ == "." || _ == ".." })) {
+            throw Exception("Artifact requires normalized root-relative identity components")
+        }
     }
     override public artifacts() -> CompilerArtifact[] => CompilerArtifact[]:addAll(values)
 }

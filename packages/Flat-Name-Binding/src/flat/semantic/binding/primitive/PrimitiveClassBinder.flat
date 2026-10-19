@@ -20,6 +20,8 @@ class {
 
     var PrimitiveResolvedDeclarationContext declarationContext
     var SourceRange declarationLookupRange
+    var LocalBinding[] callbackParameters = LocalBinding[]
+    var Int callbackParameterIndex
 
     public bind(
         PrimitiveClassSyntax syntax,
@@ -1146,6 +1148,97 @@ class {
         }
     }
 
+    /** Member-bearing callback bodies use the same published contracts as ordinary expressions. */
+    bindCallback(PrimitiveLambdaSyntax syntax, FunctionSemanticType context,
+        LocalBinding[] locals, CallableSignature[] callables,
+        TypeHierarchyComponent hierarchy = null,
+        FunctionSemanticType originalContract = null) -> PrimitiveExpressionBindingResult {
+        let fallbackResult = PrimitiveExpressionBinder().bindCallback(syntax, context, locals,
+            callables, hierarchy, originalContract: originalContract)
+        if (fallbackResult.succeeded || syntax.statementValues().isNotEmpty || syntax.emptyBody) return fallbackResult
+        if (syntax.parameterValues().isNotEmpty &&
+            syntax.parameterValues().count != context.parameterTypes().count) return fallbackResult
+        let parameters = BoundFunctionParameter[]
+        let declared = syntax.parameterValues()
+        var Int parameterIndex
+        for (type in context.parameterTypes()) {
+            let names = context.parameterNames()
+            var String name = "_#{parameterIndex + 1}"
+            if (declared.isNotEmpty) {
+                name = declared[parameterIndex].name
+            } else if (names.count > parameterIndex && names[parameterIndex].isNotEmpty) {
+                name = "_#{names[parameterIndex]}"
+            }
+            if (parameters.any({ _.name == name })) return fallbackResult
+            if (declared.isNotEmpty && typeOf(declared[parameterIndex].typeName).value() != type.value()) return fallbackResult
+            let identity = SymbolIdentity(DeclarationIdentity(
+                SyntaxIslandIdentity(syntax.range.snapshot, "lambda", syntax.range.startTokenIndex),
+                "lambda-parameter", name), "lambda-parameter", parameterIndex)
+            parameterIndex++
+            parameters.add(BoundFunctionParameter(name, identity, type))
+        }
+        let scoped = LocalBinding[]:addAll(locals)
+        let previousParameters = callbackParameters
+        let previousIndex = callbackParameterIndex
+        callbackParameters = LocalBinding[]
+        callbackParameterIndex = 0
+        for (parameter in parameters) {
+            let local = LocalBinding(parameter.name, parameter.identity, parameter.semanticType)
+            scoped.add(local)
+            if (syntax.parameterValues().isEmpty) {
+                callbackParameters.add(local)
+                scoped.add(LocalBinding("_#{callbackParameters.count}", parameter.identity, parameter.semanticType))
+            }
+        }
+        try {
+            let capturedReceiver = locals.reverse().firstOrNull({ _.name == "this" })
+            let receiver = capturedReceiver ? BoundReferenceExpression(syntax.range,
+                capturedReceiver.semanticType, "this", capturedReceiver.identity) : null
+            let body = expression(syntax.body, receiver, publishedFields, scoped)
+            let captures = BoundReferenceExpression[]
+            for (local in locals) {
+                let selected = locals.reverse().firstOrNull({ _.name == local.name })
+                if (selected.identity.value == local.identity.value &&
+                    !parameters.any({ _.name == local.name }) &&
+                    callbackReferences(body, local.identity.value)) {
+                    captures.add(BoundReferenceExpression(syntax.range, local.semanticType, local.name, local.identity))
+                }
+            }
+            return PrimitiveExpressionBindingResult(expression: BoundLambdaExpression(syntax.range,
+                FunctionSemanticType(parameters.map({ _.semanticType }), body.semanticType,
+                    context.asyncFunction), parameters, captures, body))
+        } catch (Exception error) {
+            return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                "semantic.primitive-expression", error.message, syntax.range))
+        } finally {
+            callbackParameters = previousParameters
+            callbackParameterIndex = previousIndex
+        }
+    }
+
+    callbackReferences(BoundExpression value, String identity) -> Bool {
+        if (value.class.isOfType(BoundReferenceExpression.class))
+            return ((BoundReferenceExpression)value).symbolIdentity.value == identity
+        if (value.class.isOfType(BoundMemberAccessExpression.class))
+            return callbackReferences(((BoundMemberAccessExpression)value).receiver, identity)
+        if (value.class.isOfType(BoundBinaryExpression.class)) {
+            let binary = (BoundBinaryExpression)value
+            return callbackReferences(binary.left, identity) || callbackReferences(binary.right, identity)
+        }
+        if (value.class.isOfType(BoundConversionExpression.class))
+            return callbackReferences(((BoundConversionExpression)value).value, identity)
+        if (value.class.isOfType(BoundCallExpression.class)) {
+            let call = (BoundCallExpression)value
+            return (call.receiver && callbackReferences(call.receiver, identity)) ||
+                call.argumentValues().any({ callbackReferences(_, identity) })
+        }
+        if (value.class.isOfType(BoundUnaryExpression.class))
+            return callbackReferences(((BoundUnaryExpression)value).operand, identity)
+        if (value.class.isOfType(BoundLambdaExpression.class))
+            return ((BoundLambdaExpression)value).captureValues().any({ _.symbolIdentity.value == identity })
+        return false
+    }
+
     expression(
         PrimitiveExpressionSyntax syntax,
         BoundReferenceExpression receiver,
@@ -1237,7 +1330,7 @@ class {
                 declarationContext, constructors, typeHierarchy, safeAccess: true)
         }
         if (requiredType && syntax.class.isOfType(PrimitiveLambdaSyntax.class)) {
-            let bound = PrimitiveExpressionBinder().bindCallback(
+            let bound = bindCallback(
                 (PrimitiveLambdaSyntax)syntax, (FunctionSemanticType)requiredType,
                 locals, constructors, typeHierarchy,
                 originalContract: originalCallbackContract
@@ -1470,9 +1563,11 @@ class {
                 let ownerName = ((PrimitiveReferenceSyntax)value.receiver).name
                 if (!locals.any({ _.name == ownerName }) &&
                     !fields.any({ _.name == ownerName })) {
+                    let ownerIdentity = declarationContext ? declarationContext.resolve(ownerName, value.range) : null
                     var CallableSignature[] staticCandidates = constructors.filter((candidate) =>
                         candidate.callableKind.value == "static-method" &&
-                        candidate.ownerType.declarationIdentity.name == ownerName &&
+                        (ownerIdentity ? candidate.ownerType.declarationIdentity.value == ownerIdentity.value :
+                            candidate.ownerType.declarationIdentity.name == ownerName) &&
                         candidate.name == value.memberName
                     )
                     if (value.typeArgumentNames().isNotEmpty) {
@@ -1529,7 +1624,7 @@ class {
                                     let callbackLocals = LocalBinding[]:addAll(locals)
                                     if (receiver) callbackLocals.add(LocalBinding("this", receiver.symbolIdentity,
                                         genericParameter ? GenericInstanceSemanticType(boundType, [genericParameter]) : receiver.semanticType))
-                                    let bound = PrimitiveExpressionBinder().bindCallback(
+                                    let bound = bindCallback(
                                         (PrimitiveLambdaSyntax)argument, (FunctionSemanticType)context,
                                         callbackLocals, constructors, typeHierarchy
                                     )
@@ -1665,7 +1760,7 @@ class {
                                 let callbackLocals = LocalBinding[]:addAll(locals)
                                 if (receiver) callbackLocals.add(LocalBinding("this", receiver.symbolIdentity,
                                     genericParameter ? GenericInstanceSemanticType(boundType, [genericParameter]) : receiver.semanticType))
-                                let bound = PrimitiveExpressionBinder().bindCallback(
+                                let bound = bindCallback(
                                     (PrimitiveLambdaSyntax)argument, (FunctionSemanticType)context,
                                     callbackLocals, constructors, typeHierarchy)
                                 if (!bound.succeeded) throw Exception(bound.diagnostic.message)
@@ -2184,7 +2279,20 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveReferenceSyntax.class)) {
             let value = (PrimitiveReferenceSyntax)syntax
-            let local = locals.firstOrNull({ _.name == value.name })
+            if (callbackParameters.isNotEmpty && !locals.any({ _.name == value.name })) {
+                var LocalBinding implicitValue
+                if (value.name == "_") {
+                    if (callbackParameterIndex >= callbackParameters.count) throw Exception("Too many implicit callback parameters")
+                    implicitValue = callbackParameters[callbackParameterIndex]
+                    callbackParameterIndex++
+                } else if (value.name == "_x") {
+                    implicitValue = callbackParameters.first
+                } else if (value.name == "_i" && callbackParameters.count > 1) {
+                    implicitValue = callbackParameters[1]
+                }
+                if (implicitValue) return BoundReferenceExpression(value.range, implicitValue.semanticType, implicitValue.name, implicitValue.identity)
+            }
+            let local = locals.reverse().firstOrNull({ _.name == value.name })
             if (local) {
                 if (value.name == "this" && genericParameter && receiver &&
                     local.identity.value == receiver.symbolIdentity.value) {
@@ -2282,6 +2390,72 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
             let value = (PrimitiveCallSyntax)syntax
+            if (declarationContext && !locals.any({ _.name == value.name }) &&
+                !constructors.any((candidate) => candidate.name == value.name &&
+                    candidate.ownerType && candidate.ownerType.value() == boundType.value() &&
+                    (candidate.callableKind.value == "static-method" || candidate.callableKind.value == "instance-method"))) {
+                let owners = declarationContext.staticDefaultOwners(value.name, value.range)
+                if (owners.isNotEmpty) {
+                    let candidates = constructors.filter((candidate) => candidate.name == value.name &&
+                        candidate.callableKind.value == "static-method" &&
+                        owners.any({ _.value == candidate.ownerType.declarationIdentity.value }))
+                    let checks = CallCheckResult[]
+                    let calls = BoundCallExpression[]
+                    for (candidate in candidates) {
+                        if (!callbackArgumentShape(candidate, value.argumentValues())) continue
+                        try {
+                            let arguments = BoundExpression[]
+                            let formals = SemanticType[]
+                            let actuals = SemanticType[]
+                            var Int index
+                            for (argument in value.argumentValues()) {
+                                if (argument.class.isOfType(PrimitiveLambdaSyntax.class)) arguments.add(null)
+                                else {
+                                    let bound = expression(argument, receiver, fields, locals)
+                                    arguments.add(bound)
+                                    formals.add(candidate.parameterTypes()[index])
+                                    actuals.add(bound.semanticType)
+                                }
+                                index++
+                            }
+                            var GenericSubstitution substitution = GenericSubstitution(GenericParameterSemanticType[], SemanticType[])
+                            if (candidate.genericParameters().isNotEmpty) {
+                                let partial = GenericInference.inferPartial(GenericDeclaration(
+                                    candidate.identity.declaration, candidate.genericParameters(), candidate.returnType
+                                ), formals, actuals, value.range)
+                                if (!partial.inferred) throw Exception(partial.diagnostic.message)
+                                substitution = partial.substitution
+                            }
+                            index = 0
+                            for (argument in value.argumentValues()) {
+                                if (arguments[index] == null) {
+                                    let context = substitution.apply(candidate.parameterTypes()[index])
+                                    if (context.kind() != "function") throw Exception("Callback requires a function contract")
+                                    let scoped = LocalBinding[]:addAll(locals)
+                                    if (receiver) scoped.add(LocalBinding("this", receiver.symbolIdentity, receiver.semanticType))
+                                    let callback = bindCallback((PrimitiveLambdaSyntax)argument,
+                                        (FunctionSemanticType)context, scoped, constructors, typeHierarchy)
+                                    if (!callback.succeeded) throw Exception(callback.diagnostic.message)
+                                    arguments[index] = callback.expression
+                                }
+                                index++
+                            }
+                            let checked = CallTypeChecker.check(candidate, null,
+                                arguments.map({ _.semanticType }), value.range, typeHierarchy)
+                            if (checked.valid) {
+                                checks.add(checked)
+                                calls.add(BoundCallExpression(value.range, checked.semanticType, checked.target,
+                                    arguments, checked.argumentConversions()))
+                            }
+                        } catch (Exception error) {
+                            // A failed contextual candidate does not admit unrelated owners.
+                        }
+                    }
+                    let resolution = OverloadResolver.resolveChecked(value.name, candidates, checks, value.range)
+                    if (resolution.diagnostic) throw Exception(resolution.diagnostic.message)
+                    return calls.firstOrNull({ _.target.identity.value == resolution.selected.identity.value })
+                }
+            }
             if (receiver && constructors.any((candidate) => candidate.name == value.name && candidate.genericParameters().isNotEmpty) &&
                 value.argumentValues().any({ _.class.isOfType(PrimitiveLambdaSyntax.class) }) &&
                 !locals.any({ _.name == value.name })) {
@@ -2430,6 +2604,8 @@ class {
             let nonInstanceCandidates = constructors.filter((candidate) =>
                 candidate.name == value.name &&
                 candidate.callableKind.value != "instance-method" &&
+                (!declarationContext || candidate.callableKind.value != "static-method" ||
+                    candidate.ownerType.value() == boundType.value()) &&
                 (!resolvedConstructor || candidate.callableKind.value != "constructor" ||
                     candidate.ownerType.declarationIdentity.value == resolvedConstructor.value)
             )

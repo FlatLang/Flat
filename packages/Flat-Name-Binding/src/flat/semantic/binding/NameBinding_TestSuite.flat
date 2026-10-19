@@ -11,6 +11,7 @@ import flat/semantic/binding/primitive/PrimitiveFunctionBinder_Test
 import flat/semantic/binding/primitive/PrimitiveClassBinder_Test
 import flat/semantic/binding/primitive/PrimitiveClassPartitionBinder_Test
 import flat/semantic/binding/primitive/PrimitiveInheritanceBinder_Test
+import flat/semantic/binding/primitive/PrimitiveSourceBindingContext_Test
 
 [TestSuite [
     BinderWorkItem_Test,
@@ -23,7 +24,8 @@ import flat/semantic/binding/primitive/PrimitiveInheritanceBinder_Test
     PrimitiveFunctionBinder_Test,
     PrimitiveClassBinder_Test,
     PrimitiveClassPartitionBinder_Test,
-    PrimitiveInheritanceBinder_Test
+    PrimitiveInheritanceBinder_Test,
+    PrimitiveSourceBindingContext_Test
 ]]
 class {
     public static async main(String[] args) {

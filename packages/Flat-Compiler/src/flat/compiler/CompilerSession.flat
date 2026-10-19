@@ -35,6 +35,206 @@ class {
 
     var Future<ExecutorTaskResult> task
 
+    // Source scheduling owns a bounded window, never the package binder/linker.
+    visible Int activeSourceCount => activeSources
+    /** Unsubmitted identities in the scheduler queue, excluding executor reservations. */
+    visible Int queuedSourceCount => sourceWindow.count - submittedSources - completedSources
+    /** Submitted reservations include executor-queued actions until settlement. */
+    visible Int inFlightSourceCount => submittedSources
+    visible Int retainedSourceCount => sourceWindow.count
+    visible Int peakActiveSourceCount => peakActiveSources
+    visible Int peakRetainedSourceCount => peakRetainedSources
+
+    var Bool sourceScheduling
+    var Int activeSources
+    var Int submittedSources
+    var Int completedSources
+    var Int peakActiveSources
+    var Int peakRetainedSources
+    var SourceWork[] sourceWindow = SourceWork[]
+    var Future.CompletableFuture<Bool> sourceChanged = Future.create<Bool>()
+
+    class SourceWork {
+        visible String identity
+        visible var Future<ExecutorTaskResult> handle
+        visible var Bool submitted
+        visible var Bool entered
+        visible var Bool settled
+        visible var Bool published
+        visible var String code
+        visible var String diagnostic
+        public construct(String identity) {
+            this.identity = identity
+        }
+    }
+
+    protected startSources(
+        CompilerEngine engine,
+        Executor executor,
+        FlatEs6SourceCompiler compiler,
+        CompilerSourceProvider provider,
+        String[] identities,
+        CompilerArtifactSink sink,
+        Int maxActive,
+        Int maxQueued
+    ) {
+        sourceScheduling = true
+        enter()
+        let coordinator = Future.from<ExecutorTaskResult>(async {
+            try {
+                scheduleSources(engine, executor, compiler, provider, identities, sink, maxActive, maxQueued)
+                return ExecutorTaskResult(completed: true)
+            } catch (Exception error) {
+                // Infrastructure failure stops admission; source failures are values.
+                recordFailure(error.message)
+                cancel()
+                drainSourceWorkers()
+                return ExecutorTaskResult(completed: true)
+            } finally {
+                sourceWindow.clear()
+                activeSources = 0
+                submittedSources = 0
+                completedSources = 0
+                sourceScheduling = false
+                if (!sourceChanged.completed) sourceChanged.complete(false)
+            }
+        })$
+        attach(coordinator)
+    }
+
+    async scheduleSources(
+        CompilerEngine engine,
+        Executor executor,
+        FlatEs6SourceCompiler compiler,
+        CompilerSourceProvider provider,
+        String[] identities,
+        CompilerArtifactSink sink,
+        Int maxActive,
+        Int maxQueued
+    ) {
+        var Int next
+        while (!cancelled && (next < identities.count || sourceWindow.isNotEmpty)) {
+            // Only bounded identities/outcomes are admitted. The existing provider
+            // finite identity array is not copied into an additional task backlog.
+            while (!cancelled && next < identities.count && sourceWindow.count < maxActive + maxQueued) {
+                let queued = sourceWindow.count - submittedSources - completedSources
+                if (queued >= maxActive - submittedSources + maxQueued) break
+                sourceWindow.add(SourceWork(identities[next]))
+                next++
+                peakRetainedSources = Math.max(peakRetainedSources, sourceWindow.count)
+            }
+            for (work in sourceWindow) {
+                if (cancelled || submittedSources >= maxActive) break
+                if (!work.submitted && !work.settled) {
+                    work.submitted = true
+                    submittedSources++
+                    try {
+                        work.handle = executor.submit({ compileSource(work, compiler, provider) })$
+                        if (cancelled && !work.entered) work.handle.cancel()
+                        observeSource(work)$
+                    } catch (Exception error) {
+                        work.diagnostic = error.message
+                        work.settled = true
+                        submittedSources--
+                        completedSources++
+                        throw error
+                    }
+                }
+            }
+            // Emit every ready artifact, not only the earliest source. No ordered
+            // artifact commit barrier. One pump owns the sink and awaited sends.
+            for (work in sourceWindow) {
+                if (cancelled) break
+                if (work.settled && !work.published) {
+                    work.published = true
+                    if (work.code != null) {
+                        let artifact = CompilerArtifact(work.identity + ".js", work.code)
+                        try {
+                            sink.write(artifact)
+                            recordArtifact()
+                        } catch (Exception error) {
+                            work.diagnostic = "Failed to compile '#{work.identity}': #{error.message}"
+                        }
+                        work.code = null
+                        if (work.diagnostic == null) {
+                            engine.publishArtifact(this, artifact)
+                            if (!cancelled) engine.publishProgress(this, "Compiled #{work.identity}")
+                        }
+                    }
+                }
+            }
+            // Named diagnostic-ordering window: retire only a sealed source prefix.
+            // Already ready B artifacts above are never held behind gated A.
+            while (!cancelled && sourceWindow.isNotEmpty && sourceWindow.first.settled &&
+                sourceWindow.first.published) {
+                let work = sourceWindow.first
+                if (work.diagnostic != null) engine.publishDiagnostic(this, work.diagnostic)
+                sourceWindow.remove(0)
+                completedSources--
+            }
+            if (cancelled) break
+            if (sourceWindow.isEmpty) continue
+            if (next < identities.count && sourceWindow.count < maxActive + maxQueued) continue
+            if (sourceWindow.any({ !_.submitted && !_.settled }) && submittedSources < maxActive) continue
+            let changed = sourceChanged
+            changed.get()
+            sourceChanged = Future.create<Bool>()
+        }
+        if (cancelled) drainSourceWorkers()
+    }
+
+    async compileSource(SourceWork work, FlatEs6SourceCompiler compiler, CompilerSourceProvider provider) {
+        if (cancelled) return
+        work.entered = true
+        activeSources++
+        peakActiveSources = Math.max(peakActiveSources, activeSources)
+        try {
+            let source = provider.load(work.identity)
+            if (cancelled) return
+            if (!source) throw Exception("Missing source '#{work.identity}'")
+            let code = compiler.compile(source)
+            if (!cancelled) work.code = code
+        } catch (Exception error) {
+            if (!cancelled) work.diagnostic = "Failed to compile '#{work.identity}': #{error.message}"
+        } finally {
+            activeSources--
+        }
+    }
+
+    async observeSource(SourceWork work) {
+        try {
+            let result = work.handle.get()
+            if (!cancelled && (result.capacityExceeded || result.failed)) {
+                throw Exception(result.failed ? result.error.message : "Compiler executor capacity exceeded")
+            }
+        } catch (Exception error) {
+            if (!cancelled) {
+                recordFailure(error.message)
+                cancel()
+            }
+        } finally {
+            work.settled = true
+            submittedSources--
+            completedSources++
+            signalSourceChange()
+        }
+    }
+
+    signalSourceChange() {
+        if (!sourceChanged.completed) sourceChanged.complete(true)
+    }
+
+    async drainSourceWorkers() {
+        for (work in sourceWindow) {
+            if (work.handle && !work.entered && !work.settled) work.handle.cancel()
+        }
+        while (submittedSources > 0) {
+            let changed = sourceChanged
+            changed.get()
+            sourceChanged = Future.create<Bool>()
+        }
+    }
+
     protected begin(Int sources) {
         if (started || completion.completed) throw Exception("Compiler session can only be started once")
         if (cancelled) return
@@ -53,7 +253,9 @@ class {
         task = submitted
         // A custom executor may invoke cancellation reentrantly during submit,
         // before returning its queued handle. Do not leave that admission behind.
-        if (cancelled && !running) task.cancel()
+        // A source scheduler owns multiple handles and a coordinator. Do not
+        // cancel that coordinator future: settlement is cleanup evidence.
+        if (cancelled && !running && !sourceScheduling) task.cancel()
         observeTask()$
     }
 
@@ -84,9 +286,16 @@ class {
         if (cancelled || completion.completed) return
         cancellationRequested = true
         closeChannels()
+        if (sourceScheduling) {
+            for (work in sourceWindow) {
+                if (work.handle && !work.entered && !work.settled) work.handle.cancel()
+            }
+            signalSourceChange()
+            return
+        }
         // Executor future cancellation only removes queued work. It does not
         // interrupt an already running action, so never use it as cleanup proof.
-        // running is set before the engine's first load/compile call, and remains
+        // running is set before the first engine load/compile call, and remains
         // true until the submitted task settles, even if cancellation occurs
         // reentrantly before submit returns and attach receives the task handle.
         if (!running) {

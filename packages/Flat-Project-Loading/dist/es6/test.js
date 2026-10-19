@@ -82,7 +82,7 @@ class FlatObject {
 		return one === two;
 	}
 
-	static generated109(value0, value1) {
+	static generated208(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -90,7 +90,7 @@ class FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated223(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
+	static generated281(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -110,7 +110,7 @@ class FlatObject {
 
 	static accessor__js_class() {
 		return typeof FlatObject.__lazy_accessor__js_class !== 'undefined' ? FlatObject.__lazy_accessor__js_class : (FlatObject.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/Object"), false, flat_null, FlatArray.construct(), FlatObject.generated109(Field.construct(FlatString.construct5("hashCodeLong")), Field.construct(FlatString.construct5("hashCode"))), FlatObject.generated223(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("__chainAsync")), Function.construct(FlatString.construct5("__chain")), Function.construct(FlatString.construct5("__callExtensionAsync")), Function.construct(FlatString.construct5("__callExtension")), Function.construct(FlatString.construct5("__callExtensionChainAsync")), Function.construct(FlatString.construct5("__callExtensionChain")), Function.construct(FlatString.construct5("referenceEquals"))), this);
+					return Class.construct1(FlatString.construct5("flat/Object"), false, flat_null, FlatArray.construct(), FlatObject.generated208(Field.construct(FlatString.construct5("hashCodeLong")), Field.construct(FlatString.construct5("hashCode"))), FlatObject.generated281(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("__chainAsync")), Function.construct(FlatString.construct5("__chain")), Function.construct(FlatString.construct5("__callExtensionAsync")), Function.construct(FlatString.construct5("__callExtension")), Function.construct(FlatString.construct5("__callExtensionChainAsync")), Function.construct(FlatString.construct5("__callExtensionChain")), Function.construct(FlatString.construct5("referenceEquals"))), this);
 			})());
 	}
 
@@ -202,7 +202,7 @@ class AirshipCompilerArguments extends FlatObject {
 		}
 		let options = CompilerOptions.construct(target, runtime, mainClass, library, outputFile, outputDirectory, concurrency, properties);
 		let _js_package = ProjectPackage.construct((flat_local_0 = properties.get(FlatString.construct5("name"))) !== flat_null ? flat_local_0 : FlatString.construct5("application"), sourceRoots, dependencies, undefined, defaults, exclusions);
-		return ProjectModel.construct(FlatString.construct5("airship:arguments"), this.generated389(_js_package), options);
+		return ProjectModel.construct(FlatString.construct5("airship:arguments"), this.generated388(_js_package), options);
 	}
 
 	requireValue(_js_arguments, index) {
@@ -232,7 +232,7 @@ class AirshipCompilerArguments extends FlatObject {
 		return self;
 	}
 
-	static generated32(value0, value1, value2, value3, value4) {
+	static generated7(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -243,7 +243,7 @@ class AirshipCompilerArguments extends FlatObject {
 		return FlatArray.construct1(temp, 5);
 	}
 
-	static generated389(value0) {
+	static generated388(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -252,7 +252,7 @@ class AirshipCompilerArguments extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof AirshipCompilerArguments.__lazy_accessor__js_class !== 'undefined' ? AirshipCompilerArguments.__lazy_accessor__js_class : (AirshipCompilerArguments.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/AirshipCompilerArguments"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), AirshipCompilerArguments.generated32(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("fromArguments")), Function.construct(FlatString.construct5("requireValue")), Function.construct(FlatString.construct5("parseProperties")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/AirshipCompilerArguments"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), AirshipCompilerArguments.generated7(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("fromArguments")), Function.construct(FlatString.construct5("requireValue")), Function.construct(FlatString.construct5("parseProperties")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -286,7 +286,7 @@ class App extends FlatObject {
 		return self;
 	}
 
-	static generated22(value0, value1) {
+	static generated4(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -296,7 +296,7 @@ class App extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof App.__lazy_accessor__js_class !== 'undefined' ? App.__lazy_accessor__js_class : (App.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/App"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), App.generated22(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/App"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), App.generated4(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -305,7 +305,7 @@ class App extends FlatObject {
 }
 
 class PlusEqualsOperator {
-	static generated169(value0) {
+	static generated215(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -314,13 +314,13 @@ class PlusEqualsOperator {
 
 	static accessor__js_class() {
 		return typeof PlusEqualsOperator.__lazy_accessor__js_class !== 'undefined' ? PlusEqualsOperator.__lazy_accessor__js_class : (PlusEqualsOperator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/operators/PlusEqualsOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), PlusEqualsOperator.generated169(Function.construct(FlatString.construct5("plusEquals"))), this);
+					return Class.construct1(FlatString.construct5("flat/operators/PlusEqualsOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), PlusEqualsOperator.generated215(Function.construct(FlatString.construct5("plusEquals"))), this);
 			})());
 	}
 }
 
 class PlusOperator {
-	static generated124(value0) {
+	static generated197(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -329,7 +329,7 @@ class PlusOperator {
 
 	static accessor__js_class() {
 		return typeof PlusOperator.__lazy_accessor__js_class !== 'undefined' ? PlusOperator.__lazy_accessor__js_class : (PlusOperator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/operators/PlusOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), PlusOperator.generated124(Function.construct(FlatString.construct5("plus"))), this);
+					return Class.construct1(FlatString.construct5("flat/operators/PlusOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), PlusOperator.generated197(Function.construct(FlatString.construct5("plus"))), this);
 			})());
 	}
 }
@@ -366,14 +366,14 @@ class OrderedList {
 		return defaultReturnValue;
 	}
 
-	static generated114(value0) {
+	static generated206(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated177(value0, value1) {
+	static generated210(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -383,7 +383,7 @@ class OrderedList {
 
 	static accessor__js_class() {
 		return typeof OrderedList.__lazy_accessor__js_class !== 'undefined' ? OrderedList.__lazy_accessor__js_class : (OrderedList.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/OrderedList"), true, FlatObject.accessor__js_class(), OrderedList.generated114(List.accessor__js_class()), FlatArray.construct(), OrderedList.generated177(Function.construct(FlatString.construct5("findIndex")), Function.construct(FlatString.construct5("indexOf"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/OrderedList"), true, FlatObject.accessor__js_class(), OrderedList.generated206(List.accessor__js_class()), FlatArray.construct(), OrderedList.generated210(Function.construct(FlatString.construct5("findIndex")), Function.construct(FlatString.construct5("indexOf"))), this);
 			})());
 	}
 }
@@ -1295,14 +1295,14 @@ class List {
 		return true;
 	}
 
-	static generated91(value0) {
+	static generated119(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated197(value0, value1, value2, value3, value4, value5) {
+	static generated126(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -1314,7 +1314,7 @@ class List {
 		return FlatArray.construct1(temp, 6);
 	}
 
-	static generated334(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64) {
+	static generated337(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -1419,7 +1419,7 @@ class List {
 
 	static accessor__js_class() {
 		return typeof List.__lazy_accessor__js_class !== 'undefined' ? List.__lazy_accessor__js_class : (List.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/List"), true, FlatObject.accessor__js_class(), List.generated91(Iterable.accessor__js_class()), List.generated197(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last")), Field.construct(FlatString.construct5("isEmpty")), Field.construct(FlatString.construct5("isNotEmpty"))), List.generated334(Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("containsAny")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("forEachParallel")), Function.construct(FlatString.construct5("forEachAsync")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("mapParallel")), Function.construct(FlatString.construct5("mapAsync")), Function.construct(FlatString.construct5("mapNotNull")), Function.construct(FlatString.construct5("mapNotNullParallel")), Function.construct(FlatString.construct5("mapNotNullAsync")), Function.construct(FlatString.construct5("flatMap")), Function.construct(FlatString.construct5("flatMapAsync")), Function.construct(FlatString.construct5("flatMapParallel")), Function.construct(FlatString.construct5("any")), Function.construct(FlatString.construct5("anyAsync")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("allAsync")), Function.construct(FlatString.construct5("none")), Function.construct(FlatString.construct5("noneAsync")), Function.construct(FlatString.construct5("noneParallel")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("filterParallel")), Function.construct(FlatString.construct5("filterAsync")), Function.construct(FlatString.construct5("filterNot")), Function.construct(FlatString.construct5("filterNull")), Function.construct(FlatString.construct5("uniqueBy")), Function.construct(FlatString.construct5("unique")), Function.construct(FlatString.construct5("filterAtIndex")), Function.construct(FlatString.construct5("takeWhile")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("takeLast")), Function.construct(FlatString.construct5("skipLast")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("findOne")), Function.construct(FlatString.construct5("firstOr")), Function.construct(FlatString.construct5("firstOrAsync")), Function.construct(FlatString.construct5("firstOrNull")), Function.construct(FlatString.construct5("firstOrNullAsync")), Function.construct(FlatString.construct5("firstWhereOrThrow")), Function.construct(FlatString.construct5("firstOrThrow")), Function.construct(FlatString.construct5("firstWhere")), Function.construct(FlatString.construct5("lastWhere")), Function.construct(FlatString.construct5("firstNonNull")), Function.construct(FlatString.construct5("lastNonNull")), Function.construct(FlatString.construct5("firstNonNullAsync")), Function.construct(FlatString.construct5("zip")), Function.construct(FlatString.construct5("zipAsync")), Function.construct(FlatString.construct5("sum")), Function.construct(FlatString.construct5("sum")), Function.construct(FlatString.construct5("min")), Function.construct(FlatString.construct5("max")), Function.construct(FlatString.construct5("howMany")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("reduce")), Function.construct(FlatString.construct5("split")), Function.construct(FlatString.construct5("split")), Function.construct(FlatString.construct5("join")), Function.construct(FlatString.construct5("stitch")), Function.construct(FlatString.construct5("stitchFront")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("equals"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/List"), true, FlatObject.accessor__js_class(), List.generated119(Iterable.accessor__js_class()), List.generated126(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last")), Field.construct(FlatString.construct5("isEmpty")), Field.construct(FlatString.construct5("isNotEmpty"))), List.generated337(Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("containsAny")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("forEachParallel")), Function.construct(FlatString.construct5("forEachAsync")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("mapParallel")), Function.construct(FlatString.construct5("mapAsync")), Function.construct(FlatString.construct5("mapNotNull")), Function.construct(FlatString.construct5("mapNotNullParallel")), Function.construct(FlatString.construct5("mapNotNullAsync")), Function.construct(FlatString.construct5("flatMap")), Function.construct(FlatString.construct5("flatMapAsync")), Function.construct(FlatString.construct5("flatMapParallel")), Function.construct(FlatString.construct5("any")), Function.construct(FlatString.construct5("anyAsync")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("allAsync")), Function.construct(FlatString.construct5("none")), Function.construct(FlatString.construct5("noneAsync")), Function.construct(FlatString.construct5("noneParallel")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("filterParallel")), Function.construct(FlatString.construct5("filterAsync")), Function.construct(FlatString.construct5("filterNot")), Function.construct(FlatString.construct5("filterNull")), Function.construct(FlatString.construct5("uniqueBy")), Function.construct(FlatString.construct5("unique")), Function.construct(FlatString.construct5("filterAtIndex")), Function.construct(FlatString.construct5("takeWhile")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("takeLast")), Function.construct(FlatString.construct5("skipLast")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("findOne")), Function.construct(FlatString.construct5("firstOr")), Function.construct(FlatString.construct5("firstOrAsync")), Function.construct(FlatString.construct5("firstOrNull")), Function.construct(FlatString.construct5("firstOrNullAsync")), Function.construct(FlatString.construct5("firstWhereOrThrow")), Function.construct(FlatString.construct5("firstOrThrow")), Function.construct(FlatString.construct5("firstWhere")), Function.construct(FlatString.construct5("lastWhere")), Function.construct(FlatString.construct5("firstNonNull")), Function.construct(FlatString.construct5("lastNonNull")), Function.construct(FlatString.construct5("firstNonNullAsync")), Function.construct(FlatString.construct5("zip")), Function.construct(FlatString.construct5("zipAsync")), Function.construct(FlatString.construct5("sum")), Function.construct(FlatString.construct5("sum")), Function.construct(FlatString.construct5("min")), Function.construct(FlatString.construct5("max")), Function.construct(FlatString.construct5("howMany")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("reduce")), Function.construct(FlatString.construct5("split")), Function.construct(FlatString.construct5("split")), Function.construct(FlatString.construct5("join")), Function.construct(FlatString.construct5("stitch")), Function.construct(FlatString.construct5("stitchFront")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("equals"))), this);
 			})());
 	}
 
@@ -1549,7 +1549,10 @@ class FlatArray extends FlatObject {
 		if (index >= this.capacity) {
 			this.increaseSize1(index + 1);
 		}
-		this.add0(flat_null);
+		if (this.position >= this.capacity) {
+			this.increaseSize0();
+		}
+		this.position = this.position + 1;
 		this.shiftRight(index, this.position);
 		this.data[index] = element;
 		if (index >= this.position - 1) {
@@ -2201,7 +2204,7 @@ class FlatArray extends FlatObject {
 		return this.data.slice(0);
 	}
 
-	static generated31(value0, value1, value2, value3) {
+	static generated3(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -2211,7 +2214,7 @@ class FlatArray extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated283(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated27(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -2226,7 +2229,7 @@ class FlatArray extends FlatObject {
 		return FlatArray.construct1(temp, 9);
 	}
 
-	static generated332(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71) {
+	static generated316(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -2333,7 +2336,7 @@ class FlatArray extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof FlatArray.__lazy_accessor__js_class !== 'undefined' ? FlatArray.__lazy_accessor__js_class : (FlatArray.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/Array"), false, FlatObject.accessor__js_class(), FlatArray.generated31(List.accessor__js_class(), OrderedList.accessor__js_class(), PlusOperator.accessor__js_class(), PlusEqualsOperator.accessor__js_class()), FlatArray.generated283(Field.construct(FlatString.construct5("capacity")), Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("data")), Field.construct(FlatString.construct5("isEmpty")), Field.construct(FlatString.construct5("isNotEmpty")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last"))), FlatArray.generated332(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("getLast")), Function.construct(FlatString.construct5("fillRemaining")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("addAll")), Function.construct(FlatString.construct5("addUnique")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("unshift")), Function.construct(FlatString.construct5("shift")), Function.construct(FlatString.construct5("removeLast")), Function.construct(FlatString.construct5("removeWhere")), Function.construct(FlatString.construct5("remove")), Function.construct(FlatString.construct5("removeAtIndex")), Function.construct(FlatString.construct5("removeAtIndex")), Function.construct(FlatString.construct5("removeFirstWhere")), Function.construct(FlatString.construct5("remove")), Function.construct(FlatString.construct5("replace")), Function.construct(FlatString.construct5("replaceAt")), Function.construct(FlatString.construct5("replaceFirst")), Function.construct(FlatString.construct5("replaceLast")), Function.construct(FlatString.construct5("shiftRight")), Function.construct(FlatString.construct5("shiftLeft")), Function.construct(FlatString.construct5("swap")), Function.construct(FlatString.construct5("increaseSize")), Function.construct(FlatString.construct5("increaseSize")), Function.construct(FlatString.construct5("clone")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("clear")), Function.construct(FlatString.construct5("lastWhere")), Function.construct(FlatString.construct5("lastNonNull")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("mapParallel")), Function.construct(FlatString.construct5("mapAsync")), Function.construct(FlatString.construct5("mapNotNull")), Function.construct(FlatString.construct5("mapNotNullParallel")), Function.construct(FlatString.construct5("mapNotNullAsync")), Function.construct(FlatString.construct5("flatMap")), Function.construct(FlatString.construct5("flatMapAsync")), Function.construct(FlatString.construct5("flatMapParallel")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("forEachParallel")), Function.construct(FlatString.construct5("forEachAsync")), Function.construct(FlatString.construct5("filterNull")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("filterParallel")), Function.construct(FlatString.construct5("filterAsync")), Function.construct(FlatString.construct5("filterAtIndex")), Function.construct(FlatString.construct5("uniqueBy")), Function.construct(FlatString.construct5("unique")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("takeWhile")), Function.construct(FlatString.construct5("takeLast")), Function.construct(FlatString.construct5("skipLast")), Function.construct(FlatString.construct5("join")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("mergeSort")), Function.construct(FlatString.construct5("quickSort")), Function.construct(FlatString.construct5("quickSortHelper")), Function.construct(FlatString.construct5("partition")), Function.construct(FlatString.construct5("sort")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("jsStringArrayToFlatArray")), Function.construct(FlatString.construct5("cloneData"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/Array"), false, FlatObject.accessor__js_class(), FlatArray.generated3(List.accessor__js_class(), OrderedList.accessor__js_class(), PlusOperator.accessor__js_class(), PlusEqualsOperator.accessor__js_class()), FlatArray.generated27(Field.construct(FlatString.construct5("capacity")), Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("data")), Field.construct(FlatString.construct5("isEmpty")), Field.construct(FlatString.construct5("isNotEmpty")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last"))), FlatArray.generated316(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("getLast")), Function.construct(FlatString.construct5("fillRemaining")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("addAll")), Function.construct(FlatString.construct5("addUnique")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("unshift")), Function.construct(FlatString.construct5("shift")), Function.construct(FlatString.construct5("removeLast")), Function.construct(FlatString.construct5("removeWhere")), Function.construct(FlatString.construct5("remove")), Function.construct(FlatString.construct5("removeAtIndex")), Function.construct(FlatString.construct5("removeAtIndex")), Function.construct(FlatString.construct5("removeFirstWhere")), Function.construct(FlatString.construct5("remove")), Function.construct(FlatString.construct5("replace")), Function.construct(FlatString.construct5("replaceAt")), Function.construct(FlatString.construct5("replaceFirst")), Function.construct(FlatString.construct5("replaceLast")), Function.construct(FlatString.construct5("shiftRight")), Function.construct(FlatString.construct5("shiftLeft")), Function.construct(FlatString.construct5("swap")), Function.construct(FlatString.construct5("increaseSize")), Function.construct(FlatString.construct5("increaseSize")), Function.construct(FlatString.construct5("clone")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("clear")), Function.construct(FlatString.construct5("lastWhere")), Function.construct(FlatString.construct5("lastNonNull")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("mapParallel")), Function.construct(FlatString.construct5("mapAsync")), Function.construct(FlatString.construct5("mapNotNull")), Function.construct(FlatString.construct5("mapNotNullParallel")), Function.construct(FlatString.construct5("mapNotNullAsync")), Function.construct(FlatString.construct5("flatMap")), Function.construct(FlatString.construct5("flatMapAsync")), Function.construct(FlatString.construct5("flatMapParallel")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("forEachParallel")), Function.construct(FlatString.construct5("forEachAsync")), Function.construct(FlatString.construct5("filterNull")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("filterParallel")), Function.construct(FlatString.construct5("filterAsync")), Function.construct(FlatString.construct5("filterAtIndex")), Function.construct(FlatString.construct5("uniqueBy")), Function.construct(FlatString.construct5("unique")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("takeWhile")), Function.construct(FlatString.construct5("takeLast")), Function.construct(FlatString.construct5("skipLast")), Function.construct(FlatString.construct5("join")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("mergeSort")), Function.construct(FlatString.construct5("quickSort")), Function.construct(FlatString.construct5("quickSortHelper")), Function.construct(FlatString.construct5("partition")), Function.construct(FlatString.construct5("sort")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("jsStringArrayToFlatArray")), Function.construct(FlatString.construct5("cloneData"))), this);
 			})());
 	}
 
@@ -2371,7 +2374,7 @@ class FlatArray extends FlatObject {
 }
 
 class Iterator {
-	static generated87(value0, value1, value2, value3, value4, value5) {
+	static generated117(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -2385,7 +2388,7 @@ class Iterator {
 
 	static accessor__js_class() {
 		return typeof Iterator.__lazy_accessor__js_class !== 'undefined' ? Iterator.__lazy_accessor__js_class : (Iterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/Iterator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), Iterator.generated87(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next"))), FlatArray.construct(), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/Iterator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), Iterator.generated117(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next"))), FlatArray.construct(), this);
 			})());
 	}
 
@@ -2443,14 +2446,14 @@ class ArrayIterator extends FlatObject {
 		return this;
 	}
 
-	static generated27(value0) {
+	static generated9(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated74(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
+	static generated25(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -2467,7 +2470,7 @@ class ArrayIterator extends FlatObject {
 		return FlatArray.construct1(temp, 11);
 	}
 
-	static generated224(value0, value1, value2) {
+	static generated49(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -2485,7 +2488,7 @@ class ArrayIterator extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ArrayIterator.__lazy_accessor__js_class !== 'undefined' ? ArrayIterator.__lazy_accessor__js_class : (ArrayIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/ArrayIterator"), false, FlatObject.accessor__js_class(), ArrayIterator.generated27(Iterator.accessor__js_class()), ArrayIterator.generated74(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("allNext")), Field.construct(FlatString.construct5("allPrevious")), Field.construct(FlatString.construct5("allNextInclusive")), Field.construct(FlatString.construct5("allPreviousInclusive"))), ArrayIterator.generated224(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("reset"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/ArrayIterator"), false, FlatObject.accessor__js_class(), ArrayIterator.generated9(Iterator.accessor__js_class()), ArrayIterator.generated25(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("allNext")), Field.construct(FlatString.construct5("allPrevious")), Field.construct(FlatString.construct5("allNextInclusive")), Field.construct(FlatString.construct5("allPreviousInclusive"))), ArrayIterator.generated49(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("reset"))), this);
 			})());
 	}
 
@@ -2594,7 +2597,7 @@ class Async extends FlatObject {
 		return array;
 	}
 
-	static generated29(value0, value1, value2, value3) {
+	static generated8(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -2606,7 +2609,7 @@ class Async extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Async.__lazy_accessor__js_class !== 'undefined' ? Async.__lazy_accessor__js_class : (Async.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/async/Async"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Async.generated29(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("all"))), this);
+					return Class.construct1(FlatString.construct5("flat/async/Async"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Async.generated8(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("all"))), this);
 			})());
 	}
 
@@ -2633,7 +2636,7 @@ class Primitive extends FlatObject {
 		return self;
 	}
 
-	static generated151(value0, value1) {
+	static generated195(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -2643,7 +2646,7 @@ class Primitive extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Primitive.__lazy_accessor__js_class !== 'undefined' ? Primitive.__lazy_accessor__js_class : (Primitive.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/primitive/Primitive"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Primitive.generated151(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/primitive/Primitive"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Primitive.generated195(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -2652,7 +2655,7 @@ class Primitive extends FlatObject {
 }
 
 class Comparable {
-	static generated17(value0) {
+	static generated23(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -2661,7 +2664,7 @@ class Comparable {
 
 	static accessor__js_class() {
 		return typeof Comparable.__lazy_accessor__js_class !== 'undefined' ? Comparable.__lazy_accessor__js_class : (Comparable.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/Comparable"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Comparable.generated17(Function.construct(FlatString.construct5("compareTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/Comparable"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Comparable.generated23(Function.construct(FlatString.construct5("compareTo"))), this);
 			})());
 	}
 }
@@ -2718,21 +2721,21 @@ class Bool extends Primitive {
 		return value.equals(FlatString.construct5("true")) ? true : false;
 	}
 
-	static generated16(value0) {
+	static generated1(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated25(value0) {
+	static generated10(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated218(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated19(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -2748,7 +2751,7 @@ class Bool extends Primitive {
 
 	static accessor__js_class() {
 		return typeof Bool.__lazy_accessor__js_class !== 'undefined' ? Bool.__lazy_accessor__js_class : (Bool.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/primitive/Bool"), false, Primitive.accessor__js_class(), Bool.generated16(Comparable.accessor__js_class()), Bool.generated25(Field.construct(FlatString.construct5("value"))), Bool.generated218(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("fromString"))), this);
+					return Class.construct1(FlatString.construct5("flat/primitive/Bool"), false, Primitive.accessor__js_class(), Bool.generated1(Comparable.accessor__js_class()), Bool.generated10(Field.construct(FlatString.construct5("value"))), Bool.generated19(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("fromString"))), this);
 			})());
 	}
 
@@ -2989,7 +2992,7 @@ class BoundedChannel extends FlatObject {
 		return ChannelReceiveResult.construct(undefined, undefined, undefined, true, undefined, undefined);
 	}
 
-	static generated30(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated11(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3003,7 +3006,7 @@ class BoundedChannel extends FlatObject {
 		return FlatArray.construct1(temp, 8);
 	}
 
-	static generated301(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21) {
+	static generated47(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3033,7 +3036,7 @@ class BoundedChannel extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof BoundedChannel.__lazy_accessor__js_class !== 'undefined' ? BoundedChannel.__lazy_accessor__js_class : (BoundedChannel.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/BoundedChannel"), false, FlatObject.accessor__js_class(), FlatArray.construct(), BoundedChannel.generated30(Field.construct(FlatString.construct5("bufferedCount")), Field.construct(FlatString.construct5("pendingSendCount")), Field.construct(FlatString.construct5("pendingReceiveCount")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("failure")), Field.construct(FlatString.construct5("capacity")), Field.construct(FlatString.construct5("maxPendingSends")), Field.construct(FlatString.construct5("maxPendingReceives"))), BoundedChannel.generated301(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("send")), Function.construct(FlatString.construct5("receive")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("fail")), Function.construct(FlatString.construct5("acceptPendingSend")), Function.construct(FlatString.construct5("completePendingReceives")), Function.construct(FlatString.construct5("discardCancelledSends")), Function.construct(FlatString.construct5("discardCancelledReceives")), Function.construct(FlatString.construct5("removePendingSend")), Function.construct(FlatString.construct5("removePendingReceive")), Function.construct(FlatString.construct5("completedSend")), Function.construct(FlatString.construct5("completedReceive")), Function.construct(FlatString.construct5("acceptedSendResult")), Function.construct(FlatString.construct5("closedSendResult")), Function.construct(FlatString.construct5("failedSendResult")), Function.construct(FlatString.construct5("sendCapacityExceededResult")), Function.construct(FlatString.construct5("valueReceiveResult")), Function.construct(FlatString.construct5("completedReceiveResult")), Function.construct(FlatString.construct5("failedReceiveResult")), Function.construct(FlatString.construct5("receiveCapacityExceededResult"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/BoundedChannel"), false, FlatObject.accessor__js_class(), FlatArray.construct(), BoundedChannel.generated11(Field.construct(FlatString.construct5("bufferedCount")), Field.construct(FlatString.construct5("pendingSendCount")), Field.construct(FlatString.construct5("pendingReceiveCount")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("failure")), Field.construct(FlatString.construct5("capacity")), Field.construct(FlatString.construct5("maxPendingSends")), Field.construct(FlatString.construct5("maxPendingReceives"))), BoundedChannel.generated47(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("send")), Function.construct(FlatString.construct5("receive")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("fail")), Function.construct(FlatString.construct5("acceptPendingSend")), Function.construct(FlatString.construct5("completePendingReceives")), Function.construct(FlatString.construct5("discardCancelledSends")), Function.construct(FlatString.construct5("discardCancelledReceives")), Function.construct(FlatString.construct5("removePendingSend")), Function.construct(FlatString.construct5("removePendingReceive")), Function.construct(FlatString.construct5("completedSend")), Function.construct(FlatString.construct5("completedReceive")), Function.construct(FlatString.construct5("acceptedSendResult")), Function.construct(FlatString.construct5("closedSendResult")), Function.construct(FlatString.construct5("failedSendResult")), Function.construct(FlatString.construct5("sendCapacityExceededResult")), Function.construct(FlatString.construct5("valueReceiveResult")), Function.construct(FlatString.construct5("completedReceiveResult")), Function.construct(FlatString.construct5("failedReceiveResult")), Function.construct(FlatString.construct5("receiveCapacityExceededResult"))), this);
 			})());
 	}
 
@@ -3096,7 +3099,7 @@ class BoundedFlow extends FlatObject {
 		this.channel.fail(error);
 	}
 
-	static generated7(value0, value1, value2, value3, value4, value5) {
+	static generated6(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3108,7 +3111,7 @@ class BoundedFlow extends FlatObject {
 		return FlatArray.construct1(temp, 6);
 	}
 
-	static generated192(value0, value1, value2, value3, value4, value5) {
+	static generated24(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3122,7 +3125,7 @@ class BoundedFlow extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof BoundedFlow.__lazy_accessor__js_class !== 'undefined' ? BoundedFlow.__lazy_accessor__js_class : (BoundedFlow.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/BoundedFlow"), false, FlatObject.accessor__js_class(), FlatArray.construct(), BoundedFlow.generated7(Field.construct(FlatString.construct5("bufferedCount")), Field.construct(FlatString.construct5("pendingSendCount")), Field.construct(FlatString.construct5("pendingReceiveCount")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("failure")), Field.construct(FlatString.construct5("channel"))), BoundedFlow.generated192(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("send")), Function.construct(FlatString.construct5("receive")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("fail"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/BoundedFlow"), false, FlatObject.accessor__js_class(), FlatArray.construct(), BoundedFlow.generated6(Field.construct(FlatString.construct5("bufferedCount")), Field.construct(FlatString.construct5("pendingSendCount")), Field.construct(FlatString.construct5("pendingReceiveCount")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("failure")), Field.construct(FlatString.construct5("channel"))), BoundedFlow.generated24(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("send")), Function.construct(FlatString.construct5("receive")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("fail"))), this);
 			})());
 	}
 
@@ -3267,7 +3270,7 @@ class BoundedTopic extends FlatObject {
 		this.subscribers.clear();
 	}
 
-	static generated26(value0, value1, value2, value3, value4) {
+	static generated13(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3278,7 +3281,7 @@ class BoundedTopic extends FlatObject {
 		return FlatArray.construct1(temp, 5);
 	}
 
-	static generated182(value0, value1, value2, value3, value4, value5, value6) {
+	static generated15(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3293,7 +3296,7 @@ class BoundedTopic extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof BoundedTopic.__lazy_accessor__js_class !== 'undefined' ? BoundedTopic.__lazy_accessor__js_class : (BoundedTopic.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/BoundedTopic"), false, FlatObject.accessor__js_class(), FlatArray.construct(), BoundedTopic.generated26(Field.construct(FlatString.construct5("subscriberCount")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("failure")), Field.construct(FlatString.construct5("maxSubscribers")), Field.construct(FlatString.construct5("maxParallelPublications"))), BoundedTopic.generated182(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("subscribe")), Function.construct(FlatString.construct5("unsubscribe")), Function.construct(FlatString.construct5("publish")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("fail"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/BoundedTopic"), false, FlatObject.accessor__js_class(), FlatArray.construct(), BoundedTopic.generated13(Field.construct(FlatString.construct5("subscriberCount")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("failure")), Field.construct(FlatString.construct5("maxSubscribers")), Field.construct(FlatString.construct5("maxParallelPublications"))), BoundedTopic.generated15(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("subscribe")), Function.construct(FlatString.construct5("unsubscribe")), Function.construct(FlatString.construct5("publish")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("fail"))), this);
 			})());
 	}
 
@@ -3307,7 +3310,7 @@ class BoundedTopic extends FlatObject {
 }
 
 class MultiplyEqualsOperator {
-	static generated105(value0) {
+	static generated142(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3316,13 +3319,13 @@ class MultiplyEqualsOperator {
 
 	static accessor__js_class() {
 		return typeof MultiplyEqualsOperator.__lazy_accessor__js_class !== 'undefined' ? MultiplyEqualsOperator.__lazy_accessor__js_class : (MultiplyEqualsOperator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/operators/MultiplyEqualsOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), MultiplyEqualsOperator.generated105(Function.construct(FlatString.construct5("multiplyEquals"))), this);
+					return Class.construct1(FlatString.construct5("flat/operators/MultiplyEqualsOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), MultiplyEqualsOperator.generated142(Function.construct(FlatString.construct5("multiplyEquals"))), this);
 			})());
 	}
 }
 
 class MultiplyOperator {
-	static generated108(value0) {
+	static generated213(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3331,13 +3334,13 @@ class MultiplyOperator {
 
 	static accessor__js_class() {
 		return typeof MultiplyOperator.__lazy_accessor__js_class !== 'undefined' ? MultiplyOperator.__lazy_accessor__js_class : (MultiplyOperator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/operators/MultiplyOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), MultiplyOperator.generated108(Function.construct(FlatString.construct5("multiply"))), this);
+					return Class.construct1(FlatString.construct5("flat/operators/MultiplyOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), MultiplyOperator.generated213(Function.construct(FlatString.construct5("multiply"))), this);
 			})());
 	}
 }
 
 class MinusEqualsOperator {
-	static generated103(value0) {
+	static generated139(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3346,13 +3349,13 @@ class MinusEqualsOperator {
 
 	static accessor__js_class() {
 		return typeof MinusEqualsOperator.__lazy_accessor__js_class !== 'undefined' ? MinusEqualsOperator.__lazy_accessor__js_class : (MinusEqualsOperator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/operators/MinusEqualsOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), MinusEqualsOperator.generated103(Function.construct(FlatString.construct5("minusEquals"))), this);
+					return Class.construct1(FlatString.construct5("flat/operators/MinusEqualsOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), MinusEqualsOperator.generated139(Function.construct(FlatString.construct5("minusEquals"))), this);
 			})());
 	}
 }
 
 class MinusOperator {
-	static generated104(value0) {
+	static generated138(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3361,7 +3364,7 @@ class MinusOperator {
 
 	static accessor__js_class() {
 		return typeof MinusOperator.__lazy_accessor__js_class !== 'undefined' ? MinusOperator.__lazy_accessor__js_class : (MinusOperator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/operators/MinusOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), MinusOperator.generated104(Function.construct(FlatString.construct5("minus"))), this);
+					return Class.construct1(FlatString.construct5("flat/operators/MinusOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), MinusOperator.generated138(Function.construct(FlatString.construct5("minus"))), this);
 			})());
 	}
 }
@@ -3386,7 +3389,7 @@ class Number extends Primitive {
 		return self;
 	}
 
-	static generated219(value0, value1, value2, value3, value4, value5, value6) {
+	static generated271(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3399,7 +3402,7 @@ class Number extends Primitive {
 		return FlatArray.construct1(temp, 7);
 	}
 
-	static generated232(value0, value1) {
+	static generated302(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3407,7 +3410,7 @@ class Number extends Primitive {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated238(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17) {
+	static generated327(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3433,7 +3436,7 @@ class Number extends Primitive {
 
 	static accessor__js_class() {
 		return typeof Number.__lazy_accessor__js_class !== 'undefined' ? Number.__lazy_accessor__js_class : (Number.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/primitive/number/Number"), false, Primitive.accessor__js_class(), Number.generated219(PlusOperator.accessor__js_class(), PlusEqualsOperator.accessor__js_class(), MinusOperator.accessor__js_class(), MinusEqualsOperator.accessor__js_class(), MultiplyOperator.accessor__js_class(), MultiplyEqualsOperator.accessor__js_class(), Comparable.accessor__js_class()), Number.generated232(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue"))), Number.generated238(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/primitive/number/Number"), false, Primitive.accessor__js_class(), Number.generated271(PlusOperator.accessor__js_class(), PlusEqualsOperator.accessor__js_class(), MinusOperator.accessor__js_class(), MinusEqualsOperator.accessor__js_class(), MultiplyOperator.accessor__js_class(), MultiplyEqualsOperator.accessor__js_class(), Comparable.accessor__js_class()), Number.generated302(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue"))), Number.generated327(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -3647,14 +3650,14 @@ class FlatByte extends Number {
 		return FlatLong.toEnglish(value);
 	}
 
-	static generated24(value0) {
+	static generated2(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated47(value0, value1, value2) {
+	static generated12(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3663,7 +3666,7 @@ class FlatByte extends Number {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated304(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40) {
+	static generated65(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3712,7 +3715,7 @@ class FlatByte extends Number {
 
 	static accessor__js_class() {
 		return typeof FlatByte.__lazy_accessor__js_class !== 'undefined' ? FlatByte.__lazy_accessor__js_class : (FlatByte.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/primitive/number/Byte"), false, Number.accessor__js_class(), FlatByte.generated24(Integer.accessor__js_class()), FlatByte.generated47(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value"))), FlatByte.generated304(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("toEnglish"))), this);
+					return Class.construct1(FlatString.construct5("flat/primitive/number/Byte"), false, Number.accessor__js_class(), FlatByte.generated2(Integer.accessor__js_class()), FlatByte.generated12(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value"))), FlatByte.generated65(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("toEnglish"))), this);
 			})());
 	}
 
@@ -3768,7 +3771,7 @@ class Exception extends FlatObject {
 				func();
 			} catch (e)  {
 				if (!(e instanceof Exception)) {
-					console.log(0.25387643754420586);
+					console.log(0.823208210884205);
 					console.error(e);
 					process.exit(1);
 				} else {
@@ -3784,7 +3787,7 @@ class Exception extends FlatObject {
 				func();
 			} catch (e)  {
 				if (!(e instanceof Exception)) {
-					console.log(0.31577941867446135);
+					console.log(0.2627676373022456);
 					console.error(e);
 					process.exit(1);
 				} else {
@@ -3809,7 +3812,7 @@ class Exception extends FlatObject {
 				(await func());
 			} catch (e)  {
 				if (!(e instanceof Exception)) {
-					console.log(0.08898942469567106);
+					console.log(0.9710044749279567);
 					console.error(e);
 					process.exit(1);
 				} else {
@@ -3825,7 +3828,7 @@ class Exception extends FlatObject {
 				(await func());
 			} catch (e)  {
 				if (!(e instanceof Exception)) {
-					console.log(0.3819210419282971);
+					console.log(0.03592874821115288);
 					console.error(e);
 					process.exit(1);
 				} else {
@@ -3842,7 +3845,7 @@ class Exception extends FlatObject {
 		return flat_null;
 	}
 
-	static generated40(value0, value1) {
+	static generated61(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3850,7 +3853,7 @@ class Exception extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated119(value0, value1, value2, value3, value4, value5) {
+	static generated125(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3864,7 +3867,7 @@ class Exception extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Exception.__lazy_accessor__js_class !== 'undefined' ? Exception.__lazy_accessor__js_class : (Exception.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/exception/Exception"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Exception.generated40(Field.construct(FlatString.construct5("stackTrace")), Field.construct(FlatString.construct5("message"))), Exception.generated119(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("onThrown")), Function.construct(FlatString.construct5("catchType")), Function.construct(FlatString.construct5("catchTypeAsync"))), this);
+					return Class.construct1(FlatString.construct5("flat/exception/Exception"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Exception.generated61(Field.construct(FlatString.construct5("stackTrace")), Field.construct(FlatString.construct5("message"))), Exception.generated125(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("onThrown")), Function.construct(FlatString.construct5("catchType")), Function.construct(FlatString.construct5("catchTypeAsync"))), this);
 			})());
 	}
 
@@ -3895,7 +3898,7 @@ class CancellationException extends Exception {
 		return self;
 	}
 
-	static generated23(value0, value1) {
+	static generated5(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3905,7 +3908,7 @@ class CancellationException extends Exception {
 
 	static accessor__js_class() {
 		return typeof CancellationException.__lazy_accessor__js_class !== 'undefined' ? CancellationException.__lazy_accessor__js_class : (CancellationException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/future/CancellationException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), CancellationException.generated23(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/future/CancellationException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), CancellationException.generated5(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -3942,7 +3945,7 @@ class CaughtException extends FlatObject {
 		return FlatString.construct5("Catching ").plus0((this.type).toString().plus0(FlatString.construct5(", soft: ").plus0(Bool.toString((this.soft)).plus0(FlatString.construct5("")))));
 	}
 
-	static generated20(value0, value1) {
+	static generated14(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3950,7 +3953,7 @@ class CaughtException extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated36(value0, value1, value2) {
+	static generated17(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -3961,7 +3964,7 @@ class CaughtException extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof CaughtException.__lazy_accessor__js_class !== 'undefined' ? CaughtException.__lazy_accessor__js_class : (CaughtException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/exception/CaughtException"), false, FlatObject.accessor__js_class(), FlatArray.construct(), CaughtException.generated20(Field.construct(FlatString.construct5("type")), Field.construct(FlatString.construct5("soft"))), CaughtException.generated36(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString"))), this);
+					return Class.construct1(FlatString.construct5("flat/exception/CaughtException"), false, FlatObject.accessor__js_class(), FlatArray.construct(), CaughtException.generated14(Field.construct(FlatString.construct5("type")), Field.construct(FlatString.construct5("soft"))), CaughtException.generated17(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString"))), this);
 			})());
 	}
 
@@ -4051,7 +4054,7 @@ class ChannelReceiveResult extends FlatObject {
 		return target.toBuilder().received(received).completed(completed).failed(failed).capacityExceeded(capacityExceeded).value(value).error(error).build();
 	}
 
-	static generated21(value0, value1, value2, value3, value4, value5) {
+	static generated16(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -4063,7 +4066,7 @@ class ChannelReceiveResult extends FlatObject {
 		return FlatArray.construct1(temp, 6);
 	}
 
-	static generated184(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated30(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -4080,7 +4083,7 @@ class ChannelReceiveResult extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ChannelReceiveResult.__lazy_accessor__js_class !== 'undefined' ? ChannelReceiveResult.__lazy_accessor__js_class : (ChannelReceiveResult.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ChannelReceiveResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ChannelReceiveResult.generated21(Field.construct(FlatString.construct5("received")), Field.construct(FlatString.construct5("completed")), Field.construct(FlatString.construct5("failed")), Field.construct(FlatString.construct5("capacityExceeded")), Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("error"))), ChannelReceiveResult.generated184(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ChannelReceiveResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ChannelReceiveResult.generated16(Field.construct(FlatString.construct5("received")), Field.construct(FlatString.construct5("completed")), Field.construct(FlatString.construct5("failed")), Field.construct(FlatString.construct5("capacityExceeded")), Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("error"))), ChannelReceiveResult.generated30(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -4158,7 +4161,7 @@ class flat_eventstream_ChannelReceiveResult_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated339(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated279(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -4175,7 +4178,7 @@ class flat_eventstream_ChannelReceiveResult_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_eventstream_ChannelReceiveResult_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_eventstream_ChannelReceiveResult_Builder.__lazy_accessor__js_class : (flat_eventstream_ChannelReceiveResult_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ChannelReceiveResult.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_ChannelReceiveResult_Builder.generated339(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("received")), Function.construct(FlatString.construct5("completed")), Function.construct(FlatString.construct5("failed")), Function.construct(FlatString.construct5("capacityExceeded")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("error")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ChannelReceiveResult.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_ChannelReceiveResult_Builder.generated279(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("received")), Function.construct(FlatString.construct5("completed")), Function.construct(FlatString.construct5("failed")), Function.construct(FlatString.construct5("capacityExceeded")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("error")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -4259,7 +4262,7 @@ class ChannelSendResult extends FlatObject {
 		return target.toBuilder().accepted(accepted).closed(closed).failed(failed).capacityExceeded(capacityExceeded).error(error).build();
 	}
 
-	static generated28(value0, value1, value2, value3, value4) {
+	static generated21(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -4270,7 +4273,7 @@ class ChannelSendResult extends FlatObject {
 		return FlatArray.construct1(temp, 5);
 	}
 
-	static generated248(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated34(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -4287,7 +4290,7 @@ class ChannelSendResult extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ChannelSendResult.__lazy_accessor__js_class !== 'undefined' ? ChannelSendResult.__lazy_accessor__js_class : (ChannelSendResult.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ChannelSendResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ChannelSendResult.generated28(Field.construct(FlatString.construct5("accepted")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("failed")), Field.construct(FlatString.construct5("capacityExceeded")), Field.construct(FlatString.construct5("error"))), ChannelSendResult.generated248(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ChannelSendResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ChannelSendResult.generated21(Field.construct(FlatString.construct5("accepted")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("failed")), Field.construct(FlatString.construct5("capacityExceeded")), Field.construct(FlatString.construct5("error"))), ChannelSendResult.generated34(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -4357,7 +4360,7 @@ class flat_eventstream_ChannelSendResult_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated323(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated296(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -4373,7 +4376,7 @@ class flat_eventstream_ChannelSendResult_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_eventstream_ChannelSendResult_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_eventstream_ChannelSendResult_Builder.__lazy_accessor__js_class : (flat_eventstream_ChannelSendResult_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ChannelSendResult.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_ChannelSendResult_Builder.generated323(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("accepted")), Function.construct(FlatString.construct5("closed")), Function.construct(FlatString.construct5("failed")), Function.construct(FlatString.construct5("capacityExceeded")), Function.construct(FlatString.construct5("error")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ChannelSendResult.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_ChannelSendResult_Builder.generated296(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("accepted")), Function.construct(FlatString.construct5("closed")), Function.construct(FlatString.construct5("failed")), Function.construct(FlatString.construct5("capacityExceeded")), Function.construct(FlatString.construct5("error")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -4614,7 +4617,7 @@ class Char extends Number {
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated54(value0, value1, value2, value3, value4) {
+	static generated38(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -4625,7 +4628,7 @@ class Char extends Number {
 		return FlatArray.construct1(temp, 5);
 	}
 
-	static generated266(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45) {
+	static generated290(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -4679,7 +4682,7 @@ class Char extends Number {
 
 	static accessor__js_class() {
 		return typeof Char.__lazy_accessor__js_class !== 'undefined' ? Char.__lazy_accessor__js_class : (Char.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/primitive/number/Char"), false, Number.accessor__js_class(), Char.generated18(Integer.accessor__js_class()), Char.generated54(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("isNumber")), Field.construct(FlatString.construct5("isWhitespace")), Field.construct(FlatString.construct5("value"))), Char.generated266(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toLowerCase")), Function.construct(FlatString.construct5("toUpperCase")), Function.construct(FlatString.construct5("repeat")), Function.construct(FlatString.construct5("repeat")), Function.construct(FlatString.construct5("toLowerCase")), Function.construct(FlatString.construct5("toUpperCase")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("isNumber")), Function.construct(FlatString.construct5("isWhitespace")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus"))), this);
+					return Class.construct1(FlatString.construct5("flat/primitive/number/Char"), false, Number.accessor__js_class(), Char.generated18(Integer.accessor__js_class()), Char.generated38(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("isNumber")), Field.construct(FlatString.construct5("isWhitespace")), Field.construct(FlatString.construct5("value"))), Char.generated290(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toLowerCase")), Function.construct(FlatString.construct5("toUpperCase")), Function.construct(FlatString.construct5("repeat")), Function.construct(FlatString.construct5("repeat")), Function.construct(FlatString.construct5("toLowerCase")), Function.construct(FlatString.construct5("toUpperCase")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("isNumber")), Function.construct(FlatString.construct5("isWhitespace")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus"))), this);
 			})());
 	}
 
@@ -4832,7 +4835,7 @@ class Class extends FlatObject {
 		return self;
 	}
 
-	static generated33(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
+	static generated20(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -4849,7 +4852,7 @@ class Class extends FlatObject {
 		return FlatArray.construct1(temp, 11);
 	}
 
-	static generated262(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
+	static generated96(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -4867,7 +4870,7 @@ class Class extends FlatObject {
 		return FlatArray.construct1(temp, 12);
 	}
 
-	static generated356(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89, value90, value91, value92, value93, value94, value95, value96, value97, value98, value99, value100, value101, value102, value103, value104, value105, value106, value107, value108, value109, value110, value111, value112, value113, value114, value115, value116, value117, value118, value119, value120, value121, value122, value123, value124, value125, value126, value127, value128, value129, value130, value131, value132, value133, value134, value135, value136, value137, value138, value139, value140, value141, value142, value143, value144, value145, value146, value147, value148, value149, value150, value151, value152, value153, value154, value155, value156, value157, value158, value159, value160, value161, value162, value163, value164, value165, value166) {
+	static generated357(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89, value90, value91, value92, value93, value94, value95, value96, value97, value98, value99, value100, value101, value102, value103, value104, value105, value106, value107, value108, value109, value110, value111, value112, value113, value114, value115, value116, value117, value118, value119, value120, value121, value122, value123, value124, value125, value126, value127, value128, value129, value130, value131, value132, value133, value134, value135, value136, value137, value138, value139, value140, value141, value142, value143, value144, value145, value146, value147, value148, value149, value150, value151, value152, value153, value154, value155, value156, value157, value158, value159, value160, value161, value162, value163, value164, value165, value166) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -5042,7 +5045,7 @@ class Class extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Class.__lazy_accessor__js_class !== 'undefined' ? Class.__lazy_accessor__js_class : (Class.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/meta/Class"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Class.generated33(Field.construct(FlatString.construct5("isInterface")), Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("package")), Field.construct(FlatString.construct5("name")), Field.construct(FlatString.construct5("rootName")), Field.construct(FlatString.construct5("extension")), Field.construct(FlatString.construct5("interfaces")), Field.construct(FlatString.construct5("fields")), Field.construct(FlatString.construct5("functions")), Field.construct(FlatString.construct5("jsClass")), Field.construct(FlatString.construct5("ALL"))), Class.generated262(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("getField")), Function.construct(FlatString.construct5("isOfType")), Function.construct(FlatString.construct5("isOfTypeClass")), Function.construct(FlatString.construct5("isOfTypeInterface")), Function.construct(FlatString.construct5("getClassesOfType")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/meta/Class"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Class.generated20(Field.construct(FlatString.construct5("isInterface")), Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("package")), Field.construct(FlatString.construct5("name")), Field.construct(FlatString.construct5("rootName")), Field.construct(FlatString.construct5("extension")), Field.construct(FlatString.construct5("interfaces")), Field.construct(FlatString.construct5("fields")), Field.construct(FlatString.construct5("functions")), Field.construct(FlatString.construct5("jsClass")), Field.construct(FlatString.construct5("ALL"))), Class.generated96(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("getField")), Function.construct(FlatString.construct5("isOfType")), Function.construct(FlatString.construct5("isOfTypeClass")), Function.construct(FlatString.construct5("isOfTypeInterface")), Function.construct(FlatString.construct5("getClassesOfType")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -5060,7 +5063,7 @@ class Class extends FlatObject {
 
 	static accessor_ALL() {
 		return typeof Class.__lazy_accessor_ALL !== 'undefined' ? Class.__lazy_accessor_ALL : (Class.__lazy_accessor_ALL = (() => {
-					return Class.generated356(AirshipCompilerArguments.accessor__js_class(), App.accessor__js_class(), FlatArray.accessor__js_class(), ArrayIterator.accessor__js_class(), Async.accessor__js_class(), Bool.accessor__js_class(), BoundedChannel.accessor__js_class(), BoundedFlow.accessor__js_class(), BoundedTopic.accessor__js_class(), FlatByte.accessor__js_class(), CancellationException.accessor__js_class(), CaughtException.accessor__js_class(), ChannelReceiveResult.accessor__js_class(), ChannelSendResult.accessor__js_class(), Char.accessor__js_class(), Class.accessor__js_class(), ClosedStreamException.accessor__js_class(), Colorizer.accessor__js_class(), Comparable.accessor__js_class(), CompilerOptions.accessor__js_class(), ConcurrentMap.accessor__js_class(), ConcurrentMapOperation.accessor__js_class(), ConcurrentMapResult.accessor__js_class(), ConcurrentMapTask.accessor__js_class(), FlatConsole.accessor__js_class(), ConsoleOutputStream.accessor__js_class(), ControlledExecutor.accessor__js_class(), CumulativeTimer.accessor__js_class(), Curl.accessor__js_class(), FlatDate.accessor__js_class(), FlatDateTime.accessor__js_class(), DeclarationIdentity.accessor__js_class(), DefaultImport.accessor__js_class(), DivideByZeroException.accessor__js_class(), FlatDouble.accessor__js_class(), EmptyOutputStream.accessor__js_class(), EmptyStackException.accessor__js_class(), EscapeCode.accessor__js_class(), EscapeCodeIterator.accessor__js_class(), EventStream.accessor__js_class(), Exception.accessor__js_class(), ExceptionData.accessor__js_class(), ExecutionResponse.accessor__js_class(), Executor.accessor__js_class(), ExecutorTaskResult.accessor__js_class(), FancyOutputStream.accessor__js_class(), Field.accessor__js_class(), File.accessor__js_class(), FileNotFoundException.accessor__js_class(), FileReader.accessor__js_class(), FileWriter.accessor__js_class(), FilesystemSourceProvider.accessor__js_class(), FilterIterator.accessor__js_class(), FilterNotIterator.accessor__js_class(), FlatMapIterator.accessor__js_class(), FlatFloat.accessor__js_class(), Function.accessor__js_class(), Future.accessor__js_class(), GreaterThanOperator.accessor__js_class(), GreaterThanOrEqualToOperator.accessor__js_class(), HashMap.accessor__js_class(), HashSet.accessor__js_class(), Import.accessor__js_class(), InMemorySourceProvider.accessor__js_class(), InlineExecutor.accessor__js_class(), InputStream.accessor__js_class(), FlatInt.accessor__js_class(), IntRange.accessor__js_class(), IntRangeIterator.accessor__js_class(), Integer.accessor__js_class(), InvalidArgumentException.accessor__js_class(), InvalidAssertionException.accessor__js_class(), InvalidOperationException.accessor__js_class(), Iterable.accessor__js_class(), Iterator.accessor__js_class(), LessThanOperator.accessor__js_class(), LessThanOrEqualToOperator.accessor__js_class(), Lexeme.accessor__js_class(), LinkedList.accessor__js_class(), LinkedListIterator.accessor__js_class(), List.accessor__js_class(), ListNode.accessor__js_class(), LoadedSource.accessor__js_class(), Location.accessor__js_class(), Logger.accessor__js_class(), FlatLong.accessor__js_class(), MapIterator.accessor__js_class(), Match.accessor__js_class(), MatchGroup.accessor__js_class(), FlatMath.accessor__js_class(), MinusEqualsOperator.accessor__js_class(), MinusOperator.accessor__js_class(), MultiplyEqualsOperator.accessor__js_class(), MultiplyOperator.accessor__js_class(), NoSuchElementException.accessor__js_class(), NotEqualToOperator.accessor__js_class(), Null.accessor__js_class(), NullAccessException.accessor__js_class(), Number.accessor__js_class(), FlatObject.accessor__js_class(), OrderedList.accessor__js_class(), OutputStream.accessor__js_class(), PackageIdentity.accessor__js_class(), Pair.accessor__js_class(), ParallelExecutor.accessor__js_class(), Pattern.accessor__js_class(), PeekIterator.accessor__js_class(), PendingChannelReceive.accessor__js_class(), PendingChannelSend.accessor__js_class(), PendingExecutorTask.accessor__js_class(), PlusEqualsOperator.accessor__js_class(), PlusOperator.accessor__js_class(), Primitive.accessor__js_class(), ProjectDependency.accessor__js_class(), ProjectImport.accessor__js_class(), ProjectLoading_Test.accessor__js_class(), ProjectLoading_TestSuite.accessor__js_class(), ProjectModel.accessor__js_class(), ProjectPackage.accessor__js_class(), Queue.accessor__js_class(), RealNumber.accessor__js_class(), Regex.accessor__js_class(), RegexStringExtensions.accessor__js_class(), ScopeIdentity.accessor__js_class(), FlatShort.accessor__js_class(), SkipIterator.accessor__js_class(), SourceExclusion.accessor__js_class(), SourceIdentity.accessor__js_class(), SourceProvider.accessor__js_class(), SourceRange.accessor__js_class(), SourceRoot.accessor__js_class(), SourceSnapshotIdentity.accessor__js_class(), Stack.accessor__js_class(), StackTrace.accessor__js_class(), Stream.accessor__js_class(), StreamIterator.accessor__js_class(), StreamListExtensions.accessor__js_class(), StreamReader.accessor__js_class(), FlatString.accessor__js_class(), StringBuilder.accessor__js_class(), StringCharArray.accessor__js_class(), SymbolIdentity.accessor__js_class(), SyntaxIslandIdentity.accessor__js_class(), SyntaxStringFunctions.accessor__js_class(), SyntaxTokenFunctions.accessor__js_class(), System.accessor__js_class(), TakeIterator.accessor__js_class(), Test.accessor__js_class(), TestAsync.accessor__js_class(), TestCase.accessor__js_class(), TestException.accessor__js_class(), TestResult.accessor__js_class(), TestRunner.accessor__js_class(), TestRunnerModel.accessor__js_class(), TestSuite.accessor__js_class(), TestSuiteRunner.accessor__js_class(), TestSuiteRunnerModel.accessor__js_class(), Thread.accessor__js_class(), ThreadLocal.accessor__js_class(), Time.accessor__js_class(), Timer.accessor__js_class(), Token.accessor__js_class(), TopicPublishResult.accessor__js_class(), UncaughtExceptionHandler.accessor__js_class(), UnimplementedOperationException.accessor__js_class(), UniqueIterator.accessor__js_class(), WildcardHelper.accessor__js_class());
+					return Class.generated357(AirshipCompilerArguments.accessor__js_class(), App.accessor__js_class(), FlatArray.accessor__js_class(), ArrayIterator.accessor__js_class(), Async.accessor__js_class(), Bool.accessor__js_class(), BoundedChannel.accessor__js_class(), BoundedFlow.accessor__js_class(), BoundedTopic.accessor__js_class(), FlatByte.accessor__js_class(), CancellationException.accessor__js_class(), CaughtException.accessor__js_class(), ChannelReceiveResult.accessor__js_class(), ChannelSendResult.accessor__js_class(), Char.accessor__js_class(), Class.accessor__js_class(), ClosedStreamException.accessor__js_class(), Colorizer.accessor__js_class(), Comparable.accessor__js_class(), CompilerOptions.accessor__js_class(), ConcurrentMap.accessor__js_class(), ConcurrentMapOperation.accessor__js_class(), ConcurrentMapResult.accessor__js_class(), ConcurrentMapTask.accessor__js_class(), FlatConsole.accessor__js_class(), ConsoleOutputStream.accessor__js_class(), ControlledExecutor.accessor__js_class(), CumulativeTimer.accessor__js_class(), Curl.accessor__js_class(), FlatDate.accessor__js_class(), FlatDateTime.accessor__js_class(), DeclarationIdentity.accessor__js_class(), DefaultImport.accessor__js_class(), DivideByZeroException.accessor__js_class(), FlatDouble.accessor__js_class(), EmptyOutputStream.accessor__js_class(), EmptyStackException.accessor__js_class(), EscapeCode.accessor__js_class(), EscapeCodeIterator.accessor__js_class(), EventStream.accessor__js_class(), Exception.accessor__js_class(), ExceptionData.accessor__js_class(), ExecutionResponse.accessor__js_class(), Executor.accessor__js_class(), ExecutorTaskResult.accessor__js_class(), FancyOutputStream.accessor__js_class(), Field.accessor__js_class(), File.accessor__js_class(), FileNotFoundException.accessor__js_class(), FileReader.accessor__js_class(), FileWriter.accessor__js_class(), FilesystemSourceProvider.accessor__js_class(), FilterIterator.accessor__js_class(), FilterNotIterator.accessor__js_class(), FlatMapIterator.accessor__js_class(), FlatFloat.accessor__js_class(), Function.accessor__js_class(), Future.accessor__js_class(), GreaterThanOperator.accessor__js_class(), GreaterThanOrEqualToOperator.accessor__js_class(), HashMap.accessor__js_class(), HashSet.accessor__js_class(), Import.accessor__js_class(), InMemorySourceProvider.accessor__js_class(), InlineExecutor.accessor__js_class(), InputStream.accessor__js_class(), FlatInt.accessor__js_class(), IntRange.accessor__js_class(), IntRangeIterator.accessor__js_class(), Integer.accessor__js_class(), InvalidArgumentException.accessor__js_class(), InvalidAssertionException.accessor__js_class(), InvalidOperationException.accessor__js_class(), Iterable.accessor__js_class(), Iterator.accessor__js_class(), LessThanOperator.accessor__js_class(), LessThanOrEqualToOperator.accessor__js_class(), Lexeme.accessor__js_class(), LinkedList.accessor__js_class(), LinkedListIterator.accessor__js_class(), List.accessor__js_class(), ListNode.accessor__js_class(), LoadedSource.accessor__js_class(), Location.accessor__js_class(), Logger.accessor__js_class(), FlatLong.accessor__js_class(), MapIterator.accessor__js_class(), Match.accessor__js_class(), MatchGroup.accessor__js_class(), FlatMath.accessor__js_class(), MinusEqualsOperator.accessor__js_class(), MinusOperator.accessor__js_class(), MultiplyEqualsOperator.accessor__js_class(), MultiplyOperator.accessor__js_class(), NoSuchElementException.accessor__js_class(), NotEqualToOperator.accessor__js_class(), Null.accessor__js_class(), NullAccessException.accessor__js_class(), Number.accessor__js_class(), FlatObject.accessor__js_class(), OrderedList.accessor__js_class(), OutputStream.accessor__js_class(), PackageIdentity.accessor__js_class(), Pair.accessor__js_class(), ParallelExecutor.accessor__js_class(), Pattern.accessor__js_class(), PeekIterator.accessor__js_class(), PendingChannelReceive.accessor__js_class(), PendingChannelSend.accessor__js_class(), PendingExecutorTask.accessor__js_class(), PlusEqualsOperator.accessor__js_class(), PlusOperator.accessor__js_class(), Primitive.accessor__js_class(), ProjectDependency.accessor__js_class(), ProjectImport.accessor__js_class(), ProjectLoading_Test.accessor__js_class(), ProjectLoading_TestSuite.accessor__js_class(), ProjectModel.accessor__js_class(), ProjectPackage.accessor__js_class(), Queue.accessor__js_class(), RealNumber.accessor__js_class(), Regex.accessor__js_class(), RegexStringExtensions.accessor__js_class(), ScopeIdentity.accessor__js_class(), FlatShort.accessor__js_class(), SkipIterator.accessor__js_class(), SourceExclusion.accessor__js_class(), SourceIdentity.accessor__js_class(), SourceProvider.accessor__js_class(), SourceRange.accessor__js_class(), SourceRoot.accessor__js_class(), SourceSnapshotIdentity.accessor__js_class(), Stack.accessor__js_class(), StackTrace.accessor__js_class(), Stream.accessor__js_class(), StreamIterator.accessor__js_class(), StreamListExtensions.accessor__js_class(), StreamReader.accessor__js_class(), FlatString.accessor__js_class(), StringBuilder.accessor__js_class(), StringCharArray.accessor__js_class(), SymbolIdentity.accessor__js_class(), SyntaxIslandIdentity.accessor__js_class(), SyntaxStringFunctions.accessor__js_class(), SyntaxTokenFunctions.accessor__js_class(), System.accessor__js_class(), TakeIterator.accessor__js_class(), Test.accessor__js_class(), TestAsync.accessor__js_class(), TestCase.accessor__js_class(), TestException.accessor__js_class(), TestResult.accessor__js_class(), TestRunner.accessor__js_class(), TestRunnerModel.accessor__js_class(), TestSuite.accessor__js_class(), TestSuiteRunner.accessor__js_class(), TestSuiteRunnerModel.accessor__js_class(), Thread.accessor__js_class(), ThreadLocal.accessor__js_class(), Time.accessor__js_class(), Timer.accessor__js_class(), Token.accessor__js_class(), TopicPublishResult.accessor__js_class(), UncaughtExceptionHandler.accessor__js_class(), UnimplementedOperationException.accessor__js_class(), UniqueIterator.accessor__js_class(), WildcardHelper.accessor__js_class());
 			})());
 	}
 
@@ -5090,7 +5093,7 @@ class ClosedStreamException extends Exception {
 		return self;
 	}
 
-	static generated19(value0, value1) {
+	static generated22(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -5100,7 +5103,7 @@ class ClosedStreamException extends Exception {
 
 	static accessor__js_class() {
 		return typeof ClosedStreamException.__lazy_accessor__js_class !== 'undefined' ? ClosedStreamException.__lazy_accessor__js_class : (ClosedStreamException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/ClosedStreamException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), ClosedStreamException.generated19(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/ClosedStreamException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), ClosedStreamException.generated22(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -5362,7 +5365,7 @@ class Colorizer extends FlatObject {
 		return self;
 	}
 
-	static generated246(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47) {
+	static generated69(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -5418,7 +5421,7 @@ class Colorizer extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Colorizer.__lazy_accessor__js_class !== 'undefined' ? Colorizer.__lazy_accessor__js_class : (Colorizer.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/colorizer/Colorizer"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Colorizer.generated246(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("format")), Function.construct(FlatString.construct5("reset")), Function.construct(FlatString.construct5("bright")), Function.construct(FlatString.construct5("dim")), Function.construct(FlatString.construct5("underscore")), Function.construct(FlatString.construct5("blink")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("hidden")), Function.construct(FlatString.construct5("rgb")), Function.construct(FlatString.construct5("foreground256")), Function.construct(FlatString.construct5("black")), Function.construct(FlatString.construct5("red")), Function.construct(FlatString.construct5("green")), Function.construct(FlatString.construct5("yellow")), Function.construct(FlatString.construct5("blue")), Function.construct(FlatString.construct5("magenta")), Function.construct(FlatString.construct5("cyan")), Function.construct(FlatString.construct5("white")), Function.construct(FlatString.construct5("gray")), Function.construct(FlatString.construct5("brightBlack")), Function.construct(FlatString.construct5("brightRed")), Function.construct(FlatString.construct5("brightGreen")), Function.construct(FlatString.construct5("brightYellow")), Function.construct(FlatString.construct5("brightBlue")), Function.construct(FlatString.construct5("brightMagenta")), Function.construct(FlatString.construct5("brightCyan")), Function.construct(FlatString.construct5("brightWhite")), Function.construct(FlatString.construct5("rgbBackground")), Function.construct(FlatString.construct5("background256")), Function.construct(FlatString.construct5("blackBackground")), Function.construct(FlatString.construct5("redBackground")), Function.construct(FlatString.construct5("greenBackground")), Function.construct(FlatString.construct5("yellowBackground")), Function.construct(FlatString.construct5("blueBackground")), Function.construct(FlatString.construct5("magentaBackground")), Function.construct(FlatString.construct5("cyanBackground")), Function.construct(FlatString.construct5("whiteBackground")), Function.construct(FlatString.construct5("grayBackground")), Function.construct(FlatString.construct5("brightBlackBackground")), Function.construct(FlatString.construct5("brightRedBackground")), Function.construct(FlatString.construct5("brightGreenBackground")), Function.construct(FlatString.construct5("brightYellowBackground")), Function.construct(FlatString.construct5("brightBlueBackground")), Function.construct(FlatString.construct5("brightMagentaBackground")), Function.construct(FlatString.construct5("brightCyanBackground")), Function.construct(FlatString.construct5("brightWhiteBackground")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/colorizer/Colorizer"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Colorizer.generated69(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("format")), Function.construct(FlatString.construct5("reset")), Function.construct(FlatString.construct5("bright")), Function.construct(FlatString.construct5("dim")), Function.construct(FlatString.construct5("underscore")), Function.construct(FlatString.construct5("blink")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("hidden")), Function.construct(FlatString.construct5("rgb")), Function.construct(FlatString.construct5("foreground256")), Function.construct(FlatString.construct5("black")), Function.construct(FlatString.construct5("red")), Function.construct(FlatString.construct5("green")), Function.construct(FlatString.construct5("yellow")), Function.construct(FlatString.construct5("blue")), Function.construct(FlatString.construct5("magenta")), Function.construct(FlatString.construct5("cyan")), Function.construct(FlatString.construct5("white")), Function.construct(FlatString.construct5("gray")), Function.construct(FlatString.construct5("brightBlack")), Function.construct(FlatString.construct5("brightRed")), Function.construct(FlatString.construct5("brightGreen")), Function.construct(FlatString.construct5("brightYellow")), Function.construct(FlatString.construct5("brightBlue")), Function.construct(FlatString.construct5("brightMagenta")), Function.construct(FlatString.construct5("brightCyan")), Function.construct(FlatString.construct5("brightWhite")), Function.construct(FlatString.construct5("rgbBackground")), Function.construct(FlatString.construct5("background256")), Function.construct(FlatString.construct5("blackBackground")), Function.construct(FlatString.construct5("redBackground")), Function.construct(FlatString.construct5("greenBackground")), Function.construct(FlatString.construct5("yellowBackground")), Function.construct(FlatString.construct5("blueBackground")), Function.construct(FlatString.construct5("magentaBackground")), Function.construct(FlatString.construct5("cyanBackground")), Function.construct(FlatString.construct5("whiteBackground")), Function.construct(FlatString.construct5("grayBackground")), Function.construct(FlatString.construct5("brightBlackBackground")), Function.construct(FlatString.construct5("brightRedBackground")), Function.construct(FlatString.construct5("brightGreenBackground")), Function.construct(FlatString.construct5("brightYellowBackground")), Function.construct(FlatString.construct5("brightBlueBackground")), Function.construct(FlatString.construct5("brightMagentaBackground")), Function.construct(FlatString.construct5("brightCyanBackground")), Function.construct(FlatString.construct5("brightWhiteBackground")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -5524,7 +5527,7 @@ class CompilerOptions extends FlatObject {
 		return targetObj.toBuilder().target(target).runtime(runtime).mainClass(mainClass).library(library).outputFile(outputFile).outputDirectory(outputDirectory).maxConcurrency(maxConcurrency).applicationProperties(applicationProperties).build();
 	}
 
-	static generated37(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated26(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -5538,7 +5541,7 @@ class CompilerOptions extends FlatObject {
 		return FlatArray.construct1(temp, 8);
 	}
 
-	static generated180(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated45(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -5555,7 +5558,7 @@ class CompilerOptions extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof CompilerOptions.__lazy_accessor__js_class !== 'undefined' ? CompilerOptions.__lazy_accessor__js_class : (CompilerOptions.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/CompilerOptions"), false, FlatObject.accessor__js_class(), FlatArray.construct(), CompilerOptions.generated37(Field.construct(FlatString.construct5("target")), Field.construct(FlatString.construct5("runtime")), Field.construct(FlatString.construct5("mainClass")), Field.construct(FlatString.construct5("library")), Field.construct(FlatString.construct5("outputFile")), Field.construct(FlatString.construct5("outputDirectory")), Field.construct(FlatString.construct5("maxConcurrency")), Field.construct(FlatString.construct5("applicationProperties"))), CompilerOptions.generated180(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/CompilerOptions"), false, FlatObject.accessor__js_class(), FlatArray.construct(), CompilerOptions.generated26(Field.construct(FlatString.construct5("target")), Field.construct(FlatString.construct5("runtime")), Field.construct(FlatString.construct5("mainClass")), Field.construct(FlatString.construct5("library")), Field.construct(FlatString.construct5("outputFile")), Field.construct(FlatString.construct5("outputDirectory")), Field.construct(FlatString.construct5("maxConcurrency")), Field.construct(FlatString.construct5("applicationProperties"))), CompilerOptions.generated45(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -5649,7 +5652,7 @@ class flat_project_CompilerOptions_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated342(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
+	static generated300(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -5668,7 +5671,7 @@ class flat_project_CompilerOptions_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_project_CompilerOptions_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_project_CompilerOptions_Builder.__lazy_accessor__js_class : (flat_project_CompilerOptions_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/CompilerOptions.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_CompilerOptions_Builder.generated342(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("target")), Function.construct(FlatString.construct5("runtime")), Function.construct(FlatString.construct5("mainClass")), Function.construct(FlatString.construct5("library")), Function.construct(FlatString.construct5("outputFile")), Function.construct(FlatString.construct5("outputDirectory")), Function.construct(FlatString.construct5("maxConcurrency")), Function.construct(FlatString.construct5("applicationProperties")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/CompilerOptions.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_CompilerOptions_Builder.generated300(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("target")), Function.construct(FlatString.construct5("runtime")), Function.construct(FlatString.construct5("mainClass")), Function.construct(FlatString.construct5("library")), Function.construct(FlatString.construct5("outputFile")), Function.construct(FlatString.construct5("outputDirectory")), Function.construct(FlatString.construct5("maxConcurrency")), Function.construct(FlatString.construct5("applicationProperties")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -5713,7 +5716,7 @@ class ConcurrentMap extends FlatObject {
 		return self;
 	}
 
-	static generated34(value0, value1, value2, value3) {
+	static generated28(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -5725,7 +5728,7 @@ class ConcurrentMap extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ConcurrentMap.__lazy_accessor__js_class !== 'undefined' ? ConcurrentMap.__lazy_accessor__js_class : (ConcurrentMap.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMap"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), ConcurrentMap.generated34(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("unordered")), Function.construct(FlatString.construct5("ordered")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMap"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), ConcurrentMap.generated28(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("unordered")), Function.construct(FlatString.construct5("ordered")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -5838,7 +5841,7 @@ class ConcurrentMapOperation extends FlatObject {
 			(await this.dispatch());
 		} catch (error)  {
 			if (!(error instanceof Exception)) {
-				console.log(0.5564727854270972);
+				console.log(0.05117106665706672);
 				console.error(error);
 				process.exit(1);
 			} else {
@@ -6015,7 +6018,7 @@ class ConcurrentMapOperation extends FlatObject {
 		this.completion.resolveFunc(true);
 	}
 
-	static generated46(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18) {
+	static generated31(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6040,7 +6043,7 @@ class ConcurrentMapOperation extends FlatObject {
 		return FlatArray.construct1(temp, 19);
 	}
 
-	static generated216(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15) {
+	static generated261(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6064,7 +6067,7 @@ class ConcurrentMapOperation extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ConcurrentMapOperation.__lazy_accessor__js_class !== 'undefined' ? ConcurrentMapOperation.__lazy_accessor__js_class : (ConcurrentMapOperation.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMapOperation"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ConcurrentMapOperation.generated46(Field.construct(FlatString.construct5("inFlightCount")), Field.construct(FlatString.construct5("peakInFlightCount")), Field.construct(FlatString.construct5("reorderCount")), Field.construct(FlatString.construct5("activeTaskCount")), Field.construct(FlatString.construct5("peakReorderCount")), Field.construct(FlatString.construct5("cancelled")), Field.construct(FlatString.construct5("finished")), Field.construct(FlatString.construct5("blockedOutputSendCount")), Field.construct(FlatString.construct5("peakBlockedOutputSendCount")), Field.construct(FlatString.construct5("outputBackpressure")), Field.construct(FlatString.construct5("output")), Field.construct(FlatString.construct5("completion")), Field.construct(FlatString.construct5("input")), Field.construct(FlatString.construct5("mapFuncs")), Field.construct(FlatString.construct5("ordered")), Field.construct(FlatString.construct5("maxParallel")), Field.construct(FlatString.construct5("maxReorder")), Field.construct(FlatString.construct5("outputCapacity")), Field.construct(FlatString.construct5("maxPendingOutputSends"))), ConcurrentMapOperation.generated216(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("start")), Function.construct(FlatString.construct5("cancel")), Function.construct(FlatString.construct5("run")), Function.construct(FlatString.construct5("dispatch")), Function.construct(FlatString.construct5("process")), Function.construct(FlatString.construct5("sendOutput")), Function.construct(FlatString.construct5("drainWorkers")), Function.construct(FlatString.construct5("emitOrdered")), Function.construct(FlatString.construct5("recordReorderPeak")), Function.construct(FlatString.construct5("flushOrdered")), Function.construct(FlatString.construct5("finishOutput")), Function.construct(FlatString.construct5("completeOrderedEmitter")), Function.construct(FlatString.construct5("signalOutputBackpressure")), Function.construct(FlatString.construct5("completeOperation"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMapOperation"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ConcurrentMapOperation.generated31(Field.construct(FlatString.construct5("inFlightCount")), Field.construct(FlatString.construct5("peakInFlightCount")), Field.construct(FlatString.construct5("reorderCount")), Field.construct(FlatString.construct5("activeTaskCount")), Field.construct(FlatString.construct5("peakReorderCount")), Field.construct(FlatString.construct5("cancelled")), Field.construct(FlatString.construct5("finished")), Field.construct(FlatString.construct5("blockedOutputSendCount")), Field.construct(FlatString.construct5("peakBlockedOutputSendCount")), Field.construct(FlatString.construct5("outputBackpressure")), Field.construct(FlatString.construct5("output")), Field.construct(FlatString.construct5("completion")), Field.construct(FlatString.construct5("input")), Field.construct(FlatString.construct5("mapFuncs")), Field.construct(FlatString.construct5("ordered")), Field.construct(FlatString.construct5("maxParallel")), Field.construct(FlatString.construct5("maxReorder")), Field.construct(FlatString.construct5("outputCapacity")), Field.construct(FlatString.construct5("maxPendingOutputSends"))), ConcurrentMapOperation.generated261(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("start")), Function.construct(FlatString.construct5("cancel")), Function.construct(FlatString.construct5("run")), Function.construct(FlatString.construct5("dispatch")), Function.construct(FlatString.construct5("process")), Function.construct(FlatString.construct5("sendOutput")), Function.construct(FlatString.construct5("drainWorkers")), Function.construct(FlatString.construct5("emitOrdered")), Function.construct(FlatString.construct5("recordReorderPeak")), Function.construct(FlatString.construct5("flushOrdered")), Function.construct(FlatString.construct5("finishOutput")), Function.construct(FlatString.construct5("completeOrderedEmitter")), Function.construct(FlatString.construct5("signalOutputBackpressure")), Function.construct(FlatString.construct5("completeOperation"))), this);
 			})());
 	}
 
@@ -6161,7 +6164,7 @@ class ConcurrentMapResult extends FlatObject {
 		return target.toBuilder().sourceIndex(sourceIndex).succeeded(succeeded).failed(failed).value(value).error(error).build();
 	}
 
-	static generated6(value0, value1, value2, value3, value4) {
+	static generated29(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6172,7 +6175,7 @@ class ConcurrentMapResult extends FlatObject {
 		return FlatArray.construct1(temp, 5);
 	}
 
-	static generated222(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated36(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6189,7 +6192,7 @@ class ConcurrentMapResult extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ConcurrentMapResult.__lazy_accessor__js_class !== 'undefined' ? ConcurrentMapResult.__lazy_accessor__js_class : (ConcurrentMapResult.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMapResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ConcurrentMapResult.generated6(Field.construct(FlatString.construct5("sourceIndex")), Field.construct(FlatString.construct5("succeeded")), Field.construct(FlatString.construct5("failed")), Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("error"))), ConcurrentMapResult.generated222(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMapResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ConcurrentMapResult.generated29(Field.construct(FlatString.construct5("sourceIndex")), Field.construct(FlatString.construct5("succeeded")), Field.construct(FlatString.construct5("failed")), Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("error"))), ConcurrentMapResult.generated36(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -6259,7 +6262,7 @@ class flat_eventstream_ConcurrentMapResult_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated296(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated268(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6275,7 +6278,7 @@ class flat_eventstream_ConcurrentMapResult_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_eventstream_ConcurrentMapResult_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_eventstream_ConcurrentMapResult_Builder.__lazy_accessor__js_class : (flat_eventstream_ConcurrentMapResult_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMapResult.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_ConcurrentMapResult_Builder.generated296(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("sourceIndex")), Function.construct(FlatString.construct5("succeeded")), Function.construct(FlatString.construct5("failed")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("error")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMapResult.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_ConcurrentMapResult_Builder.generated268(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("sourceIndex")), Function.construct(FlatString.construct5("succeeded")), Function.construct(FlatString.construct5("failed")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("error")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -6303,7 +6306,7 @@ class ConcurrentMapTask extends FlatObject {
 			return ConcurrentMapResult.construct(this.sourceIndex, true, undefined, (await this.execute()), undefined);
 		} catch (error)  {
 			if (!(error instanceof Exception)) {
-				console.log(0.55853905677957);
+				console.log(0.9646549060509559);
 				console.error(error);
 				process.exit(1);
 			} else {
@@ -6380,7 +6383,7 @@ class ConcurrentMapTask extends FlatObject {
 		return target.toBuilder().sourceIndex(sourceIndex).input(input).mapFuncs(mapFuncs).mappingFuture(mappingFuture).build();
 	}
 
-	static generated5(value0, value1, value2, value3) {
+	static generated32(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6390,7 +6393,7 @@ class ConcurrentMapTask extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated195(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
+	static generated57(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6410,7 +6413,7 @@ class ConcurrentMapTask extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ConcurrentMapTask.__lazy_accessor__js_class !== 'undefined' ? ConcurrentMapTask.__lazy_accessor__js_class : (ConcurrentMapTask.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMapTask"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ConcurrentMapTask.generated5(Field.construct(FlatString.construct5("sourceIndex")), Field.construct(FlatString.construct5("input")), Field.construct(FlatString.construct5("mapFuncs")), Field.construct(FlatString.construct5("mappingFuture"))), ConcurrentMapTask.generated195(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("run")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("cancel")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMapTask"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ConcurrentMapTask.generated32(Field.construct(FlatString.construct5("sourceIndex")), Field.construct(FlatString.construct5("input")), Field.construct(FlatString.construct5("mapFuncs")), Field.construct(FlatString.construct5("mappingFuture"))), ConcurrentMapTask.generated57(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("run")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("cancel")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -6472,7 +6475,7 @@ class flat_eventstream_ConcurrentMapTask_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated327(value0, value1, value2, value3, value4, value5, value6) {
+	static generated307(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6487,7 +6490,7 @@ class flat_eventstream_ConcurrentMapTask_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_eventstream_ConcurrentMapTask_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_eventstream_ConcurrentMapTask_Builder.__lazy_accessor__js_class : (flat_eventstream_ConcurrentMapTask_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMapTask.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_ConcurrentMapTask_Builder.generated327(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("sourceIndex")), Function.construct(FlatString.construct5("input")), Function.construct(FlatString.construct5("mapFuncs")), Function.construct(FlatString.construct5("mappingFuture")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ConcurrentMapTask.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_ConcurrentMapTask_Builder.generated307(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("sourceIndex")), Function.construct(FlatString.construct5("input")), Function.construct(FlatString.construct5("mapFuncs")), Function.construct(FlatString.construct5("mappingFuture")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -6599,7 +6602,7 @@ class FlatConsole extends FlatObject {
 		return self;
 	}
 
-	static generated11(value0, value1, value2) {
+	static generated35(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6608,7 +6611,7 @@ class FlatConsole extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated247(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21) {
+	static generated115(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6638,7 +6641,7 @@ class FlatConsole extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof FlatConsole.__lazy_accessor__js_class !== 'undefined' ? FlatConsole.__lazy_accessor__js_class : (FlatConsole.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/Console"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatConsole.generated11(Field.construct(FlatString.construct5("out")), Field.construct(FlatString.construct5("warn")), Field.construct(FlatString.construct5("error"))), FlatConsole.generated247(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("log")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/Console"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatConsole.generated35(Field.construct(FlatString.construct5("out")), Field.construct(FlatString.construct5("warn")), Field.construct(FlatString.construct5("error"))), FlatConsole.generated115(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("log")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -6672,14 +6675,14 @@ class OutputStream {
 		return FlatArray.construct();
 	}
 
-	static generated115(value0) {
+	static generated207(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated226(value0, value1, value2, value3, value4) {
+	static generated224(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6692,7 +6695,7 @@ class OutputStream {
 
 	static accessor__js_class() {
 		return typeof OutputStream.__lazy_accessor__js_class !== 'undefined' ? OutputStream.__lazy_accessor__js_class : (OutputStream.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/OutputStream"), true, FlatObject.accessor__js_class(), FlatArray.construct(), OutputStream.generated115(Field.construct(FlatString.construct5("EMPTY"))), OutputStream.generated226(Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("flush")), Function.construct(FlatString.construct5("captureOutput"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/OutputStream"), true, FlatObject.accessor__js_class(), FlatArray.construct(), OutputStream.generated207(Field.construct(FlatString.construct5("EMPTY"))), OutputStream.generated224(Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("flush")), Function.construct(FlatString.construct5("captureOutput"))), this);
 			})());
 	}
 }
@@ -6807,14 +6810,14 @@ class ConsoleOutputStream extends FlatObject {
 		return false;
 	}
 
-	static generated12(value0) {
+	static generated33(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated75(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated51(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6831,7 +6834,7 @@ class ConsoleOutputStream extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ConsoleOutputStream.__lazy_accessor__js_class !== 'undefined' ? ConsoleOutputStream.__lazy_accessor__js_class : (ConsoleOutputStream.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/ConsoleOutputStream"), false, FlatObject.accessor__js_class(), ConsoleOutputStream.generated12(OutputStream.accessor__js_class()), FlatArray.construct(), ConsoleOutputStream.generated75(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("captureOutput")), Function.construct(FlatString.construct5("flush")), Function.construct(FlatString.construct5("close"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/ConsoleOutputStream"), false, FlatObject.accessor__js_class(), ConsoleOutputStream.generated33(OutputStream.accessor__js_class()), FlatArray.construct(), ConsoleOutputStream.generated51(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("captureOutput")), Function.construct(FlatString.construct5("flush")), Function.construct(FlatString.construct5("close"))), this);
 			})());
 	}
 
@@ -6859,7 +6862,7 @@ class Executor extends FlatObject {
 		return self;
 	}
 
-	static generated49(value0, value1, value2) {
+	static generated64(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6870,7 +6873,7 @@ class Executor extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Executor.__lazy_accessor__js_class !== 'undefined' ? Executor.__lazy_accessor__js_class : (Executor.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/Executor"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Executor.generated49(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("submit")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/Executor"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Executor.generated64(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("submit")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -6946,7 +6949,7 @@ class ControlledExecutor extends Executor {
 		});
 	}
 
-	static generated2(value0, value1) {
+	static generated37(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6954,7 +6957,7 @@ class ControlledExecutor extends Executor {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated98(value0, value1, value2, value3, value4, value5) {
+	static generated50(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -6968,7 +6971,7 @@ class ControlledExecutor extends Executor {
 
 	static accessor__js_class() {
 		return typeof ControlledExecutor.__lazy_accessor__js_class !== 'undefined' ? ControlledExecutor.__lazy_accessor__js_class : (ControlledExecutor.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ControlledExecutor"), false, Executor.accessor__js_class(), FlatArray.construct(), ControlledExecutor.generated2(Field.construct(FlatString.construct5("queuedCount")), Field.construct(FlatString.construct5("capacity"))), ControlledExecutor.generated98(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("submit")), Function.construct(FlatString.construct5("runNext")), Function.construct(FlatString.construct5("runAll")), Function.construct(FlatString.construct5("remove"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ControlledExecutor"), false, Executor.accessor__js_class(), FlatArray.construct(), ControlledExecutor.generated37(Field.construct(FlatString.construct5("queuedCount")), Field.construct(FlatString.construct5("capacity"))), ControlledExecutor.generated50(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("submit")), Function.construct(FlatString.construct5("runNext")), Function.construct(FlatString.construct5("runAll")), Function.construct(FlatString.construct5("remove"))), this);
 			})());
 	}
 
@@ -7033,7 +7036,7 @@ class Timer extends FlatObject {
 		return t;
 	}
 
-	static generated153(value0, value1, value2) {
+	static generated146(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7042,7 +7045,7 @@ class Timer extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated258(value0, value1, value2, value3, value4, value5, value6) {
+	static generated249(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7057,7 +7060,7 @@ class Timer extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Timer.__lazy_accessor__js_class !== 'undefined' ? Timer.__lazy_accessor__js_class : (Timer.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/time/Timer"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Timer.generated153(Field.construct(FlatString.construct5("startTime")), Field.construct(FlatString.construct5("endTime")), Field.construct(FlatString.construct5("duration"))), Timer.generated258(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("start")), Function.construct(FlatString.construct5("stop")), Function.construct(FlatString.construct5("reset")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("time"))), this);
+					return Class.construct1(FlatString.construct5("flat/time/Timer"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Timer.generated146(Field.construct(FlatString.construct5("startTime")), Field.construct(FlatString.construct5("endTime")), Field.construct(FlatString.construct5("duration"))), Timer.generated249(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("start")), Function.construct(FlatString.construct5("stop")), Function.construct(FlatString.construct5("reset")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("time"))), this);
 			})());
 	}
 
@@ -7100,7 +7103,7 @@ class CumulativeTimer extends Timer {
 		return this;
 	}
 
-	static generated8(value0, value1) {
+	static generated39(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7108,7 +7111,7 @@ class CumulativeTimer extends Timer {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated53(value0, value1, value2) {
+	static generated40(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7119,7 +7122,7 @@ class CumulativeTimer extends Timer {
 
 	static accessor__js_class() {
 		return typeof CumulativeTimer.__lazy_accessor__js_class !== 'undefined' ? CumulativeTimer.__lazy_accessor__js_class : (CumulativeTimer.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/time/CumulativeTimer"), false, Timer.accessor__js_class(), FlatArray.construct(), CumulativeTimer.generated8(Field.construct(FlatString.construct5("duration")), Field.construct(FlatString.construct5("iterations"))), CumulativeTimer.generated53(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("stop"))), this);
+					return Class.construct1(FlatString.construct5("flat/time/CumulativeTimer"), false, Timer.accessor__js_class(), FlatArray.construct(), CumulativeTimer.generated39(Field.construct(FlatString.construct5("duration")), Field.construct(FlatString.construct5("iterations"))), CumulativeTimer.generated40(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("stop"))), this);
 			})());
 	}
 
@@ -7156,7 +7159,7 @@ class Curl extends FlatObject {
 		return self;
 	}
 
-	static generated3(value0, value1) {
+	static generated41(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7166,7 +7169,7 @@ class Curl extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Curl.__lazy_accessor__js_class !== 'undefined' ? Curl.__lazy_accessor__js_class : (Curl.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/Curl"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Curl.generated3(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/Curl"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Curl.generated41(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -7217,7 +7220,7 @@ class FlatDate extends FlatObject {
 		return flat_null;
 	}
 
-	static generated14(value0, value1, value2, value3, value4, value5) {
+	static generated42(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7229,7 +7232,7 @@ class FlatDate extends FlatObject {
 		return FlatArray.construct1(temp, 6);
 	}
 
-	static generated191(value0, value1, value2, value3, value4) {
+	static generated67(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7242,7 +7245,7 @@ class FlatDate extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof FlatDate.__lazy_accessor__js_class !== 'undefined' ? FlatDate.__lazy_accessor__js_class : (FlatDate.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/time/Date"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatDate.generated14(Field.construct(FlatString.construct5("year")), Field.construct(FlatString.construct5("month")), Field.construct(FlatString.construct5("day")), Field.construct(FlatString.construct5("hour")), Field.construct(FlatString.construct5("minute")), Field.construct(FlatString.construct5("second"))), FlatDate.generated191(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("decodeDate")), Function.construct(FlatString.construct5("updateTime")), Function.construct(FlatString.construct5("formatDate"))), this);
+					return Class.construct1(FlatString.construct5("flat/time/Date"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatDate.generated42(Field.construct(FlatString.construct5("year")), Field.construct(FlatString.construct5("month")), Field.construct(FlatString.construct5("day")), Field.construct(FlatString.construct5("hour")), Field.construct(FlatString.construct5("minute")), Field.construct(FlatString.construct5("second"))), FlatDate.generated67(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("decodeDate")), Function.construct(FlatString.construct5("updateTime")), Function.construct(FlatString.construct5("formatDate"))), this);
 			})());
 	}
 
@@ -7251,7 +7254,7 @@ class FlatDate extends FlatObject {
 }
 
 class GreaterThanOrEqualToOperator {
-	static generated65(value0) {
+	static generated91(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7260,13 +7263,13 @@ class GreaterThanOrEqualToOperator {
 
 	static accessor__js_class() {
 		return typeof GreaterThanOrEqualToOperator.__lazy_accessor__js_class !== 'undefined' ? GreaterThanOrEqualToOperator.__lazy_accessor__js_class : (GreaterThanOrEqualToOperator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/operators/GreaterThanOrEqualToOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), GreaterThanOrEqualToOperator.generated65(Function.construct(FlatString.construct5("greaterThanOrEqualTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/operators/GreaterThanOrEqualToOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), GreaterThanOrEqualToOperator.generated91(Function.construct(FlatString.construct5("greaterThanOrEqualTo"))), this);
 			})());
 	}
 }
 
 class GreaterThanOperator {
-	static generated64(value0) {
+	static generated90(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7275,13 +7278,13 @@ class GreaterThanOperator {
 
 	static accessor__js_class() {
 		return typeof GreaterThanOperator.__lazy_accessor__js_class !== 'undefined' ? GreaterThanOperator.__lazy_accessor__js_class : (GreaterThanOperator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/operators/GreaterThanOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), GreaterThanOperator.generated64(Function.construct(FlatString.construct5("greaterThan"))), this);
+					return Class.construct1(FlatString.construct5("flat/operators/GreaterThanOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), GreaterThanOperator.generated90(Function.construct(FlatString.construct5("greaterThan"))), this);
 			})());
 	}
 }
 
 class LessThanOrEqualToOperator {
-	static generated89(value0) {
+	static generated124(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7290,13 +7293,13 @@ class LessThanOrEqualToOperator {
 
 	static accessor__js_class() {
 		return typeof LessThanOrEqualToOperator.__lazy_accessor__js_class !== 'undefined' ? LessThanOrEqualToOperator.__lazy_accessor__js_class : (LessThanOrEqualToOperator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/operators/LessThanOrEqualToOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), LessThanOrEqualToOperator.generated89(Function.construct(FlatString.construct5("lessThanOrEqualTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/operators/LessThanOrEqualToOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), LessThanOrEqualToOperator.generated124(Function.construct(FlatString.construct5("lessThanOrEqualTo"))), this);
 			})());
 	}
 }
 
 class LessThanOperator {
-	static generated88(value0) {
+	static generated110(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7305,7 +7308,7 @@ class LessThanOperator {
 
 	static accessor__js_class() {
 		return typeof LessThanOperator.__lazy_accessor__js_class !== 'undefined' ? LessThanOperator.__lazy_accessor__js_class : (LessThanOperator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/operators/LessThanOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), LessThanOperator.generated88(Function.construct(FlatString.construct5("lessThan"))), this);
+					return Class.construct1(FlatString.construct5("flat/operators/LessThanOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), LessThanOperator.generated110(Function.construct(FlatString.construct5("lessThan"))), this);
 			})());
 	}
 }
@@ -7557,7 +7560,7 @@ class FlatDateTime extends FlatObject {
 		return self;
 	}
 
-	static generated35(value0, value1, value2, value3, value4) {
+	static generated43(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7568,7 +7571,7 @@ class FlatDateTime extends FlatObject {
 		return FlatArray.construct1(temp, 5);
 	}
 
-	static generated255(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15) {
+	static generated159(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7590,7 +7593,7 @@ class FlatDateTime extends FlatObject {
 		return FlatArray.construct1(temp, 16);
 	}
 
-	static generated325(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25) {
+	static generated328(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7622,7 +7625,7 @@ class FlatDateTime extends FlatObject {
 		return FlatArray.construct1(temp, 26);
 	}
 
-	static generated374() {
+	static generated375() {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = FlatByte.construct(31);
@@ -7640,7 +7643,7 @@ class FlatDateTime extends FlatObject {
 		return FlatArray.construct1(temp, 12);
 	}
 
-	static generated375() {
+	static generated376() {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = FlatByte.construct(31);
@@ -7660,7 +7663,7 @@ class FlatDateTime extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof FlatDateTime.__lazy_accessor__js_class !== 'undefined' ? FlatDateTime.__lazy_accessor__js_class : (FlatDateTime.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/time/DateTime"), false, FlatObject.accessor__js_class(), FlatDateTime.generated35(Comparable.accessor__js_class(), LessThanOperator.accessor__js_class(), LessThanOrEqualToOperator.accessor__js_class(), GreaterThanOperator.accessor__js_class(), GreaterThanOrEqualToOperator.accessor__js_class()), FlatDateTime.generated255(Field.construct(FlatString.construct5("millis")), Field.construct(FlatString.construct5("year")), Field.construct(FlatString.construct5("month")), Field.construct(FlatString.construct5("dayOfMonth")), Field.construct(FlatString.construct5("dayOfYear")), Field.construct(FlatString.construct5("hour")), Field.construct(FlatString.construct5("minute")), Field.construct(FlatString.construct5("second")), Field.construct(FlatString.construct5("millisecond")), Field.construct(FlatString.construct5("isLeapYear")), Field.construct(FlatString.construct5("SECS_DAY")), Field.construct(FlatString.construct5("SECS_HOUR")), Field.construct(FlatString.construct5("SECS_MINUTE")), Field.construct(FlatString.construct5("EPOCH_YEAR")), Field.construct(FlatString.construct5("MONTH_DAYS")), Field.construct(FlatString.construct5("LEAP_MONTH_DAYS"))), FlatDateTime.generated325(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("calculateMillis")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("addMonth")), Function.construct(FlatString.construct5("addMonths")), Function.construct(FlatString.construct5("subtractMonth")), Function.construct(FlatString.construct5("subtractMonths")), Function.construct(FlatString.construct5("addYear")), Function.construct(FlatString.construct5("addYears")), Function.construct(FlatString.construct5("subtractYear")), Function.construct(FlatString.construct5("subtractYears")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("lessThan")), Function.construct(FlatString.construct5("lessThanOrEqualTo")), Function.construct(FlatString.construct5("greaterThan")), Function.construct(FlatString.construct5("greaterThanOrEqualTo")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("now")), Function.construct(FlatString.construct5("toIsoString")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/time/DateTime"), false, FlatObject.accessor__js_class(), FlatDateTime.generated43(Comparable.accessor__js_class(), LessThanOperator.accessor__js_class(), LessThanOrEqualToOperator.accessor__js_class(), GreaterThanOperator.accessor__js_class(), GreaterThanOrEqualToOperator.accessor__js_class()), FlatDateTime.generated159(Field.construct(FlatString.construct5("millis")), Field.construct(FlatString.construct5("year")), Field.construct(FlatString.construct5("month")), Field.construct(FlatString.construct5("dayOfMonth")), Field.construct(FlatString.construct5("dayOfYear")), Field.construct(FlatString.construct5("hour")), Field.construct(FlatString.construct5("minute")), Field.construct(FlatString.construct5("second")), Field.construct(FlatString.construct5("millisecond")), Field.construct(FlatString.construct5("isLeapYear")), Field.construct(FlatString.construct5("SECS_DAY")), Field.construct(FlatString.construct5("SECS_HOUR")), Field.construct(FlatString.construct5("SECS_MINUTE")), Field.construct(FlatString.construct5("EPOCH_YEAR")), Field.construct(FlatString.construct5("MONTH_DAYS")), Field.construct(FlatString.construct5("LEAP_MONTH_DAYS"))), FlatDateTime.generated328(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("calculateMillis")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("addMonth")), Function.construct(FlatString.construct5("addMonths")), Function.construct(FlatString.construct5("subtractMonth")), Function.construct(FlatString.construct5("subtractMonths")), Function.construct(FlatString.construct5("addYear")), Function.construct(FlatString.construct5("addYears")), Function.construct(FlatString.construct5("subtractYear")), Function.construct(FlatString.construct5("subtractYears")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("lessThan")), Function.construct(FlatString.construct5("lessThanOrEqualTo")), Function.construct(FlatString.construct5("greaterThan")), Function.construct(FlatString.construct5("greaterThanOrEqualTo")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("now")), Function.construct(FlatString.construct5("toIsoString")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -7701,7 +7704,7 @@ class DateTime_InvalidDateException extends Exception {
 		return self;
 	}
 
-	static generated336(value0, value1) {
+	static generated354(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7711,7 +7714,7 @@ class DateTime_InvalidDateException extends Exception {
 
 	static accessor__js_class() {
 		return typeof DateTime_InvalidDateException.__lazy_accessor__js_class !== 'undefined' ? DateTime_InvalidDateException.__lazy_accessor__js_class : (DateTime_InvalidDateException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/time/DateTime.InvalidDateException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), DateTime_InvalidDateException.generated336(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/time/DateTime.InvalidDateException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), DateTime_InvalidDateException.generated354(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -7742,7 +7745,7 @@ class DateTime_InvalidDateFormatException extends DateTime_InvalidDateException 
 		return self;
 	}
 
-	static generated352(value0, value1) {
+	static generated355(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7752,7 +7755,7 @@ class DateTime_InvalidDateFormatException extends DateTime_InvalidDateException 
 
 	static accessor__js_class() {
 		return typeof DateTime_InvalidDateFormatException.__lazy_accessor__js_class !== 'undefined' ? DateTime_InvalidDateFormatException.__lazy_accessor__js_class : (DateTime_InvalidDateFormatException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/time/DateTime.InvalidDateFormatException"), false, FlatDateTime.DateTime_InvalidDateException.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), DateTime_InvalidDateFormatException.generated352(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/time/DateTime.InvalidDateFormatException"), false, FlatDateTime.DateTime_InvalidDateException.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), DateTime_InvalidDateFormatException.generated355(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -7868,7 +7871,7 @@ class DateTime_Calculator extends FlatObject {
 			day -= size;
 			year++;
 		}
-		return DateTime_Calculator.generated402(year, day + 1);
+		return DateTime_Calculator.generated401(year, day + 1);
 	}
 
 	static getMonthAndDay(year, yearDay) {
@@ -7879,7 +7882,7 @@ class DateTime_Calculator extends FlatObject {
 		while (monthDay >= ((flat_local_1 = (DateTime_Calculator.getMonthDays(year).get(month))) !== flat_null ? (flat_local_1.value) : 0)) {
 			monthDay -= ((flat_local_0 = (DateTime_Calculator.getMonthDays(year).get(month++))) !== flat_null ? (flat_local_0.value) : 0);
 		}
-		return DateTime_Calculator.generated404(month + 1, monthDay + 1);
+		return DateTime_Calculator.generated402(month + 1, monthDay + 1);
 	}
 
 	static isLeapYear(year) {
@@ -7897,7 +7900,7 @@ class DateTime_Calculator extends FlatObject {
 		return self;
 	}
 
-	static generated353(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21) {
+	static generated356(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -7925,7 +7928,7 @@ class DateTime_Calculator extends FlatObject {
 		return FlatArray.construct1(temp, 22);
 	}
 
-	static generated402(value0, value1) {
+	static generated401(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = FlatInt.construct(value0);
@@ -7933,7 +7936,7 @@ class DateTime_Calculator extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated404(value0, value1) {
+	static generated402(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = FlatInt.construct(value0);
@@ -7943,7 +7946,7 @@ class DateTime_Calculator extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof DateTime_Calculator.__lazy_accessor__js_class !== 'undefined' ? DateTime_Calculator.__lazy_accessor__js_class : (DateTime_Calculator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/time/DateTime.Calculator"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), DateTime_Calculator.generated353(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("getLeapYearCount")), Function.construct(FlatString.construct5("getYearMillis")), Function.construct(FlatString.construct5("getMonthMillis")), Function.construct(FlatString.construct5("getDayMillis")), Function.construct(FlatString.construct5("getHourMillis")), Function.construct(FlatString.construct5("getMinuteMillis")), Function.construct(FlatString.construct5("getSecondMillis")), Function.construct(FlatString.construct5("getMillisecondMillis")), Function.construct(FlatString.construct5("getYear")), Function.construct(FlatString.construct5("getDayOfMonth")), Function.construct(FlatString.construct5("getHour")), Function.construct(FlatString.construct5("getMinute")), Function.construct(FlatString.construct5("getSecond")), Function.construct(FlatString.construct5("getMillisecond")), Function.construct(FlatString.construct5("getYearSize")), Function.construct(FlatString.construct5("getMonthDays")), Function.construct(FlatString.construct5("getYearAndDay")), Function.construct(FlatString.construct5("getMonthAndDay")), Function.construct(FlatString.construct5("isLeapYear")), Function.construct(FlatString.construct5("isValidDayOfMonth")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/time/DateTime.Calculator"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), DateTime_Calculator.generated356(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("getLeapYearCount")), Function.construct(FlatString.construct5("getYearMillis")), Function.construct(FlatString.construct5("getMonthMillis")), Function.construct(FlatString.construct5("getDayMillis")), Function.construct(FlatString.construct5("getHourMillis")), Function.construct(FlatString.construct5("getMinuteMillis")), Function.construct(FlatString.construct5("getSecondMillis")), Function.construct(FlatString.construct5("getMillisecondMillis")), Function.construct(FlatString.construct5("getYear")), Function.construct(FlatString.construct5("getDayOfMonth")), Function.construct(FlatString.construct5("getHour")), Function.construct(FlatString.construct5("getMinute")), Function.construct(FlatString.construct5("getSecond")), Function.construct(FlatString.construct5("getMillisecond")), Function.construct(FlatString.construct5("getYearSize")), Function.construct(FlatString.construct5("getMonthDays")), Function.construct(FlatString.construct5("getYearAndDay")), Function.construct(FlatString.construct5("getMonthAndDay")), Function.construct(FlatString.construct5("isLeapYear")), Function.construct(FlatString.construct5("isValidDayOfMonth")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -8019,7 +8022,7 @@ class DeclarationIdentity extends FlatObject {
 		return target.toBuilder().syntaxIdentity(syntaxIdentity).declarationKind(declarationKind).name(name).build();
 	}
 
-	static generated4(value0, value1, value2, value3) {
+	static generated44(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8029,7 +8032,7 @@ class DeclarationIdentity extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated196(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated68(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8046,7 +8049,7 @@ class DeclarationIdentity extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof DeclarationIdentity.__lazy_accessor__js_class !== 'undefined' ? DeclarationIdentity.__lazy_accessor__js_class : (DeclarationIdentity.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/DeclarationIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), DeclarationIdentity.generated4(Field.construct(FlatString.construct5("syntaxIdentity")), Field.construct(FlatString.construct5("declarationKind")), Field.construct(FlatString.construct5("name")), Field.construct(FlatString.construct5("value"))), DeclarationIdentity.generated196(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/DeclarationIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), DeclarationIdentity.generated44(Field.construct(FlatString.construct5("syntaxIdentity")), Field.construct(FlatString.construct5("declarationKind")), Field.construct(FlatString.construct5("name")), Field.construct(FlatString.construct5("value"))), DeclarationIdentity.generated68(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -8104,7 +8107,7 @@ class flat_compiler_models_DeclarationIdentity_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated331(value0, value1, value2, value3, value4, value5) {
+	static generated298(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8118,7 +8121,7 @@ class flat_compiler_models_DeclarationIdentity_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_compiler_models_DeclarationIdentity_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_compiler_models_DeclarationIdentity_Builder.__lazy_accessor__js_class : (flat_compiler_models_DeclarationIdentity_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/DeclarationIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_DeclarationIdentity_Builder.generated331(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("syntaxIdentity")), Function.construct(FlatString.construct5("declarationKind")), Function.construct(FlatString.construct5("name")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/DeclarationIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_DeclarationIdentity_Builder.generated298(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("syntaxIdentity")), Function.construct(FlatString.construct5("declarationKind")), Function.construct(FlatString.construct5("name")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -8185,7 +8188,7 @@ class DefaultImport extends FlatObject {
 		return target.toBuilder().location(location).staticImport(staticImport).build();
 	}
 
-	static generated13(value0, value1) {
+	static generated46(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8193,7 +8196,7 @@ class DefaultImport extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated78(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated55(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8210,7 +8213,7 @@ class DefaultImport extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof DefaultImport.__lazy_accessor__js_class !== 'undefined' ? DefaultImport.__lazy_accessor__js_class : (DefaultImport.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/DefaultImport"), false, FlatObject.accessor__js_class(), FlatArray.construct(), DefaultImport.generated13(Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("staticImport"))), DefaultImport.generated78(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/DefaultImport"), false, FlatObject.accessor__js_class(), FlatArray.construct(), DefaultImport.generated46(Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("staticImport"))), DefaultImport.generated55(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -8256,7 +8259,7 @@ class flat_project_DefaultImport_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated241(value0, value1, value2, value3, value4) {
+	static generated288(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8269,7 +8272,7 @@ class flat_project_DefaultImport_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_project_DefaultImport_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_project_DefaultImport_Builder.__lazy_accessor__js_class : (flat_project_DefaultImport_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/DefaultImport.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_DefaultImport_Builder.generated241(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("staticImport")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/DefaultImport.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_DefaultImport_Builder.generated288(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("staticImport")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -8298,7 +8301,7 @@ class DivideByZeroException extends Exception {
 		return self;
 	}
 
-	static generated9(value0, value1) {
+	static generated48(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8308,7 +8311,7 @@ class DivideByZeroException extends Exception {
 
 	static accessor__js_class() {
 		return typeof DivideByZeroException.__lazy_accessor__js_class !== 'undefined' ? DivideByZeroException.__lazy_accessor__js_class : (DivideByZeroException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/exception/DivideByZeroException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), DivideByZeroException.generated9(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/exception/DivideByZeroException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), DivideByZeroException.generated48(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -8540,14 +8543,14 @@ class FlatDouble extends Number {
 		return FlatString.construct4(data);
 	}
 
-	static generated15(value0) {
+	static generated52(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated43(value0, value1, value2) {
+	static generated53(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8556,7 +8559,7 @@ class FlatDouble extends Number {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated298(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44) {
+	static generated285(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8609,7 +8612,7 @@ class FlatDouble extends Number {
 
 	static accessor__js_class() {
 		return typeof FlatDouble.__lazy_accessor__js_class !== 'undefined' ? FlatDouble.__lazy_accessor__js_class : (FlatDouble.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/primitive/number/Double"), false, Number.accessor__js_class(), FlatDouble.generated15(RealNumber.accessor__js_class()), FlatDouble.generated43(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value"))), FlatDouble.generated298(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("withinTolerance")), Function.construct(FlatString.construct5("withinTolerance")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("parseDouble")), Function.construct(FlatString.construct5("toCharArray")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toFixed")), Function.construct(FlatString.construct5("toFixed"))), this);
+					return Class.construct1(FlatString.construct5("flat/primitive/number/Double"), false, Number.accessor__js_class(), FlatDouble.generated52(RealNumber.accessor__js_class()), FlatDouble.generated53(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value"))), FlatDouble.generated285(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("withinTolerance")), Function.construct(FlatString.construct5("withinTolerance")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("parseDouble")), Function.construct(FlatString.construct5("toCharArray")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toFixed")), Function.construct(FlatString.construct5("toFixed"))), this);
 			})());
 	}
 
@@ -8644,14 +8647,14 @@ class EmptyOutputStream extends FlatObject {
 		return self;
 	}
 
-	static generated1(value0) {
+	static generated54(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated81(value0, value1) {
+	static generated56(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8661,7 +8664,7 @@ class EmptyOutputStream extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof EmptyOutputStream.__lazy_accessor__js_class !== 'undefined' ? EmptyOutputStream.__lazy_accessor__js_class : (EmptyOutputStream.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/EmptyOutputStream"), false, FlatObject.accessor__js_class(), EmptyOutputStream.generated1(OutputStream.accessor__js_class()), FlatArray.construct(), EmptyOutputStream.generated81(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/EmptyOutputStream"), false, FlatObject.accessor__js_class(), EmptyOutputStream.generated54(OutputStream.accessor__js_class()), FlatArray.construct(), EmptyOutputStream.generated56(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -8691,7 +8694,7 @@ class NoSuchElementException extends Exception {
 		return self;
 	}
 
-	static generated107(value0, value1) {
+	static generated141(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8701,7 +8704,7 @@ class NoSuchElementException extends Exception {
 
 	static accessor__js_class() {
 		return typeof NoSuchElementException.__lazy_accessor__js_class !== 'undefined' ? NoSuchElementException.__lazy_accessor__js_class : (NoSuchElementException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/NoSuchElementException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), NoSuchElementException.generated107(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/NoSuchElementException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), NoSuchElementException.generated141(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -8732,7 +8735,7 @@ class EmptyStackException extends NoSuchElementException {
 		return self;
 	}
 
-	static generated10(value0, value1) {
+	static generated58(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -8742,7 +8745,7 @@ class EmptyStackException extends NoSuchElementException {
 
 	static accessor__js_class() {
 		return typeof EmptyStackException.__lazy_accessor__js_class !== 'undefined' ? EmptyStackException.__lazy_accessor__js_class : (EmptyStackException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/EmptyStackException"), false, NoSuchElementException.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), EmptyStackException.generated10(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/EmptyStackException"), false, NoSuchElementException.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), EmptyStackException.generated58(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -8966,16 +8969,16 @@ class EscapeCode extends FlatObject {
 		indentation = typeof indentation === 'undefined' ? FlatString.construct5("") : indentation;
 		breakWord = typeof breakWord === 'undefined' ? false : breakWord;
 		if (value.count <= lineLength) {
-			return EscapeCode.generated387(value);
+			return EscapeCode.generated389(value);
 		}
 		let vCount = EscapeCode.visibleCount(value);
 		if (vCount <= lineLength) {
-			return EscapeCode.generated388(value);
+			return EscapeCode.generated390(value);
 		}
 		let offset = breakWord ? 0 : EscapeCode.findBreakWordOffset(value, vCount, lineLength);
 		let line = EscapeCode.visibleSubstring(value, 0, lineLength - offset);
 		let remainder = indentation.plus0(EscapeCode.visibleSubstring(value, lineLength - offset, undefined).trim(undefined, undefined, undefined));
-		let lines = EscapeCode.generated390(line);
+		let lines = EscapeCode.generated391(line);
 		return lines.__chain('addAll', [EscapeCode.wrapLine(remainder, lineLength, indentation, undefined)]);
 	}
 
@@ -9013,7 +9016,7 @@ class EscapeCode extends FlatObject {
 		return self;
 	}
 
-	static generated309(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74) {
+	static generated295(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9094,7 +9097,7 @@ class EscapeCode extends FlatObject {
 		return FlatArray.construct1(temp, 75);
 	}
 
-	static generated355(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25) {
+	static generated351(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9126,14 +9129,7 @@ class EscapeCode extends FlatObject {
 		return FlatArray.construct1(temp, 26);
 	}
 
-	static generated387(value0) {
-		let temp = flat_null;
-		temp = [];
-		temp[0] = value0;
-		return FlatArray.construct1(temp, 1);
-	}
-
-	static generated388(value0) {
+	static generated389(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9147,9 +9143,16 @@ class EscapeCode extends FlatObject {
 		return FlatArray.construct1(temp, 1);
 	}
 
+	static generated391(value0) {
+		let temp = flat_null;
+		temp = [];
+		temp[0] = value0;
+		return FlatArray.construct1(temp, 1);
+	}
+
 	static accessor__js_class() {
 		return typeof EscapeCode.__lazy_accessor__js_class !== 'undefined' ? EscapeCode.__lazy_accessor__js_class : (EscapeCode.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/console/EscapeCode"), false, FlatObject.accessor__js_class(), FlatArray.construct(), EscapeCode.generated309(Field.construct(FlatString.construct5("ESCAPE")), Field.construct(FlatString.construct5("MODE_SUFFIX")), Field.construct(FlatString.construct5("RESET")), Field.construct(FlatString.construct5("BRIGHT")), Field.construct(FlatString.construct5("DIM")), Field.construct(FlatString.construct5("UNDERSCORE")), Field.construct(FlatString.construct5("BLINK")), Field.construct(FlatString.construct5("REVERSE")), Field.construct(FlatString.construct5("HIDDEN")), Field.construct(FlatString.construct5("BLACK_FOREGROUND")), Field.construct(FlatString.construct5("RED_FOREGROUND")), Field.construct(FlatString.construct5("GREEN_FOREGROUND")), Field.construct(FlatString.construct5("YELLOW_FOREGROUND")), Field.construct(FlatString.construct5("BLUE_FOREGROUND")), Field.construct(FlatString.construct5("MAGENTA_FOREGROUND")), Field.construct(FlatString.construct5("CYAN_FOREGROUND")), Field.construct(FlatString.construct5("WHITE_FOREGROUND")), Field.construct(FlatString.construct5("RGB_FOREGROUND_PREFIX")), Field.construct(FlatString.construct5("RGB_FOREGROUND_256_PREFIX")), Field.construct(FlatString.construct5("GRAY_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_BLACK_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_RED_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_GREEN_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_YELLOW_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_BLUE_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_MAGENTA_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_CYAN_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_WHITE_FOREGROUND")), Field.construct(FlatString.construct5("BLACK_BACKGROUND")), Field.construct(FlatString.construct5("RED_BACKGROUND")), Field.construct(FlatString.construct5("GREEN_BACKGROUND")), Field.construct(FlatString.construct5("YELLOW_BACKGROUND")), Field.construct(FlatString.construct5("BLUE_BACKGROUND")), Field.construct(FlatString.construct5("MAGENTA_BACKGROUND")), Field.construct(FlatString.construct5("CYAN_BACKGROUND")), Field.construct(FlatString.construct5("WHITE_BACKGROUND")), Field.construct(FlatString.construct5("RGB_BACKGROUND_PREFIX")), Field.construct(FlatString.construct5("RGB_BACKGROUND_256_PREFIX")), Field.construct(FlatString.construct5("GRAY_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_BLACK_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_RED_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_GREEN_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_YELLOW_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_BLUE_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_MAGENTA_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_CYAN_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_WHITE_BACKGROUND")), Field.construct(FlatString.construct5("CURSOR_MOVE_TO_HOME")), Field.construct(FlatString.construct5("CURSOR_MOVE_TO_POSITION_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_TO_POSITION_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_UP_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_UP_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_DOWN_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_DOWN_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_RIGHT_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_RIGHT_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_LEFT_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_LEFT_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_TO_COLUMN_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_TO_COLUMN_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_REQUEST_POSITION")), Field.construct(FlatString.construct5("CURSOR_MOVE_UP_ONE_LINE")), Field.construct(FlatString.construct5("CURSOR_SAVE_POSITION")), Field.construct(FlatString.construct5("CURSOR_RESTORE_POSITION")), Field.construct(FlatString.construct5("ERASE_FROM_CURSOR_TO_END_OF_SCREEN")), Field.construct(FlatString.construct5("ERASE_FROM_CURSOR_TO_BEGINNING_OF_SCREEN")), Field.construct(FlatString.construct5("ERASE_ENTIRE_SCREEN")), Field.construct(FlatString.construct5("ERASE_SAVED_LINES")), Field.construct(FlatString.construct5("ERASE_FROM_CURSOR_TO_END_OF_LINE")), Field.construct(FlatString.construct5("ERASE_FROM_CURSOR_TO_BEGINNING_OF_LINE")), Field.construct(FlatString.construct5("ERASE_ENTIRE_LINE"))), EscapeCode.generated355(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("cursorMoveHome")), Function.construct(FlatString.construct5("cursorMoveToPosition")), Function.construct(FlatString.construct5("cursorMoveUp")), Function.construct(FlatString.construct5("cursorMoveDown")), Function.construct(FlatString.construct5("cursorMoveRight")), Function.construct(FlatString.construct5("cursorMoveLeft")), Function.construct(FlatString.construct5("cursorMoveDownAtBeginningOfLine")), Function.construct(FlatString.construct5("cursorMoveUpAtBeginningOfLine")), Function.construct(FlatString.construct5("cursorMoveToColumn")), Function.construct(FlatString.construct5("cursorRequestPosition")), Function.construct(FlatString.construct5("cursorMoveUpOneLine")), Function.construct(FlatString.construct5("cursorSavePosition")), Function.construct(FlatString.construct5("cursorRestorePosition")), Function.construct(FlatString.construct5("eraseFromCursorToEndOfScreen")), Function.construct(FlatString.construct5("eraseFromCursorToBeginningOfScreen")), Function.construct(FlatString.construct5("eraseEntireScreen")), Function.construct(FlatString.construct5("eraseSavedLines")), Function.construct(FlatString.construct5("eraseFromCursorToEndOfLine")), Function.construct(FlatString.construct5("eraseFromCursorToBeginningOfLine")), Function.construct(FlatString.construct5("eraseEntireLine")), Function.construct(FlatString.construct5("visibleCount")), Function.construct(FlatString.construct5("visibleSubstring")), Function.construct(FlatString.construct5("wrapLine")), Function.construct(FlatString.construct5("findBreakWordOffset")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/console/EscapeCode"), false, FlatObject.accessor__js_class(), FlatArray.construct(), EscapeCode.generated295(Field.construct(FlatString.construct5("ESCAPE")), Field.construct(FlatString.construct5("MODE_SUFFIX")), Field.construct(FlatString.construct5("RESET")), Field.construct(FlatString.construct5("BRIGHT")), Field.construct(FlatString.construct5("DIM")), Field.construct(FlatString.construct5("UNDERSCORE")), Field.construct(FlatString.construct5("BLINK")), Field.construct(FlatString.construct5("REVERSE")), Field.construct(FlatString.construct5("HIDDEN")), Field.construct(FlatString.construct5("BLACK_FOREGROUND")), Field.construct(FlatString.construct5("RED_FOREGROUND")), Field.construct(FlatString.construct5("GREEN_FOREGROUND")), Field.construct(FlatString.construct5("YELLOW_FOREGROUND")), Field.construct(FlatString.construct5("BLUE_FOREGROUND")), Field.construct(FlatString.construct5("MAGENTA_FOREGROUND")), Field.construct(FlatString.construct5("CYAN_FOREGROUND")), Field.construct(FlatString.construct5("WHITE_FOREGROUND")), Field.construct(FlatString.construct5("RGB_FOREGROUND_PREFIX")), Field.construct(FlatString.construct5("RGB_FOREGROUND_256_PREFIX")), Field.construct(FlatString.construct5("GRAY_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_BLACK_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_RED_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_GREEN_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_YELLOW_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_BLUE_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_MAGENTA_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_CYAN_FOREGROUND")), Field.construct(FlatString.construct5("BRIGHT_WHITE_FOREGROUND")), Field.construct(FlatString.construct5("BLACK_BACKGROUND")), Field.construct(FlatString.construct5("RED_BACKGROUND")), Field.construct(FlatString.construct5("GREEN_BACKGROUND")), Field.construct(FlatString.construct5("YELLOW_BACKGROUND")), Field.construct(FlatString.construct5("BLUE_BACKGROUND")), Field.construct(FlatString.construct5("MAGENTA_BACKGROUND")), Field.construct(FlatString.construct5("CYAN_BACKGROUND")), Field.construct(FlatString.construct5("WHITE_BACKGROUND")), Field.construct(FlatString.construct5("RGB_BACKGROUND_PREFIX")), Field.construct(FlatString.construct5("RGB_BACKGROUND_256_PREFIX")), Field.construct(FlatString.construct5("GRAY_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_BLACK_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_RED_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_GREEN_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_YELLOW_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_BLUE_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_MAGENTA_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_CYAN_BACKGROUND")), Field.construct(FlatString.construct5("BRIGHT_WHITE_BACKGROUND")), Field.construct(FlatString.construct5("CURSOR_MOVE_TO_HOME")), Field.construct(FlatString.construct5("CURSOR_MOVE_TO_POSITION_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_TO_POSITION_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_UP_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_UP_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_DOWN_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_DOWN_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_RIGHT_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_RIGHT_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_LEFT_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_LEFT_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_TO_COLUMN_PREFIX")), Field.construct(FlatString.construct5("CURSOR_MOVE_TO_COLUMN_SUFFIX")), Field.construct(FlatString.construct5("CURSOR_REQUEST_POSITION")), Field.construct(FlatString.construct5("CURSOR_MOVE_UP_ONE_LINE")), Field.construct(FlatString.construct5("CURSOR_SAVE_POSITION")), Field.construct(FlatString.construct5("CURSOR_RESTORE_POSITION")), Field.construct(FlatString.construct5("ERASE_FROM_CURSOR_TO_END_OF_SCREEN")), Field.construct(FlatString.construct5("ERASE_FROM_CURSOR_TO_BEGINNING_OF_SCREEN")), Field.construct(FlatString.construct5("ERASE_ENTIRE_SCREEN")), Field.construct(FlatString.construct5("ERASE_SAVED_LINES")), Field.construct(FlatString.construct5("ERASE_FROM_CURSOR_TO_END_OF_LINE")), Field.construct(FlatString.construct5("ERASE_FROM_CURSOR_TO_BEGINNING_OF_LINE")), Field.construct(FlatString.construct5("ERASE_ENTIRE_LINE"))), EscapeCode.generated351(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("cursorMoveHome")), Function.construct(FlatString.construct5("cursorMoveToPosition")), Function.construct(FlatString.construct5("cursorMoveUp")), Function.construct(FlatString.construct5("cursorMoveDown")), Function.construct(FlatString.construct5("cursorMoveRight")), Function.construct(FlatString.construct5("cursorMoveLeft")), Function.construct(FlatString.construct5("cursorMoveDownAtBeginningOfLine")), Function.construct(FlatString.construct5("cursorMoveUpAtBeginningOfLine")), Function.construct(FlatString.construct5("cursorMoveToColumn")), Function.construct(FlatString.construct5("cursorRequestPosition")), Function.construct(FlatString.construct5("cursorMoveUpOneLine")), Function.construct(FlatString.construct5("cursorSavePosition")), Function.construct(FlatString.construct5("cursorRestorePosition")), Function.construct(FlatString.construct5("eraseFromCursorToEndOfScreen")), Function.construct(FlatString.construct5("eraseFromCursorToBeginningOfScreen")), Function.construct(FlatString.construct5("eraseEntireScreen")), Function.construct(FlatString.construct5("eraseSavedLines")), Function.construct(FlatString.construct5("eraseFromCursorToEndOfLine")), Function.construct(FlatString.construct5("eraseFromCursorToBeginningOfLine")), Function.construct(FlatString.construct5("eraseEntireLine")), Function.construct(FlatString.construct5("visibleCount")), Function.construct(FlatString.construct5("visibleSubstring")), Function.construct(FlatString.construct5("wrapLine")), Function.construct(FlatString.construct5("findBreakWordOffset")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -9287,14 +9290,14 @@ class EscapeCodeIterator extends FlatObject {
 		return this;
 	}
 
-	static generated38(value0) {
+	static generated59(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated198(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13) {
+	static generated79(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9314,7 +9317,7 @@ class EscapeCodeIterator extends FlatObject {
 		return FlatArray.construct1(temp, 14);
 	}
 
-	static generated250(value0, value1, value2, value3, value4, value5) {
+	static generated293(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9326,7 +9329,7 @@ class EscapeCodeIterator extends FlatObject {
 		return FlatArray.construct1(temp, 6);
 	}
 
-	static generated357(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45) {
+	static generated358(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9376,14 +9379,6 @@ class EscapeCodeIterator extends FlatObject {
 		temp[44] = value44;
 		temp[45] = value45;
 		return FlatArray.construct1(temp, 46);
-	}
-
-	static generated358(value0, value1) {
-		let temp = flat_null;
-		temp = [];
-		temp[0] = value0;
-		temp[1] = value1;
-		return FlatArray.construct1(temp, 2);
 	}
 
 	static generated359(value0, value1) {
@@ -9474,7 +9469,15 @@ class EscapeCodeIterator extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated370(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
+	static generated370(value0, value1) {
+		let temp = flat_null;
+		temp = [];
+		temp[0] = value0;
+		temp[1] = value1;
+		return FlatArray.construct1(temp, 2);
+	}
+
+	static generated371(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9531,7 +9534,7 @@ class EscapeCodeIterator extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof EscapeCodeIterator.__lazy_accessor__js_class !== 'undefined' ? EscapeCodeIterator.__lazy_accessor__js_class : (EscapeCodeIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/console/EscapeCodeIterator"), false, FlatObject.accessor__js_class(), EscapeCodeIterator.generated38(Iterator.accessor__js_class()), EscapeCodeIterator.generated198(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("positionEnd")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("code")), Field.construct(FlatString.construct5("previousCode")), Field.construct(FlatString.construct5("nextCode")), Field.construct(FlatString.construct5("codeCount")), Field.construct(FlatString.construct5("previousCodeCount")), Field.construct(FlatString.construct5("nextCodeCount"))), EscapeCodeIterator.generated250(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("findEscapeCodeEnd")), Function.construct(FlatString.construct5("findExactEscapeCodeEnd")), Function.construct(FlatString.construct5("findVariableEscapeCodeEnd")), Function.construct(FlatString.construct5("reset"))), this);
+					return Class.construct1(FlatString.construct5("flat/console/EscapeCodeIterator"), false, FlatObject.accessor__js_class(), EscapeCodeIterator.generated59(Iterator.accessor__js_class()), EscapeCodeIterator.generated79(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("positionEnd")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("code")), Field.construct(FlatString.construct5("previousCode")), Field.construct(FlatString.construct5("nextCode")), Field.construct(FlatString.construct5("codeCount")), Field.construct(FlatString.construct5("previousCodeCount")), Field.construct(FlatString.construct5("nextCodeCount"))), EscapeCodeIterator.generated293(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("findEscapeCodeEnd")), Function.construct(FlatString.construct5("findExactEscapeCodeEnd")), Function.construct(FlatString.construct5("findVariableEscapeCodeEnd")), Function.construct(FlatString.construct5("reset"))), this);
 			})());
 	}
 
@@ -9577,13 +9580,13 @@ class EscapeCodeIterator extends FlatObject {
 
 	static accessor_EXACT_ESCAPE_CODES() {
 		return typeof EscapeCodeIterator.__lazy_accessor_EXACT_ESCAPE_CODES !== 'undefined' ? EscapeCodeIterator.__lazy_accessor_EXACT_ESCAPE_CODES : (EscapeCodeIterator.__lazy_accessor_EXACT_ESCAPE_CODES = (() => {
-					return EscapeCodeIterator.generated357(EscapeCode.RESET, EscapeCode.BRIGHT, EscapeCode.DIM, EscapeCode.UNDERSCORE, EscapeCode.BLINK, EscapeCode.REVERSE, EscapeCode.HIDDEN, EscapeCode.BLACK_FOREGROUND, EscapeCode.RED_FOREGROUND, EscapeCode.GREEN_FOREGROUND, EscapeCode.YELLOW_FOREGROUND, EscapeCode.BLUE_FOREGROUND, EscapeCode.MAGENTA_FOREGROUND, EscapeCode.CYAN_FOREGROUND, EscapeCode.WHITE_FOREGROUND, EscapeCode.GRAY_FOREGROUND, EscapeCode.BRIGHT_BLACK_FOREGROUND, EscapeCode.BRIGHT_RED_FOREGROUND, EscapeCode.BRIGHT_GREEN_FOREGROUND, EscapeCode.BRIGHT_YELLOW_FOREGROUND, EscapeCode.BRIGHT_BLUE_FOREGROUND, EscapeCode.BRIGHT_MAGENTA_FOREGROUND, EscapeCode.BRIGHT_CYAN_FOREGROUND, EscapeCode.BRIGHT_WHITE_FOREGROUND, EscapeCode.BLACK_BACKGROUND, EscapeCode.RED_BACKGROUND, EscapeCode.GREEN_BACKGROUND, EscapeCode.YELLOW_BACKGROUND, EscapeCode.BLUE_BACKGROUND, EscapeCode.MAGENTA_BACKGROUND, EscapeCode.CYAN_BACKGROUND, EscapeCode.WHITE_BACKGROUND, EscapeCode.GRAY_BACKGROUND, EscapeCode.BRIGHT_BLACK_BACKGROUND, EscapeCode.BRIGHT_RED_BACKGROUND, EscapeCode.BRIGHT_GREEN_BACKGROUND, EscapeCode.BRIGHT_YELLOW_BACKGROUND, EscapeCode.BRIGHT_BLUE_BACKGROUND, EscapeCode.BRIGHT_MAGENTA_BACKGROUND, EscapeCode.BRIGHT_CYAN_BACKGROUND, EscapeCode.BRIGHT_WHITE_BACKGROUND, EscapeCode.CURSOR_MOVE_TO_HOME, EscapeCode.CURSOR_REQUEST_POSITION, EscapeCode.CURSOR_MOVE_UP_ONE_LINE, EscapeCode.CURSOR_SAVE_POSITION, EscapeCode.CURSOR_RESTORE_POSITION);
+					return EscapeCodeIterator.generated358(EscapeCode.RESET, EscapeCode.BRIGHT, EscapeCode.DIM, EscapeCode.UNDERSCORE, EscapeCode.BLINK, EscapeCode.REVERSE, EscapeCode.HIDDEN, EscapeCode.BLACK_FOREGROUND, EscapeCode.RED_FOREGROUND, EscapeCode.GREEN_FOREGROUND, EscapeCode.YELLOW_FOREGROUND, EscapeCode.BLUE_FOREGROUND, EscapeCode.MAGENTA_FOREGROUND, EscapeCode.CYAN_FOREGROUND, EscapeCode.WHITE_FOREGROUND, EscapeCode.GRAY_FOREGROUND, EscapeCode.BRIGHT_BLACK_FOREGROUND, EscapeCode.BRIGHT_RED_FOREGROUND, EscapeCode.BRIGHT_GREEN_FOREGROUND, EscapeCode.BRIGHT_YELLOW_FOREGROUND, EscapeCode.BRIGHT_BLUE_FOREGROUND, EscapeCode.BRIGHT_MAGENTA_FOREGROUND, EscapeCode.BRIGHT_CYAN_FOREGROUND, EscapeCode.BRIGHT_WHITE_FOREGROUND, EscapeCode.BLACK_BACKGROUND, EscapeCode.RED_BACKGROUND, EscapeCode.GREEN_BACKGROUND, EscapeCode.YELLOW_BACKGROUND, EscapeCode.BLUE_BACKGROUND, EscapeCode.MAGENTA_BACKGROUND, EscapeCode.CYAN_BACKGROUND, EscapeCode.WHITE_BACKGROUND, EscapeCode.GRAY_BACKGROUND, EscapeCode.BRIGHT_BLACK_BACKGROUND, EscapeCode.BRIGHT_RED_BACKGROUND, EscapeCode.BRIGHT_GREEN_BACKGROUND, EscapeCode.BRIGHT_YELLOW_BACKGROUND, EscapeCode.BRIGHT_BLUE_BACKGROUND, EscapeCode.BRIGHT_MAGENTA_BACKGROUND, EscapeCode.BRIGHT_CYAN_BACKGROUND, EscapeCode.BRIGHT_WHITE_BACKGROUND, EscapeCode.CURSOR_MOVE_TO_HOME, EscapeCode.CURSOR_REQUEST_POSITION, EscapeCode.CURSOR_MOVE_UP_ONE_LINE, EscapeCode.CURSOR_SAVE_POSITION, EscapeCode.CURSOR_RESTORE_POSITION);
 			})());
 	}
 
 	static accessor_VARIABLE_ESCAPE_CODES() {
 		return typeof EscapeCodeIterator.__lazy_accessor_VARIABLE_ESCAPE_CODES !== 'undefined' ? EscapeCodeIterator.__lazy_accessor_VARIABLE_ESCAPE_CODES : (EscapeCodeIterator.__lazy_accessor_VARIABLE_ESCAPE_CODES = (() => {
-					return EscapeCodeIterator.generated370(FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated358(EscapeCode.RGB_FOREGROUND_PREFIX, EscapeCode.MODE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated359(EscapeCode.RGB_FOREGROUND_256_PREFIX, EscapeCode.MODE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated360(EscapeCode.RGB_BACKGROUND_PREFIX, EscapeCode.MODE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated361(EscapeCode.RGB_BACKGROUND_256_PREFIX, EscapeCode.MODE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated362(EscapeCode.CURSOR_MOVE_TO_POSITION_PREFIX, EscapeCode.CURSOR_MOVE_TO_POSITION_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated363(EscapeCode.CURSOR_MOVE_UP_PREFIX, EscapeCode.CURSOR_MOVE_UP_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated364(EscapeCode.CURSOR_MOVE_DOWN_PREFIX, EscapeCode.CURSOR_MOVE_DOWN_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated365(EscapeCode.CURSOR_MOVE_RIGHT_PREFIX, EscapeCode.CURSOR_MOVE_RIGHT_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated366(EscapeCode.CURSOR_MOVE_LEFT_PREFIX, EscapeCode.CURSOR_MOVE_LEFT_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated367(EscapeCode.CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_PREFIX, EscapeCode.CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated368(EscapeCode.CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_PREFIX, EscapeCode.CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated369(EscapeCode.CURSOR_MOVE_TO_COLUMN_PREFIX, EscapeCode.CURSOR_MOVE_TO_COLUMN_SUFFIX)]));
+					return EscapeCodeIterator.generated371(FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated359(EscapeCode.RGB_FOREGROUND_PREFIX, EscapeCode.MODE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated360(EscapeCode.RGB_FOREGROUND_256_PREFIX, EscapeCode.MODE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated361(EscapeCode.RGB_BACKGROUND_PREFIX, EscapeCode.MODE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated362(EscapeCode.RGB_BACKGROUND_256_PREFIX, EscapeCode.MODE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated363(EscapeCode.CURSOR_MOVE_TO_POSITION_PREFIX, EscapeCode.CURSOR_MOVE_TO_POSITION_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated364(EscapeCode.CURSOR_MOVE_UP_PREFIX, EscapeCode.CURSOR_MOVE_UP_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated365(EscapeCode.CURSOR_MOVE_DOWN_PREFIX, EscapeCode.CURSOR_MOVE_DOWN_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated366(EscapeCode.CURSOR_MOVE_RIGHT_PREFIX, EscapeCode.CURSOR_MOVE_RIGHT_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated367(EscapeCode.CURSOR_MOVE_LEFT_PREFIX, EscapeCode.CURSOR_MOVE_LEFT_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated368(EscapeCode.CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_PREFIX, EscapeCode.CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated369(EscapeCode.CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_PREFIX, EscapeCode.CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_SUFFIX)]), FlatArray.construct().__chain('addAll', [EscapeCodeIterator.generated370(EscapeCode.CURSOR_MOVE_TO_COLUMN_PREFIX, EscapeCode.CURSOR_MOVE_TO_COLUMN_SUFFIX)]));
 			})());
 	}
 
@@ -9720,7 +9723,7 @@ class EventStream extends FlatObject {
 		return future;
 	}
 
-	static generated39(value0, value1, value2) {
+	static generated62(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9729,7 +9732,7 @@ class EventStream extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated281(value0, value1, value2, value3, value4, value5, value6) {
+	static generated132(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9744,7 +9747,7 @@ class EventStream extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof EventStream.__lazy_accessor__js_class !== 'undefined' ? EventStream.__lazy_accessor__js_class : (EventStream.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/EventStream"), false, FlatObject.accessor__js_class(), FlatArray.construct(), EventStream.generated39(Field.construct(FlatString.construct5("backlogEvents")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("backlogMissedEvents"))), EventStream.generated281(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("emit")), Function.construct(FlatString.construct5("on")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("consumeAll")), Function.construct(FlatString.construct5("waitFor"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/EventStream"), false, FlatObject.accessor__js_class(), FlatArray.construct(), EventStream.generated62(Field.construct(FlatString.construct5("backlogEvents")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("backlogMissedEvents"))), EventStream.generated132(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("emit")), Function.construct(FlatString.construct5("on")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("consumeAll")), Function.construct(FlatString.construct5("waitFor"))), this);
 			})());
 	}
 
@@ -9806,7 +9809,7 @@ class ExceptionData extends FlatObject {
 		return self;
 	}
 
-	static generated41(value0, value1, value2) {
+	static generated60(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9815,7 +9818,7 @@ class ExceptionData extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated202(value0, value1, value2, value3, value4) {
+	static generated75(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9828,7 +9831,7 @@ class ExceptionData extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ExceptionData.__lazy_accessor__js_class !== 'undefined' ? ExceptionData.__lazy_accessor__js_class : (ExceptionData.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/exception/ExceptionData"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ExceptionData.generated41(Field.construct(FlatString.construct5("parent")), Field.construct(FlatString.construct5("caught")), Field.construct(FlatString.construct5("thrownException"))), ExceptionData.generated202(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("addCaught")), Function.construct(FlatString.construct5("getDataByException")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/exception/ExceptionData"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ExceptionData.generated60(Field.construct(FlatString.construct5("parent")), Field.construct(FlatString.construct5("caught")), Field.construct(FlatString.construct5("thrownException"))), ExceptionData.generated75(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("addCaught")), Function.construct(FlatString.construct5("getDataByException")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -9906,7 +9909,7 @@ class ExecutionResponse extends FlatObject {
 		return target.toBuilder().stdout(stdout).stderr(stderr).output(output).exitCode(exitCode).build();
 	}
 
-	static generated45(value0, value1, value2, value3) {
+	static generated63(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9916,7 +9919,7 @@ class ExecutionResponse extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated209(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated83(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -9933,7 +9936,7 @@ class ExecutionResponse extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ExecutionResponse.__lazy_accessor__js_class !== 'undefined' ? ExecutionResponse.__lazy_accessor__js_class : (ExecutionResponse.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/system/ExecutionResponse"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ExecutionResponse.generated45(Field.construct(FlatString.construct5("stdout")), Field.construct(FlatString.construct5("stderr")), Field.construct(FlatString.construct5("output")), Field.construct(FlatString.construct5("exitCode"))), ExecutionResponse.generated209(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/system/ExecutionResponse"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ExecutionResponse.generated63(Field.construct(FlatString.construct5("stdout")), Field.construct(FlatString.construct5("stderr")), Field.construct(FlatString.construct5("output")), Field.construct(FlatString.construct5("exitCode"))), ExecutionResponse.generated83(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -9995,7 +9998,7 @@ class flat_system_ExecutionResponse_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated265(value0, value1, value2, value3, value4, value5, value6) {
+	static generated303(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -10010,7 +10013,7 @@ class flat_system_ExecutionResponse_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_system_ExecutionResponse_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_system_ExecutionResponse_Builder.__lazy_accessor__js_class : (flat_system_ExecutionResponse_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/system/ExecutionResponse.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_system_ExecutionResponse_Builder.generated265(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("stdout")), Function.construct(FlatString.construct5("stderr")), Function.construct(FlatString.construct5("output")), Function.construct(FlatString.construct5("exitCode")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/system/ExecutionResponse.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_system_ExecutionResponse_Builder.generated303(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("stdout")), Function.construct(FlatString.construct5("stderr")), Function.construct(FlatString.construct5("output")), Function.construct(FlatString.construct5("exitCode")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -10088,7 +10091,7 @@ class ExecutorTaskResult extends FlatObject {
 		return target.toBuilder().completed(completed).failed(failed).capacityExceeded(capacityExceeded).error(error).build();
 	}
 
-	static generated48(value0, value1, value2, value3) {
+	static generated66(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -10098,7 +10101,7 @@ class ExecutorTaskResult extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated215(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated71(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -10115,7 +10118,7 @@ class ExecutorTaskResult extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ExecutorTaskResult.__lazy_accessor__js_class !== 'undefined' ? ExecutorTaskResult.__lazy_accessor__js_class : (ExecutorTaskResult.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ExecutorTaskResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ExecutorTaskResult.generated48(Field.construct(FlatString.construct5("completed")), Field.construct(FlatString.construct5("failed")), Field.construct(FlatString.construct5("capacityExceeded")), Field.construct(FlatString.construct5("error"))), ExecutorTaskResult.generated215(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ExecutorTaskResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ExecutorTaskResult.generated66(Field.construct(FlatString.construct5("completed")), Field.construct(FlatString.construct5("failed")), Field.construct(FlatString.construct5("capacityExceeded")), Field.construct(FlatString.construct5("error"))), ExecutorTaskResult.generated71(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -10177,7 +10180,7 @@ class flat_eventstream_ExecutorTaskResult_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated228(value0, value1, value2, value3, value4, value5, value6) {
+	static generated276(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -10192,7 +10195,7 @@ class flat_eventstream_ExecutorTaskResult_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_eventstream_ExecutorTaskResult_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_eventstream_ExecutorTaskResult_Builder.__lazy_accessor__js_class : (flat_eventstream_ExecutorTaskResult_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ExecutorTaskResult.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_ExecutorTaskResult_Builder.generated228(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("completed")), Function.construct(FlatString.construct5("failed")), Function.construct(FlatString.construct5("capacityExceeded")), Function.construct(FlatString.construct5("error")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ExecutorTaskResult.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_ExecutorTaskResult_Builder.generated276(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("completed")), Function.construct(FlatString.construct5("failed")), Function.construct(FlatString.construct5("capacityExceeded")), Function.construct(FlatString.construct5("error")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -10271,14 +10274,14 @@ class FancyOutputStream extends FlatObject {
 		return this;
 	}
 
-	static generated42(value0) {
+	static generated70(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated55(value0, value1, value2) {
+	static generated76(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -10287,7 +10290,7 @@ class FancyOutputStream extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated316(value0, value1, value2, value3, value4, value5, value6) {
+	static generated164(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -10302,7 +10305,7 @@ class FancyOutputStream extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof FancyOutputStream.__lazy_accessor__js_class !== 'undefined' ? FancyOutputStream.__lazy_accessor__js_class : (FancyOutputStream.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/FancyOutputStream"), false, FlatObject.accessor__js_class(), FancyOutputStream.generated42(OutputStream.accessor__js_class()), FancyOutputStream.generated55(Field.construct(FlatString.construct5("contentWidth")), Field.construct(FlatString.construct5("headerPattern")), Field.construct(FlatString.construct5("out"))), FancyOutputStream.generated316(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("writeHeader")), Function.construct(FlatString.construct5("writeHeader")), Function.construct(FlatString.construct5("writeSeparator")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("writeLine"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/FancyOutputStream"), false, FlatObject.accessor__js_class(), FancyOutputStream.generated70(OutputStream.accessor__js_class()), FancyOutputStream.generated76(Field.construct(FlatString.construct5("contentWidth")), Field.construct(FlatString.construct5("headerPattern")), Field.construct(FlatString.construct5("out"))), FancyOutputStream.generated164(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("writeHeader")), Function.construct(FlatString.construct5("writeHeader")), Function.construct(FlatString.construct5("writeSeparator")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("writeLine"))), this);
 			})());
 	}
 
@@ -10371,14 +10374,14 @@ class Field extends FlatObject {
 		return target.toBuilder().name(name).build();
 	}
 
-	static generated44(value0) {
+	static generated72(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated69(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
+	static generated123(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -10397,7 +10400,7 @@ class Field extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Field.__lazy_accessor__js_class !== 'undefined' ? Field.__lazy_accessor__js_class : (Field.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/meta/Field"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Field.generated44(Field.construct(FlatString.construct5("name"))), Field.generated69(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("getValue")), Function.construct(FlatString.construct5("setValue")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/meta/Field"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Field.generated72(Field.construct(FlatString.construct5("name"))), Field.generated123(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("getValue")), Function.construct(FlatString.construct5("setValue")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -10435,7 +10438,7 @@ class flat_meta_Field_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated245(value0, value1, value2, value3) {
+	static generated301(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -10447,7 +10450,7 @@ class flat_meta_Field_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_meta_Field_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_meta_Field_Builder.__lazy_accessor__js_class : (flat_meta_Field_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/meta/Field.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_meta_Field_Builder.generated245(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("name")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/meta/Field.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_meta_Field_Builder.generated301(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("name")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -10780,7 +10783,7 @@ class File extends FlatObject {
 		return stream;
 	}
 
-	static generated97(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18) {
+	static generated81(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -10897,7 +10900,7 @@ class File extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof File.__lazy_accessor__js_class !== 'undefined' ? File.__lazy_accessor__js_class : (File.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/File"), false, FlatObject.accessor__js_class(), FlatArray.construct(), File.generated97(Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("normalizedLocation")), Field.construct(FlatString.construct5("name")), Field.construct(FlatString.construct5("extension")), Field.construct(FlatString.construct5("fullExtension")), Field.construct(FlatString.construct5("extensionName")), Field.construct(FlatString.construct5("rootName")), Field.construct(FlatString.construct5("extensionNames")), Field.construct(FlatString.construct5("extensions")), Field.construct(FlatString.construct5("isHidden")), Field.construct(FlatString.construct5("isFile")), Field.construct(FlatString.construct5("isDirectory")), Field.construct(FlatString.construct5("exists")), Field.construct(FlatString.construct5("nativeLocation")), Field.construct(FlatString.construct5("isSymbolicLink")), Field.construct(FlatString.construct5("files")), Field.construct(FlatString.construct5("bytes")), Field.construct(FlatString.construct5("EXECUTED_FILE")), Field.construct(FlatString.construct5("EXECUTED_DIRECTORY"))), File.generated321(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("getChildFiles")), Function.construct(FlatString.construct5("normalizeLocation")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toFileSize")), Function.construct(FlatString.construct5("getExecutedFile")), Function.construct(FlatString.construct5("getExecutedDirectory")), Function.construct(FlatString.construct5("getCanonicalFile")), Function.construct(FlatString.construct5("getCanonicalFileSync")), Function.construct(FlatString.construct5("getCanonicalPath")), Function.construct(FlatString.construct5("getCanonicalPathSync")), Function.construct(FlatString.construct5("getSymbolicLinkTarget")), Function.construct(FlatString.construct5("getSymbolicLinkTargetSync")), Function.construct(FlatString.construct5("getParent")), Function.construct(FlatString.construct5("getChild")), Function.construct(FlatString.construct5("delete")), Function.construct(FlatString.construct5("deleteSync")), Function.construct(FlatString.construct5("mkdirs")), Function.construct(FlatString.construct5("mkdir")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("chmod")), Function.construct(FlatString.construct5("symbolicLinkTo")), Function.construct(FlatString.construct5("symbolicLink")), Function.construct(FlatString.construct5("createReadStream"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/File"), false, FlatObject.accessor__js_class(), FlatArray.construct(), File.generated81(Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("normalizedLocation")), Field.construct(FlatString.construct5("name")), Field.construct(FlatString.construct5("extension")), Field.construct(FlatString.construct5("fullExtension")), Field.construct(FlatString.construct5("extensionName")), Field.construct(FlatString.construct5("rootName")), Field.construct(FlatString.construct5("extensionNames")), Field.construct(FlatString.construct5("extensions")), Field.construct(FlatString.construct5("isHidden")), Field.construct(FlatString.construct5("isFile")), Field.construct(FlatString.construct5("isDirectory")), Field.construct(FlatString.construct5("exists")), Field.construct(FlatString.construct5("nativeLocation")), Field.construct(FlatString.construct5("isSymbolicLink")), Field.construct(FlatString.construct5("files")), Field.construct(FlatString.construct5("bytes")), Field.construct(FlatString.construct5("EXECUTED_FILE")), Field.construct(FlatString.construct5("EXECUTED_DIRECTORY"))), File.generated321(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("getChildFiles")), Function.construct(FlatString.construct5("normalizeLocation")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toFileSize")), Function.construct(FlatString.construct5("getExecutedFile")), Function.construct(FlatString.construct5("getExecutedDirectory")), Function.construct(FlatString.construct5("getCanonicalFile")), Function.construct(FlatString.construct5("getCanonicalFileSync")), Function.construct(FlatString.construct5("getCanonicalPath")), Function.construct(FlatString.construct5("getCanonicalPathSync")), Function.construct(FlatString.construct5("getSymbolicLinkTarget")), Function.construct(FlatString.construct5("getSymbolicLinkTargetSync")), Function.construct(FlatString.construct5("getParent")), Function.construct(FlatString.construct5("getChild")), Function.construct(FlatString.construct5("delete")), Function.construct(FlatString.construct5("deleteSync")), Function.construct(FlatString.construct5("mkdirs")), Function.construct(FlatString.construct5("mkdir")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("chmod")), Function.construct(FlatString.construct5("symbolicLinkTo")), Function.construct(FlatString.construct5("symbolicLink")), Function.construct(FlatString.construct5("createReadStream"))), this);
 			})());
 	}
 
@@ -10950,7 +10953,7 @@ class File_FileGlobal extends FlatObject {
 	static fs = flat_null;
 	static path = flat_null;
 
-	static generated354(value0, value1) {
+	static generated352(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -10960,7 +10963,7 @@ class File_FileGlobal extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof File_FileGlobal.__lazy_accessor__js_class !== 'undefined' ? File_FileGlobal.__lazy_accessor__js_class : (File_FileGlobal.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/File.FileGlobal"), false, FlatObject.accessor__js_class(), FlatArray.construct(), File_FileGlobal.generated354(Field.construct(FlatString.construct5("fs")), Field.construct(FlatString.construct5("path"))), FlatArray.construct(), this);
+					return Class.construct1(FlatString.construct5("flat/io/File.FileGlobal"), false, FlatObject.accessor__js_class(), FlatArray.construct(), File_FileGlobal.generated352(Field.construct(FlatString.construct5("fs")), Field.construct(FlatString.construct5("path"))), FlatArray.construct(), this);
 			})());
 	}
 
@@ -10992,7 +10995,7 @@ class FileNotFoundException extends Exception {
 		return self;
 	}
 
-	static generated52(value0, value1) {
+	static generated73(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11002,7 +11005,7 @@ class FileNotFoundException extends Exception {
 
 	static accessor__js_class() {
 		return typeof FileNotFoundException.__lazy_accessor__js_class !== 'undefined' ? FileNotFoundException.__lazy_accessor__js_class : (FileNotFoundException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/FileNotFoundException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), FileNotFoundException.generated52(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/FileNotFoundException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), FileNotFoundException.generated73(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -11011,7 +11014,7 @@ class FileNotFoundException extends Exception {
 }
 
 class InputStream {
-	static generated76(value0, value1) {
+	static generated103(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11021,7 +11024,7 @@ class InputStream {
 
 	static accessor__js_class() {
 		return typeof InputStream.__lazy_accessor__js_class !== 'undefined' ? InputStream.__lazy_accessor__js_class : (InputStream.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/InputStream"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InputStream.generated76(Function.construct(FlatString.construct5("readString")), Function.construct(FlatString.construct5("readBytes"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/InputStream"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InputStream.generated103(Function.construct(FlatString.construct5("readString")), Function.construct(FlatString.construct5("readBytes"))), this);
 			})());
 	}
 }
@@ -11084,14 +11087,14 @@ class FileReader extends FlatObject {
 		return 0;
 	}
 
-	static generated50(value0) {
+	static generated74(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated67(value0, value1) {
+	static generated77(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11099,7 +11102,7 @@ class FileReader extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated237(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated216(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11116,7 +11119,7 @@ class FileReader extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof FileReader.__lazy_accessor__js_class !== 'undefined' ? FileReader.__lazy_accessor__js_class : (FileReader.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/FileReader"), false, FlatObject.accessor__js_class(), FileReader.generated50(InputStream.accessor__js_class()), FileReader.generated67(Field.construct(FlatString.construct5("isOpen")), Field.construct(FlatString.construct5("file"))), FileReader.generated237(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("readBytes")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("open")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("readAllContents")), Function.construct(FlatString.construct5("readString")), Function.construct(FlatString.construct5("readLine")), Function.construct(FlatString.construct5("readChar"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/FileReader"), false, FlatObject.accessor__js_class(), FileReader.generated74(InputStream.accessor__js_class()), FileReader.generated77(Field.construct(FlatString.construct5("isOpen")), Field.construct(FlatString.construct5("file"))), FileReader.generated216(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("readBytes")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("open")), Function.construct(FlatString.construct5("close")), Function.construct(FlatString.construct5("readAllContents")), Function.construct(FlatString.construct5("readString")), Function.construct(FlatString.construct5("readLine")), Function.construct(FlatString.construct5("readChar"))), this);
 			})());
 	}
 
@@ -11196,14 +11199,14 @@ class FileWriter extends FlatObject {
 		return data;
 	}
 
-	static generated51(value0) {
+	static generated78(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated71(value0, value1) {
+	static generated80(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11211,7 +11214,7 @@ class FileWriter extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated207(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated222(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11228,7 +11231,7 @@ class FileWriter extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof FileWriter.__lazy_accessor__js_class !== 'undefined' ? FileWriter.__lazy_accessor__js_class : (FileWriter.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/FileWriter"), false, FlatObject.accessor__js_class(), FileWriter.generated51(OutputStream.accessor__js_class()), FileWriter.generated71(Field.construct(FlatString.construct5("isOpen")), Field.construct(FlatString.construct5("file"))), FileWriter.generated207(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("append"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/FileWriter"), false, FlatObject.accessor__js_class(), FileWriter.generated78(OutputStream.accessor__js_class()), FileWriter.generated80(Field.construct(FlatString.construct5("isOpen")), Field.construct(FlatString.construct5("file"))), FileWriter.generated222(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("writeLine")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("append"))), this);
 			})());
 	}
 
@@ -11267,7 +11270,7 @@ class SourceProvider extends FlatObject {
 		return self;
 	}
 
-	static generated131(value0, value1, value2, value3) {
+	static generated209(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11279,7 +11282,7 @@ class SourceProvider extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof SourceProvider.__lazy_accessor__js_class !== 'undefined' ? SourceProvider.__lazy_accessor__js_class : (SourceProvider.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/SourceProvider"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), SourceProvider.generated131(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("identities")), Function.construct(FlatString.construct5("load")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/SourceProvider"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), SourceProvider.generated209(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("identities")), Function.construct(FlatString.construct5("load")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -11362,7 +11365,7 @@ class FilesystemSourceProvider extends SourceProvider {
 		return LoadedSource.construct(SourceSnapshotIdentity.construct(identity, revision), contents);
 	}
 
-	static generated56(value0, value1) {
+	static generated82(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11370,7 +11373,7 @@ class FilesystemSourceProvider extends SourceProvider {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated175(value0, value1, value2, value3) {
+	static generated121(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11382,7 +11385,7 @@ class FilesystemSourceProvider extends SourceProvider {
 
 	static accessor__js_class() {
 		return typeof FilesystemSourceProvider.__lazy_accessor__js_class !== 'undefined' ? FilesystemSourceProvider.__lazy_accessor__js_class : (FilesystemSourceProvider.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/FilesystemSourceProvider"), false, SourceProvider.accessor__js_class(), FlatArray.construct(), FilesystemSourceProvider.generated56(Field.construct(FlatString.construct5("root")), Field.construct(FlatString.construct5("revisionPrefix"))), FilesystemSourceProvider.generated175(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("identities")), Function.construct(FlatString.construct5("load"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/FilesystemSourceProvider"), false, SourceProvider.accessor__js_class(), FlatArray.construct(), FilesystemSourceProvider.generated82(Field.construct(FlatString.construct5("root")), Field.construct(FlatString.construct5("revisionPrefix"))), FilesystemSourceProvider.generated121(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("identities")), Function.construct(FlatString.construct5("load"))), this);
 			})());
 	}
 
@@ -11412,14 +11415,14 @@ class StreamIterator extends FlatObject {
 		return self;
 	}
 
-	static generated141(value0) {
+	static generated175(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated230(value0, value1, value2, value3, value4) {
+	static generated247(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11430,7 +11433,7 @@ class StreamIterator extends FlatObject {
 		return FlatArray.construct1(temp, 5);
 	}
 
-	static generated240(value0, value1) {
+	static generated294(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11440,7 +11443,7 @@ class StreamIterator extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof StreamIterator.__lazy_accessor__js_class !== 'undefined' ? StreamIterator.__lazy_accessor__js_class : (StreamIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/stream/StreamIterator"), false, FlatObject.accessor__js_class(), StreamIterator.generated141(Iterator.accessor__js_class()), StreamIterator.generated230(Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), StreamIterator.generated240(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/stream/StreamIterator"), false, FlatObject.accessor__js_class(), StreamIterator.generated175(Iterator.accessor__js_class()), StreamIterator.generated247(Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), StreamIterator.generated294(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -11488,7 +11491,7 @@ class FilterIterator extends StreamIterator {
 		return self;
 	}
 
-	static generated57(value0, value1, value2, value3) {
+	static generated84(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11498,7 +11501,7 @@ class FilterIterator extends StreamIterator {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated270(value0, value1) {
+	static generated99(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11525,7 +11528,7 @@ class FilterIterator extends StreamIterator {
 
 	static accessor__js_class() {
 		return typeof FilterIterator.__lazy_accessor__js_class !== 'undefined' ? FilterIterator.__lazy_accessor__js_class : (FilterIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/stream/FilterIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), FilterIterator.generated57(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), FilterIterator.generated270(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/stream/FilterIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), FilterIterator.generated84(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), FilterIterator.generated99(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -11570,7 +11573,7 @@ class FilterNotIterator extends StreamIterator {
 		return self;
 	}
 
-	static generated59(value0, value1, value2, value3) {
+	static generated85(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11580,7 +11583,7 @@ class FilterNotIterator extends StreamIterator {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated210(value0, value1) {
+	static generated114(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11607,7 +11610,7 @@ class FilterNotIterator extends StreamIterator {
 
 	static accessor__js_class() {
 		return typeof FilterNotIterator.__lazy_accessor__js_class !== 'undefined' ? FilterNotIterator.__lazy_accessor__js_class : (FilterNotIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/stream/FilterNotIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), FilterNotIterator.generated59(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), FilterNotIterator.generated210(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/stream/FilterNotIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), FilterNotIterator.generated85(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), FilterNotIterator.generated114(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -11663,7 +11666,7 @@ class FlatMapIterator extends StreamIterator {
 		}).accessor_first();
 	}
 
-	static generated60(value0, value1, value2, value3) {
+	static generated86(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11673,7 +11676,7 @@ class FlatMapIterator extends StreamIterator {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated214(value0, value1, value2) {
+	static generated152(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11722,7 +11725,7 @@ class FlatMapIterator extends StreamIterator {
 
 	static accessor__js_class() {
 		return typeof FlatMapIterator.__lazy_accessor__js_class !== 'undefined' ? FlatMapIterator.__lazy_accessor__js_class : (FlatMapIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/stream/FlatMapIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), FlatMapIterator.generated60(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), FlatMapIterator.generated214(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("mapNext"))), this);
+					return Class.construct1(FlatString.construct5("flat/stream/FlatMapIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), FlatMapIterator.generated86(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), FlatMapIterator.generated152(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("mapNext"))), this);
 			})());
 	}
 
@@ -11945,14 +11948,14 @@ class FlatFloat extends Number {
 		return FlatDouble.toFixed(value, precision);
 	}
 
-	static generated58(value0) {
+	static generated88(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated183(value0, value1, value2) {
+	static generated129(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -11961,7 +11964,7 @@ class FlatFloat extends Number {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated328(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44) {
+	static generated310(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -12014,7 +12017,7 @@ class FlatFloat extends Number {
 
 	static accessor__js_class() {
 		return typeof FlatFloat.__lazy_accessor__js_class !== 'undefined' ? FlatFloat.__lazy_accessor__js_class : (FlatFloat.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/primitive/number/Float"), false, Number.accessor__js_class(), FlatFloat.generated58(RealNumber.accessor__js_class()), FlatFloat.generated183(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value"))), FlatFloat.generated328(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("withinTolerance")), Function.construct(FlatString.construct5("withinTolerance")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("parseFloat")), Function.construct(FlatString.construct5("toCharArray")), Function.construct(FlatString.construct5("toFixed")), Function.construct(FlatString.construct5("toFixed"))), this);
+					return Class.construct1(FlatString.construct5("flat/primitive/number/Float"), false, Number.accessor__js_class(), FlatFloat.generated88(RealNumber.accessor__js_class()), FlatFloat.generated129(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value"))), FlatFloat.generated310(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("withinTolerance")), Function.construct(FlatString.construct5("withinTolerance")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("parseFloat")), Function.construct(FlatString.construct5("toCharArray")), Function.construct(FlatString.construct5("toFixed")), Function.construct(FlatString.construct5("toFixed"))), this);
 			})());
 	}
 
@@ -12091,14 +12094,14 @@ class Function extends FlatObject {
 		return target.toBuilder().name(name).build();
 	}
 
-	static generated61(value0) {
+	static generated87(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated113(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
+	static generated101(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -12117,7 +12120,7 @@ class Function extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Function.__lazy_accessor__js_class !== 'undefined' ? Function.__lazy_accessor__js_class : (Function.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/meta/Function"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Function.generated61(Field.construct(FlatString.construct5("name"))), Function.generated113(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("call")), Function.construct(FlatString.construct5("callStatic")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/meta/Function"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Function.generated87(Field.construct(FlatString.construct5("name"))), Function.generated101(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("call")), Function.construct(FlatString.construct5("callStatic")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -12155,7 +12158,7 @@ class flat_meta_Function_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated313(value0, value1, value2, value3) {
+	static generated297(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -12167,7 +12170,7 @@ class flat_meta_Function_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_meta_Function_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_meta_Function_Builder.__lazy_accessor__js_class : (flat_meta_Function_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/meta/Function.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_meta_Function_Builder.generated313(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("name")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/meta/Function.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_meta_Function_Builder.generated297(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("name")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -12297,7 +12300,7 @@ class Future extends FlatObject {
 		});
 	}
 
-	static generated62(value0, value1, value2) {
+	static generated89(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -12306,7 +12309,7 @@ class Future extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated284(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
+	static generated228(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -12325,7 +12328,7 @@ class Future extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Future.__lazy_accessor__js_class !== 'undefined' ? Future.__lazy_accessor__js_class : (Future.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/future/Future"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Future.generated62(Field.construct(FlatString.construct5("completed")), Field.construct(FlatString.construct5("cancelled")), Field.construct(FlatString.construct5("exception"))), Future.generated284(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("get")), Function.construct(FlatString.construct5("cancel")), Function.construct(FlatString.construct5("onException")), Function.construct(FlatString.construct5("onCancel")), Function.construct(FlatString.construct5("cancelOccurred")), Function.construct(FlatString.construct5("from")), Function.construct(FlatString.construct5("fromResolve")), Function.construct(FlatString.construct5("create")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("exceptionOccurred"))), this);
+					return Class.construct1(FlatString.construct5("flat/future/Future"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Future.generated89(Field.construct(FlatString.construct5("completed")), Field.construct(FlatString.construct5("cancelled")), Field.construct(FlatString.construct5("exception"))), Future.generated228(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("get")), Function.construct(FlatString.construct5("cancel")), Function.construct(FlatString.construct5("onException")), Function.construct(FlatString.construct5("onCancel")), Function.construct(FlatString.construct5("cancelOccurred")), Function.construct(FlatString.construct5("from")), Function.construct(FlatString.construct5("fromResolve")), Function.construct(FlatString.construct5("create")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("exceptionOccurred"))), this);
 			})());
 	}
 
@@ -12370,7 +12373,7 @@ class Future_CompletableFuture extends Future {
 		return value;
 	}
 
-	static generated290(value0, value1, value2, value3) {
+	static generated326(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -12382,7 +12385,7 @@ class Future_CompletableFuture extends Future {
 
 	static accessor__js_class() {
 		return typeof Future_CompletableFuture.__lazy_accessor__js_class !== 'undefined' ? Future_CompletableFuture.__lazy_accessor__js_class : (Future_CompletableFuture.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/future/Future.CompletableFuture"), false, Future.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Future_CompletableFuture.generated290(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("complete")), Function.construct(FlatString.construct5("error"))), this);
+					return Class.construct1(FlatString.construct5("flat/future/Future.CompletableFuture"), false, Future.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Future_CompletableFuture.generated326(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("complete")), Function.construct(FlatString.construct5("error"))), this);
 			})());
 	}
 
@@ -12944,14 +12947,14 @@ class HashMap extends FlatObject {
 		return map;
 	}
 
-	static generated63(value0) {
+	static generated92(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated112(value0, value1, value2, value3, value4) {
+	static generated94(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -12962,7 +12965,7 @@ class HashMap extends FlatObject {
 		return FlatArray.construct1(temp, 5);
 	}
 
-	static generated315(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44) {
+	static generated304(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -13015,7 +13018,7 @@ class HashMap extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof HashMap.__lazy_accessor__js_class !== 'undefined' ? HashMap.__lazy_accessor__js_class : (HashMap.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/HashMap"), false, FlatObject.accessor__js_class(), HashMap.generated63(List.accessor__js_class()), HashMap.generated112(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("entries")), Field.construct(FlatString.construct5("keys")), Field.construct(FlatString.construct5("values")), Field.construct(FlatString.construct5("iterator"))), HashMap.generated315(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("addAll")), Function.construct(FlatString.construct5("addAll")), Function.construct(FlatString.construct5("getOrDefault")), Function.construct(FlatString.construct5("getAndRemove")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("any")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("mapValues")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("join")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("firstWhere")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("getBucket")), Function.construct(FlatString.construct5("getPair")), Function.construct(FlatString.construct5("remove")), Function.construct(FlatString.construct5("removeAt")), Function.construct(FlatString.construct5("removeWhere")), Function.construct(FlatString.construct5("clear")), Function.construct(FlatString.construct5("containsKey")), Function.construct(FlatString.construct5("clone")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("get")), Function.construct(FlatString.construct5("set")), Function.construct(FlatString.construct5("jsObjectToFlatHashMap")), Function.construct(FlatString.construct5("fromJsonValue")), Function.construct(FlatString.construct5("toJsonArray")), Function.construct(FlatString.construct5("toJsonValue")), Function.construct(FlatString.construct5("toJsObject"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/HashMap"), false, FlatObject.accessor__js_class(), HashMap.generated92(List.accessor__js_class()), HashMap.generated94(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("entries")), Field.construct(FlatString.construct5("keys")), Field.construct(FlatString.construct5("values")), Field.construct(FlatString.construct5("iterator"))), HashMap.generated304(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("addAll")), Function.construct(FlatString.construct5("addAll")), Function.construct(FlatString.construct5("getOrDefault")), Function.construct(FlatString.construct5("getAndRemove")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("any")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("mapValues")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("join")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("firstWhere")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("getBucket")), Function.construct(FlatString.construct5("getPair")), Function.construct(FlatString.construct5("remove")), Function.construct(FlatString.construct5("removeAt")), Function.construct(FlatString.construct5("removeWhere")), Function.construct(FlatString.construct5("clear")), Function.construct(FlatString.construct5("containsKey")), Function.construct(FlatString.construct5("clone")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("get")), Function.construct(FlatString.construct5("set")), Function.construct(FlatString.construct5("jsObjectToFlatHashMap")), Function.construct(FlatString.construct5("fromJsonValue")), Function.construct(FlatString.construct5("toJsonArray")), Function.construct(FlatString.construct5("toJsonValue")), Function.construct(FlatString.construct5("toJsObject"))), this);
 			})());
 	}
 
@@ -13103,14 +13106,14 @@ class HashMap_HashMapIterator extends FlatObject {
 		return this;
 	}
 
-	static generated349(value0) {
+	static generated348(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated350(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated349(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -13124,7 +13127,7 @@ class HashMap_HashMapIterator extends FlatObject {
 		return FlatArray.construct1(temp, 8);
 	}
 
-	static generated351(value0, value1, value2) {
+	static generated353(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -13170,7 +13173,7 @@ class HashMap_HashMapIterator extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof HashMap_HashMapIterator.__lazy_accessor__js_class !== 'undefined' ? HashMap_HashMapIterator.__lazy_accessor__js_class : (HashMap_HashMapIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/HashMap.HashMapIterator"), false, FlatObject.accessor__js_class(), HashMap_HashMapIterator.generated349(Iterator.accessor__js_class()), HashMap_HashMapIterator.generated350(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("map"))), HashMap_HashMapIterator.generated351(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("reset"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/HashMap.HashMapIterator"), false, FlatObject.accessor__js_class(), HashMap_HashMapIterator.generated348(Iterator.accessor__js_class()), HashMap_HashMapIterator.generated349(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("map"))), HashMap_HashMapIterator.generated353(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("reset"))), this);
 			})());
 	}
 
@@ -13505,14 +13508,14 @@ class HashSet extends FlatObject {
 		return true;
 	}
 
-	static generated66(value0) {
+	static generated93(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated70(value0, value1, value2, value3) {
+	static generated109(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -13522,7 +13525,7 @@ class HashSet extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated280(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23) {
+	static generated286(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -13554,7 +13557,7 @@ class HashSet extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof HashSet.__lazy_accessor__js_class !== 'undefined' ? HashSet.__lazy_accessor__js_class : (HashSet.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/HashSet"), false, FlatObject.accessor__js_class(), HashSet.generated66(List.accessor__js_class()), HashSet.generated70(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last"))), HashSet.generated280(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("any")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("join")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("firstWhere")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("getBucket")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("addIfNotExists")), Function.construct(FlatString.construct5("get")), Function.construct(FlatString.construct5("remove")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/HashSet"), false, FlatObject.accessor__js_class(), HashSet.generated93(List.accessor__js_class()), HashSet.generated109(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last"))), HashSet.generated286(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("any")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("join")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("firstWhere")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("getBucket")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("addIfNotExists")), Function.construct(FlatString.construct5("get")), Function.construct(FlatString.construct5("remove")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals"))), this);
 			})());
 	}
 
@@ -13617,7 +13620,7 @@ class HashSet_HashSetIterator extends FlatObject {
 		return this;
 	}
 
-	static generated344(value0) {
+	static generated345(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -13684,7 +13687,7 @@ class HashSet_HashSetIterator extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof HashSet_HashSetIterator.__lazy_accessor__js_class !== 'undefined' ? HashSet_HashSetIterator.__lazy_accessor__js_class : (HashSet_HashSetIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/HashSet.HashSetIterator"), false, FlatObject.accessor__js_class(), HashSet_HashSetIterator.generated344(Iterator.accessor__js_class()), HashSet_HashSetIterator.generated346(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("set"))), HashSet_HashSetIterator.generated347(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("reset"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/HashSet.HashSetIterator"), false, FlatObject.accessor__js_class(), HashSet_HashSetIterator.generated345(Iterator.accessor__js_class()), HashSet_HashSetIterator.generated346(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("set"))), HashSet_HashSetIterator.generated347(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("reset"))), this);
 			})());
 	}
 
@@ -13732,7 +13735,7 @@ class Import extends FlatObject {
 		return self;
 	}
 
-	static generated68(value0, value1, value2) {
+	static generated95(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -13743,7 +13746,7 @@ class Import extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Import.__lazy_accessor__js_class !== 'undefined' ? Import.__lazy_accessor__js_class : (Import.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/node/import/Import"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Import.generated68(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("import")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/node/import/Import"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Import.generated95(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("import")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -13790,7 +13793,7 @@ class InMemorySourceProvider extends SourceProvider {
 		return self;
 	}
 
-	static generated83(value0, value1, value2, value3, value4) {
+	static generated97(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -13803,7 +13806,7 @@ class InMemorySourceProvider extends SourceProvider {
 
 	static accessor__js_class() {
 		return typeof InMemorySourceProvider.__lazy_accessor__js_class !== 'undefined' ? InMemorySourceProvider.__lazy_accessor__js_class : (InMemorySourceProvider.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/InMemorySourceProvider"), false, SourceProvider.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InMemorySourceProvider.generated83(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("identities")), Function.construct(FlatString.construct5("load")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/InMemorySourceProvider"), false, SourceProvider.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InMemorySourceProvider.generated97(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("identities")), Function.construct(FlatString.construct5("load")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -13844,7 +13847,7 @@ class InlineExecutor extends Executor {
 		return self;
 	}
 
-	static generated79(value0, value1, value2, value3) {
+	static generated104(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -13856,7 +13859,7 @@ class InlineExecutor extends Executor {
 
 	static accessor__js_class() {
 		return typeof InlineExecutor.__lazy_accessor__js_class !== 'undefined' ? InlineExecutor.__lazy_accessor__js_class : (InlineExecutor.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/InlineExecutor"), false, Executor.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InlineExecutor.generated79(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("submit")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/InlineExecutor"), false, Executor.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InlineExecutor.generated104(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("submit")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -14104,14 +14107,14 @@ class FlatInt extends Number {
 		return parseInt(num.chars.data);
 	}
 
-	static generated77(value0) {
+	static generated100(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated221(value0, value1, value2, value3, value4, value5) {
+	static generated140(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14123,7 +14126,7 @@ class FlatInt extends Number {
 		return FlatArray.construct1(temp, 6);
 	}
 
-	static generated291(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44) {
+	static generated313(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14176,7 +14179,7 @@ class FlatInt extends Number {
 
 	static accessor__js_class() {
 		return typeof FlatInt.__lazy_accessor__js_class !== 'undefined' ? FlatInt.__lazy_accessor__js_class : (FlatInt.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/primitive/number/Int"), false, Number.accessor__js_class(), FlatInt.generated77(Integer.accessor__js_class()), FlatInt.generated221(Field.construct(FlatString.construct5("hashCodeLong")), Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("MAX_VALUE")), Field.construct(FlatString.construct5("MIN_VALUE"))), FlatInt.generated291(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("toFileSize")), Function.construct(FlatString.construct5("toFileSize")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("parseOr")), Function.construct(FlatString.construct5("parseInt"))), this);
+					return Class.construct1(FlatString.construct5("flat/primitive/number/Int"), false, Number.accessor__js_class(), FlatInt.generated100(Integer.accessor__js_class()), FlatInt.generated140(Field.construct(FlatString.construct5("hashCodeLong")), Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("MAX_VALUE")), Field.construct(FlatString.construct5("MIN_VALUE"))), FlatInt.generated313(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("toFileSize")), Function.construct(FlatString.construct5("toFileSize")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("parseOr")), Function.construct(FlatString.construct5("parseInt"))), this);
 			})());
 	}
 
@@ -14260,14 +14263,14 @@ class IntRange extends FlatObject {
 		return FlatInt.toString((this.start)).plus0(FlatString.construct5("..").plus0(FlatInt.toString((this.end)).plus0(FlatString.construct5(""))));
 	}
 
-	static generated72(value0) {
+	static generated98(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated189(value0, value1, value2, value3, value4, value5) {
+	static generated111(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14279,7 +14282,7 @@ class IntRange extends FlatObject {
 		return FlatArray.construct1(temp, 6);
 	}
 
-	static generated320(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated256(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14301,7 +14304,7 @@ class IntRange extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof IntRange.__lazy_accessor__js_class !== 'undefined' ? IntRange.__lazy_accessor__js_class : (IntRange.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/IntRange"), false, FlatObject.accessor__js_class(), IntRange.generated72(List.accessor__js_class()), IntRange.generated189(Field.construct(FlatString.construct5("size")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last")), Field.construct(FlatString.construct5("start")), Field.construct(FlatString.construct5("end"))), IntRange.generated320(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("toString"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/IntRange"), false, FlatObject.accessor__js_class(), IntRange.generated98(List.accessor__js_class()), IntRange.generated111(Field.construct(FlatString.construct5("size")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last")), Field.construct(FlatString.construct5("start")), Field.construct(FlatString.construct5("end"))), IntRange.generated256(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("toString"))), this);
 			})());
 	}
 
@@ -14369,14 +14372,14 @@ class IntRangeIterator extends FlatObject {
 		return this;
 	}
 
-	static generated73(value0) {
+	static generated102(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated181(value0, value1, value2, value3, value4, value5, value6) {
+	static generated116(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14389,7 +14392,7 @@ class IntRangeIterator extends FlatObject {
 		return FlatArray.construct1(temp, 7);
 	}
 
-	static generated188(value0, value1, value2) {
+	static generated248(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14407,7 +14410,7 @@ class IntRangeIterator extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof IntRangeIterator.__lazy_accessor__js_class !== 'undefined' ? IntRangeIterator.__lazy_accessor__js_class : (IntRangeIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/IntRangeIterator"), false, FlatObject.accessor__js_class(), IntRangeIterator.generated73(Iterator.accessor__js_class()), IntRangeIterator.generated181(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next"))), IntRangeIterator.generated188(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("reset"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/IntRangeIterator"), false, FlatObject.accessor__js_class(), IntRangeIterator.generated102(Iterator.accessor__js_class()), IntRangeIterator.generated116(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("previous")), Field.construct(FlatString.construct5("next"))), IntRangeIterator.generated248(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("reset"))), this);
 			})());
 	}
 
@@ -14456,7 +14459,7 @@ class InvalidArgumentException extends Exception {
 		return self;
 	}
 
-	static generated84(value0, value1) {
+	static generated105(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14466,7 +14469,7 @@ class InvalidArgumentException extends Exception {
 
 	static accessor__js_class() {
 		return typeof InvalidArgumentException.__lazy_accessor__js_class !== 'undefined' ? InvalidArgumentException.__lazy_accessor__js_class : (InvalidArgumentException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/exception/InvalidArgumentException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InvalidArgumentException.generated84(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/exception/InvalidArgumentException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InvalidArgumentException.generated105(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -14496,7 +14499,7 @@ class TestException extends Exception {
 		return self;
 	}
 
-	static generated161(value0, value1) {
+	static generated169(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14506,7 +14509,7 @@ class TestException extends Exception {
 
 	static accessor__js_class() {
 		return typeof TestException.__lazy_accessor__js_class !== 'undefined' ? TestException.__lazy_accessor__js_class : (TestException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/test/TestException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), TestException.generated161(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/test/TestException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), TestException.generated169(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -14537,7 +14540,7 @@ class InvalidAssertionException extends TestException {
 		return self;
 	}
 
-	static generated80(value0, value1) {
+	static generated106(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14547,7 +14550,7 @@ class InvalidAssertionException extends TestException {
 
 	static accessor__js_class() {
 		return typeof InvalidAssertionException.__lazy_accessor__js_class !== 'undefined' ? InvalidAssertionException.__lazy_accessor__js_class : (InvalidAssertionException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/test/InvalidAssertionException"), false, TestException.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InvalidAssertionException.generated80(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/test/InvalidAssertionException"), false, TestException.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InvalidAssertionException.generated106(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -14576,7 +14579,7 @@ class InvalidOperationException extends Exception {
 		return self;
 	}
 
-	static generated92(value0, value1) {
+	static generated107(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14586,7 +14589,7 @@ class InvalidOperationException extends Exception {
 
 	static accessor__js_class() {
 		return typeof InvalidOperationException.__lazy_accessor__js_class !== 'undefined' ? InvalidOperationException.__lazy_accessor__js_class : (InvalidOperationException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/exception/InvalidOperationException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InvalidOperationException.generated92(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/exception/InvalidOperationException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), InvalidOperationException.generated107(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -14595,7 +14598,7 @@ class InvalidOperationException extends Exception {
 }
 
 class Iterable {
-	static generated82(value0) {
+	static generated108(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14612,7 +14615,7 @@ class Iterable {
 
 	static accessor__js_class() {
 		return typeof Iterable.__lazy_accessor__js_class !== 'undefined' ? Iterable.__lazy_accessor__js_class : (Iterable.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/Iterable"), true, FlatObject.accessor__js_class(), FlatArray.construct(), Iterable.generated82(Field.construct(FlatString.construct5("iterator"))), FlatArray.construct(), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/Iterable"), true, FlatObject.accessor__js_class(), FlatArray.construct(), Iterable.generated108(Field.construct(FlatString.construct5("iterator"))), FlatArray.construct(), this);
 			})());
 	}
 }
@@ -14675,7 +14678,7 @@ class Lexeme extends FlatObject {
 		return target.toBuilder().value(value).location(location).build();
 	}
 
-	static generated90(value0, value1, value2, value3) {
+	static generated120(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14685,7 +14688,7 @@ class Lexeme extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated236(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated234(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14702,7 +14705,7 @@ class Lexeme extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Lexeme.__lazy_accessor__js_class !== 'undefined' ? Lexeme.__lazy_accessor__js_class : (Lexeme.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/Lexeme"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Lexeme.generated90(Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("endLineNumber")), Field.construct(FlatString.construct5("endColumn"))), Lexeme.generated236(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/Lexeme"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Lexeme.generated120(Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("endLineNumber")), Field.construct(FlatString.construct5("endColumn"))), Lexeme.generated234(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -14762,7 +14765,7 @@ class flat_compiler_models_Lexeme_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated292(value0, value1, value2, value3, value4) {
+	static generated317(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -14775,7 +14778,7 @@ class flat_compiler_models_Lexeme_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_compiler_models_Lexeme_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_compiler_models_Lexeme_Builder.__lazy_accessor__js_class : (flat_compiler_models_Lexeme_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/Lexeme.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_Lexeme_Builder.generated292(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/Lexeme.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_Lexeme_Builder.generated317(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -15013,14 +15016,14 @@ class LinkedList extends FlatObject {
 		return self;
 	}
 
-	static generated85(value0) {
+	static generated112(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated178(value0, value1, value2, value3, value4, value5) {
+	static generated133(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15032,7 +15035,7 @@ class LinkedList extends FlatObject {
 		return FlatArray.construct1(temp, 6);
 	}
 
-	static generated287(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15) {
+	static generated291(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15067,7 +15070,7 @@ class LinkedList extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof LinkedList.__lazy_accessor__js_class !== 'undefined' ? LinkedList.__lazy_accessor__js_class : (LinkedList.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/LinkedList"), false, FlatObject.accessor__js_class(), LinkedList.generated85(List.accessor__js_class()), LinkedList.generated178(Field.construct(FlatString.construct5("start")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("size")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last"))), LinkedList.generated287(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("addAll")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("remove")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("any")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("firstWhere")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/LinkedList"), false, FlatObject.accessor__js_class(), LinkedList.generated112(List.accessor__js_class()), LinkedList.generated133(Field.construct(FlatString.construct5("start")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("size")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last"))), LinkedList.generated291(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("addAll")), Function.construct(FlatString.construct5("add")), Function.construct(FlatString.construct5("remove")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("any")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("firstWhere")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -15129,14 +15132,14 @@ class LinkedListIterator extends FlatObject {
 		return this;
 	}
 
-	static generated86(value0) {
+	static generated113(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated120(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated134(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15150,7 +15153,7 @@ class LinkedListIterator extends FlatObject {
 		return FlatArray.construct1(temp, 8);
 	}
 
-	static generated227(value0, value1, value2) {
+	static generated275(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15171,7 +15174,7 @@ class LinkedListIterator extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof LinkedListIterator.__lazy_accessor__js_class !== 'undefined' ? LinkedListIterator.__lazy_accessor__js_class : (LinkedListIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/LinkedListIterator"), false, FlatObject.accessor__js_class(), LinkedListIterator.generated86(Iterator.accessor__js_class()), LinkedListIterator.generated120(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("previousNode")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("previous"))), LinkedListIterator.generated227(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("reset"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/LinkedListIterator"), false, FlatObject.accessor__js_class(), LinkedListIterator.generated113(Iterator.accessor__js_class()), LinkedListIterator.generated134(Field.construct(FlatString.construct5("position")), Field.construct(FlatString.construct5("previousNode")), Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("hasPrevious")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("current")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("previous"))), LinkedListIterator.generated275(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("reset"))), this);
 			})());
 	}
 
@@ -15232,7 +15235,7 @@ class ListNode extends FlatObject {
 		return ListNode.construct(this.data, this.next);
 	}
 
-	static generated94(value0, value1) {
+	static generated118(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15240,7 +15243,7 @@ class ListNode extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated179(value0, value1, value2) {
+	static generated131(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15251,7 +15254,7 @@ class ListNode extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ListNode.__lazy_accessor__js_class !== 'undefined' ? ListNode.__lazy_accessor__js_class : (ListNode.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/ListNode"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ListNode.generated94(Field.construct(FlatString.construct5("data")), Field.construct(FlatString.construct5("next"))), ListNode.generated179(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("clone"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/ListNode"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ListNode.generated118(Field.construct(FlatString.construct5("data")), Field.construct(FlatString.construct5("next"))), ListNode.generated131(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("clone"))), this);
 			})());
 	}
 
@@ -15320,7 +15323,7 @@ class LoadedSource extends FlatObject {
 		return target.toBuilder().snapshot(snapshot).contents(contents).build();
 	}
 
-	static generated93(value0, value1) {
+	static generated122(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15328,7 +15331,7 @@ class LoadedSource extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated233(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated229(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15345,7 +15348,7 @@ class LoadedSource extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof LoadedSource.__lazy_accessor__js_class !== 'undefined' ? LoadedSource.__lazy_accessor__js_class : (LoadedSource.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/LoadedSource"), false, FlatObject.accessor__js_class(), FlatArray.construct(), LoadedSource.generated93(Field.construct(FlatString.construct5("snapshot")), Field.construct(FlatString.construct5("contents"))), LoadedSource.generated233(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/LoadedSource"), false, FlatObject.accessor__js_class(), FlatArray.construct(), LoadedSource.generated122(Field.construct(FlatString.construct5("snapshot")), Field.construct(FlatString.construct5("contents"))), LoadedSource.generated229(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -15391,7 +15394,7 @@ class flat_project_LoadedSource_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated289(value0, value1, value2, value3, value4) {
+	static generated315(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15404,7 +15407,7 @@ class flat_project_LoadedSource_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_project_LoadedSource_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_project_LoadedSource_Builder.__lazy_accessor__js_class : (flat_project_LoadedSource_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/LoadedSource.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_LoadedSource_Builder.generated289(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("snapshot")), Function.construct(FlatString.construct5("contents")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/LoadedSource.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_LoadedSource_Builder.generated315(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("snapshot")), Function.construct(FlatString.construct5("contents")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -15470,7 +15473,7 @@ class Location extends FlatObject {
 		return target.toBuilder().lineNumber(lineNumber).column(column).build();
 	}
 
-	static generated95(value0, value1) {
+	static generated127(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15478,7 +15481,7 @@ class Location extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated244(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated242(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15495,7 +15498,7 @@ class Location extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Location.__lazy_accessor__js_class !== 'undefined' ? Location.__lazy_accessor__js_class : (Location.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/Location"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Location.generated95(Field.construct(FlatString.construct5("lineNumber")), Field.construct(FlatString.construct5("column"))), Location.generated244(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/Location"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Location.generated127(Field.construct(FlatString.construct5("lineNumber")), Field.construct(FlatString.construct5("column"))), Location.generated242(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -15541,7 +15544,7 @@ class flat_compiler_models_Location_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated251(value0, value1, value2, value3, value4) {
+	static generated308(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -15554,7 +15557,7 @@ class flat_compiler_models_Location_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_compiler_models_Location_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_compiler_models_Location_Builder.__lazy_accessor__js_class : (flat_compiler_models_Location_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/Location.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_Location_Builder.generated251(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("lineNumber")), Function.construct(FlatString.construct5("column")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/Location.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_Location_Builder.generated308(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("lineNumber")), Function.construct(FlatString.construct5("column")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -15667,12 +15670,12 @@ class Logger extends FlatObject {
 		this.errorStreams = errorStreams;
 		this.fatalStreams = fatalStreams;
 		if ((stream) !== flat_null) {
-			this.traceStreams = Logger.generated405(stream);
-			this.debugStreams = Logger.generated406(stream);
-			this.infoStreams = Logger.generated407(stream);
-			this.warnStreams = Logger.generated408(stream);
-			this.errorStreams = Logger.generated409(stream);
-			this.fatalStreams = Logger.generated410(stream);
+			this.traceStreams = Logger.generated406(stream);
+			this.debugStreams = Logger.generated407(stream);
+			this.infoStreams = Logger.generated408(stream);
+			this.warnStreams = Logger.generated409(stream);
+			this.errorStreams = Logger.generated410(stream);
+			this.fatalStreams = Logger.generated411(stream);
 		} else if ((streams) !== flat_null) {
 			this.traceStreams = streams;
 			this.debugStreams = streams;
@@ -16081,7 +16084,7 @@ class Logger extends FlatObject {
 		this.writeMessage(this.fatalStreams, this.formatMessage(this.getPrefix(Logger.FATAL).plus0(this.formatContent((await value()).toString(), Logger.FATAL))), newLine);
 	}
 
-	static generated252(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50) {
+	static generated292(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -16138,7 +16141,7 @@ class Logger extends FlatObject {
 		return FlatArray.construct1(temp, 51);
 	}
 
-	static generated348(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38) {
+	static generated350(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -16183,13 +16186,6 @@ class Logger extends FlatObject {
 		return FlatArray.construct1(temp, 39);
 	}
 
-	static generated376(value0) {
-		let temp = flat_null;
-		temp = [];
-		temp[0] = value0;
-		return FlatArray.construct1(temp, 1);
-	}
-
 	static generated377(value0) {
 		let temp = flat_null;
 		temp = [];
@@ -16225,7 +16221,7 @@ class Logger extends FlatObject {
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated405(value0) {
+	static generated382(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -16261,6 +16257,13 @@ class Logger extends FlatObject {
 	}
 
 	static generated410(value0) {
+		let temp = flat_null;
+		temp = [];
+		temp[0] = value0;
+		return FlatArray.construct1(temp, 1);
+	}
+
+	static generated411(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -16444,7 +16447,7 @@ class Logger extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Logger.__lazy_accessor__js_class !== 'undefined' ? Logger.__lazy_accessor__js_class : (Logger.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/log/Logger"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Logger.generated252(Field.construct(FlatString.construct5("loggingLevel")), Field.construct(FlatString.construct5("showPrefix")), Field.construct(FlatString.construct5("showFormatting")), Field.construct(FlatString.construct5("lineLength")), Field.construct(FlatString.construct5("linePrefix")), Field.construct(FlatString.construct5("lineSuffix")), Field.construct(FlatString.construct5("prefix")), Field.construct(FlatString.construct5("suffix")), Field.construct(FlatString.construct5("prefixSeparator")), Field.construct(FlatString.construct5("splitOnWord")), Field.construct(FlatString.construct5("disabled")), Field.construct(FlatString.construct5("level")), Field.construct(FlatString.construct5("traceStreams")), Field.construct(FlatString.construct5("debugStreams")), Field.construct(FlatString.construct5("infoStreams")), Field.construct(FlatString.construct5("warnStreams")), Field.construct(FlatString.construct5("errorStreams")), Field.construct(FlatString.construct5("fatalStreams")), Field.construct(FlatString.construct5("TRACE")), Field.construct(FlatString.construct5("DEBUG")), Field.construct(FlatString.construct5("INFO")), Field.construct(FlatString.construct5("WARN")), Field.construct(FlatString.construct5("ERROR")), Field.construct(FlatString.construct5("FATAL")), Field.construct(FlatString.construct5("OFF")), Field.construct(FlatString.construct5("defaultLoggingLevel")), Field.construct(FlatString.construct5("defaultShowPrefix")), Field.construct(FlatString.construct5("defaultShowFormatting")), Field.construct(FlatString.construct5("defaultLineLength")), Field.construct(FlatString.construct5("defaultSplitOnWord")), Field.construct(FlatString.construct5("defaultLinePrefix")), Field.construct(FlatString.construct5("defaultLineSuffix")), Field.construct(FlatString.construct5("defaultPrefix")), Field.construct(FlatString.construct5("defaultSuffix")), Field.construct(FlatString.construct5("defaultPrefixSeparator")), Field.construct(FlatString.construct5("forceLoggingLevel")), Field.construct(FlatString.construct5("forceShowPrefix")), Field.construct(FlatString.construct5("forceShowFormatting")), Field.construct(FlatString.construct5("forceLineLength")), Field.construct(FlatString.construct5("forceSplitOnWord")), Field.construct(FlatString.construct5("forceLinePrefix")), Field.construct(FlatString.construct5("forceLineSuffix")), Field.construct(FlatString.construct5("forcePrefix")), Field.construct(FlatString.construct5("forceSuffix")), Field.construct(FlatString.construct5("forcePrefixSeparator")), Field.construct(FlatString.construct5("defaultTraceStreams")), Field.construct(FlatString.construct5("defaultDebugStreams")), Field.construct(FlatString.construct5("defaultInfoStreams")), Field.construct(FlatString.construct5("defaultWarnStreams")), Field.construct(FlatString.construct5("defaultErrorStreams")), Field.construct(FlatString.construct5("defaultFatalStreams"))), Logger.generated348(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("resetLoggingLevels")), Function.construct(FlatString.construct5("disableLogs")), Function.construct(FlatString.construct5("setLoggingLevel")), Function.construct(FlatString.construct5("enableLogs")), Function.construct(FlatString.construct5("disableLogs")), Function.construct(FlatString.construct5("setLoggingLevel")), Function.construct(FlatString.construct5("enableLogs")), Function.construct(FlatString.construct5("isClassDisabled")), Function.construct(FlatString.construct5("isLabelDisabled")), Function.construct(FlatString.construct5("getClassLoggingLevel")), Function.construct(FlatString.construct5("getLabelLoggingLevel")), Function.construct(FlatString.construct5("getLevelFromString")), Function.construct(FlatString.construct5("getPrefix")), Function.construct(FlatString.construct5("addFilter")), Function.construct(FlatString.construct5("formatContent")), Function.construct(FlatString.construct5("wrapLine")), Function.construct(FlatString.construct5("addLinePrefix")), Function.construct(FlatString.construct5("addLineSuffix")), Function.construct(FlatString.construct5("addPrefix")), Function.construct(FlatString.construct5("addSuffix")), Function.construct(FlatString.construct5("formatMessage")), Function.construct(FlatString.construct5("increaseTab")), Function.construct(FlatString.construct5("decreaseTab")), Function.construct(FlatString.construct5("indent")), Function.construct(FlatString.construct5("writeMessage")), Function.construct(FlatString.construct5("trace")), Function.construct(FlatString.construct5("debug")), Function.construct(FlatString.construct5("info")), Function.construct(FlatString.construct5("warn")), Function.construct(FlatString.construct5("error")), Function.construct(FlatString.construct5("fatal")), Function.construct(FlatString.construct5("trace_async")), Function.construct(FlatString.construct5("debug_async")), Function.construct(FlatString.construct5("info_async")), Function.construct(FlatString.construct5("warn_async")), Function.construct(FlatString.construct5("error_async")), Function.construct(FlatString.construct5("fatal_async"))), this);
+					return Class.construct1(FlatString.construct5("flat/log/Logger"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Logger.generated292(Field.construct(FlatString.construct5("loggingLevel")), Field.construct(FlatString.construct5("showPrefix")), Field.construct(FlatString.construct5("showFormatting")), Field.construct(FlatString.construct5("lineLength")), Field.construct(FlatString.construct5("linePrefix")), Field.construct(FlatString.construct5("lineSuffix")), Field.construct(FlatString.construct5("prefix")), Field.construct(FlatString.construct5("suffix")), Field.construct(FlatString.construct5("prefixSeparator")), Field.construct(FlatString.construct5("splitOnWord")), Field.construct(FlatString.construct5("disabled")), Field.construct(FlatString.construct5("level")), Field.construct(FlatString.construct5("traceStreams")), Field.construct(FlatString.construct5("debugStreams")), Field.construct(FlatString.construct5("infoStreams")), Field.construct(FlatString.construct5("warnStreams")), Field.construct(FlatString.construct5("errorStreams")), Field.construct(FlatString.construct5("fatalStreams")), Field.construct(FlatString.construct5("TRACE")), Field.construct(FlatString.construct5("DEBUG")), Field.construct(FlatString.construct5("INFO")), Field.construct(FlatString.construct5("WARN")), Field.construct(FlatString.construct5("ERROR")), Field.construct(FlatString.construct5("FATAL")), Field.construct(FlatString.construct5("OFF")), Field.construct(FlatString.construct5("defaultLoggingLevel")), Field.construct(FlatString.construct5("defaultShowPrefix")), Field.construct(FlatString.construct5("defaultShowFormatting")), Field.construct(FlatString.construct5("defaultLineLength")), Field.construct(FlatString.construct5("defaultSplitOnWord")), Field.construct(FlatString.construct5("defaultLinePrefix")), Field.construct(FlatString.construct5("defaultLineSuffix")), Field.construct(FlatString.construct5("defaultPrefix")), Field.construct(FlatString.construct5("defaultSuffix")), Field.construct(FlatString.construct5("defaultPrefixSeparator")), Field.construct(FlatString.construct5("forceLoggingLevel")), Field.construct(FlatString.construct5("forceShowPrefix")), Field.construct(FlatString.construct5("forceShowFormatting")), Field.construct(FlatString.construct5("forceLineLength")), Field.construct(FlatString.construct5("forceSplitOnWord")), Field.construct(FlatString.construct5("forceLinePrefix")), Field.construct(FlatString.construct5("forceLineSuffix")), Field.construct(FlatString.construct5("forcePrefix")), Field.construct(FlatString.construct5("forceSuffix")), Field.construct(FlatString.construct5("forcePrefixSeparator")), Field.construct(FlatString.construct5("defaultTraceStreams")), Field.construct(FlatString.construct5("defaultDebugStreams")), Field.construct(FlatString.construct5("defaultInfoStreams")), Field.construct(FlatString.construct5("defaultWarnStreams")), Field.construct(FlatString.construct5("defaultErrorStreams")), Field.construct(FlatString.construct5("defaultFatalStreams"))), Logger.generated350(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("resetLoggingLevels")), Function.construct(FlatString.construct5("disableLogs")), Function.construct(FlatString.construct5("setLoggingLevel")), Function.construct(FlatString.construct5("enableLogs")), Function.construct(FlatString.construct5("disableLogs")), Function.construct(FlatString.construct5("setLoggingLevel")), Function.construct(FlatString.construct5("enableLogs")), Function.construct(FlatString.construct5("isClassDisabled")), Function.construct(FlatString.construct5("isLabelDisabled")), Function.construct(FlatString.construct5("getClassLoggingLevel")), Function.construct(FlatString.construct5("getLabelLoggingLevel")), Function.construct(FlatString.construct5("getLevelFromString")), Function.construct(FlatString.construct5("getPrefix")), Function.construct(FlatString.construct5("addFilter")), Function.construct(FlatString.construct5("formatContent")), Function.construct(FlatString.construct5("wrapLine")), Function.construct(FlatString.construct5("addLinePrefix")), Function.construct(FlatString.construct5("addLineSuffix")), Function.construct(FlatString.construct5("addPrefix")), Function.construct(FlatString.construct5("addSuffix")), Function.construct(FlatString.construct5("formatMessage")), Function.construct(FlatString.construct5("increaseTab")), Function.construct(FlatString.construct5("decreaseTab")), Function.construct(FlatString.construct5("indent")), Function.construct(FlatString.construct5("writeMessage")), Function.construct(FlatString.construct5("trace")), Function.construct(FlatString.construct5("debug")), Function.construct(FlatString.construct5("info")), Function.construct(FlatString.construct5("warn")), Function.construct(FlatString.construct5("error")), Function.construct(FlatString.construct5("fatal")), Function.construct(FlatString.construct5("trace_async")), Function.construct(FlatString.construct5("debug_async")), Function.construct(FlatString.construct5("info_async")), Function.construct(FlatString.construct5("warn_async")), Function.construct(FlatString.construct5("error_async")), Function.construct(FlatString.construct5("fatal_async"))), this);
 			})());
 	}
 
@@ -16780,14 +16783,14 @@ class FlatLong extends Number {
 		return value.toString();
 	}
 
-	static generated96(value0) {
+	static generated128(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated239(value0, value1, value2, value3, value4) {
+	static generated217(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -16798,7 +16801,7 @@ class FlatLong extends Number {
 		return FlatArray.construct1(temp, 5);
 	}
 
-	static generated295(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46) {
+	static generated320(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -16851,7 +16854,7 @@ class FlatLong extends Number {
 		return FlatArray.construct1(temp, 47);
 	}
 
-	static generated382() {
+	static generated383() {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = FlatString.construct5("B");
@@ -16863,7 +16866,7 @@ class FlatLong extends Number {
 
 	static accessor__js_class() {
 		return typeof FlatLong.__lazy_accessor__js_class !== 'undefined' ? FlatLong.__lazy_accessor__js_class : (FlatLong.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/primitive/number/Long"), false, Number.accessor__js_class(), FlatLong.generated96(Integer.accessor__js_class()), FlatLong.generated239(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("MAX_VALUE")), Field.construct(FlatString.construct5("MIN_VALUE"))), FlatLong.generated295(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("toFileSize")), Function.construct(FlatString.construct5("toFileSize")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("millisToTime")), Function.construct(FlatString.construct5("millisToTime")), Function.construct(FlatString.construct5("parseLong")), Function.construct(FlatString.construct5("toCharArray"))), this);
+					return Class.construct1(FlatString.construct5("flat/primitive/number/Long"), false, Number.accessor__js_class(), FlatLong.generated128(Integer.accessor__js_class()), FlatLong.generated217(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("MAX_VALUE")), Field.construct(FlatString.construct5("MIN_VALUE"))), FlatLong.generated320(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("toFileSize")), Function.construct(FlatString.construct5("toFileSize")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("millisToTime")), Function.construct(FlatString.construct5("millisToTime")), Function.construct(FlatString.construct5("parseLong")), Function.construct(FlatString.construct5("toCharArray"))), this);
 			})());
 	}
 
@@ -16906,7 +16909,7 @@ class MapIterator extends StreamIterator {
 		return self;
 	}
 
-	static generated102(value0, value1, value2, value3) {
+	static generated130(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -16916,7 +16919,7 @@ class MapIterator extends StreamIterator {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated235(value0, value1) {
+	static generated227(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -16947,7 +16950,7 @@ class MapIterator extends StreamIterator {
 
 	static accessor__js_class() {
 		return typeof MapIterator.__lazy_accessor__js_class !== 'undefined' ? MapIterator.__lazy_accessor__js_class : (MapIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/stream/MapIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), MapIterator.generated102(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), MapIterator.generated235(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/stream/MapIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), MapIterator.generated130(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), MapIterator.generated227(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -16997,7 +17000,7 @@ class Match extends FlatObject {
 		return this.accessor_match();
 	}
 
-	static generated101(value0, value1, value2, value3, value4) {
+	static generated135(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -17008,7 +17011,7 @@ class Match extends FlatObject {
 		return FlatArray.construct1(temp, 5);
 	}
 
-	static generated176(value0, value1, value2) {
+	static generated219(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -17019,7 +17022,7 @@ class Match extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Match.__lazy_accessor__js_class !== 'undefined' ? Match.__lazy_accessor__js_class : (Match.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/regex/Match"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Match.generated101(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("match")), Field.construct(FlatString.construct5("source")), Field.construct(FlatString.construct5("start")), Field.construct(FlatString.construct5("end"))), Match.generated176(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString"))), this);
+					return Class.construct1(FlatString.construct5("flat/regex/Match"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Match.generated135(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("match")), Field.construct(FlatString.construct5("source")), Field.construct(FlatString.construct5("start")), Field.construct(FlatString.construct5("end"))), Match.generated219(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString"))), this);
 			})());
 	}
 
@@ -17099,7 +17102,7 @@ class MatchGroup extends FlatObject {
 		return target.toBuilder().value(value).matchIndex(matchIndex).groupIndex(groupIndex).build();
 	}
 
-	static generated100(value0, value1, value2) {
+	static generated136(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -17108,7 +17111,7 @@ class MatchGroup extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated317(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated233(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -17125,7 +17128,7 @@ class MatchGroup extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof MatchGroup.__lazy_accessor__js_class !== 'undefined' ? MatchGroup.__lazy_accessor__js_class : (MatchGroup.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/regex/MatchGroup"), false, FlatObject.accessor__js_class(), FlatArray.construct(), MatchGroup.generated100(Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("matchIndex")), Field.construct(FlatString.construct5("groupIndex"))), MatchGroup.generated317(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/regex/MatchGroup"), false, FlatObject.accessor__js_class(), FlatArray.construct(), MatchGroup.generated136(Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("matchIndex")), Field.construct(FlatString.construct5("groupIndex"))), MatchGroup.generated233(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -17179,7 +17182,7 @@ class flat_regex_MatchGroup_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated333(value0, value1, value2, value3, value4, value5) {
+	static generated314(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -17193,7 +17196,7 @@ class flat_regex_MatchGroup_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_regex_MatchGroup_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_regex_MatchGroup_Builder.__lazy_accessor__js_class : (flat_regex_MatchGroup_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/regex/MatchGroup.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_regex_MatchGroup_Builder.generated333(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("matchIndex")), Function.construct(FlatString.construct5("groupIndex")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/regex/MatchGroup.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_regex_MatchGroup_Builder.generated314(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("matchIndex")), Function.construct(FlatString.construct5("groupIndex")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -17311,14 +17314,14 @@ class FlatMath extends FlatObject {
 		return Math.ceil(number);
 	}
 
-	static generated99(value0) {
+	static generated137(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated299(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22) {
+	static generated253(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -17349,7 +17352,7 @@ class FlatMath extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof FlatMath.__lazy_accessor__js_class !== 'undefined' ? FlatMath.__lazy_accessor__js_class : (FlatMath.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/Math"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatMath.generated99(Field.construct(FlatString.construct5("PI"))), FlatMath.generated299(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("max")), Function.construct(FlatString.construct5("max")), Function.construct(FlatString.construct5("min")), Function.construct(FlatString.construct5("min")), Function.construct(FlatString.construct5("sign")), Function.construct(FlatString.construct5("abs")), Function.construct(FlatString.construct5("abs")), Function.construct(FlatString.construct5("abs")), Function.construct(FlatString.construct5("gcd")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("sqrt")), Function.construct(FlatString.construct5("pow")), Function.construct(FlatString.construct5("sin")), Function.construct(FlatString.construct5("cos")), Function.construct(FlatString.construct5("tan")), Function.construct(FlatString.construct5("asin")), Function.construct(FlatString.construct5("acos")), Function.construct(FlatString.construct5("atan")), Function.construct(FlatString.construct5("round")), Function.construct(FlatString.construct5("random")), Function.construct(FlatString.construct5("floor")), Function.construct(FlatString.construct5("ceil"))), this);
+					return Class.construct1(FlatString.construct5("flat/Math"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatMath.generated137(Field.construct(FlatString.construct5("PI"))), FlatMath.generated253(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("max")), Function.construct(FlatString.construct5("max")), Function.construct(FlatString.construct5("min")), Function.construct(FlatString.construct5("min")), Function.construct(FlatString.construct5("sign")), Function.construct(FlatString.construct5("abs")), Function.construct(FlatString.construct5("abs")), Function.construct(FlatString.construct5("abs")), Function.construct(FlatString.construct5("gcd")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("sqrt")), Function.construct(FlatString.construct5("pow")), Function.construct(FlatString.construct5("sin")), Function.construct(FlatString.construct5("cos")), Function.construct(FlatString.construct5("tan")), Function.construct(FlatString.construct5("asin")), Function.construct(FlatString.construct5("acos")), Function.construct(FlatString.construct5("atan")), Function.construct(FlatString.construct5("round")), Function.construct(FlatString.construct5("random")), Function.construct(FlatString.construct5("floor")), Function.construct(FlatString.construct5("ceil"))), this);
 			})());
 	}
 
@@ -17358,7 +17361,7 @@ class FlatMath extends FlatObject {
 }
 
 class NotEqualToOperator {
-	static generated110(value0) {
+	static generated143(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -17367,7 +17370,7 @@ class NotEqualToOperator {
 
 	static accessor__js_class() {
 		return typeof NotEqualToOperator.__lazy_accessor__js_class !== 'undefined' ? NotEqualToOperator.__lazy_accessor__js_class : (NotEqualToOperator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/operators/NotEqualToOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), NotEqualToOperator.generated110(Function.construct(FlatString.construct5("notEqualTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/operators/NotEqualToOperator"), true, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), NotEqualToOperator.generated143(Function.construct(FlatString.construct5("notEqualTo"))), this);
 			})());
 	}
 }
@@ -17663,12 +17666,12 @@ class FlatString extends FlatObject {
 
 	trimStart2(charToTrim, start) {
 		start = typeof start === 'undefined' ? 0 : start;
-		return this.trimStart1(start, this.generated371(charToTrim));
+		return this.trimStart1(start, this.generated372(charToTrim));
 	}
 
 	trimEnd2(charToTrim, end) {
 		end = typeof end === 'undefined' ? this.count - 1 : end;
-		return this.trimEnd1(end, this.generated372(charToTrim));
+		return this.trimEnd1(end, this.generated373(charToTrim));
 	}
 
 	trimSurrounding(charToTrim, count) {
@@ -17910,7 +17913,7 @@ substring(start, end) {
 	return FlatString.construct4(data);
 }
 
-static generated194(value0, value1, value2) {
+static generated170(value0, value1, value2) {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = value0;
@@ -17919,7 +17922,7 @@ static generated194(value0, value1, value2) {
 	return FlatArray.construct1(temp, 3);
 }
 
-static generated282(value0, value1, value2, value3, value4, value5, value6, value7) {
+static generated283(value0, value1, value2, value3, value4, value5, value6, value7) {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = value0;
@@ -17933,7 +17936,7 @@ static generated282(value0, value1, value2, value3, value4, value5, value6, valu
 	return FlatArray.construct1(temp, 8);
 }
 
-static generated324(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60) {
+static generated343(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60) {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = value0;
@@ -18007,13 +18010,6 @@ get(index) {
 set(index, value) {
 }
 
-static generated371(value0) {
-	let temp = flat_null;
-	temp = [];
-	temp[0] = Char.construct(value0);
-	return FlatArray.construct1(temp, 1);
-}
-
 static generated372(value0) {
 	let temp = flat_null;
 	temp = [];
@@ -18021,7 +18017,14 @@ static generated372(value0) {
 	return FlatArray.construct1(temp, 1);
 }
 
-static generated386() {
+static generated373(value0) {
+	let temp = flat_null;
+	temp = [];
+	temp[0] = Char.construct(value0);
+	return FlatArray.construct1(temp, 1);
+}
+
+static generated387() {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = Char.construct(' ');
@@ -18033,7 +18036,7 @@ static generated386() {
 
 static accessor__js_class() {
 	return typeof FlatString.__lazy_accessor__js_class !== 'undefined' ? FlatString.__lazy_accessor__js_class : (FlatString.__lazy_accessor__js_class = (() => {
-				return Class.construct1(FlatString.construct5("flat/String"), false, FlatObject.accessor__js_class(), FlatString.generated194(Comparable.accessor__js_class(), PlusOperator.accessor__js_class(), MultiplyOperator.accessor__js_class()), FlatString.generated282(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("chars")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last")), Field.construct(FlatString.construct5("title")), Field.construct(FlatString.construct5("hashCodeLong")), Field.construct(FlatString.construct5("isEmpty")), Field.construct(FlatString.construct5("isNotEmpty"))), FlatString.generated324(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("repeat")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsIgnoreCase")), Function.construct(FlatString.construct5("replace")), Function.construct(FlatString.construct5("indent")), Function.construct(FlatString.construct5("isWhitespace")), Function.construct(FlatString.construct5("startsWith")), Function.construct(FlatString.construct5("startsWith")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("endsWith")), Function.construct(FlatString.construct5("endsWith")), Function.construct(FlatString.construct5("indexOf")), Function.construct(FlatString.construct5("indexOf")), Function.construct(FlatString.construct5("indexOf")), Function.construct(FlatString.construct5("lastIndexOf")), Function.construct(FlatString.construct5("lastIndexOf")), Function.construct(FlatString.construct5("lastIndexOf")), Function.construct(FlatString.construct5("validateSubstringBounds")), Function.construct(FlatString.construct5("trimStart")), Function.construct(FlatString.construct5("trimEnd")), Function.construct(FlatString.construct5("trimStart")), Function.construct(FlatString.construct5("trimEnd")), Function.construct(FlatString.construct5("trimStart")), Function.construct(FlatString.construct5("trimEnd")), Function.construct(FlatString.construct5("trimSurrounding")), Function.construct(FlatString.construct5("trimEnds")), Function.construct(FlatString.construct5("trim")), Function.construct(FlatString.construct5("toLowerCase")), Function.construct(FlatString.construct5("toUpperCase")), Function.construct(FlatString.construct5("capitalize")), Function.construct(FlatString.construct5("transform")), Function.construct(FlatString.construct5("getStringBetween")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("surroundWith")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("getGroupedChars")), Function.construct(FlatString.construct5("orElse")), Function.construct(FlatString.construct5("howMany")), Function.construct(FlatString.construct5("split")), Function.construct(FlatString.construct5("split")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("concat")), Function.construct(FlatString.construct5("calculateSize")), Function.construct(FlatString.construct5("substring"))), this);
+				return Class.construct1(FlatString.construct5("flat/String"), false, FlatObject.accessor__js_class(), FlatString.generated170(Comparable.accessor__js_class(), PlusOperator.accessor__js_class(), MultiplyOperator.accessor__js_class()), FlatString.generated283(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("chars")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last")), Field.construct(FlatString.construct5("title")), Field.construct(FlatString.construct5("hashCodeLong")), Field.construct(FlatString.construct5("isEmpty")), Field.construct(FlatString.construct5("isNotEmpty"))), FlatString.generated343(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("repeat")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsIgnoreCase")), Function.construct(FlatString.construct5("replace")), Function.construct(FlatString.construct5("indent")), Function.construct(FlatString.construct5("isWhitespace")), Function.construct(FlatString.construct5("startsWith")), Function.construct(FlatString.construct5("startsWith")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("endsWith")), Function.construct(FlatString.construct5("endsWith")), Function.construct(FlatString.construct5("indexOf")), Function.construct(FlatString.construct5("indexOf")), Function.construct(FlatString.construct5("indexOf")), Function.construct(FlatString.construct5("lastIndexOf")), Function.construct(FlatString.construct5("lastIndexOf")), Function.construct(FlatString.construct5("lastIndexOf")), Function.construct(FlatString.construct5("validateSubstringBounds")), Function.construct(FlatString.construct5("trimStart")), Function.construct(FlatString.construct5("trimEnd")), Function.construct(FlatString.construct5("trimStart")), Function.construct(FlatString.construct5("trimEnd")), Function.construct(FlatString.construct5("trimStart")), Function.construct(FlatString.construct5("trimEnd")), Function.construct(FlatString.construct5("trimSurrounding")), Function.construct(FlatString.construct5("trimEnds")), Function.construct(FlatString.construct5("trim")), Function.construct(FlatString.construct5("toLowerCase")), Function.construct(FlatString.construct5("toUpperCase")), Function.construct(FlatString.construct5("capitalize")), Function.construct(FlatString.construct5("transform")), Function.construct(FlatString.construct5("getStringBetween")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("surroundWith")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("getGroupedChars")), Function.construct(FlatString.construct5("orElse")), Function.construct(FlatString.construct5("howMany")), Function.construct(FlatString.construct5("split")), Function.construct(FlatString.construct5("split")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("concat")), Function.construct(FlatString.construct5("calculateSize")), Function.construct(FlatString.construct5("substring"))), this);
 		})());
 }
 
@@ -18103,14 +18106,14 @@ class Null extends FlatString {
 		return !((other) !== flat_null);
 	}
 
-	static generated106(value0) {
+	static generated211(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated259(value0, value1, value2, value3, value4, value5) {
+	static generated235(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18124,7 +18127,7 @@ class Null extends FlatString {
 
 	static accessor__js_class() {
 		return typeof Null.__lazy_accessor__js_class !== 'undefined' ? Null.__lazy_accessor__js_class : (Null.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/primitive/Null"), false, FlatString.accessor__js_class(), FlatArray.construct(), Null.generated106(Field.construct(FlatString.construct5("hashCodeLong"))), Null.generated259(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("concat")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals"))), this);
+					return Class.construct1(FlatString.construct5("flat/primitive/Null"), false, FlatString.accessor__js_class(), FlatArray.construct(), Null.generated211(Field.construct(FlatString.construct5("hashCodeLong"))), Null.generated235(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("concat")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals"))), this);
 			})());
 	}
 
@@ -18158,7 +18161,7 @@ class NullAccessException extends Exception {
 		return self;
 	}
 
-	static generated111(value0, value1) {
+	static generated212(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18168,7 +18171,7 @@ class NullAccessException extends Exception {
 
 	static accessor__js_class() {
 		return typeof NullAccessException.__lazy_accessor__js_class !== 'undefined' ? NullAccessException.__lazy_accessor__js_class : (NullAccessException.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/exception/NullAccessException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), NullAccessException.generated111(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/exception/NullAccessException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), NullAccessException.generated212(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -18237,7 +18240,7 @@ class PackageIdentity extends FlatObject {
 		return target.toBuilder().projectValue(projectValue).name(name).build();
 	}
 
-	static generated118(value0, value1, value2) {
+	static generated204(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18246,7 +18249,7 @@ class PackageIdentity extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated234(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated236(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18263,7 +18266,7 @@ class PackageIdentity extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof PackageIdentity.__lazy_accessor__js_class !== 'undefined' ? PackageIdentity.__lazy_accessor__js_class : (PackageIdentity.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/PackageIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), PackageIdentity.generated118(Field.construct(FlatString.construct5("projectValue")), Field.construct(FlatString.construct5("name")), Field.construct(FlatString.construct5("value"))), PackageIdentity.generated234(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/PackageIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), PackageIdentity.generated204(Field.construct(FlatString.construct5("projectValue")), Field.construct(FlatString.construct5("name")), Field.construct(FlatString.construct5("value"))), PackageIdentity.generated236(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -18313,7 +18316,7 @@ class flat_compiler_models_PackageIdentity_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated326(value0, value1, value2, value3, value4) {
+	static generated323(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18326,7 +18329,7 @@ class flat_compiler_models_PackageIdentity_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_compiler_models_PackageIdentity_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_compiler_models_PackageIdentity_Builder.__lazy_accessor__js_class : (flat_compiler_models_PackageIdentity_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/PackageIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_PackageIdentity_Builder.generated326(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("projectValue")), Function.construct(FlatString.construct5("name")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/PackageIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_PackageIdentity_Builder.generated323(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("projectValue")), Function.construct(FlatString.construct5("name")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -18370,7 +18373,7 @@ class Pair extends FlatObject {
 		return FlatString.construct5("Pair (").plus0((this.key).toString().plus0(FlatString.construct5(", ").plus0((this.value).toString().plus0(FlatString.construct5(")")))));
 	}
 
-	static generated117(value0, value1) {
+	static generated202(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18378,7 +18381,7 @@ class Pair extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated286(value0, value1, value2, value3, value4) {
+	static generated231(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18391,7 +18394,7 @@ class Pair extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Pair.__lazy_accessor__js_class !== 'undefined' ? Pair.__lazy_accessor__js_class : (Pair.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/Pair"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Pair.generated117(Field.construct(FlatString.construct5("key")), Field.construct(FlatString.construct5("value"))), Pair.generated286(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/Pair"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Pair.generated202(Field.construct(FlatString.construct5("key")), Field.construct(FlatString.construct5("value"))), Pair.generated231(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString"))), this);
 			})());
 	}
 
@@ -18474,7 +18477,7 @@ class ParallelExecutor extends Executor {
 		});
 	}
 
-	static generated149(value0, value1, value2, value3) {
+	static generated203(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18484,7 +18487,7 @@ class ParallelExecutor extends Executor {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated285(value0, value1, value2, value3, value4, value5) {
+	static generated214(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18498,7 +18501,7 @@ class ParallelExecutor extends Executor {
 
 	static accessor__js_class() {
 		return typeof ParallelExecutor.__lazy_accessor__js_class !== 'undefined' ? ParallelExecutor.__lazy_accessor__js_class : (ParallelExecutor.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/ParallelExecutor"), false, Executor.accessor__js_class(), FlatArray.construct(), ParallelExecutor.generated149(Field.construct(FlatString.construct5("activeCount")), Field.construct(FlatString.construct5("queuedCount")), Field.construct(FlatString.construct5("maxParallel")), Field.construct(FlatString.construct5("maxQueued"))), ParallelExecutor.generated285(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("submit")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("startNext")), Function.construct(FlatString.construct5("remove"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/ParallelExecutor"), false, Executor.accessor__js_class(), FlatArray.construct(), ParallelExecutor.generated203(Field.construct(FlatString.construct5("activeCount")), Field.construct(FlatString.construct5("queuedCount")), Field.construct(FlatString.construct5("maxParallel")), Field.construct(FlatString.construct5("maxQueued"))), ParallelExecutor.generated214(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("submit")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("startNext")), Function.construct(FlatString.construct5("remove"))), this);
 			})());
 	}
 
@@ -18539,7 +18542,7 @@ class Pattern extends FlatObject {
 		return self;
 	}
 
-	static generated116(value0, value1) {
+	static generated200(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18547,7 +18550,7 @@ class Pattern extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated173(value0, value1, value2) {
+	static generated244(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18558,7 +18561,7 @@ class Pattern extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Pattern.__lazy_accessor__js_class !== 'undefined' ? Pattern.__lazy_accessor__js_class : (Pattern.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/regex/Pattern"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Pattern.generated116(Field.construct(FlatString.construct5("pattern")), Field.construct(FlatString.construct5("regexObj"))), Pattern.generated173(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/regex/Pattern"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Pattern.generated200(Field.construct(FlatString.construct5("pattern")), Field.construct(FlatString.construct5("regexObj"))), Pattern.generated244(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -18590,7 +18593,7 @@ class PeekIterator extends StreamIterator {
 		return self;
 	}
 
-	static generated166(value0, value1, value2, value3) {
+	static generated205(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18600,7 +18603,7 @@ class PeekIterator extends StreamIterator {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated243(value0, value1) {
+	static generated238(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18622,7 +18625,7 @@ class PeekIterator extends StreamIterator {
 
 	static accessor__js_class() {
 		return typeof PeekIterator.__lazy_accessor__js_class !== 'undefined' ? PeekIterator.__lazy_accessor__js_class : (PeekIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/stream/PeekIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), PeekIterator.generated166(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), PeekIterator.generated243(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/stream/PeekIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), PeekIterator.generated205(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), PeekIterator.generated238(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -18702,14 +18705,14 @@ class PendingChannelReceive extends FlatObject {
 		return target.toBuilder().future(future).build();
 	}
 
-	static generated142(value0) {
+	static generated198(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated208(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9) {
+	static generated260(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18727,7 +18730,7 @@ class PendingChannelReceive extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof PendingChannelReceive.__lazy_accessor__js_class !== 'undefined' ? PendingChannelReceive.__lazy_accessor__js_class : (PendingChannelReceive.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/PendingChannelReceive"), false, FlatObject.accessor__js_class(), FlatArray.construct(), PendingChannelReceive.generated142(Field.construct(FlatString.construct5("future"))), PendingChannelReceive.generated208(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("complete")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/PendingChannelReceive"), false, FlatObject.accessor__js_class(), FlatArray.construct(), PendingChannelReceive.generated198(Field.construct(FlatString.construct5("future"))), PendingChannelReceive.generated260(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("complete")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -18765,7 +18768,7 @@ class flat_eventstream_PendingChannelReceive_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated257(value0, value1, value2, value3) {
+	static generated322(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18777,7 +18780,7 @@ class flat_eventstream_PendingChannelReceive_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_eventstream_PendingChannelReceive_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_eventstream_PendingChannelReceive_Builder.__lazy_accessor__js_class : (flat_eventstream_PendingChannelReceive_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/PendingChannelReceive.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_PendingChannelReceive_Builder.generated257(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("future")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/PendingChannelReceive.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_PendingChannelReceive_Builder.generated322(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("future")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -18850,7 +18853,7 @@ class PendingChannelSend extends FlatObject {
 		return target.toBuilder().value(value).future(future).build();
 	}
 
-	static generated171(value0, value1) {
+	static generated201(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18858,7 +18861,7 @@ class PendingChannelSend extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated174(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9) {
+	static generated284(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18876,7 +18879,7 @@ class PendingChannelSend extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof PendingChannelSend.__lazy_accessor__js_class !== 'undefined' ? PendingChannelSend.__lazy_accessor__js_class : (PendingChannelSend.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/PendingChannelSend"), false, FlatObject.accessor__js_class(), FlatArray.construct(), PendingChannelSend.generated171(Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("future"))), PendingChannelSend.generated174(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("complete")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/PendingChannelSend"), false, FlatObject.accessor__js_class(), FlatArray.construct(), PendingChannelSend.generated201(Field.construct(FlatString.construct5("value")), Field.construct(FlatString.construct5("future"))), PendingChannelSend.generated284(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("complete")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -18922,7 +18925,7 @@ class flat_eventstream_PendingChannelSend_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated322(value0, value1, value2, value3, value4) {
+	static generated306(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -18935,7 +18938,7 @@ class flat_eventstream_PendingChannelSend_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_eventstream_PendingChannelSend_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_eventstream_PendingChannelSend_Builder.__lazy_accessor__js_class : (flat_eventstream_PendingChannelSend_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/PendingChannelSend.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_PendingChannelSend_Builder.generated322(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("future")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/PendingChannelSend.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_PendingChannelSend_Builder.generated306(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("future")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -18966,7 +18969,7 @@ class PendingExecutorTask extends FlatObject {
 			result = ExecutorTaskResult.construct(true, undefined, undefined, undefined);
 		} catch (error)  {
 			if (!(error instanceof Exception)) {
-				console.log(0.5309312760183048);
+				console.log(0.31143003363005384);
 				console.error(error);
 				process.exit(1);
 			} else {
@@ -19035,7 +19038,7 @@ class PendingExecutorTask extends FlatObject {
 		return target.toBuilder().taskAction(taskAction).future(future).build();
 	}
 
-	static generated134(value0, value1) {
+	static generated196(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19043,7 +19046,7 @@ class PendingExecutorTask extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated267(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
+	static generated258(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19063,7 +19066,7 @@ class PendingExecutorTask extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof PendingExecutorTask.__lazy_accessor__js_class !== 'undefined' ? PendingExecutorTask.__lazy_accessor__js_class : (PendingExecutorTask.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/PendingExecutorTask"), false, FlatObject.accessor__js_class(), FlatArray.construct(), PendingExecutorTask.generated134(Field.construct(FlatString.construct5("taskAction")), Field.construct(FlatString.construct5("future"))), PendingExecutorTask.generated267(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("run")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("complete")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/PendingExecutorTask"), false, FlatObject.accessor__js_class(), FlatArray.construct(), PendingExecutorTask.generated196(Field.construct(FlatString.construct5("taskAction")), Field.construct(FlatString.construct5("future"))), PendingExecutorTask.generated258(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("run")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("complete")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -19109,7 +19112,7 @@ class flat_eventstream_PendingExecutorTask_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated330(value0, value1, value2, value3, value4) {
+	static generated334(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19122,7 +19125,7 @@ class flat_eventstream_PendingExecutorTask_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_eventstream_PendingExecutorTask_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_eventstream_PendingExecutorTask_Builder.__lazy_accessor__js_class : (flat_eventstream_PendingExecutorTask_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/eventstream/PendingExecutorTask.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_PendingExecutorTask_Builder.generated330(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("taskAction")), Function.construct(FlatString.construct5("future")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/eventstream/PendingExecutorTask.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_eventstream_PendingExecutorTask_Builder.generated334(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("taskAction")), Function.construct(FlatString.construct5("future")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -19196,7 +19199,7 @@ class ProjectDependency extends FlatObject {
 		return target.toBuilder().packageName(packageName).sourceLocation(sourceLocation).local(local).build();
 	}
 
-	static generated170(value0, value1, value2) {
+	static generated194(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19205,7 +19208,7 @@ class ProjectDependency extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated263(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated251(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19222,7 +19225,7 @@ class ProjectDependency extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ProjectDependency.__lazy_accessor__js_class !== 'undefined' ? ProjectDependency.__lazy_accessor__js_class : (ProjectDependency.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/ProjectDependency"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ProjectDependency.generated170(Field.construct(FlatString.construct5("packageName")), Field.construct(FlatString.construct5("sourceLocation")), Field.construct(FlatString.construct5("local"))), ProjectDependency.generated263(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/ProjectDependency"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ProjectDependency.generated194(Field.construct(FlatString.construct5("packageName")), Field.construct(FlatString.construct5("sourceLocation")), Field.construct(FlatString.construct5("local"))), ProjectDependency.generated251(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -19276,7 +19279,7 @@ class flat_project_ProjectDependency_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated311(value0, value1, value2, value3, value4, value5) {
+	static generated330(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19290,7 +19293,7 @@ class flat_project_ProjectDependency_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_project_ProjectDependency_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_project_ProjectDependency_Builder.__lazy_accessor__js_class : (flat_project_ProjectDependency_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/ProjectDependency.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_ProjectDependency_Builder.generated311(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("packageName")), Function.construct(FlatString.construct5("sourceLocation")), Function.construct(FlatString.construct5("local")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/ProjectDependency.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_ProjectDependency_Builder.generated330(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("packageName")), Function.construct(FlatString.construct5("sourceLocation")), Function.construct(FlatString.construct5("local")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -19362,7 +19365,7 @@ class ProjectImport extends FlatObject {
 		return target.toBuilder().location(location).staticImport(staticImport).alias(alias).build();
 	}
 
-	static generated125(value0, value1, value2) {
+	static generated192(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19371,7 +19374,7 @@ class ProjectImport extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated268(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated282(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19388,7 +19391,7 @@ class ProjectImport extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ProjectImport.__lazy_accessor__js_class !== 'undefined' ? ProjectImport.__lazy_accessor__js_class : (ProjectImport.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/ProjectImport"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ProjectImport.generated125(Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("staticImport")), Field.construct(FlatString.construct5("alias"))), ProjectImport.generated268(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/ProjectImport"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ProjectImport.generated192(Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("staticImport")), Field.construct(FlatString.construct5("alias"))), ProjectImport.generated282(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -19442,7 +19445,7 @@ class flat_project_ProjectImport_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated300(value0, value1, value2, value3, value4, value5) {
+	static generated331(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19456,7 +19459,7 @@ class flat_project_ProjectImport_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_project_ProjectImport_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_project_ProjectImport_Builder.__lazy_accessor__js_class : (flat_project_ProjectImport_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/ProjectImport.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_ProjectImport_Builder.generated300(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("staticImport")), Function.construct(FlatString.construct5("alias")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/ProjectImport.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_ProjectImport_Builder.generated331(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("staticImport")), Function.construct(FlatString.construct5("alias")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -19471,7 +19474,7 @@ class TestRunner {
 		out = typeof out === 'undefined' ? FlatConsole.out : out;
 	}
 
-	static generated163(value0, value1, value2) {
+	static generated158(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19480,7 +19483,7 @@ class TestRunner {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated261(value0) {
+	static generated218(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19489,7 +19492,7 @@ class TestRunner {
 
 	static accessor__js_class() {
 		return typeof TestRunner.__lazy_accessor__js_class !== 'undefined' ? TestRunner.__lazy_accessor__js_class : (TestRunner.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/test/TestRunner"), true, FlatObject.accessor__js_class(), FlatArray.construct(), TestRunner.generated163(Field.construct(FlatString.construct5("model")), Field.construct(FlatString.construct5("testCases")), Field.construct(FlatString.construct5("description"))), TestRunner.generated261(Function.construct(FlatString.construct5("runTests"))), this);
+					return Class.construct1(FlatString.construct5("flat/test/TestRunner"), true, FlatObject.accessor__js_class(), FlatArray.construct(), TestRunner.generated158(Field.construct(FlatString.construct5("model")), Field.construct(FlatString.construct5("testCases")), Field.construct(FlatString.construct5("description"))), TestRunner.generated218(Function.construct(FlatString.construct5("runTests"))), this);
 			})());
 	}
 
@@ -19532,8 +19535,8 @@ class ProjectLoading_Test extends FlatObject {
 		out.write(FlatString.construct5("Testing project model owns immutable package dependency import and target options "));
 		let properties = HashMap.construct0(undefined, undefined).__chain('add0', [FlatString.construct5("name"), FlatString.construct5("Example")]);
 		let options = CompilerOptions.construct(FlatString.construct5("es6"), FlatString.construct5("node"), FlatString.construct5("flat/example/Main"), undefined, FlatString.construct5("example.js"), FlatString.construct5("dist/es6"), 4, properties);
-		let _js_package = ProjectPackage.construct(FlatString.construct5("flat/example"), this.generated391(SourceRoot.construct(FlatString.construct5("src"), undefined)), this.generated392(ProjectDependency.construct(FlatString.construct5("flat/system"), FlatString.construct5("packages/System"), true)), this.generated393(ProjectImport.construct(FlatString.construct5("flat/example/Value"), undefined, FlatString.construct5("Value"))), this.generated394(DefaultImport.construct(FlatString.construct5("flat/core/Object"), undefined)), this.generated395(SourceExclusion.construct(FlatString.construct5("src/generated"))));
-		let project = ProjectModel.construct(FlatString.construct5("workspace:example"), this.generated396(_js_package), options);
+		let _js_package = ProjectPackage.construct(FlatString.construct5("flat/example"), this.generated392(SourceRoot.construct(FlatString.construct5("src"), undefined)), this.generated393(ProjectDependency.construct(FlatString.construct5("flat/system"), FlatString.construct5("packages/System"), true)), this.generated394(ProjectImport.construct(FlatString.construct5("flat/example/Value"), undefined, FlatString.construct5("Value"))), this.generated395(DefaultImport.construct(FlatString.construct5("flat/core/Object"), undefined)), this.generated396(SourceExclusion.construct(FlatString.construct5("src/generated"))));
+		let project = ProjectModel.construct(FlatString.construct5("workspace:example"), this.generated397(_js_package), options);
 		properties.set(FlatString.construct5("name"), FlatString.construct5("Changed"));
 		Test.expect0(project.packages.accessor_first().name).toBe(FlatString.construct5("flat/example"), undefined);
 		Test.expect0(Bool.construct(project.packages.accessor_first().dependencies.accessor_first().local)).toBe(Bool.construct(true), undefined);
@@ -19554,7 +19557,7 @@ class ProjectLoading_Test extends FlatObject {
 			CompilerOptions.construct(FlatString.construct5(""), undefined, FlatString.construct5("Main"), undefined, undefined, undefined, undefined, undefined);
 		} catch (error)  {
 			if (!(error instanceof Exception)) {
-				console.log(0.6459268602110709);
+				console.log(0.24639784990390667);
 				console.error(error);
 				process.exit(1);
 			} else {
@@ -19567,7 +19570,7 @@ class ProjectLoading_Test extends FlatObject {
 			CompilerOptions.construct(FlatString.construct5("es6"), undefined, FlatString.construct5("Main"), true, undefined, undefined, undefined, undefined);
 		} catch (error)  {
 			if (!(error instanceof Exception)) {
-				console.log(0.011730389822412035);
+				console.log(0.3057013606107213);
 				console.error(error);
 				process.exit(1);
 			} else {
@@ -19580,7 +19583,7 @@ class ProjectLoading_Test extends FlatObject {
 			CompilerOptions.construct(FlatString.construct5("es6"), undefined, undefined, undefined, undefined, undefined, undefined, undefined);
 		} catch (error)  {
 			if (!(error instanceof Exception)) {
-				console.log(0.8754481207394059);
+				console.log(0.9963353748811407);
 				console.error(error);
 				process.exit(1);
 			} else {
@@ -19593,7 +19596,7 @@ class ProjectLoading_Test extends FlatObject {
 			CompilerOptions.construct(FlatString.construct5("es6"), undefined, FlatString.construct5("Main"), undefined, undefined, undefined, 0, undefined);
 		} catch (error)  {
 			if (!(error instanceof Exception)) {
-				console.log(0.5134257200404873);
+				console.log(0.596327558010717);
 				console.error(error);
 				process.exit(1);
 			} else {
@@ -19606,7 +19609,7 @@ class ProjectLoading_Test extends FlatObject {
 			ProjectPackage.construct(FlatString.construct5("flat/example"), FlatArray.construct(), undefined, undefined, undefined, undefined);
 		} catch (error)  {
 			if (!(error instanceof Exception)) {
-				console.log(0.5610339449456254);
+				console.log(0.021371397416766302);
 				console.error(error);
 				process.exit(1);
 			} else {
@@ -19616,10 +19619,10 @@ class ProjectLoading_Test extends FlatObject {
 		finally {
 		}
 		try {
-			ProjectModel.construct(FlatString.construct5(""), this.generated398(ProjectPackage.construct(FlatString.construct5("flat/example"), this.generated397(SourceRoot.construct(FlatString.construct5("src"), undefined)), undefined, undefined, undefined, undefined)), CompilerOptions.construct(FlatString.construct5("es6"), undefined, undefined, true, undefined, undefined, undefined, undefined));
+			ProjectModel.construct(FlatString.construct5(""), this.generated399(ProjectPackage.construct(FlatString.construct5("flat/example"), this.generated398(SourceRoot.construct(FlatString.construct5("src"), undefined)), undefined, undefined, undefined, undefined)), CompilerOptions.construct(FlatString.construct5("es6"), undefined, undefined, true, undefined, undefined, undefined, undefined));
 		} catch (error)  {
 			if (!(error instanceof Exception)) {
-				console.log(0.43556848134033777);
+				console.log(0.033513454242009466);
 				console.error(error);
 				process.exit(1);
 			} else {
@@ -19634,7 +19637,7 @@ class ProjectLoading_Test extends FlatObject {
 	Airship_compiler_arguments_map_every_required_build_option(out) {
 		out = typeof out === 'undefined' ? FlatConsole.out : out;
 		out.write(FlatString.construct5("Testing Airship compiler arguments map every required build option "));
-		let project = AirshipCompilerArguments.construct().fromArguments(this.generated399());
+		let project = AirshipCompilerArguments.construct().fromArguments(this.generated400());
 		let _js_package = project.packages.accessor_first();
 		Test.expect0(_js_package.sourceRoots.accessor_first().location).toBe(FlatString.construct5("src"), undefined);
 		Test.expect0(_js_package.dependencies.accessor_first().sourceLocation).toBe(FlatString.construct5("packages/System"), undefined);
@@ -19654,14 +19657,14 @@ class ProjectLoading_Test extends FlatObject {
 		let rejected = false;
 		out = typeof out === 'undefined' ? FlatConsole.out : out;
 		out.write(FlatString.construct5("Testing Airship library arguments map library mode and reject unsupported options "));
-		let library = AirshipCompilerArguments.construct().fromArguments(this.generated400());
+		let library = AirshipCompilerArguments.construct().fromArguments(this.generated403());
 		Test.expect0(Bool.construct(library.options.library)).toBe(Bool.construct(true), undefined);
 		Test.expect0(library.options.mainClass).toBe(flat_null, undefined);
 		try {
-			AirshipCompilerArguments.construct().fromArguments(this.generated401());
+			AirshipCompilerArguments.construct().fromArguments(this.generated404());
 		} catch (error)  {
 			if (!(error instanceof Exception)) {
-				console.log(0.1744999665900807);
+				console.log(0.8375069493938904);
 				console.error(error);
 				process.exit(1);
 			} else {
@@ -19680,7 +19683,7 @@ class ProjectLoading_Test extends FlatObject {
 		let identity = SourceIdentity.construct(FlatString.construct5("memory:Example.flat"));
 		provider.add(identity, FlatString.construct5("sha256:abc"), FlatString.construct5("class Example {}"));
 		let loaded = provider.load(identity);
-		Test.expect0(provider.identities()).toBe(this.generated403(identity), undefined);
+		Test.expect0(provider.identities()).toBe(this.generated405(identity), undefined);
 		Test.expect0(loaded.snapshot.accessor_value()).toBe(FlatString.construct5("memory:Example.flat@sha256:abc"), undefined);
 		Test.expect0(loaded.contents).toBe(FlatString.construct5("class Example {}"), undefined);
 	}
@@ -19711,7 +19714,7 @@ class ProjectLoading_Test extends FlatObject {
 			onResult(testResult);
 		} catch (e)  {
 			if (!(e instanceof Exception)) {
-				console.log(0.6659829056745592);
+				console.log(0.9587010513936396);
 				console.error(e);
 				process.exit(1);
 			} else {
@@ -19732,7 +19735,7 @@ class ProjectLoading_Test extends FlatObject {
 			onResult(testResult);
 		} catch (e)  {
 			if (!(e instanceof Exception)) {
-				console.log(0.8072510604808525);
+				console.log(0.9026569836800405);
 				console.error(e);
 				process.exit(1);
 			} else {
@@ -19753,7 +19756,7 @@ class ProjectLoading_Test extends FlatObject {
 			onResult(testResult);
 		} catch (e)  {
 			if (!(e instanceof Exception)) {
-				console.log(0.8317144933416764);
+				console.log(0.2903241407872009);
 				console.error(e);
 				process.exit(1);
 			} else {
@@ -19774,7 +19777,7 @@ class ProjectLoading_Test extends FlatObject {
 			onResult(testResult);
 		} catch (e)  {
 			if (!(e instanceof Exception)) {
-				console.log(0.8387316341138824);
+				console.log(0.7892115120419123);
 				console.error(e);
 				process.exit(1);
 			} else {
@@ -19795,7 +19798,7 @@ class ProjectLoading_Test extends FlatObject {
 			onResult(testResult);
 		} catch (e)  {
 			if (!(e instanceof Exception)) {
-				console.log(0.5455108608776328);
+				console.log(0.2566785342206138);
 				console.error(e);
 				process.exit(1);
 			} else {
@@ -19816,7 +19819,7 @@ class ProjectLoading_Test extends FlatObject {
 			onResult(testResult);
 		} catch (e)  {
 			if (!(e instanceof Exception)) {
-				console.log(0.3762377938828384);
+				console.log(0.11174991907824261);
 				console.error(e);
 				process.exit(1);
 			} else {
@@ -19837,14 +19840,14 @@ class ProjectLoading_Test extends FlatObject {
 		return self;
 	}
 
-	static generated133(value0) {
+	static generated190(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated193(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated263(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19858,7 +19861,7 @@ class ProjectLoading_Test extends FlatObject {
 		return FlatArray.construct1(temp, 8);
 	}
 
-	static generated303(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated319(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19873,7 +19876,7 @@ class ProjectLoading_Test extends FlatObject {
 		return FlatArray.construct1(temp, 9);
 	}
 
-	static generated383(value0, value1, value2, value3, value4, value5) {
+	static generated384(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19883,13 +19886,6 @@ class ProjectLoading_Test extends FlatObject {
 		temp[4] = value4;
 		temp[5] = value5;
 		return FlatArray.construct1(temp, 6);
-	}
-
-	static generated391(value0) {
-		let temp = flat_null;
-		temp = [];
-		temp[0] = value0;
-		return FlatArray.construct1(temp, 1);
 	}
 
 	static generated392(value0) {
@@ -19941,7 +19937,14 @@ class ProjectLoading_Test extends FlatObject {
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated399() {
+	static generated399(value0) {
+		let temp = flat_null;
+		temp = [];
+		temp[0] = value0;
+		return FlatArray.construct1(temp, 1);
+	}
+
+	static generated400() {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = FlatString.construct5("src");
@@ -19971,7 +19974,7 @@ class ProjectLoading_Test extends FlatObject {
 		return FlatArray.construct1(temp, 24);
 	}
 
-	static generated400() {
+	static generated403() {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = FlatString.construct5("src");
@@ -19981,7 +19984,7 @@ class ProjectLoading_Test extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated401() {
+	static generated404() {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = FlatString.construct5("src");
@@ -19989,7 +19992,7 @@ class ProjectLoading_Test extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated403(value0) {
+	static generated405(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -19998,7 +20001,7 @@ class ProjectLoading_Test extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ProjectLoading_Test.__lazy_accessor__js_class !== 'undefined' ? ProjectLoading_Test.__lazy_accessor__js_class : (ProjectLoading_Test.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/ProjectLoading_Test"), false, FlatObject.accessor__js_class(), ProjectLoading_Test.generated133(TestRunner.accessor__js_class()), ProjectLoading_Test.generated193(Field.construct(FlatString.construct5("model")), Field.construct(FlatString.construct5("_project_model_owns_immutable_package_dependency_import_and_target_optionsTestCase")), Field.construct(FlatString.construct5("_project_model_rejects_invalid_target_mode_and_ownershipTestCase")), Field.construct(FlatString.construct5("_Airship_compiler_arguments_map_every_required_build_optionTestCase")), Field.construct(FlatString.construct5("_Airship_library_arguments_map_library_mode_and_reject_unsupported_optionsTestCase")), Field.construct(FlatString.construct5("_in_memory_provider_publishes_immutable_snapshotsTestCase")), Field.construct(FlatString.construct5("_filesystem_provider_enumerates_and_loads_source_snapshots_deterministicallyTestCase")), Field.construct(FlatString.construct5("_runTestsTestRunner"))), ProjectLoading_Test.generated303(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("project_model_owns_immutable_package_dependency_import_and_target_options")), Function.construct(FlatString.construct5("project_model_rejects_invalid_target_mode_and_ownership")), Function.construct(FlatString.construct5("Airship_compiler_arguments_map_every_required_build_option")), Function.construct(FlatString.construct5("Airship_library_arguments_map_library_mode_and_reject_unsupported_options")), Function.construct(FlatString.construct5("in_memory_provider_publishes_immutable_snapshots")), Function.construct(FlatString.construct5("filesystem_provider_enumerates_and_loads_source_snapshots_deterministically")), Function.construct(FlatString.construct5("runTests")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/ProjectLoading_Test"), false, FlatObject.accessor__js_class(), ProjectLoading_Test.generated190(TestRunner.accessor__js_class()), ProjectLoading_Test.generated263(Field.construct(FlatString.construct5("model")), Field.construct(FlatString.construct5("_project_model_owns_immutable_package_dependency_import_and_target_optionsTestCase")), Field.construct(FlatString.construct5("_project_model_rejects_invalid_target_mode_and_ownershipTestCase")), Field.construct(FlatString.construct5("_Airship_compiler_arguments_map_every_required_build_optionTestCase")), Field.construct(FlatString.construct5("_Airship_library_arguments_map_library_mode_and_reject_unsupported_optionsTestCase")), Field.construct(FlatString.construct5("_in_memory_provider_publishes_immutable_snapshotsTestCase")), Field.construct(FlatString.construct5("_filesystem_provider_enumerates_and_loads_source_snapshots_deterministicallyTestCase")), Field.construct(FlatString.construct5("_runTestsTestRunner"))), ProjectLoading_Test.generated319(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("project_model_owns_immutable_package_dependency_import_and_target_options")), Function.construct(FlatString.construct5("project_model_rejects_invalid_target_mode_and_ownership")), Function.construct(FlatString.construct5("Airship_compiler_arguments_map_every_required_build_option")), Function.construct(FlatString.construct5("Airship_library_arguments_map_library_mode_and_reject_unsupported_options")), Function.construct(FlatString.construct5("in_memory_provider_publishes_immutable_snapshots")), Function.construct(FlatString.construct5("filesystem_provider_enumerates_and_loads_source_snapshots_deterministically")), Function.construct(FlatString.construct5("runTests")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -20067,14 +20070,14 @@ static __init() {
 	return self;
 }
 
-static generated121(value0) {
+static generated189(value0) {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = value0;
 	return FlatArray.construct1(temp, 1);
 }
 
-static generated143(value0, value1) {
+static generated230(value0, value1) {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = value0;
@@ -20082,7 +20085,7 @@ static generated143(value0, value1) {
 	return FlatArray.construct1(temp, 2);
 }
 
-static generated271(value0, value1, value2, value3) {
+static generated272(value0, value1, value2, value3) {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = value0;
@@ -20092,14 +20095,14 @@ static generated271(value0, value1, value2, value3) {
 	return FlatArray.construct1(temp, 4);
 }
 
-static generated384(value0) {
+static generated385(value0) {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = value0;
 	return FlatArray.construct1(temp, 1);
 }
 
-static generated385(value0) {
+static generated386(value0) {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = value0;
@@ -20108,7 +20111,7 @@ static generated385(value0) {
 
 static accessor__js_class() {
 	return typeof ProjectLoading_TestSuite.__lazy_accessor__js_class !== 'undefined' ? ProjectLoading_TestSuite.__lazy_accessor__js_class : (ProjectLoading_TestSuite.__lazy_accessor__js_class = (() => {
-				return Class.construct1(FlatString.construct5("flat/project/ProjectLoading_TestSuite"), false, FlatObject.accessor__js_class(), ProjectLoading_TestSuite.generated121(TestRunner.accessor__js_class()), ProjectLoading_TestSuite.generated143(Field.construct(FlatString.construct5("model")), Field.construct(FlatString.construct5("_runTestsTestSuite"))), ProjectLoading_TestSuite.generated271(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("main")), Function.construct(FlatString.construct5("runTests")), Function.construct(FlatString.construct5("this"))), this);
+				return Class.construct1(FlatString.construct5("flat/project/ProjectLoading_TestSuite"), false, FlatObject.accessor__js_class(), ProjectLoading_TestSuite.generated189(TestRunner.accessor__js_class()), ProjectLoading_TestSuite.generated230(Field.construct(FlatString.construct5("model")), Field.construct(FlatString.construct5("_runTestsTestSuite"))), ProjectLoading_TestSuite.generated272(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("main")), Function.construct(FlatString.construct5("runTests")), Function.construct(FlatString.construct5("this"))), this);
 		})());
 }
 
@@ -20187,7 +20190,7 @@ class ProjectModel extends FlatObject {
 		return target.toBuilder().identity(identity).packages(packages).options(options).build();
 	}
 
-	static generated126(value0, value1, value2) {
+	static generated191(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20196,7 +20199,7 @@ class ProjectModel extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated274(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated246(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20213,7 +20216,7 @@ class ProjectModel extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ProjectModel.__lazy_accessor__js_class !== 'undefined' ? ProjectModel.__lazy_accessor__js_class : (ProjectModel.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/ProjectModel"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ProjectModel.generated126(Field.construct(FlatString.construct5("identity")), Field.construct(FlatString.construct5("packages")), Field.construct(FlatString.construct5("options"))), ProjectModel.generated274(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/ProjectModel"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ProjectModel.generated191(Field.construct(FlatString.construct5("identity")), Field.construct(FlatString.construct5("packages")), Field.construct(FlatString.construct5("options"))), ProjectModel.generated246(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -20267,7 +20270,7 @@ class flat_project_ProjectModel_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated305(value0, value1, value2, value3, value4, value5) {
+	static generated309(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20281,7 +20284,7 @@ class flat_project_ProjectModel_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_project_ProjectModel_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_project_ProjectModel_Builder.__lazy_accessor__js_class : (flat_project_ProjectModel_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/ProjectModel.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_ProjectModel_Builder.generated305(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("identity")), Function.construct(FlatString.construct5("packages")), Function.construct(FlatString.construct5("options")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/ProjectModel.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_ProjectModel_Builder.generated309(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("identity")), Function.construct(FlatString.construct5("packages")), Function.construct(FlatString.construct5("options")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -20370,7 +20373,7 @@ class ProjectPackage extends FlatObject {
 		return target.toBuilder().name(name).sourceRoots(sourceRoots).dependencies(dependencies).imports(imports).defaultImports(defaultImports).exclusions(exclusions).build();
 	}
 
-	static generated139(value0, value1, value2, value3, value4, value5) {
+	static generated187(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20382,7 +20385,7 @@ class ProjectPackage extends FlatObject {
 		return FlatArray.construct1(temp, 6);
 	}
 
-	static generated206(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated287(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20399,7 +20402,7 @@ class ProjectPackage extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ProjectPackage.__lazy_accessor__js_class !== 'undefined' ? ProjectPackage.__lazy_accessor__js_class : (ProjectPackage.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/ProjectPackage"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ProjectPackage.generated139(Field.construct(FlatString.construct5("name")), Field.construct(FlatString.construct5("sourceRoots")), Field.construct(FlatString.construct5("dependencies")), Field.construct(FlatString.construct5("imports")), Field.construct(FlatString.construct5("defaultImports")), Field.construct(FlatString.construct5("exclusions"))), ProjectPackage.generated206(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/ProjectPackage"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ProjectPackage.generated187(Field.construct(FlatString.construct5("name")), Field.construct(FlatString.construct5("sourceRoots")), Field.construct(FlatString.construct5("dependencies")), Field.construct(FlatString.construct5("imports")), Field.construct(FlatString.construct5("defaultImports")), Field.construct(FlatString.construct5("exclusions"))), ProjectPackage.generated287(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -20477,7 +20480,7 @@ class flat_project_ProjectPackage_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated225(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated339(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20494,7 +20497,7 @@ class flat_project_ProjectPackage_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_project_ProjectPackage_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_project_ProjectPackage_Builder.__lazy_accessor__js_class : (flat_project_ProjectPackage_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/ProjectPackage.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_ProjectPackage_Builder.generated225(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("name")), Function.construct(FlatString.construct5("sourceRoots")), Function.construct(FlatString.construct5("dependencies")), Function.construct(FlatString.construct5("imports")), Function.construct(FlatString.construct5("defaultImports")), Function.construct(FlatString.construct5("exclusions")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/ProjectPackage.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_ProjectPackage_Builder.generated339(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("name")), Function.construct(FlatString.construct5("sourceRoots")), Function.construct(FlatString.construct5("dependencies")), Function.construct(FlatString.construct5("imports")), Function.construct(FlatString.construct5("defaultImports")), Function.construct(FlatString.construct5("exclusions")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -20556,14 +20559,14 @@ class Queue extends FlatObject {
 		return FlatString.construct5("Queue [").plus0((this.join(FlatString.construct5(", "), undefined, undefined, undefined)).plus0(FlatString.construct5("]")));
 	}
 
-	static generated127(value0) {
+	static generated186(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated200(value0, value1, value2, value3) {
+	static generated193(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20573,7 +20576,7 @@ class Queue extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated212(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated262(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20589,7 +20592,7 @@ class Queue extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Queue.__lazy_accessor__js_class !== 'undefined' ? Queue.__lazy_accessor__js_class : (Queue.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/Queue"), false, FlatObject.accessor__js_class(), Queue.generated127(List.accessor__js_class()), Queue.generated200(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last"))), Queue.generated212(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("dequeue")), Function.construct(FlatString.construct5("enqueue")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("toString"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/Queue"), false, FlatObject.accessor__js_class(), Queue.generated186(List.accessor__js_class()), Queue.generated193(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("iterator")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last"))), Queue.generated262(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("dequeue")), Function.construct(FlatString.construct5("enqueue")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("toString"))), this);
 			})());
 	}
 
@@ -20688,7 +20691,7 @@ class Regex extends FlatObject {
 		return matches;
 	}
 
-	static generated186(value0, value1, value2, value3, value4, value5, value6) {
+	static generated226(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20703,7 +20706,7 @@ class Regex extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Regex.__lazy_accessor__js_class !== 'undefined' ? Regex.__lazy_accessor__js_class : (Regex.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/regex/Regex"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Regex.generated186(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("containsMatch")), Function.construct(FlatString.construct5("containsMatch")), Function.construct(FlatString.construct5("getMatches")), Function.construct(FlatString.construct5("getMatches")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("getMatchGroups"))), this);
+					return Class.construct1(FlatString.construct5("flat/regex/Regex"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), Regex.generated226(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("containsMatch")), Function.construct(FlatString.construct5("containsMatch")), Function.construct(FlatString.construct5("getMatches")), Function.construct(FlatString.construct5("getMatches")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("getMatchGroups"))), this);
 			})());
 	}
 
@@ -20763,7 +20766,7 @@ class RegexStringExtensions {
 		});
 	}
 
-	static generated135(value0, value1, value2, value3, value4, value5, value6) {
+	static generated225(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20778,7 +20781,7 @@ class RegexStringExtensions {
 
 	static accessor__js_class() {
 		return typeof RegexStringExtensions.__lazy_accessor__js_class !== 'undefined' ? RegexStringExtensions.__lazy_accessor__js_class : (RegexStringExtensions.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/regex/RegexStringExtensions"), false, flat_null, FlatArray.construct(), FlatArray.construct(), RegexStringExtensions.generated135(Function.construct(FlatString.construct5("replace")), Function.construct(FlatString.construct5("startsWith")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("endsWith")), Function.construct(FlatString.construct5("matches")), Function.construct(FlatString.construct5("indexOf")), Function.construct(FlatString.construct5("split"))), this);
+					return Class.construct1(FlatString.construct5("flat/regex/RegexStringExtensions"), false, flat_null, FlatArray.construct(), FlatArray.construct(), RegexStringExtensions.generated225(Function.construct(FlatString.construct5("replace")), Function.construct(FlatString.construct5("startsWith")), Function.construct(FlatString.construct5("contains")), Function.construct(FlatString.construct5("endsWith")), Function.construct(FlatString.construct5("matches")), Function.construct(FlatString.construct5("indexOf")), Function.construct(FlatString.construct5("split"))), this);
 			})());
 	}
 
@@ -20893,7 +20896,7 @@ class ScopeIdentity extends FlatObject {
 		return target.toBuilder().snapshot(snapshot).scopeKind(scopeKind).ordinal(ordinal).owner(owner).build();
 	}
 
-	static generated136(value0, value1, value2, value3, value4, value5, value6) {
+	static generated188(value0, value1, value2, value3, value4, value5, value6) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20906,7 +20909,7 @@ class ScopeIdentity extends FlatObject {
 		return FlatArray.construct1(temp, 7);
 	}
 
-	static generated318(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
+	static generated264(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -20926,7 +20929,7 @@ class ScopeIdentity extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof ScopeIdentity.__lazy_accessor__js_class !== 'undefined' ? ScopeIdentity.__lazy_accessor__js_class : (ScopeIdentity.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/ScopeIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ScopeIdentity.generated136(Field.construct(FlatString.construct5("packageIdentity")), Field.construct(FlatString.construct5("snapshot")), Field.construct(FlatString.construct5("owner")), Field.construct(FlatString.construct5("scopeKind")), Field.construct(FlatString.construct5("ordinal")), Field.construct(FlatString.construct5("ownerValue")), Field.construct(FlatString.construct5("value"))), ScopeIdentity.generated318(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("validate")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/ScopeIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), ScopeIdentity.generated188(Field.construct(FlatString.construct5("packageIdentity")), Field.construct(FlatString.construct5("snapshot")), Field.construct(FlatString.construct5("owner")), Field.construct(FlatString.construct5("scopeKind")), Field.construct(FlatString.construct5("ordinal")), Field.construct(FlatString.construct5("ownerValue")), Field.construct(FlatString.construct5("value"))), ScopeIdentity.generated264(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("validate")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -21008,7 +21011,7 @@ class flat_compiler_models_ScopeIdentity_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated343(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated336(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21024,7 +21027,7 @@ class flat_compiler_models_ScopeIdentity_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_compiler_models_ScopeIdentity_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_compiler_models_ScopeIdentity_Builder.__lazy_accessor__js_class : (flat_compiler_models_ScopeIdentity_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/ScopeIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_ScopeIdentity_Builder.generated343(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("packageIdentity")), Function.construct(FlatString.construct5("snapshot")), Function.construct(FlatString.construct5("owner")), Function.construct(FlatString.construct5("scopeKind")), Function.construct(FlatString.construct5("ordinal")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/ScopeIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_ScopeIdentity_Builder.generated336(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("packageIdentity")), Function.construct(FlatString.construct5("snapshot")), Function.construct(FlatString.construct5("owner")), Function.construct(FlatString.construct5("scopeKind")), Function.construct(FlatString.construct5("ordinal")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -21218,14 +21221,14 @@ class FlatShort extends Number {
 		return FlatLong.toEnglish(value);
 	}
 
-	static generated132(value0) {
+	static generated183(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated203(value0, value1, value2) {
+	static generated254(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21234,7 +21237,7 @@ class FlatShort extends Number {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated231(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39) {
+	static generated324(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21282,7 +21285,7 @@ class FlatShort extends Number {
 
 	static accessor__js_class() {
 		return typeof FlatShort.__lazy_accessor__js_class !== 'undefined' ? FlatShort.__lazy_accessor__js_class : (FlatShort.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/primitive/number/Short"), false, Number.accessor__js_class(), FlatShort.generated132(Integer.accessor__js_class()), FlatShort.generated203(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value"))), FlatShort.generated231(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("toEnglish"))), this);
+					return Class.construct1(FlatString.construct5("flat/primitive/number/Short"), false, Number.accessor__js_class(), FlatShort.generated183(Integer.accessor__js_class()), FlatShort.generated254(Field.construct(FlatString.construct5("realValue")), Field.construct(FlatString.construct5("integerValue")), Field.construct(FlatString.construct5("value"))), FlatShort.generated324(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("compareTo")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("compareToReal")), Function.construct(FlatString.construct5("compareToInteger")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("plusReal")), Function.construct(FlatString.construct5("plusInteger")), Function.construct(FlatString.construct5("plusEquals")), Function.construct(FlatString.construct5("plusEqualsReal")), Function.construct(FlatString.construct5("plusEqualsInteger")), Function.construct(FlatString.construct5("minus")), Function.construct(FlatString.construct5("minusReal")), Function.construct(FlatString.construct5("minusInteger")), Function.construct(FlatString.construct5("minusEquals")), Function.construct(FlatString.construct5("minusEqualsReal")), Function.construct(FlatString.construct5("minusEqualsInteger")), Function.construct(FlatString.construct5("multiply")), Function.construct(FlatString.construct5("multiplyReal")), Function.construct(FlatString.construct5("multiplyInteger")), Function.construct(FlatString.construct5("multiplyEquals")), Function.construct(FlatString.construct5("multiplyEqualsReal")), Function.construct(FlatString.construct5("multiplyEqualsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equalsReal")), Function.construct(FlatString.construct5("equalsInteger")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("numDigits")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("hashCodeLong")), Function.construct(FlatString.construct5("plus")), Function.construct(FlatString.construct5("toEnglish")), Function.construct(FlatString.construct5("toEnglish"))), this);
 			})());
 	}
 
@@ -21323,7 +21326,7 @@ class SkipIterator extends StreamIterator {
 		return self;
 	}
 
-	static generated168(value0, value1, value2, value3) {
+	static generated184(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21333,7 +21336,7 @@ class SkipIterator extends StreamIterator {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated172(value0, value1) {
+	static generated274(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21351,7 +21354,7 @@ class SkipIterator extends StreamIterator {
 
 	static accessor__js_class() {
 		return typeof SkipIterator.__lazy_accessor__js_class !== 'undefined' ? SkipIterator.__lazy_accessor__js_class : (SkipIterator.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/stream/SkipIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), SkipIterator.generated168(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), SkipIterator.generated172(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/stream/SkipIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), SkipIterator.generated184(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), SkipIterator.generated274(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -21426,14 +21429,14 @@ class SourceExclusion extends FlatObject {
 		return target.toBuilder().location(location).build();
 	}
 
-	static generated128(value0) {
+	static generated181(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated204(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated259(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21450,7 +21453,7 @@ class SourceExclusion extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof SourceExclusion.__lazy_accessor__js_class !== 'undefined' ? SourceExclusion.__lazy_accessor__js_class : (SourceExclusion.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/SourceExclusion"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SourceExclusion.generated128(Field.construct(FlatString.construct5("location"))), SourceExclusion.generated204(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/SourceExclusion"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SourceExclusion.generated181(Field.construct(FlatString.construct5("location"))), SourceExclusion.generated259(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -21488,7 +21491,7 @@ class flat_project_SourceExclusion_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated229(value0, value1, value2, value3) {
+	static generated311(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21500,7 +21503,7 @@ class flat_project_SourceExclusion_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_project_SourceExclusion_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_project_SourceExclusion_Builder.__lazy_accessor__js_class : (flat_project_SourceExclusion_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/SourceExclusion.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_SourceExclusion_Builder.generated229(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/SourceExclusion.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_SourceExclusion_Builder.generated311(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -21562,14 +21565,14 @@ class SourceIdentity extends FlatObject {
 		return target.toBuilder().value(value).build();
 	}
 
-	static generated138(value0) {
+	static generated185(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated208(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated257(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21586,7 +21589,7 @@ class SourceIdentity extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof SourceIdentity.__lazy_accessor__js_class !== 'undefined' ? SourceIdentity.__lazy_accessor__js_class : (SourceIdentity.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SourceIdentity.generated138(Field.construct(FlatString.construct5("value"))), SourceIdentity.generated208(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SourceIdentity.generated185(Field.construct(FlatString.construct5("value"))), SourceIdentity.generated257(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -21624,7 +21627,7 @@ class flat_compiler_models_SourceIdentity_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated279(value0, value1, value2, value3) {
+	static generated318(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21636,7 +21639,7 @@ class flat_compiler_models_SourceIdentity_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_compiler_models_SourceIdentity_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_compiler_models_SourceIdentity_Builder.__lazy_accessor__js_class : (flat_compiler_models_SourceIdentity_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_SourceIdentity_Builder.generated279(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_SourceIdentity_Builder.generated318(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -21723,7 +21726,7 @@ class SourceRange extends FlatObject {
 		return target.toBuilder().snapshot(snapshot).startTokenIndex(startTokenIndex).endTokenIndex(endTokenIndex).start(start).end(end).build();
 	}
 
-	static generated130(value0, value1, value2, value3, value4) {
+	static generated182(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21734,7 +21737,7 @@ class SourceRange extends FlatObject {
 		return FlatArray.construct1(temp, 5);
 	}
 
-	static generated269(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated280(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21751,7 +21754,7 @@ class SourceRange extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof SourceRange.__lazy_accessor__js_class !== 'undefined' ? SourceRange.__lazy_accessor__js_class : (SourceRange.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceRange"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SourceRange.generated130(Field.construct(FlatString.construct5("snapshot")), Field.construct(FlatString.construct5("startTokenIndex")), Field.construct(FlatString.construct5("endTokenIndex")), Field.construct(FlatString.construct5("start")), Field.construct(FlatString.construct5("end"))), SourceRange.generated269(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceRange"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SourceRange.generated182(Field.construct(FlatString.construct5("snapshot")), Field.construct(FlatString.construct5("startTokenIndex")), Field.construct(FlatString.construct5("endTokenIndex")), Field.construct(FlatString.construct5("start")), Field.construct(FlatString.construct5("end"))), SourceRange.generated280(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -21821,7 +21824,7 @@ class flat_compiler_models_SourceRange_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated319(value0, value1, value2, value3, value4, value5, value6, value7) {
+	static generated332(value0, value1, value2, value3, value4, value5, value6, value7) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21837,7 +21840,7 @@ class flat_compiler_models_SourceRange_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_compiler_models_SourceRange_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_compiler_models_SourceRange_Builder.__lazy_accessor__js_class : (flat_compiler_models_SourceRange_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceRange.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_SourceRange_Builder.generated319(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("snapshot")), Function.construct(FlatString.construct5("startTokenIndex")), Function.construct(FlatString.construct5("endTokenIndex")), Function.construct(FlatString.construct5("start")), Function.construct(FlatString.construct5("end")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceRange.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_SourceRange_Builder.generated332(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("snapshot")), Function.construct(FlatString.construct5("startTokenIndex")), Function.construct(FlatString.construct5("endTokenIndex")), Function.construct(FlatString.construct5("start")), Function.construct(FlatString.construct5("end")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -21904,7 +21907,7 @@ class SourceRoot extends FlatObject {
 		return target.toBuilder().location(location).library(library).build();
 	}
 
-	static generated129(value0, value1) {
+	static generated176(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21912,7 +21915,7 @@ class SourceRoot extends FlatObject {
 		return FlatArray.construct1(temp, 2);
 	}
 
-	static generated275(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated265(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21929,7 +21932,7 @@ class SourceRoot extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof SourceRoot.__lazy_accessor__js_class !== 'undefined' ? SourceRoot.__lazy_accessor__js_class : (SourceRoot.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/SourceRoot"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SourceRoot.generated129(Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("library"))), SourceRoot.generated275(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/SourceRoot"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SourceRoot.generated176(Field.construct(FlatString.construct5("location")), Field.construct(FlatString.construct5("library"))), SourceRoot.generated265(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -21975,7 +21978,7 @@ class flat_project_SourceRoot_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated329(value0, value1, value2, value3, value4) {
+	static generated333(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -21988,7 +21991,7 @@ class flat_project_SourceRoot_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_project_SourceRoot_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_project_SourceRoot_Builder.__lazy_accessor__js_class : (flat_project_SourceRoot_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/project/SourceRoot.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_SourceRoot_Builder.generated329(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("library")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/project/SourceRoot.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_project_SourceRoot_Builder.generated333(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("library")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -22057,7 +22060,7 @@ class SourceSnapshotIdentity extends FlatObject {
 		return target.toBuilder().source(source).revision(revision).build();
 	}
 
-	static generated123(value0, value1, value2) {
+	static generated180(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22066,7 +22069,7 @@ class SourceSnapshotIdentity extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated272(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated266(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22083,7 +22086,7 @@ class SourceSnapshotIdentity extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof SourceSnapshotIdentity.__lazy_accessor__js_class !== 'undefined' ? SourceSnapshotIdentity.__lazy_accessor__js_class : (SourceSnapshotIdentity.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceSnapshotIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SourceSnapshotIdentity.generated123(Field.construct(FlatString.construct5("source")), Field.construct(FlatString.construct5("revision")), Field.construct(FlatString.construct5("value"))), SourceSnapshotIdentity.generated272(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceSnapshotIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SourceSnapshotIdentity.generated180(Field.construct(FlatString.construct5("source")), Field.construct(FlatString.construct5("revision")), Field.construct(FlatString.construct5("value"))), SourceSnapshotIdentity.generated266(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -22133,7 +22136,7 @@ class flat_compiler_models_SourceSnapshotIdentity_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated306(value0, value1, value2, value3, value4) {
+	static generated329(value0, value1, value2, value3, value4) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22146,7 +22149,7 @@ class flat_compiler_models_SourceSnapshotIdentity_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_compiler_models_SourceSnapshotIdentity_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_compiler_models_SourceSnapshotIdentity_Builder.__lazy_accessor__js_class : (flat_compiler_models_SourceSnapshotIdentity_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceSnapshotIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_SourceSnapshotIdentity_Builder.generated306(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("source")), Function.construct(FlatString.construct5("revision")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/SourceSnapshotIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_SourceSnapshotIdentity_Builder.generated329(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("source")), Function.construct(FlatString.construct5("revision")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -22269,7 +22272,7 @@ class Stack extends FlatObject {
 		return this.toArray().toString();
 	}
 
-	static generated122(value0, value1, value2) {
+	static generated177(value0, value1, value2) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22278,7 +22281,7 @@ class Stack extends FlatObject {
 		return FlatArray.construct1(temp, 3);
 	}
 
-	static generated273(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12) {
+	static generated278(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22299,7 +22302,7 @@ class Stack extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Stack.__lazy_accessor__js_class !== 'undefined' ? Stack.__lazy_accessor__js_class : (Stack.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/Stack"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Stack.generated122(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("isEmpty")), Field.construct(FlatString.construct5("isNotEmpty"))), Stack.generated273(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("push")), Function.construct(FlatString.construct5("pop")), Function.construct(FlatString.construct5("clear")), Function.construct(FlatString.construct5("peek")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("toString"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/Stack"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Stack.generated177(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("isEmpty")), Field.construct(FlatString.construct5("isNotEmpty"))), Stack.generated278(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("push")), Function.construct(FlatString.construct5("pop")), Function.construct(FlatString.construct5("clear")), Function.construct(FlatString.construct5("peek")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("toString"))), this);
 			})());
 	}
 
@@ -22334,7 +22337,7 @@ class StackTrace extends FlatObject {
 		return self;
 	}
 
-	static generated140(value0, value1) {
+	static generated178(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22344,7 +22347,7 @@ class StackTrace extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof StackTrace.__lazy_accessor__js_class !== 'undefined' ? StackTrace.__lazy_accessor__js_class : (StackTrace.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/exception/StackTrace"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), StackTrace.generated140(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/exception/StackTrace"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), StackTrace.generated178(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -22615,7 +22618,7 @@ class Stream extends FlatObject {
 		return str;
 	}
 
-	static generated137(value0, value1, value2, value3, value4, value5) {
+	static generated179(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22627,7 +22630,7 @@ class Stream extends FlatObject {
 		return FlatArray.construct1(temp, 6);
 	}
 
-	static generated338(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28) {
+	static generated305(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22695,7 +22698,7 @@ class Stream extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof Stream.__lazy_accessor__js_class !== 'undefined' ? Stream.__lazy_accessor__js_class : (Stream.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/stream/Stream"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Stream.generated137(Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last")), Field.construct(FlatString.construct5("firstNonNull")), Field.construct(FlatString.construct5("lastNonNull")), Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("iterator"))), Stream.generated338(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("mapNotNull")), Function.construct(FlatString.construct5("peek")), Function.construct(FlatString.construct5("flatMap")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("filterNot")), Function.construct(FlatString.construct5("filterNull")), Function.construct(FlatString.construct5("unique")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("firstWhere")), Function.construct(FlatString.construct5("firstOr")), Function.construct(FlatString.construct5("countWhere")), Function.construct(FlatString.construct5("any")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("none")), Function.construct(FlatString.construct5("count")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("toSet")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("forEachParallel")), Function.construct(FlatString.construct5("forEachAsync")), Function.construct(FlatString.construct5("minBy")), Function.construct(FlatString.construct5("maxBy")), Function.construct(FlatString.construct5("sumBy")), Function.construct(FlatString.construct5("meanBy")), Function.construct(FlatString.construct5("join"))), this);
+					return Class.construct1(FlatString.construct5("flat/stream/Stream"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Stream.generated179(Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last")), Field.construct(FlatString.construct5("firstNonNull")), Field.construct(FlatString.construct5("lastNonNull")), Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("iterator"))), Stream.generated305(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("map")), Function.construct(FlatString.construct5("mapNotNull")), Function.construct(FlatString.construct5("peek")), Function.construct(FlatString.construct5("flatMap")), Function.construct(FlatString.construct5("filter")), Function.construct(FlatString.construct5("filterNot")), Function.construct(FlatString.construct5("filterNull")), Function.construct(FlatString.construct5("unique")), Function.construct(FlatString.construct5("skip")), Function.construct(FlatString.construct5("take")), Function.construct(FlatString.construct5("firstWhere")), Function.construct(FlatString.construct5("firstOr")), Function.construct(FlatString.construct5("countWhere")), Function.construct(FlatString.construct5("any")), Function.construct(FlatString.construct5("all")), Function.construct(FlatString.construct5("none")), Function.construct(FlatString.construct5("count")), Function.construct(FlatString.construct5("toArray")), Function.construct(FlatString.construct5("toSet")), Function.construct(FlatString.construct5("forEach")), Function.construct(FlatString.construct5("forEachParallel")), Function.construct(FlatString.construct5("forEachAsync")), Function.construct(FlatString.construct5("minBy")), Function.construct(FlatString.construct5("maxBy")), Function.construct(FlatString.construct5("sumBy")), Function.construct(FlatString.construct5("meanBy")), Function.construct(FlatString.construct5("join"))), this);
 			})());
 	}
 
@@ -22720,7 +22723,7 @@ class StreamListExtensions {
 		return Stream.construct(this.accessor_iterator());
 	}
 
-	static generated145(value0) {
+	static generated174(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22729,7 +22732,7 @@ class StreamListExtensions {
 
 	static accessor__js_class() {
 		return typeof StreamListExtensions.__lazy_accessor__js_class !== 'undefined' ? StreamListExtensions.__lazy_accessor__js_class : (StreamListExtensions.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/stream/StreamListExtensions"), false, flat_null, FlatArray.construct(), FlatArray.construct(), StreamListExtensions.generated145(Function.construct(FlatString.construct5("stream"))), this);
+					return Class.construct1(FlatString.construct5("flat/stream/StreamListExtensions"), false, flat_null, FlatArray.construct(), FlatArray.construct(), StreamListExtensions.generated174(Function.construct(FlatString.construct5("stream"))), this);
 			})());
 	}
 
@@ -22756,7 +22759,7 @@ class StreamReader extends FlatObject {
 		return self;
 	}
 
-	static generated150(value0, value1) {
+	static generated173(value0, value1) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22766,7 +22769,7 @@ class StreamReader extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof StreamReader.__lazy_accessor__js_class !== 'undefined' ? StreamReader.__lazy_accessor__js_class : (StreamReader.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/StreamReader"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), StreamReader.generated150(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/StreamReader"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), StreamReader.generated173(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -22809,14 +22812,14 @@ class StringBuilder extends FlatObject {
 		return this.value;
 	}
 
-	static generated144(value0) {
+	static generated167(value0) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
 		return FlatArray.construct1(temp, 1);
 	}
 
-	static generated260(value0, value1, value2, value3) {
+	static generated252(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22828,7 +22831,7 @@ class StringBuilder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof StringBuilder.__lazy_accessor__js_class !== 'undefined' ? StringBuilder.__lazy_accessor__js_class : (StringBuilder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/io/StringBuilder"), false, FlatObject.accessor__js_class(), StringBuilder.generated144(OutputStream.accessor__js_class()), FlatArray.construct(), StringBuilder.generated260(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("toString"))), this);
+					return Class.construct1(FlatString.construct5("flat/io/StringBuilder"), false, FlatObject.accessor__js_class(), StringBuilder.generated167(OutputStream.accessor__js_class()), FlatArray.construct(), StringBuilder.generated252(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("write")), Function.construct(FlatString.construct5("toString"))), this);
 			})());
 	}
 
@@ -22953,7 +22956,7 @@ class StringCharArray extends FlatObject {
 		return value;
 	}
 
-	static generated185(value0, value1, value2, value3) {
+	static generated165(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22963,7 +22966,7 @@ class StringCharArray extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated302(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12) {
+	static generated289(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -22984,7 +22987,7 @@ class StringCharArray extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof StringCharArray.__lazy_accessor__js_class !== 'undefined' ? StringCharArray.__lazy_accessor__js_class : (StringCharArray.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/datastruct/list/StringCharArray"), false, FlatObject.accessor__js_class(), FlatArray.construct(), StringCharArray.generated185(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("data")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last"))), StringCharArray.generated302(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("toCharArray")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("get")), Function.construct(FlatString.construct5("set"))), this);
+					return Class.construct1(FlatString.construct5("flat/datastruct/list/StringCharArray"), false, FlatObject.accessor__js_class(), FlatArray.construct(), StringCharArray.generated165(Field.construct(FlatString.construct5("count")), Field.construct(FlatString.construct5("data")), Field.construct(FlatString.construct5("first")), Field.construct(FlatString.construct5("last"))), StringCharArray.generated289(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("reverse")), Function.construct(FlatString.construct5("toCharArray")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("get")), Function.construct(FlatString.construct5("set"))), this);
 			})());
 	}
 
@@ -23069,7 +23072,7 @@ class SymbolIdentity extends FlatObject {
 		return target.toBuilder().declaration(declaration).symbolKind(symbolKind).ordinal(ordinal).build();
 	}
 
-	static generated148(value0, value1, value2, value3) {
+	static generated166(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -23079,7 +23082,7 @@ class SymbolIdentity extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated253(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated270(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -23096,7 +23099,7 @@ class SymbolIdentity extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof SymbolIdentity.__lazy_accessor__js_class !== 'undefined' ? SymbolIdentity.__lazy_accessor__js_class : (SymbolIdentity.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/SymbolIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SymbolIdentity.generated148(Field.construct(FlatString.construct5("declaration")), Field.construct(FlatString.construct5("symbolKind")), Field.construct(FlatString.construct5("ordinal")), Field.construct(FlatString.construct5("value"))), SymbolIdentity.generated253(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/SymbolIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SymbolIdentity.generated166(Field.construct(FlatString.construct5("declaration")), Field.construct(FlatString.construct5("symbolKind")), Field.construct(FlatString.construct5("ordinal")), Field.construct(FlatString.construct5("value"))), SymbolIdentity.generated270(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -23154,7 +23157,7 @@ class flat_compiler_models_SymbolIdentity_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated310(value0, value1, value2, value3, value4, value5) {
+	static generated340(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -23168,7 +23171,7 @@ class flat_compiler_models_SymbolIdentity_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_compiler_models_SymbolIdentity_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_compiler_models_SymbolIdentity_Builder.__lazy_accessor__js_class : (flat_compiler_models_SymbolIdentity_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/SymbolIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_SymbolIdentity_Builder.generated310(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("declaration")), Function.construct(FlatString.construct5("symbolKind")), Function.construct(FlatString.construct5("ordinal")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/SymbolIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_SymbolIdentity_Builder.generated340(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("declaration")), Function.construct(FlatString.construct5("symbolKind")), Function.construct(FlatString.construct5("ordinal")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -23244,7 +23247,7 @@ class SyntaxIslandIdentity extends FlatObject {
 		return target.toBuilder().snapshot(snapshot).kind(kind).ordinal(ordinal).build();
 	}
 
-	static generated187(value0, value1, value2, value3) {
+	static generated168(value0, value1, value2, value3) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -23254,7 +23257,7 @@ class SyntaxIslandIdentity extends FlatObject {
 		return FlatArray.construct1(temp, 4);
 	}
 
-	static generated254(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+	static generated273(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -23271,7 +23274,7 @@ class SyntaxIslandIdentity extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof SyntaxIslandIdentity.__lazy_accessor__js_class !== 'undefined' ? SyntaxIslandIdentity.__lazy_accessor__js_class : (SyntaxIslandIdentity.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/SyntaxIslandIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SyntaxIslandIdentity.generated187(Field.construct(FlatString.construct5("snapshot")), Field.construct(FlatString.construct5("kind")), Field.construct(FlatString.construct5("ordinal")), Field.construct(FlatString.construct5("value"))), SyntaxIslandIdentity.generated254(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/SyntaxIslandIdentity"), false, FlatObject.accessor__js_class(), FlatArray.construct(), SyntaxIslandIdentity.generated168(Field.construct(FlatString.construct5("snapshot")), Field.construct(FlatString.construct5("kind")), Field.construct(FlatString.construct5("ordinal")), Field.construct(FlatString.construct5("value"))), SyntaxIslandIdentity.generated273(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 			})());
 	}
 
@@ -23329,7 +23332,7 @@ class flat_compiler_models_SyntaxIslandIdentity_Builder extends FlatObject {
 		return self;
 	}
 
-	static generated314(value0, value1, value2, value3, value4, value5) {
+	static generated338(value0, value1, value2, value3, value4, value5) {
 		let temp = flat_null;
 		temp = [];
 		temp[0] = value0;
@@ -23343,7 +23346,7 @@ class flat_compiler_models_SyntaxIslandIdentity_Builder extends FlatObject {
 
 	static accessor__js_class() {
 		return typeof flat_compiler_models_SyntaxIslandIdentity_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_compiler_models_SyntaxIslandIdentity_Builder.__lazy_accessor__js_class : (flat_compiler_models_SyntaxIslandIdentity_Builder.__lazy_accessor__js_class = (() => {
-					return Class.construct1(FlatString.construct5("flat/compiler/models/SyntaxIslandIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_SyntaxIslandIdentity_Builder.generated314(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("snapshot")), Function.construct(FlatString.construct5("kind")), Function.construct(FlatString.construct5("ordinal")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+					return Class.construct1(FlatString.construct5("flat/compiler/models/SyntaxIslandIdentity.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_SyntaxIslandIdentity_Builder.generated338(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("snapshot")), Function.construct(FlatString.construct5("kind")), Function.construct(FlatString.construct5("ordinal")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 			})());
 	}
 
@@ -23386,7 +23389,10 @@ class SyntaxStringFunctions {
 					case '9':
 					continue;
 					case '.':
-					return this.__callExtension(SyntaxStringFunctions.String_isUnsignedInteger, [i]);
+					if (i === 0) {
+						return false;
+					}
+					return this.__callExtension(SyntaxStringFunctions.String_isUnsignedInteger, [i + 1]);
 					default:
 					return false;
 
@@ -23925,7 +23931,7 @@ static String_findStringOnTopLevel0(needle, start, searchGenerics, step, default
 	searchGenerics = typeof searchGenerics === 'undefined' ? false : searchGenerics;
 	step = typeof step === 'undefined' ? 1 : step;
 	defaultReturnValue = typeof defaultReturnValue === 'undefined' ? -1 : defaultReturnValue;
-	return this.__callExtension(SyntaxStringFunctions.String_findStringOnTopLevel1, [SyntaxStringFunctions.generated373(needle), start, searchGenerics, step, defaultReturnValue]);
+	return this.__callExtension(SyntaxStringFunctions.String_findStringOnTopLevel1, [SyntaxStringFunctions.generated374(needle), start, searchGenerics, step, defaultReturnValue]);
 }
 
 static String_findStringOnTopLevel1(needles, start, searchGenerics, step, defaultReturnValue) {
@@ -24018,7 +24024,7 @@ static String_findDotOperatorIndex(start) {
 	return this.__callExtension(SyntaxStringFunctions.String_findCharOnTopLevel0, ['.', start]);
 }
 
-static generated220(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9) {
+static generated232(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9) {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = value0;
@@ -24034,7 +24040,7 @@ static generated220(value0, value1, value2, value3, value4, value5, value6, valu
 	return FlatArray.construct1(temp, 10);
 }
 
-static generated312(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51) {
+static generated325(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51) {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = value0;
@@ -24092,7 +24098,7 @@ static generated312(value0, value1, value2, value3, value4, value5, value6, valu
 	return FlatArray.construct1(temp, 52);
 }
 
-static generated373(value0) {
+static generated374(value0) {
 	let temp = flat_null;
 	temp = [];
 	temp[0] = value0;
@@ -24101,7 +24107,7 @@ static generated373(value0) {
 
 static accessor__js_class() {
 	return typeof SyntaxStringFunctions.__lazy_accessor__js_class !== 'undefined' ? SyntaxStringFunctions.__lazy_accessor__js_class : (SyntaxStringFunctions.__lazy_accessor__js_class = (() => {
-				return Class.construct1(FlatString.construct5("flat/extensions/SyntaxStringFunctions"), false, flat_null, FlatArray.construct(), SyntaxStringFunctions.generated220(Field.construct(FlatString.construct5("isIdentifier")), Field.construct(FlatString.construct5("isNumber")), Field.construct(FlatString.construct5("isFloat")), Field.construct(FlatString.construct5("isInteger")), Field.construct(FlatString.construct5("isUnsignedNumber")), Field.construct(FlatString.construct5("isUnsignedFloat")), Field.construct(FlatString.construct5("isUnsignedInteger")), Field.construct(FlatString.construct5("isBool")), Field.construct(FlatString.construct5("firstWord")), Field.construct(FlatString.construct5("WHITESPACE"))), SyntaxStringFunctions.generated312(Function.construct(FlatString.construct5("isUnsignedNumber")), Function.construct(FlatString.construct5("isUnsignedFloat")), Function.construct(FlatString.construct5("isUnsignedInteger")), Function.construct(FlatString.construct5("isSymbol")), Function.construct(FlatString.construct5("isCharLiteral")), Function.construct(FlatString.construct5("containsAllWhitespaceAfter")), Function.construct(FlatString.construct5("getArrayAccesses")), Function.construct(FlatString.construct5("containsWord")), Function.construct(FlatString.construct5("nextWordIndex")), Function.construct(FlatString.construct5("nextWord")), Function.construct(FlatString.construct5("nextNonWhitespaceChar")), Function.construct(FlatString.construct5("nextNonWhitespaceIndex")), Function.construct(FlatString.construct5("nextWhitespaceIndex")), Function.construct(FlatString.construct5("nextIndexThatDoesntContain")), Function.construct(FlatString.construct5("nextIndexThatContains")), Function.construct(FlatString.construct5("nextLetterIndex")), Function.construct(FlatString.construct5("isSurroundedByQuotes")), Function.construct(FlatString.construct5("removeSurroundingQuotes")), Function.construct(FlatString.construct5("isSurroundedByBrackets")), Function.construct(FlatString.construct5("removeSurroundingBrackets")), Function.construct(FlatString.construct5("isSurroundedByChars")), Function.construct(FlatString.construct5("removeSurroundingChars")), Function.construct(FlatString.construct5("containsString")), Function.construct(FlatString.construct5("containsString")), Function.construct(FlatString.construct5("isCharacterEscaped")), Function.construct(FlatString.construct5("defaultCharacterCheck")), Function.construct(FlatString.construct5("findEndingChar")), Function.construct(FlatString.construct5("findEndingQuote")), Function.construct(FlatString.construct5("findEndingSingleQuote")), Function.construct(FlatString.construct5("findEndingStringChar")), Function.construct(FlatString.construct5("findEndingMatch")), Function.construct(FlatString.construct5("findEndingMatch")), Function.construct(FlatString.construct5("splitAtDotOperator")), Function.construct(FlatString.construct5("splitValues")), Function.construct(FlatString.construct5("splitAtCommas")), Function.construct(FlatString.construct5("splitOnTopLevel")), Function.construct(FlatString.construct5("splitOnTopLevel")), Function.construct(FlatString.construct5("splitWhitespace")), Function.construct(FlatString.construct5("splitOnTopLevel")), Function.construct(FlatString.construct5("findLastWhitespaceOnTopLevel")), Function.construct(FlatString.construct5("findWhitespaceOnTopLevel")), Function.construct(FlatString.construct5("findWhitespaceOutsideOfString")), Function.construct(FlatString.construct5("findCharOnTopLevel")), Function.construct(FlatString.construct5("findCharOnTopLevel")), Function.construct(FlatString.construct5("findCharOutsideOfString")), Function.construct(FlatString.construct5("findWordOnTopLevel")), Function.construct(FlatString.construct5("findStringOnTopLevel")), Function.construct(FlatString.construct5("findStringOnTopLevel")), Function.construct(FlatString.construct5("findGroupedSymbols")), Function.construct(FlatString.construct5("findGroupedChars")), Function.construct(FlatString.construct5("searchGenericType")), Function.construct(FlatString.construct5("findDotOperatorIndex"))), this);
+				return Class.construct1(FlatString.construct5("flat/extensions/SyntaxStringFunctions"), false, flat_null, FlatArray.construct(), SyntaxStringFunctions.generated232(Field.construct(FlatString.construct5("isIdentifier")), Field.construct(FlatString.construct5("isNumber")), Field.construct(FlatString.construct5("isFloat")), Field.construct(FlatString.construct5("isInteger")), Field.construct(FlatString.construct5("isUnsignedNumber")), Field.construct(FlatString.construct5("isUnsignedFloat")), Field.construct(FlatString.construct5("isUnsignedInteger")), Field.construct(FlatString.construct5("isBool")), Field.construct(FlatString.construct5("firstWord")), Field.construct(FlatString.construct5("WHITESPACE"))), SyntaxStringFunctions.generated325(Function.construct(FlatString.construct5("isUnsignedNumber")), Function.construct(FlatString.construct5("isUnsignedFloat")), Function.construct(FlatString.construct5("isUnsignedInteger")), Function.construct(FlatString.construct5("isSymbol")), Function.construct(FlatString.construct5("isCharLiteral")), Function.construct(FlatString.construct5("containsAllWhitespaceAfter")), Function.construct(FlatString.construct5("getArrayAccesses")), Function.construct(FlatString.construct5("containsWord")), Function.construct(FlatString.construct5("nextWordIndex")), Function.construct(FlatString.construct5("nextWord")), Function.construct(FlatString.construct5("nextNonWhitespaceChar")), Function.construct(FlatString.construct5("nextNonWhitespaceIndex")), Function.construct(FlatString.construct5("nextWhitespaceIndex")), Function.construct(FlatString.construct5("nextIndexThatDoesntContain")), Function.construct(FlatString.construct5("nextIndexThatContains")), Function.construct(FlatString.construct5("nextLetterIndex")), Function.construct(FlatString.construct5("isSurroundedByQuotes")), Function.construct(FlatString.construct5("removeSurroundingQuotes")), Function.construct(FlatString.construct5("isSurroundedByBrackets")), Function.construct(FlatString.construct5("removeSurroundingBrackets")), Function.construct(FlatString.construct5("isSurroundedByChars")), Function.construct(FlatString.construct5("removeSurroundingChars")), Function.construct(FlatString.construct5("containsString")), Function.construct(FlatString.construct5("containsString")), Function.construct(FlatString.construct5("isCharacterEscaped")), Function.construct(FlatString.construct5("defaultCharacterCheck")), Function.construct(FlatString.construct5("findEndingChar")), Function.construct(FlatString.construct5("findEndingQuote")), Function.construct(FlatString.construct5("findEndingSingleQuote")), Function.construct(FlatString.construct5("findEndingStringChar")), Function.construct(FlatString.construct5("findEndingMatch")), Function.construct(FlatString.construct5("findEndingMatch")), Function.construct(FlatString.construct5("splitAtDotOperator")), Function.construct(FlatString.construct5("splitValues")), Function.construct(FlatString.construct5("splitAtCommas")), Function.construct(FlatString.construct5("splitOnTopLevel")), Function.construct(FlatString.construct5("splitOnTopLevel")), Function.construct(FlatString.construct5("splitWhitespace")), Function.construct(FlatString.construct5("splitOnTopLevel")), Function.construct(FlatString.construct5("findLastWhitespaceOnTopLevel")), Function.construct(FlatString.construct5("findWhitespaceOnTopLevel")), Function.construct(FlatString.construct5("findWhitespaceOutsideOfString")), Function.construct(FlatString.construct5("findCharOnTopLevel")), Function.construct(FlatString.construct5("findCharOnTopLevel")), Function.construct(FlatString.construct5("findCharOutsideOfString")), Function.construct(FlatString.construct5("findWordOnTopLevel")), Function.construct(FlatString.construct5("findStringOnTopLevel")), Function.construct(FlatString.construct5("findStringOnTopLevel")), Function.construct(FlatString.construct5("findGroupedSymbols")), Function.construct(FlatString.construct5("findGroupedChars")), Function.construct(FlatString.construct5("searchGenericType")), Function.construct(FlatString.construct5("findDotOperatorIndex"))), this);
 		})());
 }
 
@@ -24236,7 +24242,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return self;
 					}
 
-					static generated205(value0, value1, value2, value3) {
+					static generated221(value0, value1, value2, value3) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -24248,7 +24254,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof SyntaxTokenFunctions.__lazy_accessor__js_class !== 'undefined' ? SyntaxTokenFunctions.__lazy_accessor__js_class : (SyntaxTokenFunctions.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/compiler/models/SyntaxTokenFunctions"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), SyntaxTokenFunctions.generated205(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("splitOnTopLevel")), Function.construct(FlatString.construct5("findTokenOnTopLevel")), Function.construct(FlatString.construct5("this"))), this);
+									return Class.construct1(FlatString.construct5("flat/compiler/models/SyntaxTokenFunctions"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), SyntaxTokenFunctions.generated221(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("splitOnTopLevel")), Function.construct(FlatString.construct5("findTokenOnTopLevel")), Function.construct(FlatString.construct5("this"))), this);
 							})());
 					}
 
@@ -24317,7 +24323,7 @@ class SyntaxTokenFunctions extends FlatObject {
 							mainFunc(args);
 						} catch (e)  {
 							if (!(e instanceof Exception)) {
-								console.log(0.4172827041310857);
+								console.log(0.8664854806046357);
 								console.error(e);
 								process.exit(1);
 							} else {
@@ -24454,7 +24460,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return FlatString.construct4(data);
 					}
 
-					static generated264(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
+					static generated172(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -24472,7 +24478,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return FlatArray.construct1(temp, 12);
 					}
 
-					static generated308(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
+					static generated299(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -24503,7 +24509,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof System.__lazy_accessor__js_class !== 'undefined' ? System.__lazy_accessor__js_class : (System.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/system/System"), false, FlatObject.accessor__js_class(), FlatArray.construct(), System.generated264(Field.construct(FlatString.construct5("TARGET")), Field.construct(FlatString.construct5("OS")), Field.construct(FlatString.construct5("WINDOWS")), Field.construct(FlatString.construct5("LINUX")), Field.construct(FlatString.construct5("MAC_OS")), Field.construct(FlatString.construct5("ANDROID")), Field.construct(FlatString.construct5("IOS")), Field.construct(FlatString.construct5("UNKNOWN")), Field.construct(FlatString.construct5("OS_INT")), Field.construct(FlatString.construct5("overheadTimer")), Field.construct(FlatString.construct5("workingDirectory")), Field.construct(FlatString.construct5("homeDirectory"))), System.generated308(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("exit")), Function.construct(FlatString.construct5("exit")), Function.construct(FlatString.construct5("runMain")), Function.construct(FlatString.construct5("jsCreateInstance")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("sanitizeCliArgument")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("executeExact")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("getEnv"))), this);
+									return Class.construct1(FlatString.construct5("flat/system/System"), false, FlatObject.accessor__js_class(), FlatArray.construct(), System.generated172(Field.construct(FlatString.construct5("TARGET")), Field.construct(FlatString.construct5("OS")), Field.construct(FlatString.construct5("WINDOWS")), Field.construct(FlatString.construct5("LINUX")), Field.construct(FlatString.construct5("MAC_OS")), Field.construct(FlatString.construct5("ANDROID")), Field.construct(FlatString.construct5("IOS")), Field.construct(FlatString.construct5("UNKNOWN")), Field.construct(FlatString.construct5("OS_INT")), Field.construct(FlatString.construct5("overheadTimer")), Field.construct(FlatString.construct5("workingDirectory")), Field.construct(FlatString.construct5("homeDirectory"))), System.generated299(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("exit")), Function.construct(FlatString.construct5("exit")), Function.construct(FlatString.construct5("runMain")), Function.construct(FlatString.construct5("jsCreateInstance")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("sanitizeCliArgument")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("executeExact")), Function.construct(FlatString.construct5("execute")), Function.construct(FlatString.construct5("getEnv"))), this);
 							})());
 					}
 
@@ -24516,7 +24522,7 @@ class SyntaxTokenFunctions extends FlatObject {
 					static childProcess = flat_null;
 					static os = flat_null;
 
-					static generated340(value0, value1) {
+					static generated342(value0, value1) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -24526,7 +24532,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof System_SystemGlobal.__lazy_accessor__js_class !== 'undefined' ? System_SystemGlobal.__lazy_accessor__js_class : (System_SystemGlobal.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/system/System.SystemGlobal"), false, FlatObject.accessor__js_class(), FlatArray.construct(), System_SystemGlobal.generated340(Field.construct(FlatString.construct5("childProcess")), Field.construct(FlatString.construct5("os"))), FlatArray.construct(), this);
+									return Class.construct1(FlatString.construct5("flat/system/System.SystemGlobal"), false, FlatObject.accessor__js_class(), FlatArray.construct(), System_SystemGlobal.generated342(Field.construct(FlatString.construct5("childProcess")), Field.construct(FlatString.construct5("os"))), FlatArray.construct(), this);
 							})());
 					}
 
@@ -24562,7 +24568,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return self;
 					}
 
-					static generated164(value0, value1, value2, value3) {
+					static generated163(value0, value1, value2, value3) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -24572,7 +24578,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return FlatArray.construct1(temp, 4);
 					}
 
-					static generated242(value0, value1) {
+					static generated267(value0, value1) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -24582,7 +24588,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof TakeIterator.__lazy_accessor__js_class !== 'undefined' ? TakeIterator.__lazy_accessor__js_class : (TakeIterator.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/stream/TakeIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), TakeIterator.generated164(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), TakeIterator.generated242(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+									return Class.construct1(FlatString.construct5("flat/stream/TakeIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), TakeIterator.generated163(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), TakeIterator.generated267(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 							})());
 					}
 
@@ -24731,14 +24737,14 @@ class SyntaxTokenFunctions extends FlatObject {
 						testCode();
 					}
 
-					static generated167(value0) {
+					static generated171(value0) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
 						return FlatArray.construct1(temp, 1);
 					}
 
-					static generated278(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13) {
+					static generated243(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -24760,7 +24766,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof Test.__lazy_accessor__js_class !== 'undefined' ? Test.__lazy_accessor__js_class : (Test.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/test/Test"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Test.generated167(Field.construct(FlatString.construct5("out"))), Test.generated278(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toBe")), Function.construct(FlatString.construct5("toNotBe")), Function.construct(FlatString.construct5("toBeTrue")), Function.construct(FlatString.construct5("toThrow")), Function.construct(FlatString.construct5("toNotThrow")), Function.construct(FlatString.construct5("toThrowWithMessage")), Function.construct(FlatString.construct5("toNotThrowWithMessage")), Function.construct(FlatString.construct5("fail")), Function.construct(FlatString.construct5("expect")), Function.construct(FlatString.construct5("expect")), Function.construct(FlatString.construct5("expectAsync")), Function.construct(FlatString.construct5("test"))), this);
+									return Class.construct1(FlatString.construct5("flat/test/Test"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Test.generated171(Field.construct(FlatString.construct5("out"))), Test.generated243(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toBe")), Function.construct(FlatString.construct5("toNotBe")), Function.construct(FlatString.construct5("toBeTrue")), Function.construct(FlatString.construct5("toThrow")), Function.construct(FlatString.construct5("toNotThrow")), Function.construct(FlatString.construct5("toThrowWithMessage")), Function.construct(FlatString.construct5("toNotThrowWithMessage")), Function.construct(FlatString.construct5("fail")), Function.construct(FlatString.construct5("expect")), Function.construct(FlatString.construct5("expect")), Function.construct(FlatString.construct5("expectAsync")), Function.construct(FlatString.construct5("test"))), this);
 							})());
 					}
 
@@ -24838,14 +24844,14 @@ class SyntaxTokenFunctions extends FlatObject {
 						}
 					}
 
-					static generated165(value0) {
+					static generated162(value0) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
 						return FlatArray.construct1(temp, 1);
 					}
 
-					static generated277(value0, value1, value2, value3, value4, value5) {
+					static generated220(value0, value1, value2, value3, value4, value5) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -24859,7 +24865,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof TestAsync.__lazy_accessor__js_class !== 'undefined' ? TestAsync.__lazy_accessor__js_class : (TestAsync.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/test/TestAsync"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TestAsync.generated165(Field.construct(FlatString.construct5("out"))), TestAsync.generated277(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toThrow")), Function.construct(FlatString.construct5("toNotThrow")), Function.construct(FlatString.construct5("toThrowWithMessage")), Function.construct(FlatString.construct5("toNotThrowWithMessage"))), this);
+									return Class.construct1(FlatString.construct5("flat/test/TestAsync"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TestAsync.generated162(Field.construct(FlatString.construct5("out"))), TestAsync.generated220(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toThrow")), Function.construct(FlatString.construct5("toNotThrow")), Function.construct(FlatString.construct5("toThrowWithMessage")), Function.construct(FlatString.construct5("toNotThrowWithMessage"))), this);
 							})());
 					}
 
@@ -24904,7 +24910,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return (this.className).plus0(FlatString.construct5(": \"").plus0((this.accessor_header()).plus0(FlatString.construct5("\""))));
 					}
 
-					static generated201(value0, value1, value2, value3, value4, value5) {
+					static generated199(value0, value1, value2, value3, value4, value5) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -24916,7 +24922,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return FlatArray.construct1(temp, 6);
 					}
 
-					static generated217(value0, value1, value2, value3) {
+					static generated269(value0, value1, value2, value3) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -24928,7 +24934,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof TestCase.__lazy_accessor__js_class !== 'undefined' ? TestCase.__lazy_accessor__js_class : (TestCase.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/test/TestCase"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TestCase.generated201(Field.construct(FlatString.construct5("header")), Field.construct(FlatString.construct5("id")), Field.construct(FlatString.construct5("hashCodeLong")), Field.construct(FlatString.construct5("className")), Field.construct(FlatString.construct5("functionName")), Field.construct(FlatString.construct5("description"))), TestCase.generated217(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString"))), this);
+									return Class.construct1(FlatString.construct5("flat/test/TestCase"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TestCase.generated199(Field.construct(FlatString.construct5("header")), Field.construct(FlatString.construct5("id")), Field.construct(FlatString.construct5("hashCodeLong")), Field.construct(FlatString.construct5("className")), Field.construct(FlatString.construct5("functionName")), Field.construct(FlatString.construct5("description"))), TestCase.generated269(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString"))), this);
 							})());
 					}
 
@@ -25000,7 +25006,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return output;
 					}
 
-					static generated190(value0, value1, value2, value3, value4) {
+					static generated160(value0, value1, value2, value3, value4) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25011,7 +25017,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return FlatArray.construct1(temp, 5);
 					}
 
-					static generated294(value0, value1, value2) {
+					static generated245(value0, value1, value2) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25022,7 +25028,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof TestResult.__lazy_accessor__js_class !== 'undefined' ? TestResult.__lazy_accessor__js_class : (TestResult.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/test/TestResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TestResult.generated190(Field.construct(FlatString.construct5("success")), Field.construct(FlatString.construct5("timer")), Field.construct(FlatString.construct5("testCase")), Field.construct(FlatString.construct5("message")), Field.construct(FlatString.construct5("exception"))), TestResult.generated294(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString"))), this);
+									return Class.construct1(FlatString.construct5("flat/test/TestResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TestResult.generated160(Field.construct(FlatString.construct5("success")), Field.construct(FlatString.construct5("timer")), Field.construct(FlatString.construct5("testCase")), Field.construct(FlatString.construct5("message")), Field.construct(FlatString.construct5("exception"))), TestResult.generated245(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString"))), this);
 							})());
 					}
 
@@ -25059,7 +25065,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return FlatString.construct5("TestRunnerModel").plus0(((this.description) !== flat_null ? FlatString.construct5(" \"").plus0(this.description.plus0(Char.toString('"'))) : FlatString.construct5("")));
 					}
 
-					static generated146(value0, value1) {
+					static generated156(value0, value1) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25067,7 +25073,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return FlatArray.construct1(temp, 2);
 					}
 
-					static generated293(value0, value1, value2) {
+					static generated250(value0, value1, value2) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25078,7 +25084,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof TestRunnerModel.__lazy_accessor__js_class !== 'undefined' ? TestRunnerModel.__lazy_accessor__js_class : (TestRunnerModel.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/test/TestRunnerModel"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TestRunnerModel.generated146(Field.construct(FlatString.construct5("testCases")), Field.construct(FlatString.construct5("description"))), TestRunnerModel.generated293(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString"))), this);
+									return Class.construct1(FlatString.construct5("flat/test/TestRunnerModel"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TestRunnerModel.generated156(Field.construct(FlatString.construct5("testCases")), Field.construct(FlatString.construct5("description"))), TestRunnerModel.generated250(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString"))), this);
 							})());
 					}
 
@@ -25121,14 +25127,14 @@ class SyntaxTokenFunctions extends FlatObject {
 						return FlatString.construct5("TestSuite").plus0(((this.testRunners) !== flat_null ? FlatString.construct5(" ").plus0(this.testRunners.toString()) : FlatString.construct5("")));
 					}
 
-					static generated158(value0) {
+					static generated153(value0) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
 						return FlatArray.construct1(temp, 1);
 					}
 
-					static generated288(value0, value1, value2) {
+					static generated223(value0, value1, value2) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25139,7 +25145,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof TestSuite.__lazy_accessor__js_class !== 'undefined' ? TestSuite.__lazy_accessor__js_class : (TestSuite.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/test/TestSuite"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TestSuite.generated158(Field.construct(FlatString.construct5("testRunners"))), TestSuite.generated288(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString"))), this);
+									return Class.construct1(FlatString.construct5("flat/test/TestSuite"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TestSuite.generated153(Field.construct(FlatString.construct5("testRunners"))), TestSuite.generated223(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("toString"))), this);
 							})());
 					}
 
@@ -25148,7 +25154,7 @@ class SyntaxTokenFunctions extends FlatObject {
 				}
 
 				class TestSuiteRunner {
-					static generated152(value0) {
+					static generated154(value0) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25157,7 +25163,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof TestSuiteRunner.__lazy_accessor__js_class !== 'undefined' ? TestSuiteRunner.__lazy_accessor__js_class : (TestSuiteRunner.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/test/TestSuiteRunner"), true, FlatObject.accessor__js_class(), TestSuiteRunner.generated152(TestRunner.accessor__js_class()), FlatArray.construct(), FlatArray.construct(), this);
+									return Class.construct1(FlatString.construct5("flat/test/TestSuiteRunner"), true, FlatObject.accessor__js_class(), TestSuiteRunner.generated154(TestRunner.accessor__js_class()), FlatArray.construct(), FlatArray.construct(), this);
 							})());
 					}
 				}
@@ -25186,7 +25192,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return self;
 					}
 
-					static generated159(value0, value1, value2) {
+					static generated155(value0, value1, value2) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25195,7 +25201,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return FlatArray.construct1(temp, 3);
 					}
 
-					static generated276(value0, value1) {
+					static generated241(value0, value1) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25205,7 +25211,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof TestSuiteRunnerModel.__lazy_accessor__js_class !== 'undefined' ? TestSuiteRunnerModel.__lazy_accessor__js_class : (TestSuiteRunnerModel.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/test/TestSuiteRunnerModel"), false, TestRunnerModel.accessor__js_class(), FlatArray.construct(), TestSuiteRunnerModel.generated159(Field.construct(FlatString.construct5("testCases")), Field.construct(FlatString.construct5("testRunners")), Field.construct(FlatString.construct5("testSuites"))), TestSuiteRunnerModel.generated276(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+									return Class.construct1(FlatString.construct5("flat/test/TestSuiteRunnerModel"), false, TestRunnerModel.accessor__js_class(), FlatArray.construct(), TestSuiteRunnerModel.generated155(Field.construct(FlatString.construct5("testCases")), Field.construct(FlatString.construct5("testRunners")), Field.construct(FlatString.construct5("testSuites"))), TestSuiteRunnerModel.generated241(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 							})());
 					}
 
@@ -25266,14 +25272,14 @@ class SyntaxTokenFunctions extends FlatObject {
 						});
 					}
 
-					static generated155(value0) {
+					static generated157(value0) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
 						return FlatArray.construct1(temp, 1);
 					}
 
-					static generated249(value0, value1, value2, value3, value4) {
+					static generated239(value0, value1, value2, value3, value4) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25286,7 +25292,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof Thread.__lazy_accessor__js_class !== 'undefined' ? Thread.__lazy_accessor__js_class : (Thread.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/thread/Thread"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Thread.generated155(Field.construct(FlatString.construct5("id"))), Thread.generated249(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("start")), Function.construct(FlatString.construct5("join")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("sleep"))), this);
+									return Class.construct1(FlatString.construct5("flat/thread/Thread"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Thread.generated157(Field.construct(FlatString.construct5("id"))), Thread.generated239(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("start")), Function.construct(FlatString.construct5("join")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("sleep"))), this);
 							})());
 					}
 
@@ -25329,7 +25335,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return this.map.remove(FlatLong.construct(Thread.id));
 					}
 
-					static generated162(value0, value1, value2, value3, value4) {
+					static generated161(value0, value1, value2, value3, value4) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25342,7 +25348,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof ThreadLocal.__lazy_accessor__js_class !== 'undefined' ? ThreadLocal.__lazy_accessor__js_class : (ThreadLocal.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/thread/ThreadLocal"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), ThreadLocal.generated162(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("get")), Function.construct(FlatString.construct5("set")), Function.construct(FlatString.construct5("remove"))), this);
+									return Class.construct1(FlatString.construct5("flat/thread/ThreadLocal"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), ThreadLocal.generated161(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("get")), Function.construct(FlatString.construct5("set")), Function.construct(FlatString.construct5("remove"))), this);
 							})());
 					}
 
@@ -25370,14 +25376,14 @@ class SyntaxTokenFunctions extends FlatObject {
 						return self;
 					}
 
-					static generated154(value0) {
+					static generated145(value0) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
 						return FlatArray.construct1(temp, 1);
 					}
 
-					static generated297(value0, value1) {
+					static generated237(value0, value1) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25391,7 +25397,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof Time.__lazy_accessor__js_class !== 'undefined' ? Time.__lazy_accessor__js_class : (Time.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/time/Time"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Time.generated154(Field.construct(FlatString.construct5("currentTimeMillis"))), Time.generated297(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+									return Class.construct1(FlatString.construct5("flat/time/Time"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Time.generated145(Field.construct(FlatString.construct5("currentTimeMillis"))), Time.generated237(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 							})());
 					}
 
@@ -25462,14 +25468,14 @@ class SyntaxTokenFunctions extends FlatObject {
 						return target.toBuilder().value(value).location(location).type(type).build();
 					}
 
-					static generated147(value0) {
+					static generated144(value0) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
 						return FlatArray.construct1(temp, 1);
 					}
 
-					static generated256(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+					static generated255(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25486,7 +25492,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof Token.__lazy_accessor__js_class !== 'undefined' ? Token.__lazy_accessor__js_class : (Token.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/compiler/models/Token"), false, Lexeme.accessor__js_class(), FlatArray.construct(), Token.generated147(Field.construct(FlatString.construct5("type"))), Token.generated256(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+									return Class.construct1(FlatString.construct5("flat/compiler/models/Token"), false, Lexeme.accessor__js_class(), FlatArray.construct(), Token.generated144(Field.construct(FlatString.construct5("type"))), Token.generated255(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 							})());
 					}
 
@@ -25558,7 +25564,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return self;
 					}
 
-					static generated337(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
+					static generated312(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25587,7 +25593,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof Token_Type.__lazy_accessor__js_class !== 'undefined' ? Token_Type.__lazy_accessor__js_class : (Token_Type.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/compiler/models/Token.Type"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Token_Type.generated337(Field.construct(FlatString.construct5("IDENTIFIER")), Field.construct(FlatString.construct5("INTEGER")), Field.construct(FlatString.construct5("FLOAT")), Field.construct(FlatString.construct5("STRING")), Field.construct(FlatString.construct5("COMMENT")), Field.construct(FlatString.construct5("WHITESPACE")), Field.construct(FlatString.construct5("WS")), Field.construct(FlatString.construct5("SYMBOL")), Field.construct(FlatString.construct5("BOOL")), Field.construct(FlatString.construct5("NULL")), Field.construct(FlatString.construct5("CHAR")), Field.construct(FlatString.construct5("CODE"))), Token_Type.generated341(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("this"))), this);
+									return Class.construct1(FlatString.construct5("flat/compiler/models/Token.Type"), false, FlatObject.accessor__js_class(), FlatArray.construct(), Token_Type.generated312(Field.construct(FlatString.construct5("IDENTIFIER")), Field.construct(FlatString.construct5("INTEGER")), Field.construct(FlatString.construct5("FLOAT")), Field.construct(FlatString.construct5("STRING")), Field.construct(FlatString.construct5("COMMENT")), Field.construct(FlatString.construct5("WHITESPACE")), Field.construct(FlatString.construct5("WS")), Field.construct(FlatString.construct5("SYMBOL")), Field.construct(FlatString.construct5("BOOL")), Field.construct(FlatString.construct5("NULL")), Field.construct(FlatString.construct5("CHAR")), Field.construct(FlatString.construct5("CODE"))), Token_Type.generated341(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("this"))), this);
 							})());
 					}
 
@@ -25640,7 +25646,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return self;
 					}
 
-					static generated345(value0, value1, value2, value3, value4, value5) {
+					static generated344(value0, value1, value2, value3, value4, value5) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25654,7 +25660,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof flat_compiler_models_Token_Builder.__lazy_accessor__js_class !== 'undefined' ? flat_compiler_models_Token_Builder.__lazy_accessor__js_class : (flat_compiler_models_Token_Builder.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/compiler/models/Token.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_Token_Builder.generated345(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("type")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
+									return Class.construct1(FlatString.construct5("flat/compiler/models/Token.Builder"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), flat_compiler_models_Token_Builder.generated344(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("value")), Function.construct(FlatString.construct5("location")), Function.construct(FlatString.construct5("type")), Function.construct(FlatString.construct5("build")), Function.construct(FlatString.construct5("this"))), this);
 							})());
 					}
 
@@ -25738,7 +25744,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return target.toBuilder().delivered(delivered).closed(closed).failed(failed).capacityExceeded(capacityExceeded).error(error).build();
 					}
 
-					static generated160(value0, value1, value2, value3, value4) {
+					static generated149(value0, value1, value2, value3, value4) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25749,7 +25755,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return FlatArray.construct1(temp, 5);
 					}
 
-					static generated307(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
+					static generated277(value0, value1, value2, value3, value4, value5, value6, value7, value8) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25766,7 +25772,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof TopicPublishResult.__lazy_accessor__js_class !== 'undefined' ? TopicPublishResult.__lazy_accessor__js_class : (TopicPublishResult.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/eventstream/TopicPublishResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TopicPublishResult.generated160(Field.construct(FlatString.construct5("delivered")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("failed")), Field.construct(FlatString.construct5("capacityExceeded")), Field.construct(FlatString.construct5("error"))), TopicPublishResult.generated307(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
+									return Class.construct1(FlatString.construct5("flat/eventstream/TopicPublishResult"), false, FlatObject.accessor__js_class(), FlatArray.construct(), TopicPublishResult.generated149(Field.construct(FlatString.construct5("delivered")), Field.construct(FlatString.construct5("closed")), Field.construct(FlatString.construct5("failed")), Field.construct(FlatString.construct5("capacityExceeded")), Field.construct(FlatString.construct5("error"))), TopicPublishResult.generated277(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("copy")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("equals")), Function.construct(FlatString.construct5("toString")), Function.construct(FlatString.construct5("toJson")), Function.construct(FlatString.construct5("toBuilder")), Function.construct(FlatString.construct5("copyTo"))), this);
 							})());
 					}
 
@@ -25882,7 +25888,7 @@ class SyntaxTokenFunctions extends FlatObject {
 					uncaughtException(thread, exception) {
 					}
 
-					static generated157(value0, value1, value2) {
+					static generated150(value0, value1, value2) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25893,7 +25899,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof UncaughtExceptionHandler.__lazy_accessor__js_class !== 'undefined' ? UncaughtExceptionHandler.__lazy_accessor__js_class : (UncaughtExceptionHandler.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/thread/UncaughtExceptionHandler"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), UncaughtExceptionHandler.generated157(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("uncaughtException"))), this);
+									return Class.construct1(FlatString.construct5("flat/thread/UncaughtExceptionHandler"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), UncaughtExceptionHandler.generated150(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this")), Function.construct(FlatString.construct5("uncaughtException"))), this);
 							})());
 					}
 
@@ -25922,7 +25928,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return self;
 					}
 
-					static generated156(value0, value1) {
+					static generated147(value0, value1) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25932,7 +25938,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof UnimplementedOperationException.__lazy_accessor__js_class !== 'undefined' ? UnimplementedOperationException.__lazy_accessor__js_class : (UnimplementedOperationException.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/exception/UnimplementedOperationException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), UnimplementedOperationException.generated156(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+									return Class.construct1(FlatString.construct5("flat/exception/UnimplementedOperationException"), false, Exception.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), UnimplementedOperationException.generated147(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 							})());
 					}
 
@@ -25963,7 +25969,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return self;
 					}
 
-					static generated199(value0, value1, value2, value3) {
+					static generated148(value0, value1, value2, value3) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25973,7 +25979,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return FlatArray.construct1(temp, 4);
 					}
 
-					static generated213(value0, value1) {
+					static generated240(value0, value1) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -25998,7 +26004,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof UniqueIterator.__lazy_accessor__js_class !== 'undefined' ? UniqueIterator.__lazy_accessor__js_class : (UniqueIterator.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/stream/UniqueIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), UniqueIterator.generated199(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), UniqueIterator.generated213(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
+									return Class.construct1(FlatString.construct5("flat/stream/UniqueIterator"), false, StreamIterator.accessor__js_class(), FlatArray.construct(), UniqueIterator.generated148(Field.construct(FlatString.construct5("hasNext")), Field.construct(FlatString.construct5("stepNext")), Field.construct(FlatString.construct5("next")), Field.construct(FlatString.construct5("current"))), UniqueIterator.generated240(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("this"))), this);
 							})());
 					}
 
@@ -26090,7 +26096,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						return self;
 					}
 
-					static generated211(value0, value1, value2, value3) {
+					static generated151(value0, value1, value2, value3) {
 						let temp = flat_null;
 						temp = [];
 						temp[0] = value0;
@@ -26102,7 +26108,7 @@ class SyntaxTokenFunctions extends FlatObject {
 
 					static accessor__js_class() {
 						return typeof WildcardHelper.__lazy_accessor__js_class !== 'undefined' ? WildcardHelper.__lazy_accessor__js_class : (WildcardHelper.__lazy_accessor__js_class = (() => {
-									return Class.construct1(FlatString.construct5("flat/log/WildcardHelper"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), WildcardHelper.generated211(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("isWildcardMatch")), Function.construct(FlatString.construct5("findInnerWildcardMatch")), Function.construct(FlatString.construct5("this"))), this);
+									return Class.construct1(FlatString.construct5("flat/log/WildcardHelper"), false, FlatObject.accessor__js_class(), FlatArray.construct(), FlatArray.construct(), WildcardHelper.generated151(Function.construct(FlatString.construct5("construct")), Function.construct(FlatString.construct5("isWildcardMatch")), Function.construct(FlatString.construct5("findInnerWildcardMatch")), Function.construct(FlatString.construct5("this"))), this);
 							})());
 					}
 
@@ -26506,8 +26512,8 @@ class SyntaxTokenFunctions extends FlatObject {
 						FlatDateTime.SECS_HOUR = 60 * 60 * 1000;
 						FlatDateTime.SECS_MINUTE = 60 * 1000;
 						FlatDateTime.EPOCH_YEAR = 1970;
-						FlatDateTime.MONTH_DAYS = FlatDateTime.generated374();
-						FlatDateTime.LEAP_MONTH_DAYS = FlatDateTime.generated375();
+						FlatDateTime.MONTH_DAYS = FlatDateTime.generated375();
+						FlatDateTime.LEAP_MONTH_DAYS = FlatDateTime.generated376();
 					}
 				}
 
@@ -26675,12 +26681,12 @@ class SyntaxTokenFunctions extends FlatObject {
 						Logger.forcePrefix = flat_null;
 						Logger.forceSuffix = flat_null;
 						Logger.forcePrefixSeparator = flat_null;
-						Logger.defaultTraceStreams = Logger.generated376(FlatConsole.out);
-						Logger.defaultDebugStreams = Logger.generated377(FlatConsole.out);
-						Logger.defaultInfoStreams = Logger.generated378(FlatConsole.out);
-						Logger.defaultWarnStreams = Logger.generated379(FlatConsole.warn);
-						Logger.defaultErrorStreams = Logger.generated380(FlatConsole.error);
-						Logger.defaultFatalStreams = Logger.generated381(FlatConsole.error);
+						Logger.defaultTraceStreams = Logger.generated377(FlatConsole.out);
+						Logger.defaultDebugStreams = Logger.generated378(FlatConsole.out);
+						Logger.defaultInfoStreams = Logger.generated379(FlatConsole.out);
+						Logger.defaultWarnStreams = Logger.generated380(FlatConsole.warn);
+						Logger.defaultErrorStreams = Logger.generated381(FlatConsole.error);
+						Logger.defaultFatalStreams = Logger.generated382(FlatConsole.error);
 						Logger._defaultLoggingLevel = Logger.INFO;
 						Logger.currentDisabledLoggersModificationId = 1;
 						Logger.classLoggingLevels = HashMap.construct0(undefined, undefined);
@@ -26825,7 +26831,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						FlatLong0_Flat_init_static_initialized = true;
 						FlatLong.MAX_VALUE = 9223372036854775807;
 						FlatLong.MIN_VALUE = -9223372036854775808;
-						FlatLong.FILE_SIZES = FlatLong.generated382();
+						FlatLong.FILE_SIZES = FlatLong.generated383();
 					}
 				}
 
@@ -26841,7 +26847,7 @@ class SyntaxTokenFunctions extends FlatObject {
 				function FlatString0_Flat_init_static() {
 					if (!FlatString0_Flat_init_static_initialized) {
 						FlatString0_Flat_init_static_initialized = true;
-						FlatString.WHITESPACE = FlatString.generated386();
+						FlatString.WHITESPACE = FlatString.generated387();
 					}
 				}
 
@@ -26856,7 +26862,7 @@ class SyntaxTokenFunctions extends FlatObject {
 						ProjectLoading_Test._Airship_library_arguments_map_library_mode_and_reject_unsupported_optionsTestCase = TestCase.construct(FlatString.construct5("ProjectLoading_Test"), FlatString.construct5("Airship library arguments map library mode and reject unsupported options"), undefined);
 						ProjectLoading_Test._in_memory_provider_publishes_immutable_snapshotsTestCase = TestCase.construct(FlatString.construct5("ProjectLoading_Test"), FlatString.construct5("in memory provider publishes immutable snapshots"), undefined);
 						ProjectLoading_Test._filesystem_provider_enumerates_and_loads_source_snapshots_deterministicallyTestCase = TestCase.construct(FlatString.construct5("ProjectLoading_Test"), FlatString.construct5("filesystem provider enumerates and loads source snapshots deterministically"), undefined);
-						ProjectLoading_Test._runTestsTestRunner = TestRunnerModel.construct(ProjectLoading_Test.generated383(ProjectLoading_Test._project_model_owns_immutable_package_dependency_import_and_target_optionsTestCase, ProjectLoading_Test._project_model_rejects_invalid_target_mode_and_ownershipTestCase, ProjectLoading_Test._Airship_compiler_arguments_map_every_required_build_optionTestCase, ProjectLoading_Test._Airship_library_arguments_map_library_mode_and_reject_unsupported_optionsTestCase, ProjectLoading_Test._in_memory_provider_publishes_immutable_snapshotsTestCase, ProjectLoading_Test._filesystem_provider_enumerates_and_loads_source_snapshots_deterministicallyTestCase), undefined);
+						ProjectLoading_Test._runTestsTestRunner = TestRunnerModel.construct(ProjectLoading_Test.generated384(ProjectLoading_Test._project_model_owns_immutable_package_dependency_import_and_target_optionsTestCase, ProjectLoading_Test._project_model_rejects_invalid_target_mode_and_ownershipTestCase, ProjectLoading_Test._Airship_compiler_arguments_map_every_required_build_optionTestCase, ProjectLoading_Test._Airship_library_arguments_map_library_mode_and_reject_unsupported_optionsTestCase, ProjectLoading_Test._in_memory_provider_publishes_immutable_snapshotsTestCase, ProjectLoading_Test._filesystem_provider_enumerates_and_loads_source_snapshots_deterministicallyTestCase), undefined);
 					}
 				}
 
@@ -26865,7 +26871,7 @@ class SyntaxTokenFunctions extends FlatObject {
 					if (!ProjectLoading_TestSuite0_Flat_init_static_initialized) {
 						ProjectLoading_TestSuite0_Flat_init_static_initialized = true;
 						ProjectLoading_Test0_Flat_init_static();
-						ProjectLoading_TestSuite._runTestsTestSuite = TestSuiteRunnerModel.construct(ProjectLoading_TestSuite.generated385(TestSuite.construct(ProjectLoading_TestSuite.generated384(ProjectLoading_Test._runTestsTestRunner))));
+						ProjectLoading_TestSuite._runTestsTestSuite = TestSuiteRunnerModel.construct(ProjectLoading_TestSuite.generated386(TestSuite.construct(ProjectLoading_TestSuite.generated385(ProjectLoading_Test._runTestsTestRunner))));
 					}
 				}
 

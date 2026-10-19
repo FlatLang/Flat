@@ -100,7 +100,41 @@ class {
         return result.sort({ _a.value.compareTo(_b.value) })
     }
 
-    public visibleCandidates(String name) -> DeclarationIdentity[] {
+    /** Range-free configuration is diagnosed only at the actual consumer. */
+    public configuredTypeCandidates(String name, SourceRange consumerRange) -> DeclarationIdentity[] {
+        let found = DeclarationIdentity[]
+        for (lexical in lexicalSources) {
+            for (value in lexical.defaultImportValues()) {
+                if (value.staticImport) continue
+                let selected = importCandidates(value.location)
+                if (selected.isEmpty && value.location.substring(value.location.lastIndexOf("/") + 1) == name && consumerRange)
+                    fail("binding.import-unresolved", value.location, consumerRange)
+                for (identity in selected) {
+                    if (identity.name == name && found.none({ _.value == identity.value })) found.add(identity)
+                }
+            }
+        }
+        return found.sort({ _a.value.compareTo(_b.value) })
+    }
+
+    /** Only configured canonical owners which declare this static member are admitted. */
+    public staticDefaultOwners(String memberName, SourceRange consumerRange) -> DeclarationIdentity[] {
+        let found = DeclarationIdentity[]
+        for (lexical in lexicalSources) {
+            for (value in lexical.defaultImportValues()) {
+                if (!value.staticImport) continue
+                let selected = candidates(value.location)
+                if (selected.isEmpty) fail("binding.import-unresolved", value.location, consumerRange)
+                if (selected.count != 1) fail("binding.import-ambiguous", value.location, consumerRange, selected)
+                let syntax = classFor(selected.first)
+                if (syntax && syntax.methodValues().any((method) => method.staticMethod && method.name == memberName) &&
+                    found.none({ _.value == selected.first.value })) found.add(selected.first)
+            }
+        }
+        return found.sort({ _a.value.compareTo(_b.value) })
+    }
+
+    public visibleCandidates(String name, SourceRange consumerRange = null) -> DeclarationIdentity[] {
         if (name.contains("/")) return candidates(name)
         let found = candidates(owner.namespaceName.isEmpty ? name : "#{owner.namespaceName}/#name")
         if (found.isNotEmpty) return found
@@ -112,11 +146,13 @@ class {
             }
         }
         if (found.isNotEmpty) return found.sort({ _a.value.compareTo(_b.value) })
+        let configured = configuredTypeCandidates(name, consumerRange)
+        if (configured.isNotEmpty) return configured
         return defaultCandidates(name)
     }
 
     public resolve(String name, SourceRange range) -> DeclarationIdentity {
-        let found = visibleCandidates(name)
+        let found = visibleCandidates(name, range)
         if (found.isEmpty) fail("binding.type-unresolved", name, range)
         if (found.count != 1) fail("binding.import-ambiguous", name, range, found)
         return found.first

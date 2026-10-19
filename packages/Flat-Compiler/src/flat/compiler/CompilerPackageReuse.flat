@@ -5,6 +5,10 @@ package flat/compiler
  * No filesystem lookup, digest, TTL, persistence, session or event replay.
  * Callers explicitly supply the complete selected source/dependency closure.
  * Admission owns a bounded copy; default provider compilation never captures it.
+ * Copying uses concat(""): Core's ES6/JS implementation allocates a new String
+ * and StringCharArray wrapper over the immutable native text, not String(chars).
+ * Capture/retention own their keys and code; every provider/result read detaches.
+ * Copies stay within the explicitly supplied partition, never project discovery.
  *
  * maxBytes bounds the retained entry and admitted source identity/text/options
  * payload, conservatively charging four bytes per string unit. Generated output
@@ -15,7 +19,6 @@ package flat/compiler
  */
 class {
     var CompilerPackageSnapshot retained
-    var String retainedCode
     var Long generation
 
     public construct(visible Int maxSources = 64, visible Long maxBytes = 1048576) {
@@ -25,7 +28,6 @@ class {
     public reset() {
         generation++
         retained = null
-        retainedCode = null
     }
 
     protected capture(CompilerSource[] sources, String mainClass, FlatEs6PackageLinker linker) -> CompilerPackageSnapshot {
@@ -64,53 +66,70 @@ class {
     }
 
     protected find(CompilerPackageSnapshot input) -> String => null {
-        if (retained && retained.matches(input)) return retainedCode
+        if (retained && retained.matches(input)) return retained.code
     }
 
     protected remember(CompilerPackageSnapshot input, CompilationSummary summary) {
         if (input.ticket != generation || summary.cancelled || summary.diagnosticCount != 0 ||
             summary.artifactCount != 1 || input.code == null) return
-        Long codeBytes = input.code.count
+        let code = input.code
+        Long codeBytes = code.count
         codeBytes *= 4
         if (codeBytes > maxBytes - input.bytes) {
             // Successful oversize output is usable, but never retained.
             retained = null
-            retainedCode = null
             return
         }
-        retained = input
-        retainedCode = input.code
+        // Retain an independently owned key and result, not the caller's mutable
+        // candidate. Later recordCode/provider reads cannot alter this entry.
+        retained = input.detached(code)
     }
 
 }
 
 class CompilerPackageSnapshot extends CompilerSourceProvider {
         var CompilerSource[] values
-        visible String mainClass
+        visible String mainClass => ownedMainClass != null ? ownedMainClass.concat("") : null
+        var String ownedMainClass
         visible FlatEs6PackageLinker linker
-        visible String options
+        visible String options => ownedOptions.concat("")
+        var String ownedOptions
         visible Long bytes
         visible Long ticket
-        visible String code => compiledCode
+        visible String code => compiledCode != null ? compiledCode.concat("") : null
         var String compiledCode
 
         protected construct(CompilerSource[] values, String mainClass, FlatEs6PackageLinker linker,
             String options, Long bytes, Long ticket) {
-            this.values = values.copy()
-            this.mainClass = mainClass
+            this.values = CompilerSource[]
+            for (value in values) {
+                this.values.add(CompilerSource(value.identity.concat(""), value.text.concat("")))
+            }
+            ownedMainClass = mainClass != null ? mainClass.concat("") : null
             this.linker = linker
-            this.options = options
+            ownedOptions = options.concat("")
             this.bytes = bytes
             this.ticket = ticket
         }
 
-        override public identities() -> String[] => values.map({ _.identity })
-        override public load(String identity) -> CompilerSource => values.firstOrNull({ _.identity == identity })
+        override public identities() -> String[] => values.map({ _.identity.concat("") })
+        override public load(String identity) -> CompilerSource => null {
+            let value = values.firstOrNull({ _.identity == identity })
+            if (value) return CompilerSource(value.identity.concat(""), value.text.concat(""))
+        }
 
-        protected recordCode(String code) { compiledCode = code }
+        protected recordCode(String code) {
+            compiledCode = code != null ? code.concat("") : null
+        }
+
+        protected detached(String code) -> CompilerPackageSnapshot {
+            let copy = CompilerPackageSnapshot(values, ownedMainClass, linker, ownedOptions, bytes, ticket)
+            copy.recordCode(code)
+            return copy
+        }
 
         protected matches(CompilerPackageSnapshot other) -> Bool {
-            if (mainClass != other.mainClass || linker != other.linker || options != other.options ||
+            if (ownedMainClass != other.ownedMainClass || linker != other.linker || ownedOptions != other.ownedOptions ||
                 values.count != other.values.count) return false
             var Int index
             while (index < values.count) {

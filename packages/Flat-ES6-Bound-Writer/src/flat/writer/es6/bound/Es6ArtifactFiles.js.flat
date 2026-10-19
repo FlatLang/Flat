@@ -6,12 +6,18 @@ import flat/io
 class {
     public static ensureDirectory(File directory) {
         if (!directory) throw Exception("ES6 artifact directory is required")
+        native_array native var Char[] errorMessage
         external {
-            #{File.FileGlobal.fs}.mkdirSync(
-                #{directory.location.chars.data},
-                {recursive: true}
-            );
+            try {
+                #{File.FileGlobal.fs}.mkdirSync(
+                    #{directory.location.chars.data},
+                    {recursive: true}
+                );
+            } catch (error) {
+                #{errorMessage} = error.message;
+            }
         }
+        if (errorMessage) throw Exception(String(errorMessage))
     }
 
     /** Exclusively reserve same-filesystem staging owned by one commit. */
@@ -19,20 +25,32 @@ class {
         if (!destination) throw Exception("ES6 artifact commit requires destination")
         let prefix = destination.normalizedLocation + ".flat-tmp-"
         native_array native var Char[] data
+        native_array native var Char[] errorMessage
         external {
-            #{data} = #{File.FileGlobal.fs}.mkdtempSync(#{prefix.chars.data});
+            try {
+                #{data} = #{File.FileGlobal.fs}.mkdtempSync(#{prefix.chars.data});
+            } catch (error) {
+                #{errorMessage} = error.message;
+            }
         }
+        if (errorMessage) throw Exception(String(errorMessage))
         return File(String(data))
     }
 
     public static write(File file, String value) {
         if (!file || value == null) throw Exception("ES6 artifact write requires file and value")
+        native_array native var Char[] errorMessage
         external {
-            #{File.FileGlobal.fs}.writeFileSync(
-                #{file.location.chars.data},
-                #{value.chars.data}
-            );
+            try {
+                #{File.FileGlobal.fs}.writeFileSync(
+                    #{file.location.chars.data},
+                    #{value.chars.data}
+                );
+            } catch (error) {
+                #{errorMessage} = error.message;
+            }
         }
+        if (errorMessage) throw Exception(String(errorMessage))
     }
 
     public static read(File file) -> String {
@@ -43,14 +61,19 @@ class {
     }
 
     public static remove(File file) {
-        if (file && file.exists) {
-            external {
+        if (!file) return
+        native_array native var Char[] errorMessage
+        external {
+            try {
                 #{File.FileGlobal.fs}.rmSync(
                     #{file.location.chars.data},
                     {recursive: true, force: true}
                 );
+            } catch (error) {
+                #{errorMessage} = error.message;
             }
         }
+        if (errorMessage) throw Exception(String(errorMessage))
     }
 
     public static replace(File temporary, File destination) {

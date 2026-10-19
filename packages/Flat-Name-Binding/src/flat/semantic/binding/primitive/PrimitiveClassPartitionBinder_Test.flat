@@ -166,6 +166,121 @@ testable class {
         }
     }
 
+    async test `contextual collection callback binds arbitrary element member and outer capture`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-member-contract"), "one")
+        let sources = [
+            "class Entry { visible Int code; construct(visible Int code) {} }",
+            "class Array<E> { firstWhere(func(E)->Bool predicate) -> E { return null; } }",
+            "class Catalog { visible Entry[] entries; find(Int requested) -> Entry { return entries.firstWhere({ _.code == requested }); } }"
+        ]
+        let syntaxes = PrimitiveClassSyntax[]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
+        }
+        let units = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot,
+            arrayDeclaration: syntaxes[1]).typeUnits()
+        let owner = units.firstOrNull({ _.identity.name == "Catalog" })
+        expect(owner.functionUnits().firstOrNull({ _.name == "find" }).returnType.kind()).toBe("user-class")
+    }
+
+    async test `configured normal imports resolve canonical type before fixed defaults`() {
+        let ownerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:configured-owner"), "one")
+        let ownerStream = Lexer().lex("class Widget { construct() {} }")
+        ownerStream.emit("start")
+        let imported = PrimitiveClassParser().parse(ownerStream.consumeAll<Token>("data"), ownerSnapshot)
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:configured-consumer"), "one")
+        let stream = Lexer().lex("class Consumer { create() -> Widget { return Widget(); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let contexts = [PrimitiveSourceBindingContext("library", ownerSnapshot, [imported]),
+            PrimitiveSourceBindingContext("app", snapshot, [syntax], defaultImports: [
+                PrimitiveDefaultImport("library/Widget"), PrimitiveDefaultImport("library/Widget")])]
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        expect(units.firstOrNull({ _.identity.name == "Consumer" }).functionUnits().firstOrNull({ _.name == "create" }).returnType.value())
+            .toBe("class:#{PrimitiveResolvedDeclarationContext(contexts.last, contexts).classIdentity(imported).value}")
+    }
+
+    async test `configured static owners filter contextual callbacks before overload typing`() {
+        let contexts = PrimitiveSourceBindingContext[]
+        let sources = ["class Selected { public static apply(func(Int)->Int transform) -> Int { return transform(4); } }",
+            "class Unrelated { public static apply(func(Bool)->Bool transform) -> Bool { return transform(true); } }",
+            "class Consumer { static run() -> Int { return apply({ _ + 1 }); } }"]
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:configured-static:#{index}"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            let defaults = PrimitiveDefaultImport[]
+            if (index == 2) defaults.add(PrimitiveDefaultImport("library/Selected", true))
+            contexts.add(PrimitiveSourceBindingContext(index == 2 ? "app" : "library", snapshot, [syntax],
+                defaultImports: defaults))
+            index++
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        expect(units.firstOrNull({ _.identity.name == "Consumer" }).functionUnits().firstOrNull({ _.name == "run" }).returnType.value())
+            .toBe(SemanticTypes.intType().value())
+    }
+
+    async test `configured type precedence and ambiguity retain canonical consumer diagnostics`() {
+        let contexts = PrimitiveSourceBindingContext[]
+        let namespaces = ["local", "explicit", "configured", "flat"]
+        var Int index
+        for (namespaceName in namespaces) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:configured-precedence:#{index}"), "one")
+            let stream = Lexer().lex("class String { construct() {} }")
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            contexts.add(PrimitiveSourceBindingContext(namespaceName, snapshot, [syntax]))
+            index++
+        }
+        let consumer = contexts.first
+        let range = consumer.classValues().first.range
+        let configured = [PrimitiveDefaultImport("configured/String")]
+        let scopeOwner = PrimitiveSourceBindingContext("app", consumer.snapshot, PrimitiveClassSyntax[],
+            defaultImports: configured)
+        let scope = PrimitiveResolvedDeclarationContext(scopeOwner, contexts)
+        expect(scope.resolve("String", range).value).toBe(scope.classIdentity(contexts[2].classValues().first).value)
+        let explicitOwner = PrimitiveSourceBindingContext("app", consumer.snapshot, PrimitiveClassSyntax[],
+            importValues: [PrimitiveBindingImport("explicit/String", range)], defaultImports: configured)
+        expect(PrimitiveResolvedDeclarationContext(explicitOwner, contexts).resolve("String", range).value)
+            .toBe(scope.classIdentity(contexts[1].classValues().first).value)
+        let localOwner = PrimitiveSourceBindingContext("local", consumer.snapshot, consumer.classValues(),
+            importValues: explicitOwner.importValues(), defaultImports: configured)
+        expect(PrimitiveResolvedDeclarationContext(localOwner, contexts).resolve("String", range).value)
+            .toBe(scope.classIdentity(consumer.classValues().first).value)
+        let ambiguousOwner = PrimitiveSourceBindingContext("app", consumer.snapshot, PrimitiveClassSyntax[],
+            defaultImports: [PrimitiveDefaultImport("configured/String"), PrimitiveDefaultImport("explicit/String")])
+        var Bool rejected
+        try { PrimitiveResolvedDeclarationContext(ambiguousOwner, contexts).resolve("String", range) }
+        catch (PrimitiveContextBindingException error) {
+            rejected = error.diagnostic.code == "binding.import-ambiguous" && error.diagnostic.range == range
+        }
+        expect(rejected).toBe(true)
+    }
+
+    async test `configured import diagnostics use consumer and share explicit import capacity`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:configured-missing"), "one")
+        let stream = Lexer().lex("class Consumer { static run() -> Int { return 1; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let context = PrimitiveSourceBindingContext("app", snapshot, [syntax], defaultImports: [
+            PrimitiveDefaultImport("missing/Widget"), PrimitiveDefaultImport("missing/Tools", true)])
+        let scope = PrimitiveResolvedDeclarationContext(context, [context])
+        var Bool rejected
+        try { scope.configuredTypeCandidates("Widget", syntax.range) }
+        catch (PrimitiveContextBindingException error) {
+            rejected = error.diagnostic.range.startTokenIndex == syntax.range.startTokenIndex
+        }
+        expect(rejected).toBe(true)
+        rejected = false
+        try { PrimitiveClassPartitionBinder().bindContexts([context], maxImportsPerContext: 1) }
+        catch (Exception error) { rejected = error.message.contains("capacity") }
+        expect(rejected).toBe(true)
+    }
+
     async test `source owned metadata access does not infer a built in Class`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-metadata-contract"), "one")
         let stream = Lexer().lex("class Sample { construct() {} public static read(Sample value) -> String { return value.class.location; } }")

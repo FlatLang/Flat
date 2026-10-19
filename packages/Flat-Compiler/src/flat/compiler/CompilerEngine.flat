@@ -4,15 +4,26 @@ import flat/eventstream
 import flat/future
 import flat/compiler/CompilerPackageReuse.CompilerPackageSnapshot
 import flat/semantic/binding/primitive/PrimitiveContextBindingException
+import flat/semantic/binding/primitive/PrimitiveDefaultImport
 
-/** In-process compiler orchestration; each session currently runs one serial action. */
+/** In-process compiler orchestration with bounded independent-source scheduling. */
 class {
+    // Only independent source compilation uses these capacities. Active means
+    // submitted executor reservations (running or executor-queued); the executor
+    // may provide less overlap. maxQueued bounds additional unsubmitted identities.
+    // Completed outcomes still occupy the combined window until stable retirement.
     public construct(
         visible Executor executor = InlineExecutor(),
         visible FlatEs6SourceCompiler sourceCompiler = FlatEs6SourceCompiler(),
         visible FlatEs6PackageLinker packageLinker = FlatEs6PackageLinker(),
-        private CompilerPackageReuse packageReuse = null
+        private CompilerPackageReuse packageReuse = null,
+        visible Int maxActiveSources = 1,
+        visible Int maxQueuedSources = 0
     ) {
+        if (maxActiveSources <= 0 || maxQueuedSources < 0 ||
+            maxActiveSources > 2147483647 - maxQueuedSources) {
+            throw Exception("Compiler source capacities require positive active and nonnegative bounded queue")
+        }
         if (!executor || !sourceCompiler || !packageLinker) {
             throw Exception("Compiler engine requires executor, source compiler and package linker")
         }
@@ -20,8 +31,11 @@ class {
 
     /**
      * Consumers must be attached to session before this call. InlineExecutor may
-     * enter work immediately; a controlled executor may leave it queued. Neither
-     * promises source concurrency. The returned session owns one executor action.
+     * enter work immediately; a controlled executor may leave it queued. Sources
+     * overlap only within maxActiveSources; no CPU-thread parallelism is promised.
+     * Live artifacts/progress are explicitly unordered; identities and bytes are
+     * schedule-independent, diagnostics use stable source order. The coordinator
+     * never consumes a worker executor slot. Package entrypoints remain serial.
      */
     public start(
         CompilerSourceProvider sources,
@@ -31,20 +45,24 @@ class {
         if (!sources || !sink || !session) throw Exception("Compiler start requires provider, sink and session")
         if (session.cancelled) return session
         let identities = sources.identities()
-        if (!identities) throw Exception("Compiler start requires source identities")
-        session.begin(identities.count)
-        try {
-            let submitted = executor.submit({ runSources(sources, identities, sink, session) })$
-            session.attach(submitted)
-        } catch (Exception error) {
-            session.recordFailure(error.message)
-            session.finish()
+        if (!identities || identities.any({ !_ })) throw Exception("Compiler start requires source identities")
+        let ordered = identities.sort({ _a.compareTo(_b) })
+        var Int index
+        while (index < ordered.count) {
+            if (!ordered[index] || ordered[index].trim().count == 0 ||
+                (index > 0 && ordered[index - 1] == ordered[index])) {
+                throw Exception("Compiler source identities must be nonempty and unique")
+            }
+            index++
         }
+        session.begin(ordered.count)
+        session.startSources(this, executor, sourceCompiler, sources, ordered, sink,
+            maxActiveSources, maxQueuedSources)
         return session
     }
 
     /**
-     * Same lifecycle as start. The linker's finite package signature barrier is
+     * Same lifecycle as start. The finite package signature barrier of the linker is
      * unchanged. Cancellation cannot interrupt linkSources: it waits for return,
      * suppresses a later commit, then settles completion after cleanup.
      */
@@ -53,9 +71,11 @@ class {
         CompilerArtifactSink sink,
         String artifactIdentity,
         CompilerSession session,
-        String mainClass = null
+        String mainClass = null,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
     ) -> CompilerSession {
-        return startSelectedPackage(sources, sink, artifactIdentity, session, mainClass)
+        return startSelectedPackage(sources, sink, artifactIdentity, session, mainClass,
+            defaultImports: defaultImports)
     }
 
     startSelectedPackage(
@@ -64,10 +84,25 @@ class {
         String artifactIdentity,
         CompilerSession session,
         String mainClass,
-        CompilerPackageSnapshot snapshot = null
+        CompilerPackageSnapshot snapshot = null,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
     ) -> CompilerSession {
         if (!sources || !sink || !session) throw Exception("Package start requires provider, sink and session")
         if (session.cancelled) return session
+        if (!defaultImports || defaultImports.count > packageLinker.maxTokensPerSource ||
+            defaultImports.any({ !_ })) {
+            throw Exception("Package default imports require a bounded non-null configuration")
+        }
+        // Configuration ownership is established before executor admission. The
+        // range-free value constructor owns copied string storage; no source range
+        // is synthesized here. Copies are bounded by the linker import capacity.
+        let selectedDefaults = PrimitiveDefaultImport[]
+        for (value in defaultImports) {
+            selectedDefaults.add(PrimitiveDefaultImport(value.location, value.staticImport))
+        }
+        if (snapshot && selectedDefaults.isNotEmpty) {
+            throw Exception("Package snapshot reuse does not support configured default imports")
+        }
         validatePackageArtifactIdentity(artifactIdentity)
         let identities = sources.identities()
         if (!identities || identities.count == 0 || identities.count > packageLinker.maxSources ||
@@ -85,7 +120,7 @@ class {
         session.begin(ordered.count)
         try {
             let submitted = executor.submit({
-                runPackage(sources, ordered, sink, artifactIdentity, mainClass, session, snapshot)
+                runPackage(sources, ordered, sink, artifactIdentity, mainClass, session, snapshot, selectedDefaults)
             })$
             session.attach(submitted)
         } catch (Exception error) {
@@ -124,12 +159,13 @@ class {
         CompilerSourceProvider sources,
         CompilerArtifactSink artifacts,
         String artifactIdentity,
-        String mainClass = null
+        String mainClass = null,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
     ) -> CompilerSession {
         let session = CompilerSession()
         let Future<Bool> drained = Future.from<Bool>(async { return drainArtifacts(session) })$
         try {
-            startPackage(sources, artifacts, artifactIdentity, session, mainClass)
+            startPackage(sources, artifacts, artifactIdentity, session, mainClass, defaultImports)
             session.completion.get()
         } finally {
             if (!session.completion.completed) session.cancel()
@@ -143,6 +179,8 @@ class {
      * default streaming path. The complete bounded partition is already supplied
      * by the caller; capture and linking use exactly the same immutable strings.
      * Like compilePackage, returns a fresh closed/drained compatibility session.
+     * Configured default imports are deliberately unsupported by this API: reuse
+     * always uses empty linker defaults, so no unkeyed option can affect code.
      */
     public async compilePackageSnapshots(
         CompilerSource[] sources,
@@ -155,7 +193,7 @@ class {
         let session = CompilerSession()
         let Future<Bool> drained = Future.from<Bool>(async { return drainArtifacts(session) })$
         try {
-            startSelectedPackage(snapshot, sink, artifactIdentity, session, mainClass, snapshot)
+            startSelectedPackage(snapshot, sink, artifactIdentity, session, snapshot.mainClass, snapshot)
             let summary = session.completion.get()
             packageReuse.remember(snapshot, summary)
         } finally {
@@ -174,40 +212,6 @@ class {
         return true
     }
 
-    async runSources(
-        CompilerSourceProvider sources,
-        String[] identities,
-        CompilerArtifactSink sink,
-        CompilerSession session
-    ) {
-        if (session.cancelled) return
-        session.enter()
-        for (identity in identities) {
-            if (session.cancelled) break
-            var CompilerArtifact artifact
-            try {
-                let source = sources.load(identity)
-                if (session.cancelled) break
-                if (!source) throw Exception("Missing source '#identity'")
-                let code = sourceCompiler.compile(source)
-                if (session.cancelled) break
-                let compiledArtifact = CompilerArtifact(identity + ".js", code)
-                sink.write(compiledArtifact)
-                session.recordArtifact()
-                artifact = compiledArtifact
-            } catch (Exception error) {
-                if (!session.cancelled) publishDiagnostic(session,
-                    "Failed to compile '#identity': #{error.message}")
-            }
-            // Delivery failure terminates this session rather than committing
-            // more artifacts to a channel with no consumer.
-            if (artifact && !session.cancelled) {
-                publishArtifact(session, artifact)
-                if (!session.cancelled) publishProgress(session, "Compiled #identity")
-            }
-        }
-    }
-
     async runPackage(
         CompilerSourceProvider sources,
         String[] ordered,
@@ -215,13 +219,15 @@ class {
         String artifactIdentity,
         String mainClass,
         CompilerSession session,
-        CompilerPackageSnapshot snapshot = null
+        CompilerPackageSnapshot snapshot = null,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
     ) {
         if (session.cancelled) return
         session.enter()
         try {
             let cached = snapshot ? packageReuse.find(snapshot) : null
-            let code = cached != null ? cached : packageLinker.linkSources(sources, ordered, mainClass: mainClass)
+            let code = cached != null ? cached : packageLinker.linkSources(sources, ordered,
+                mainClass: mainClass, defaultImports: defaultImports)
             if (!session.cancelled) {
                 let artifact = CompilerArtifact(artifactIdentity, code)
                 sink.write(artifact)
@@ -247,7 +253,7 @@ class {
         }
     }
 
-    async publishArtifact(CompilerSession session, CompilerArtifact artifact) {
+    protected async publishArtifact(CompilerSession session, CompilerArtifact artifact) {
         let pending = session.artifacts.send(artifact)$
         if (session.artifacts.pendingSendCount > 0) {
             session.recordArtifactBackpressure()
@@ -258,14 +264,14 @@ class {
         }
     }
 
-    async publishProgress(CompilerSession session, String message) {
+    protected async publishProgress(CompilerSession session, String message) {
         let result = session.progress.publish(message)
         if (!session.cancelled && (result.failed || result.capacityExceeded)) {
             throw Exception("Compiler progress publication failed")
         }
     }
 
-    async publishDiagnostic(CompilerSession session, String message) {
+    protected async publishDiagnostic(CompilerSession session, String message) {
         session.recordFailure(message)
         let result = session.diagnostics.publish(message)
         if (!session.cancelled && (result.failed || result.capacityExceeded)) {

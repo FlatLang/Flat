@@ -1,6 +1,7 @@
 package flat/compiler
 
 import flat/compiler/models
+import flat/semantic/binding/primitive/PrimitiveDefaultImport
 import flat/lexer
 import flat/parser/flat
 import flat/io
@@ -18,14 +19,15 @@ testable class {
 
         override public async linkSources(
             CompilerSourceProvider provider, String[] identities,
-            DeclarationIdentity arrayDeclaration = null, String mainClass = null
+            DeclarationIdentity arrayDeclaration = null, String mainClass = null,
+            PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
         ) -> String {
             calls++
             if (fail) throw Exception("controlled link failure")
             let delegate = FlatEs6PackageLinker(maxSources: maxSources,
                 maxSourceCharacters: maxSourceCharacters, maxTokensPerSource: maxTokensPerSource,
                 maxTypes: maxTypes, maxFragments: maxFragments)
-            return delegate.linkSources(provider, identities, arrayDeclaration, mainClass)
+            return delegate.linkSources(provider, identities, arrayDeclaration, mainClass, defaultImports)
         }
     }
 
@@ -93,6 +95,66 @@ testable class {
                 expect(result.stdout.join("")).toBe("11\n")
             }
         } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `same length source text mutation misses and emitted code cannot poison hits`() {
+        let linker = CountingLinker()
+        let engine = CompilerEngine(packageLinker: linker, packageReuse: CompilerPackageReuse())
+        let inputs = sources()
+        let cold = MemoryCompilerArtifactSink()
+        engine.compilePackageSnapshots(inputs, cold, "cold.js")
+        let coldCode = cold.artifacts().first.code.concat("")
+        let dependency = inputs.first.text
+        let offset = dependency.indexOf("11")
+        dependency.chars[offset] = '2'
+        dependency.chars[offset + 1] = '2'
+        expect(dependency.count).toBe(sources().first.text.count)
+        let dirty = MemoryCompilerArtifactSink()
+        engine.compilePackageSnapshots(inputs, dirty, "dirty.js")
+        expect(linker.calls).toBe(2)
+        expect(dirty.artifacts().first.code == coldCode).toBe(false)
+        let dirtyCode = dirty.artifacts().first.code.concat("")
+        dirty.artifacts().first.code.chars[0] = '#'
+        let hit = MemoryCompilerArtifactSink()
+        engine.compilePackageSnapshots(inputs, hit, "hit.js")
+        expect(linker.calls).toBe(2)
+        expect(hit.artifacts().first.code).toBe(dirtyCode)
+        hit.artifacts().first.code.chars[0] = '#'
+        let again = MemoryCompilerArtifactSink()
+        engine.compilePackageSnapshots(inputs, again, "again.js")
+        expect(linker.calls).toBe(2)
+        expect(again.artifacts().first.code).toBe(dirtyCode)
+    }
+
+    test `snapshot owns strings across input provider and result boundaries`() {
+        let reuse = CompilerPackageReuse()
+        let linker = CountingLinker()
+        let values = sources()
+        let main = "app/Main".concat("")
+        let snapshot = reuse.capture(values, main, linker)
+        let original = reuse.capture(sources(), "app/Main", linker)
+        main.chars[0] = 'x'
+        values.first.identity.chars[0] = 'x'
+        values.first.text.chars[0] = 'x'
+        expect(snapshot.matches(original)).toBe(true)
+        snapshot.identities().first.chars[0] = 'x'
+        let loaded = snapshot.load("dep/Value.flat")
+        loaded.identity.chars[0] = 'x'
+        loaded.text.chars[0] = 'x'
+        snapshot.mainClass.chars[0] = 'x'
+        snapshot.options.chars[0] = 'x'
+        expect(snapshot.matches(original)).toBe(true)
+        let code = "safe".concat("")
+        original.recordCode(code)
+        reuse.remember(original, CompilationSummary(2, 1, 0, false))
+        code.chars[0] = 'x'
+        original.code.chars[0] = 'x'
+        expect(reuse.find(snapshot)).toBe("safe")
+        original.recordCode("evil")
+        expect(reuse.find(snapshot)).toBe("safe")
+        let hit = reuse.find(snapshot)
+        hit.chars[0] = 'x'
+        expect(reuse.find(snapshot)).toBe("safe")
     }
 
     async test `dependency edits main selection linker identity and reset invalidate one entry`() {

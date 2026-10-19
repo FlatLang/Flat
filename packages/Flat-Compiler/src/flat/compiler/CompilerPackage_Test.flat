@@ -7,6 +7,7 @@ import flat/compiler/models
 import flat/lexer
 import flat/parser/flat
 import flat/writer/es6/bound
+import flat/semantic/binding/primitive/PrimitiveDefaultImport
 
 /** Public package API acceptance, separate from direct linker feature tests. */
 testable class {
@@ -246,6 +247,137 @@ testable class {
                 "\nclass Consumer { public static run() -> Int { let value = Widget(); return value.value(); } }")
         ]
         return sources
+    }
+
+    async test `linker bounds explicit and configured imports together for both entrypoints`() {
+        CompilerSource[] sources = [
+            CompilerSource("defs/Owner.flat", "package defs\nclass Owner {}"),
+            CompilerSource("app/Consumer.flat", "package app\nimport defs/Owner\nclass Consumer {}")
+        ]
+        let linker = FlatEs6PackageLinker(maxTokensPerSource: 64)
+        let defaults = PrimitiveDefaultImport[]
+        var Int index
+        while (index++ < 63) defaults.add(PrimitiveDefaultImport("defs/Owner"))
+        let provider = MemoryCompilerSourceProvider(sources)
+        let code = linker.link(sources, defaultImports: defaults)
+        expect(code.count > 0).toBe(true)
+        expect(linker.linkSources(provider, provider.identities(), defaultImports: defaults)).toBe(code)
+        defaults.add(PrimitiveDefaultImport("defs/Owner"))
+        var Bool snapshotsRejected
+        try { linker.link(sources, defaultImports: defaults) }
+        catch (Exception error) { snapshotsRejected = error.message.contains("import capacity") }
+        expect(snapshotsRejected).toBe(true)
+        var Bool providerRejected
+        try { linker.linkSources(provider, provider.identities(), defaultImports: defaults) }
+        catch (Exception error) { providerRejected = error.message.contains("import capacity") }
+        expect(providerRejected).toBe(true)
+    }
+
+    async test `linker rejects invalid or excessive configured imports before loading sources`() {
+        let provider = TrackingPackageSourceProvider()
+        let linker = FlatEs6PackageLinker(maxTokensPerSource: 1)
+        let defaults = [PrimitiveDefaultImport("defs/Owner"), PrimitiveDefaultImport("defs/Other", true)]
+        var Bool rejected
+        try { linker.linkSources(provider, provider.identities(), defaultImports: defaults) }
+        catch (Exception error) { rejected = error.message.contains("import capacity") }
+        expect(rejected).toBe(true)
+        expect(provider.loaded.count).toBe(0)
+        PrimitiveDefaultImport[] invalid = [null]
+        var Bool entryRejected
+        try { linker.linkSources(provider, provider.identities(), defaultImports: invalid) }
+        catch (Exception error) { entryRejected = true }
+        expect(entryRejected).toBe(true)
+        expect(provider.loaded.count).toBe(0)
+    }
+
+    async test `configured normal defaults resolve types while explicit imports take precedence`() {
+        let root = File(".flat-compiler-package-default-types-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            String[] imports = ["", "import alpha/Widget"]
+            var Int index
+            for (importText in imports) {
+                let sources = namespaceSources(importText)
+                var String reference = ""
+                reference += '#'
+                reference += "{result}"
+                sources.add(CompilerSource("app/Main.flat",
+                    "package app\nclass Main { public static main() { let result = Consumer.run(); " +
+                    "external js { console.log(" + reference + "); } } }"))
+                let defaults = [PrimitiveDefaultImport("beta/Widget"), PrimitiveDefaultImport("beta/Widget")]
+                let compiler = Compiler()
+                let forward = MemoryCompilerArtifactSink()
+                let backward = MemoryCompilerArtifactSink()
+                let first = compiler.compilePackage(MemoryCompilerSourceProvider(sources), forward,
+                    "defaults.js", "app/Main", defaultImports: defaults)
+                let second = compiler.compilePackage(MemoryCompilerSourceProvider(sources.reverse()), backward,
+                    "defaults.js", "app/Main", defaultImports: defaults)
+                expect(first.completion.get().diagnosticCount).toBe(0)
+                expect(second.completion.get().diagnosticCount).toBe(0)
+                expect(forward.artifacts().count).toBe(1)
+                expect(backward.artifacts().count).toBe(1)
+                expect(forward.artifacts().first.code).toBe(backward.artifacts().first.code)
+                let output = File(root, "defaults.js")
+                Es6ArtifactCommitter().commit(output, forward.artifacts().first.code)
+                let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+                if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+                expect(response.stdout.join("")).toBe(index == 0 ? "22\n" : "11\n")
+                index++
+            }
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    async test `configured static defaults restrict callable owners and preserve overload selection`() {
+        var String reference = ""
+        reference += '#'
+        reference += "{result}"
+        CompilerSource[] sources = [
+            CompilerSource("helpers/Selected.flat", "package helpers\nclass Selected { " +
+                "public static pick(Int value) -> Int { return value + 1; } " +
+                "public static pick(Bool value) -> Int { return 99; } }"),
+            CompilerSource("other/Unselected.flat", "package other\nclass Unselected { " +
+                "public static pick(Int value) -> Int { return 100; } }"),
+            CompilerSource("app/Main.flat", "package app\nclass Main { public static main() { " +
+                "let result = pick(22); external js { console.log(" + reference + "); } } }")
+        ]
+        let defaults = [PrimitiveDefaultImport("helpers/Selected", true)]
+        let sink = MemoryCompilerArtifactSink()
+        let session = Compiler().compilePackage(MemoryCompilerSourceProvider(sources), sink,
+            "defaults.js", "app/Main", defaultImports: defaults)
+        expect(session.completion.get().diagnosticCount).toBe(0)
+        expect(sink.artifacts().count).toBe(1)
+        let root = File(".flat-compiler-package-default-static-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "defaults.js")
+            Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("23\n")
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    async test `configured type ambiguity reports actual consumer range independent of default order`() {
+        let sources = namespaceSources("")
+        let forward = MemoryCompilerArtifactSink()
+        let backward = MemoryCompilerArtifactSink()
+        let defaults = [PrimitiveDefaultImport("alpha/Widget"), PrimitiveDefaultImport("beta/Widget")]
+        let first = Compiler().compilePackage(MemoryCompilerSourceProvider(sources), forward,
+            "defaults.js", defaultImports: defaults)
+        let second = Compiler().compilePackage(MemoryCompilerSourceProvider(sources.reverse()), backward,
+            "defaults.js", defaultImports: defaults.reverse())
+        let summary = first.completion.get()
+        expect(summary.diagnosticCount).toBe(1)
+        expect(summary.packageDiagnostic.contains("binding.import-ambiguous")).toBe(true)
+        // No import statement exists on line 2: the diagnostic belongs to Widget().
+        expect(summary.packageDiagnostic.contains("app/Consumer.flat:3:")).toBe(true)
+        expect(second.completion.get().packageDiagnostic).toBe(summary.packageDiagnostic)
+        expect(forward.artifacts().count).toBe(0)
+        expect(backward.artifacts().count).toBe(0)
     }
 
     async test `package namespaces execute explicitly imported same name declaration deterministically`() {

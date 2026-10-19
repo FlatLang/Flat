@@ -333,9 +333,6 @@ class {
         if (cliArgs.targetRuntimeArg.enabled) {
             throw ExecutionFailureException("Flat compiler target-runtime selection is not supported")
         }
-        if (source.defaultExports.count > 0) {
-            throw ExecutionFailureException("Flat compiler default imports are not supported")
-        }
         let args = String[]
         let sourceLocations = String[]
         if (airship.package.mainSource) {
@@ -359,6 +356,10 @@ class {
             args.add("-library")
         }
 
+        for (value in source.defaultExports) {
+            args.addAll([value.staticImport ? "-default-static-import" : "-default-import", value.location])
+        }
+
         // Installation owns dependency acquisition; command construction must not fetch.
         let response = dependencyService.getCompilationDependencies(source, download: false)
         for (dependency in response.dependencies) {
@@ -366,8 +367,8 @@ class {
             let selectedPackage = dependencyService.getCompilationDependencyPackage(dependency)
             let dependencySource = selectedPackage.package.mainSource
             if (!dependencySource) continue
-            if (dependencySource.defaultExports.count > 0) {
-                throw ExecutionFailureException("Flat compiler default imports are not supported")
+            for (value in dependencySource.defaultExports) {
+                args.addAll([value.staticImport ? "-default-static-import" : "-default-import", value.location])
             }
             let location = selectedPackage.packageLocation.normalizedLocation + "/" + dependencySource.source
             if (!sourceLocations.contains(location)) {

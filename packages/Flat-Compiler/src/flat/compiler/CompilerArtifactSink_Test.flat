@@ -1,0 +1,68 @@
+package flat/compiler
+
+import flat/io
+import flat/time/Time
+import flat/writer/es6/bound
+
+/** Lexical artifact identities; roots and directory trees are caller-trusted. */
+testable class {
+    test `filesystem and spool reject unsafe paths before admission or publication`() {
+        let root = File(".flat-artifact-path-test-#{Time.currentTimeMillis}")
+        let output = File(root, "output")
+        let storage = File(root, "spool")
+        let files = FilesystemCompilerArtifactSink(output)
+        let spool = SpooledCompilerArtifactSink(storage, 1)
+        let sentinel = File(root, "outside.js")
+        let spoolSentinel = File(root, "outside.js.spool")
+        try {
+            Es6ArtifactFiles.write(sentinel, "preserve")
+            Es6ArtifactFiles.write(spoolSentinel, "preserve-spool")
+            let absolute = sentinel.getParent().normalizedLocation + "/" + sentinel.name
+            let invalid = ["../outside.js", "nested/../../outside.js", absolute,
+                "/outside.js", "C:/outside.js", "C:outside.js", "\\outside.js",
+                "nested\\outside.js", "", "nested//outside.js", "nested/",
+                "./outside.js", "nested/./outside.js", "nested/../outside.js"]
+            for (identity in invalid) {
+                var Bool fileRejected = false
+                var Bool spoolRejected = false
+                try { files.write(CompilerArtifact(identity, "replace")) }
+                catch (Exception error) { fileRejected = true }
+                try { spool.write(CompilerArtifact(identity, "replace")) }
+                catch (Exception error) { spoolRejected = true }
+                expect(fileRejected).toBe(true)
+                expect(spoolRejected).toBe(true)
+                expect(files.artifacts().count).toBe(0)
+                expect(spool.artifacts().count).toBe(0)
+                expect(output.getChildFiles(includeDirectories: true).count).toBe(0)
+                expect(storage.getChildFiles(includeDirectories: true).count).toBe(0)
+                expect(Es6ArtifactFiles.read(sentinel)).toBe("preserve")
+                expect(Es6ArtifactFiles.read(spoolSentinel)).toBe("preserve-spool")
+            }
+            // Invalid writes must not consume the spool's single admission slot.
+            spool.write(CompilerArtifact("safe.js", "safe"))
+            spool.commitTo(files)
+            expect(Es6ArtifactFiles.read(File(output, "safe.js"))).toBe("safe")
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `normalized directory identities remain valid for source compiler artifacts`() {
+        let root = File(".flat-artifact-nested-test-#{Time.currentTimeMillis}")
+        let output = File(root, "output")
+        let storage = File(root, "spool")
+        let files = FilesystemCompilerArtifactSink(output)
+        let spool = SpooledCompilerArtifactSink(storage, 1)
+        try {
+            Es6ArtifactFiles.ensureDirectory(File(output, "sources"))
+            Es6ArtifactFiles.ensureDirectory(File(storage, "sources"))
+            spool.write(CompilerArtifact("sources/Main.flat.js", "nested"))
+            spool.commitTo(files)
+            expect(Es6ArtifactFiles.read(File(output, "sources/Main.flat.js"))).toBe("nested")
+            expect(File(storage, "sources/Main.flat.js.spool").exists).toBe(false)
+            expect(files.artifacts().first.identity).toBe("sources/Main.flat.js")
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+}

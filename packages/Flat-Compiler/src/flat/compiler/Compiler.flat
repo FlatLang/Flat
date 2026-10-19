@@ -1,5 +1,7 @@
 package flat/compiler
 
+import flat/semantic/binding/primitive/PrimitiveDefaultImport
+
 /** Non-presentational compiler API. CLI behavior is isolated in CompilerCli. */
 class {
     public construct(visible CompilerEngine engine = CompilerEngine()) {
@@ -18,8 +20,9 @@ class {
         CompilerSourceProvider sources,
         CompilerArtifactSink artifacts,
         String artifactIdentity,
-        String mainClass = null
+        String mainClass = null,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
     ) -> CompilerSession {
-        return engine.compilePackage(sources, artifacts, artifactIdentity, mainClass)
+        return engine.compilePackage(sources, artifacts, artifactIdentity, mainClass, defaultImports)
     }
 }

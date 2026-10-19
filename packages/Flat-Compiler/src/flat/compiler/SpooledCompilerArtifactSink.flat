@@ -4,7 +4,11 @@ import flat/io
 import flat/time/Time
 import flat/writer/es6/bound
 
-/** Bounded disk spool that atomically promotes artifacts to a filesystem sink. */
+/**
+ * Bounded disk spool that atomically promotes individual artifacts to a sink.
+ * Uses the filesystem sink's lexical identity policy, not symlink containment;
+ * root and its directory tree must be caller-trusted.
+ */
 class extends CompilerArtifactSink {
     var CompilerArtifact[] pending = CompilerArtifact[]
     public construct(visible File root, visible Int capacity) {
@@ -15,6 +19,7 @@ class extends CompilerArtifactSink {
         if (!artifact || pending.count >= capacity || pending.any({ _.identity == artifact.identity })) {
             throw Exception("Spooled artifact sink capacity or identity violation")
         }
+        FilesystemCompilerArtifactSink.validateIdentity(artifact.identity)
         pending.add(artifact)
         Es6ArtifactFiles.write(File(root, artifact.identity + ".spool"), artifact.code)
     }

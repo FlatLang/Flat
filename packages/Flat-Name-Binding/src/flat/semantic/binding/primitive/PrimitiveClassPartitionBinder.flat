@@ -173,7 +173,7 @@ class {
         let syntaxes = PrimitiveClassSyntax[]
         let contracts = PrimitiveInterfaceSyntax[]
         for (source in ordered) {
-            if (source.importValues().count > maxImportsPerContext ||
+            if (source.importValues().count + source.defaultImportValues().count > maxImportsPerContext ||
                 syntaxes.count + contracts.count + source.classValues().count + source.interfaceValues().count > maxTypes) {
                 throw Exception("Context binding exceeds configured declaration or import capacity")
             }

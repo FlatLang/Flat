@@ -314,6 +314,76 @@ testable class {
         }
     }
 
+    async test `CLI resolves normal and static defaults without changing source text`() {
+        let root = File(".flat-compiler-cli-default-import-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let widget = File(root, "Widget.flat")
+            let helpers = File(root, "Helpers.flat")
+            let unrelated = File(root, "Unrelated.flat")
+            let source = File(root, "Main.flat")
+            Es6ArtifactCommitter().commit(widget,
+                "package values\nclass Widget { public value() -> Int { return 22; } }")
+            Es6ArtifactCommitter().commit(helpers,
+                "package helpers\nclass Helpers { public static selected(Int value) -> Int { return value + 1; } " +
+                "public static selected(Bool value) -> Int { return 99; } }")
+            // A same-name callable in an unselected owner must not leak into lookup.
+            Es6ArtifactCommitter().commit(unrelated,
+                "package other\nclass Unrelated { public static selected(Int value) -> Int { return 100; } }")
+            var String reference = ""
+            reference += '#'
+            reference += "{result}"
+            let text = "package app\nclass Main { public static main() { " +
+                "let value = Widget(); let result = selected(value.value()); " +
+                "external js { console.log(" + reference + "); } } }"
+            Es6ArtifactCommitter().commit(source, text)
+            let output = File(root, "program.js")
+            expect(CompilerCli.run([
+                "flatc", source.normalizedLocation, "-l", widget.normalizedLocation,
+                "-l", helpers.normalizedLocation, "-l", unrelated.normalizedLocation,
+                "-target", "es6", "-main", "app/Main", "-o", output.normalizedLocation,
+                "-default-import", "values/Widget", "-default-static-import", "helpers/Helpers",
+                "-default-import", "values/Widget", "-default-static-import", "helpers/Helpers"
+            ])).toBe(0)
+            expect(Es6ArtifactFiles.read(source)).toBe(text)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("23\n")
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    async test `CLI unresolved and ambiguous configured defaults preserve previous output`() {
+        let root = File(".flat-compiler-cli-default-failure-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let source = File(root, "Main.flat")
+            let first = File(root, "First.flat")
+            let second = File(root, "Second.flat")
+            let output = File(root, "program.js")
+            Es6ArtifactCommitter().commit(first,
+                "package first\nclass First { public static selected() -> Int { return 1; } }")
+            Es6ArtifactCommitter().commit(second,
+                "package second\nclass Second { public static selected() -> Int { return 2; } }")
+            Es6ArtifactCommitter().commit(source,
+                "package app\nclass Main { public static main() { let result = selected(); } }")
+            Es6ArtifactCommitter().commit(output, "previous artifact\n")
+            String[] locations = ["missing/Owner", "first/First"]
+            for (location in locations) {
+                expect(CompilerCli.run([
+                    "flatc", source.normalizedLocation, "-l", first.normalizedLocation,
+                    "-l", second.normalizedLocation, "-target", "es6", "-main", "app/Main",
+                    "-o", output.normalizedLocation, "-default-static-import", location,
+                    "-default-static-import", "second/Second"
+                ])).toBe(1)
+                expect(Es6ArtifactFiles.read(output)).toBe("previous artifact\n")
+            }
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
     async test `CLI help remains successful without source or output`() {
         expect(CompilerCli.run(["flatc", "help"])).toBe(0)
         expect(CompilerCli.run(["flatc", "help", "--all"])).toBe(0)

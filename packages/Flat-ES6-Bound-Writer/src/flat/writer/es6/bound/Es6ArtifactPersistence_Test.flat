@@ -159,6 +159,71 @@ testable class {
         }
     }
 
+    test `native staging creation failure is a catchable Flat exception`() {
+        controlledCommitFailure("create")
+    }
+
+    test `native staging write failure is a catchable Flat exception and cleans staging`() {
+        controlledCommitFailure("write")
+    }
+
+    test `native cleanup failure is catchable after successful publication`() {
+        controlledCommitFailure("remove")
+    }
+
+    test `cleanup failure cannot replace the original write failure`() {
+        controlledCommitFailure("write", true)
+    }
+
+    controlledCommitFailure(String operation, Bool cleanupFails = false) {
+        let root = temporaryRoot("native-#operation")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "output.js")
+        Es6ArtifactFiles.write(destination, "previous")
+        native var Object originalCreate
+        native var Object originalWrite
+        native var Object originalRemove
+        external {
+            const fs = #{File.FileGlobal.fs};
+            #{originalCreate} = fs.mkdtempSync;
+            #{originalWrite} = fs.writeFileSync;
+            #{originalRemove} = fs.rmSync;
+            if (#{operation.chars.data} === 'create') {
+                fs.mkdtempSync = () => { throw new Error('controlled-create'); };
+            }
+            if (#{operation.chars.data} === 'write') {
+                fs.writeFileSync = () => { throw new Error('controlled-write'); };
+            }
+            if (#{operation.chars.data} === 'remove' || #{cleanupFails}) {
+                fs.rmSync = () => { throw new Error('controlled-remove'); };
+            }
+        }
+        var String failure = ""
+        try {
+            try {
+                Es6ArtifactCommitter().commit(destination, "replacement")
+            } catch (Exception error) {
+                failure = error.message
+            }
+        } finally {
+            external {
+                #{File.FileGlobal.fs}.mkdtempSync = #{originalCreate};
+                #{File.FileGlobal.fs}.writeFileSync = #{originalWrite};
+                #{File.FileGlobal.fs}.rmSync = #{originalRemove};
+            }
+        }
+        try {
+            expect(failure).toBe("controlled-#operation")
+            expect(Es6ArtifactFiles.read(destination))
+                .toBe(operation == "remove" ? "replacement" : "previous")
+            if (!cleanupFails && operation != "remove") {
+                expect(root.getChildFiles(includeDirectories: true).count).toBe(1)
+            }
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
     temporaryRoot(String name) -> File {
         return File(".flat-es6-bound-writer-test-#name-#{Time.currentTimeMillis}")
     }

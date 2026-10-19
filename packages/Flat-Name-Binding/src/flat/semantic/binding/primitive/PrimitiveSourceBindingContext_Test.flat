@@ -1,0 +1,90 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+
+testable class {
+    test `configured defaults retain normal and static owner selection without source ranges`() {
+        let normal = PrimitiveDefaultImport("values/Widget")
+        let staticDefault = PrimitiveDefaultImport("flat/test/Test", true)
+        expect(normal.location).toBe("values/Widget")
+        expect(normal.staticImport).toBe(false)
+        expect(staticDefault.location).toBe("flat/test/Test")
+        expect(staticDefault.staticImport).toBe(true)
+        expect(PrimitiveDefaultImport("_local/Owner2").location).toBe("_local/Owner2")
+        expect(PrimitiveDefaultImport("Owner").location).toBe("Owner")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("app/Main.flat"), "test")
+        let context = PrimitiveSourceBindingContext("app", snapshot, PrimitiveClassSyntax[],
+            defaultImports: [normal, staticDefault])
+        expect(context.defaultImportValues().count).toBe(2)
+        expect(context.defaultImportValues().first.location).toBe("values/Widget")
+        expect(context.defaultImportValues().last.staticImport).toBe(true)
+        expect(context.importValues().count).toBe(0)
+    }
+
+    test `default owner locations do not alias caller or returned String storage`() {
+        let location = "flat/test/Test"
+        let value = PrimitiveDefaultImport(location, true)
+        location.chars[0] = 'X'
+        expect(value.location).toBe("flat/test/Test")
+        let returned = value.location
+        returned.chars[0] = 'Y'
+        expect(value.location).toBe("flat/test/Test")
+        expect(value.staticImport).toBe(true)
+    }
+
+    test `source context owns default array and returned array cannot mutate its configuration`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("app/Main.flat"), "test")
+        let defaults = [PrimitiveDefaultImport("values/Widget"), PrimitiveDefaultImport("helpers/Helpers", true)]
+        let context = PrimitiveSourceBindingContext("app", snapshot, PrimitiveClassSyntax[],
+            defaultImports: defaults)
+        defaults[0] = PrimitiveDefaultImport("other/Widget")
+        defaults.add(PrimitiveDefaultImport("other/Extra"))
+        let returned = context.defaultImportValues()
+        returned[0] = PrimitiveDefaultImport("other/Replacement")
+        returned.add(PrimitiveDefaultImport("other/Extra"))
+        let location = context.defaultImportValues().last.location
+        location.chars[0] = 'X'
+        expect(context.defaultImportValues().count).toBe(2)
+        expect(context.defaultImportValues().first.location).toBe("values/Widget")
+        expect(context.defaultImportValues().last.location).toBe("helpers/Helpers")
+        expect(context.defaultImportValues().last.staticImport).toBe(true)
+    }
+
+    test `existing source contexts default to no configured imports`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("app/Main.flat"), "test")
+        let context = PrimitiveSourceBindingContext("app", snapshot, PrimitiveClassSyntax[])
+        expect(context.defaultImportValues().count).toBe(0)
+        expect(context.importValues().count).toBe(0)
+    }
+
+    test `default import configuration rejects noncanonical owner locations without source diagnostics`() {
+        String[] invalid = ["", " ", "/flat/Test", "flat/Test/", "flat//Test", "flat/../Test",
+            "flat/./Test", "flat.Test", "flat/*", "flat/Test as Alias", "flat/Test.method", "flat\\Test"]
+        for (location in invalid) {
+            var Bool rejected
+            try { PrimitiveDefaultImport(location) }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+        }
+        var Bool nullRejected
+        try { PrimitiveDefaultImport(null) }
+        catch (Exception error) { nullRejected = true }
+        expect(nullRejected).toBe(true)
+    }
+
+    test `source context rejects null default configuration entries`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("app/Main.flat"), "test")
+        var Bool arrayRejected
+        try {
+            PrimitiveSourceBindingContext("app", snapshot, PrimitiveClassSyntax[], defaultImports: null)
+        } catch (Exception error) { arrayRejected = true }
+        expect(arrayRejected).toBe(true)
+        var Bool entryRejected
+        PrimitiveDefaultImport[] invalid = [null]
+        try {
+            PrimitiveSourceBindingContext("app", snapshot, PrimitiveClassSyntax[], defaultImports: invalid)
+        } catch (Exception error) { entryRejected = true }
+        expect(entryRejected).toBe(true)
+    }
+}

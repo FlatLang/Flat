@@ -3,20 +3,23 @@ package flat/semantic/binding/primitive
 import flat/compiler/models
 import flat/parser/flat
 
-/** Immutable ownership of canonical declarations and actual source imports. */
+/** Immutable ownership of declarations, actual source imports and range-free defaults. */
 data class {
     var PrimitiveClassSyntax[] classes
     var PrimitiveInterfaceSyntax[] interfaces
     var PrimitiveBindingImport[] imports
+    var PrimitiveDefaultImport[] defaults
 
     public construct(
         visible String namespaceName,
         visible SourceSnapshotIdentity snapshot,
         PrimitiveClassSyntax[] classValues,
         PrimitiveInterfaceSyntax[] interfaceValues = PrimitiveInterfaceSyntax[],
-        PrimitiveBindingImport[] importValues = PrimitiveBindingImport[]
+        PrimitiveBindingImport[] importValues = PrimitiveBindingImport[],
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
     ) {
         if (namespaceName == null || !snapshot || !classValues || !interfaceValues || !importValues ||
+            !defaultImports || defaultImports.any({ !_ }) ||
             classValues.any((value) => !value || value.range.snapshot != snapshot) ||
             interfaceValues.any((value) => !value || value.range.snapshot != snapshot) ||
             importValues.any((value) => !value || value.range.snapshot != snapshot)) {
@@ -26,9 +29,12 @@ data class {
         classes = PrimitiveClassSyntax[]:addAll(classValues)
         interfaces = PrimitiveInterfaceSyntax[]:addAll(interfaceValues)
         imports = PrimitiveBindingImport[]:addAll(importValues)
+        // Values own their String storage and expose copies; only the array needs copying.
+        defaults = PrimitiveDefaultImport[]:addAll(defaultImports)
     }
 
     public classValues() -> PrimitiveClassSyntax[] => PrimitiveClassSyntax[]:addAll(classes)
     public interfaceValues() -> PrimitiveInterfaceSyntax[] => PrimitiveInterfaceSyntax[]:addAll(interfaces)
+    public defaultImportValues() -> PrimitiveDefaultImport[] => PrimitiveDefaultImport[]:addAll(defaults)
     public importValues() -> PrimitiveBindingImport[] => PrimitiveBindingImport[]:addAll(imports)
 }

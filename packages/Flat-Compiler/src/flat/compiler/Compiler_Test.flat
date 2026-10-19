@@ -10,8 +10,278 @@ import flat/parser/flat
 import flat/writer/es6/bound
 import flat/eventstream
 import flat/future
+import flat/semantic/binding/primitive/PrimitiveDefaultImport
 
 testable class {
+    class DefaultImportLinker extends FlatEs6PackageLinker {
+        visible var String observedLocation
+        visible var Bool observedStatic
+        visible var Int observedCount
+        override public async linkSources(
+            CompilerSourceProvider provider, String[] identities,
+            DeclarationIdentity arrayDeclaration = null, String mainClass = null,
+            PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
+        ) -> String {
+            observedCount = defaultImports.count
+            if (observedCount > 0) {
+                observedLocation = defaultImports.first.location
+                observedStatic = defaultImports.first.staticImport
+            }
+            return "// default import forwarding\n"
+        }
+    }
+
+    async test `package facade snapshots default import configuration before executor admission`() {
+        let executor = ControlledExecutor(1)
+        let linker = DefaultImportLinker()
+        let compiler = Compiler(CompilerEngine(executor: executor, packageLinker: linker))
+        let location = "flat/Math".concat("")
+        let defaults = [PrimitiveDefaultImport(location, true)]
+        let sink = MemoryCompilerArtifactSink()
+        let provider = MemoryCompilerSourceProvider([CompilerSource("Main.flat", "class Main {}")])
+        let pending = Future.from<CompilerSession>(async {
+            return compiler.compilePackage(provider, sink, "main.js", defaultImports: defaults)
+        })$
+        expect(executor.queuedCount).toBe(1)
+        location.chars[0] = 'x'
+        defaults[0] = PrimitiveDefaultImport("other/Type")
+        executor.runNext()
+        expect(pending.get().completion.get().artifactCount).toBe(1)
+        expect(linker.observedCount).toBe(1)
+        expect(linker.observedLocation).toBe("flat/Math")
+        expect(linker.observedStatic).toBe(true)
+    }
+
+    class CapturedMainLinker extends FlatEs6PackageLinker {
+        visible var Int calls
+        visible var String observedMain
+        override public async linkSources(
+            CompilerSourceProvider provider, String[] identities,
+            DeclarationIdentity arrayDeclaration = null, String mainClass = null,
+            PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
+        ) -> String {
+            calls++
+            observedMain = mainClass.concat("")
+            return "// captured main #mainClass\n"
+        }
+    }
+
+    async test `queued snapshot linking retains entrypoint after caller storage mutation`() {
+        let executor = ControlledExecutor(1)
+        let linker = CapturedMainLinker()
+        let engine = CompilerEngine(executor: executor, packageLinker: linker,
+            packageReuse: CompilerPackageReuse())
+        let main = "app/Main".concat("")
+        let sources = [CompilerSource("app/Main.flat", "class Main {}")]
+        let sink = MemoryCompilerArtifactSink()
+        let pending = Future.from<CompilerSession>(async {
+            return engine.compilePackageSnapshots(sources, sink, "first.js", main)
+        })$
+        expect(executor.queuedCount).toBe(1)
+        main.chars[0] = 'x'
+        executor.runNext()
+        expect(pending.get().completion.get().diagnosticCount).toBe(0)
+        expect(linker.observedMain).toBe("app/Main")
+        expect(linker.calls).toBe(1)
+        let hitSink = MemoryCompilerArtifactSink()
+        let hit = Future.from<CompilerSession>(async {
+            return engine.compilePackageSnapshots(sources, hitSink, "hit.js", "app/Main")
+        })$
+        executor.runNext()
+        expect(hit.get().completion.get().artifactCount).toBe(1)
+        expect(linker.calls).toBe(1)
+        expect(hitSink.artifacts().first.code).toBe(sink.artifacts().first.code)
+    }
+
+    class GatedSourceCompiler extends FlatEs6SourceCompiler {
+        visible Future<Bool>[] gates = Future<Bool>[]
+        visible var Int entered
+        visible var Int cleaned
+        public construct() {
+            gates.add(Future.create<Bool>())
+            gates.add(Future.create<Bool>())
+        }
+        override public async compile(CompilerSource source) -> String {
+            entered++
+            try {
+                let index = source.identity == "a" ? 0 : 1
+                gates[index].get()
+                if (source.text == "bad") throw Exception("controlled source failure")
+                return "// #{source.identity}\n"
+            } finally { cleaned++ }
+        }
+        public release(Int index) {
+            let gate = (Future.CompletableFuture<Bool>)gates[index]
+            gate.complete(true)
+        }
+    }
+
+    async test `bounded source scheduler emits unrelated B while A is gated`() {
+        let compiler = GatedSourceCompiler()
+        let session = CompilerSession()
+        let sink = MemoryCompilerArtifactSink()
+        CompilerEngine(sourceCompiler: compiler, maxActiveSources: 2, maxQueuedSources: 1).start(
+            MemoryCompilerSourceProvider([CompilerSource("a", "ok"), CompilerSource("b", "ok")]),
+            sink, session
+        )
+        compiler.release(1)
+        expect(session.artifacts.receive().value.identity).toBe("b.js")
+        expect(sink.artifacts().first.identity).toBe("b.js")
+        expect(session.completion.completed).toBe(false)
+        expect(compiler.cleaned).toBe(1)
+        compiler.release(0)
+        expect(session.artifacts.receive().value.identity).toBe("a.js")
+        expect(session.completion.get().artifactCount).toBe(2)
+        expect(session.peakActiveSourceCount <= 2).toBe(true)
+        expect(session.peakRetainedSourceCount <= 3).toBe(true)
+        expect(session.retainedSourceCount).toBe(0)
+    }
+
+    async test `source scheduler queued cancellation waits for active cleanup`() {
+        let compiler = GatedSourceCompiler()
+        let session = CompilerSession()
+        let sink = MemoryCompilerArtifactSink()
+        CompilerEngine(sourceCompiler: compiler, maxActiveSources: 1, maxQueuedSources: 1).start(
+            MemoryCompilerSourceProvider([CompilerSource("a", "ok"), CompilerSource("b", "ok")]),
+            sink, session
+        )
+        expect(session.queuedSourceCount).toBe(1)
+        expect(session.retainedSourceCount).toBe(2)
+        session.cancel()
+        expect(session.completion.completed).toBe(false)
+        compiler.release(0)
+        expect(session.completion.get().cancelled).toBe(true)
+        expect(compiler.entered).toBe(1)
+        expect(compiler.cleaned).toBe(1)
+        expect(sink.artifacts().count).toBe(0)
+        expect(session.activeSourceCount).toBe(0)
+        expect(session.queuedSourceCount).toBe(0)
+    }
+
+    async test `source scheduler isolates failure and orders diagnostics across reversed schedules`() {
+        for (parallel in 1..3) {
+            let compiler = GatedSourceCompiler()
+            let session = CompilerSession()
+            let diagnostics = session.diagnostics.subscribe(2)
+            let sink = MemoryCompilerArtifactSink()
+            CompilerEngine(sourceCompiler: compiler, maxActiveSources: parallel).start(
+                MemoryCompilerSourceProvider([CompilerSource("b", "bad"), CompilerSource("a", "bad")]),
+                sink, session
+            )
+            compiler.release(1)
+            compiler.release(0)
+            expect(diagnostics.receive().value).toBe("Failed to compile 'a': controlled source failure")
+            expect(diagnostics.receive().value).toBe("Failed to compile 'b': controlled source failure")
+            let summary = session.completion.get()
+            expect(summary.diagnosticCount).toBe(2)
+            expect(summary.packageDiagnostic).toBe("Failed to compile 'b': controlled source failure")
+            expect(compiler.cleaned).toBe(2)
+        }
+    }
+
+    async test `source failure does not prevent unrelated artifact and engine reuse`() {
+        let compiler = GatedSourceCompiler()
+        let engine = CompilerEngine(sourceCompiler: compiler, maxActiveSources: 2)
+        let session = CompilerSession()
+        let sink = MemoryCompilerArtifactSink()
+        engine.start(MemoryCompilerSourceProvider([
+            CompilerSource("a", "bad"), CompilerSource("b", "ok")
+        ]), sink, session)
+        compiler.release(1)
+        expect(session.artifacts.receive().value.identity).toBe("b.js")
+        compiler.release(0)
+        expect(session.completion.get().diagnosticCount).toBe(1)
+        let secondSink = MemoryCompilerArtifactSink()
+        let second = engine.compile(MemoryCompilerSourceProvider([CompilerSource("b", "ok")]), secondSink)
+        expect(second.completion.get().artifactCount).toBe(1)
+        expect(second.completion.get().diagnosticCount).toBe(0)
+        expect(secondSink.artifacts().first.code).toBe(sink.artifacts().first.code)
+    }
+
+    async test `source artifact content is deterministic at one and two active sources`() {
+        var String expected = null
+        for (parallel in 1..3) {
+            let compiler = GatedSourceCompiler()
+            let session = CompilerSession()
+            let sink = MemoryCompilerArtifactSink()
+            CompilerEngine(sourceCompiler: compiler, maxActiveSources: parallel, maxQueuedSources: 1).start(
+                MemoryCompilerSourceProvider([CompilerSource("b", "ok"), CompilerSource("a", "ok")]),
+                sink, session
+            )
+            compiler.release(1)
+            if (parallel > 1) {
+                expect(session.artifacts.receive().value.identity).toBe("b.js")
+                expect(session.completion.completed).toBe(false)
+            }
+            compiler.release(0)
+            expect(session.artifacts.receive().value.identity).toBe("a.js")
+            if (parallel == 1) expect(session.artifacts.receive().value.identity).toBe("b.js")
+            expect(session.completion.get().artifactCount).toBe(2)
+            let artifacts = sink.artifacts()
+            let actual = artifacts.map({ _.identity + ":" + _.code }).join("|")
+            if (expected != null) expect(actual).toBe(expected)
+            expected = actual
+            expect(session.peakActiveSourceCount <= parallel).toBe(true)
+            expect(session.peakRetainedSourceCount <= parallel + 1).toBe(true)
+            expect(session.inFlightSourceCount).toBe(0)
+        }
+    }
+
+    async test `concurrent source backpressure bounds retained outcomes and pending publication`() {
+        let sources = CompilerSource[]
+        for (index in 0..9) {
+            sources.add(CompilerSource("source#index", "value() -> Int { return 1; }"))
+        }
+        let session = CompilerSession()
+        let sink = MemoryCompilerArtifactSink()
+        CompilerEngine(maxActiveSources: 2, maxQueuedSources: 1).start(
+            MemoryCompilerSourceProvider(sources), sink, session
+        )
+        session.artifactBackpressure.get()
+        expect(session.artifacts.bufferedCount).toBe(4)
+        expect(session.artifacts.pendingSendCount).toBe(1)
+        expect(session.retainedSourceCount <= 3).toBe(true)
+        expect(session.peakRetainedSourceCount <= 3).toBe(true)
+        expect(session.peakActiveSourceCount <= 2).toBe(true)
+        expect(sink.artifacts().count).toBe(5)
+        for (index in 0..9) expect(session.artifacts.receive().received).toBe(true)
+        expect(session.completion.get().artifactCount).toBe(9)
+        expect(session.retainedSourceCount).toBe(0)
+        expect(session.inFlightSourceCount).toBe(0)
+        expect(session.artifacts.pendingSendCount).toBe(0)
+    }
+
+    async test `source scheduler cancels executor queued actions without cancelling running cleanup`() {
+        let executor = ControlledExecutor(2)
+        let compiler = GatedSourceCompiler()
+        let session = CompilerSession()
+        CompilerEngine(executor: executor, sourceCompiler: compiler,
+            maxActiveSources: 2, maxQueuedSources: 1).start(
+            MemoryCompilerSourceProvider([CompilerSource("a", "ok"), CompilerSource("b", "ok")]),
+            MemoryCompilerArtifactSink(), session
+        )
+        expect(executor.queuedCount).toBe(2)
+        let executing = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
+        expect(compiler.entered).toBe(1)
+        session.cancel()
+        expect(executor.queuedCount).toBe(0)
+        expect(session.completion.completed).toBe(false)
+        compiler.release(0)
+        executing.get()
+        expect(session.completion.get().cancelled).toBe(true)
+        expect(compiler.cleaned).toBe(1)
+        expect(compiler.entered).toBe(1)
+        expect(session.activeSourceCount).toBe(0)
+        expect(session.inFlightSourceCount).toBe(0)
+    }
+
+    test `source concurrency capacities reject invalid configuration`() {
+        var Int rejected
+        try { CompilerEngine(maxActiveSources: 0) } catch (Exception error) { rejected++ }
+        try { CompilerEngine(maxQueuedSources: -1) } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
     class CancellingSourceCompiler extends FlatEs6SourceCompiler {
         visible var Bool completedInsideCompile
         visible var Bool cleaned
@@ -70,15 +340,13 @@ testable class {
     }
 
     async test `slow artifact consumer receives more than four artifacts without loss`() {
-        let executor = ControlledExecutor(1)
         let session = CompilerSession()
         let sink = MemoryCompilerArtifactSink()
         let sources = CompilerSource[]
         for (index in 0..7) {
             sources.add(CompilerSource("source#index", "value() -> Int { return 1; }"))
         }
-        CompilerEngine(executor: executor).start(MemoryCompilerSourceProvider(sources), sink, session)
-        let running = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
+        CompilerEngine().start(MemoryCompilerSourceProvider(sources), sink, session)
         session.artifactBackpressure.get()
         expect(session.artifacts.bufferedCount).toBe(4)
         expect(session.artifacts.pendingSendCount).toBe(1)
@@ -88,7 +356,6 @@ testable class {
             expect(received.received).toBe(true)
             expect(received.value.identity).toBe("source#{index}.js")
         }
-        expect(running.get().completed).toBe(true)
         expect(session.artifacts.receive().completed).toBe(true)
         expect(session.completion.get().artifactCount).toBe(7)
         expect(sink.artifacts().count).toBe(7)
@@ -136,20 +403,17 @@ testable class {
     }
 
     async test `cancel blocked artifact publication waits for worker cleanup and counts commits`() {
-        let executor = ControlledExecutor(1)
         let session = CompilerSession()
         let sink = MemoryCompilerArtifactSink()
         let sources = CompilerSource[]
         for (index in 0..7) {
             sources.add(CompilerSource("source#index", "value() -> Int { return 1; }"))
         }
-        CompilerEngine(executor: executor).start(MemoryCompilerSourceProvider(sources), sink, session)
-        let running = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
+        CompilerEngine().start(MemoryCompilerSourceProvider(sources), sink, session)
         session.artifactBackpressure.get()
         expect(sink.artifacts().count).toBe(5)
         session.cancel()
         expect(session.completion.completed).toBe(false)
-        expect(running.get().completed).toBe(true)
         let summary = session.completion.get()
         expect(summary.cancelled).toBe(true)
         expect(summary.artifactCount).toBe(5)

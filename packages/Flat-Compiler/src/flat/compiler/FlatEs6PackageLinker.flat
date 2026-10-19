@@ -30,13 +30,17 @@ class {
         return identity.substring(slash + 1, dot)
     }
 
-    public async link(CompilerSource[] sourceValues, DeclarationIdentity arrayDeclaration = null) -> String {
+    public async link(
+        CompilerSource[] sourceValues,
+        DeclarationIdentity arrayDeclaration = null,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
+    ) -> String {
         if (!sourceValues || sourceValues.any({ !_ }) || sourceValues.count > maxSources) {
             throw Exception("Flat ES6 package linking requires bounded sources")
         }
         let ordered = sourceValues.sort({ _a.identity.compareTo(_b.identity) })
         return linkSelected(MemoryCompilerSourceProvider(ordered),
-            ordered.map({ _.identity }), arrayDeclaration, ordered)
+            ordered.map({ _.identity }), arrayDeclaration, ordered, defaultImports: defaultImports)
     }
 
     /**
@@ -49,7 +53,8 @@ class {
         CompilerSourceProvider provider,
         String[] identities,
         DeclarationIdentity arrayDeclaration = null,
-        String mainClass = null
+        String mainClass = null,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
     ) -> String {
         if (!provider || !identities || identities.count > maxSources ||
             identities.any((identity) => !identity || identity.trim().count == 0)) {
@@ -63,7 +68,7 @@ class {
             }
             identityIndex++
         }
-        return linkSelected(provider, ordered, arrayDeclaration, mainClass: mainClass)
+        return linkSelected(provider, ordered, arrayDeclaration, mainClass: mainClass, defaultImports: defaultImports)
     }
 
     /** Direct array callers retain their supplied snapshots, even with shared identities. */
@@ -72,8 +77,17 @@ class {
         String[] ordered,
         DeclarationIdentity arrayDeclaration,
         CompilerSource[] suppliedSources = null,
-        String mainClass = null
+        String mainClass = null,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
     ) -> String {
+        if (!defaultImports) throw Exception("Flat ES6 package requires configured imports")
+        if (defaultImports.count > maxTokensPerSource) {
+            throw Exception("Flat ES6 package exceeds configured import capacity")
+        }
+        if (defaultImports.any({ !_ })) throw Exception("Flat ES6 package requires valid configured imports")
+        // Snapshot the bounded configuration before the first asynchronous source load.
+        // Each value owns its location storage; no source text/range is manufactured.
+        let defaults = defaultImports.copy()
         let contexts = PrimitiveSourceBindingContext[]
         var Int typeCount
         var Int sourceIndex
@@ -106,6 +120,9 @@ class {
                         namespaceName = ((PackageSyntaxIsland)island).packageName
                     } else if (island.class.isOfType(ImportSyntaxIsland.class)) {
                         let value = (ImportSyntaxIsland)island
+                        if (imports.count >= maxTokensPerSource - defaults.count) {
+                            throw Exception("Flat ES6 package exceeds configured import capacity")
+                        }
                         imports.add(PrimitiveBindingImport(
                             value.importedName, value.range, value.staticImport, value.alias
                         ))
@@ -174,7 +191,7 @@ class {
                                     owned[classIndex] = owned[classIndex].mergedWith(parsed)
                                     contexts[contextIndex] = PrimitiveSourceBindingContext(
                                         owner.namespaceName, owner.snapshot, owned,
-                                        owner.interfaceValues(), owner.importValues()
+                                        owner.interfaceValues(), owner.importValues(), owner.defaultImportValues()
                                     )
                                     merged = true
                                     typeCount--
@@ -187,7 +204,7 @@ class {
                 }
                 if (!merged) classes.add(parsed)
             }
-            contexts.add(PrimitiveSourceBindingContext(namespaceName, snapshot, classes, interfaces, imports))
+            contexts.add(PrimitiveSourceBindingContext(namespaceName, snapshot, classes, interfaces, imports, defaults))
         }
         // Preserve the owning binder's source-ranged control diagnostic before
         // partition binding can flatten it into an untyped method exception.

@@ -1,0 +1,44 @@
+package flat/semantic/binding/primitive
+
+/** Range-free configuration selecting a canonical type/package or static member owner. */
+class {
+    var String ownerLocation
+    var Bool importsStatic
+
+    // String has mutable character storage. Never publish the retained instance.
+    visible String location => copyLocation(ownerLocation)
+    visible Bool staticImport => importsStatic
+
+    public construct(String location, Bool staticImport = false) {
+        if (!location || location.count == 0) {
+            throw Exception("Default import requires a canonical owner location")
+        }
+        let retained = copyLocation(location)
+        for (component in retained.split('/')) {
+            if (component.count == 0) throw Exception("Default import requires a canonical owner location")
+            var Int index
+            while (index < component.count) {
+                // Compare one-character Strings, not boxed Char/numeric bounds.
+                let value = component.substring(index, index + 1)
+                let letter = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".contains(value)
+                let digit = "0123456789".contains(value)
+                if (!letter && !(index > 0 && digit)) {
+                    throw Exception("Default import requires a canonical owner location")
+                }
+                index++
+            }
+        }
+        // split implementations may omit a trailing empty component.
+        if (retained.startsWith("/") || retained.endsWith("/") || retained.contains("//")) {
+            throw Exception("Default import requires a canonical owner location")
+        }
+        ownerLocation = retained
+        importsStatic = staticImport
+    }
+
+    static copyLocation(String value) -> String {
+        // Core concat allocates both a new String and detached character storage.
+        // Avoid Char[] conversion: bootstrap output boxes Char elements here.
+        return value.concat("")
+    }
+}

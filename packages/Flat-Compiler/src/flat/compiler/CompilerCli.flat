@@ -6,6 +6,7 @@ import flat/project
 import flat/glob/Glob
 import flat/regex
 import flat/writer/es6/bound
+import flat/semantic/binding/primitive/PrimitiveDefaultImport
 
 /** CLI presentation and filesystem composition; semantic work belongs to Compiler. */
 class CompilerCli {
@@ -20,6 +21,7 @@ class CompilerCli {
                 Console.log("flatc <sources...> [-l dependency] [-x exclusion] -target es6 (-library | -main qualified/Class) (-o file | -d directory)\n" +
                     "Node executable and library compilation.\n" +
                     "Aliases: --target, --exclude, --threads. -t is ambiguous and unsupported.\n" +
+                    "Configured defaults: -default-import owner, -default-static-import owner.\n" +
                     "Sources may be files or directories; directory enumeration includes .flat and .js.flat.\n" +
                     "Package bounds: --max-sources N (default 64), --max-types N (default 256). Unsupported options fail without publishing output.")
                 return 0
@@ -55,7 +57,14 @@ class CompilerCli {
             if (options.maxConcurrency != 1) throw Exception("CLI package concurrency selection is unsupported")
             if (options.applicationProperties.count > 0) throw Exception("Application properties are unsupported for library compilation")
             let package = project.packages.first
-            if (package.defaultImports.count > 0) throw Exception("Default imports are unsupported for library compilation")
+            let linker = FlatEs6PackageLinker(maxSources: maxSources, maxTypes: maxTypes, maxFragments: maxTypes)
+            if (package.defaultImports.count > linker.maxTokensPerSource) {
+                throw Exception("Flat ES6 package exceeds configured import capacity")
+            }
+            let defaultImports = PrimitiveDefaultImport[]
+            for (value in package.defaultImports) {
+                defaultImports.add(PrimitiveDefaultImport(value.location, value.staticImport))
+            }
             let output = Es6ArtifactOutput.from(options)
             let files = File[]
             for (root in package.sourceRoots) {
@@ -68,11 +77,10 @@ class CompilerCli {
             // One bounded package is the linker readiness scope. Buffer its single
             // artifact until success so failure cannot replace a previous output.
             let sink = MemoryCompilerArtifactSink()
-            let compiler = Compiler(CompilerEngine(packageLinker: FlatEs6PackageLinker(
-                maxSources: maxSources, maxTypes: maxTypes, maxFragments: maxTypes
-            )))
+            let compiler = Compiler(CompilerEngine(packageLinker: linker))
             let session = compiler.compilePackage(
-                FilesystemCompilerSourceProvider(files), sink, output.destination.name, options.mainClass
+                FilesystemCompilerSourceProvider(files), sink, output.destination.name, options.mainClass,
+                defaultImports: defaultImports
             )
             let summary = session.completion.get()
             if (summary.cancelled || summary.diagnosticCount > 0 || summary.artifactCount != 1) {
