@@ -1,6 +1,134 @@
 package flat/semantic/types
 
 testable class {
+    test `callable evidence defaults`() {
+        let fixture = TypeSystem_TestFixture()
+        let signature = fixture.signature("read", "function", SemanticType[], SemanticTypes.intType())
+        expect(signature.asyncFunction).toBe(false)
+        expect(signature.externalName).toBe(null)
+        expect(signature.dispatchIdentity).toBe(null)
+    }
+
+    test `receiver evidence substitution`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Buffer", 31)
+        let parameter = GenericParameterSemanticType(owner.declarationIdentity, "E", 0)
+        let signature = CallableSignature(fixture.symbolIdentity("read", "instance-method", 32),
+            "read", CallableKind("instance-method"), [parameter], parameter, owner,
+            ownerGenericDeclaration: GenericDeclaration(owner.declarationIdentity, [parameter], owner),
+            asyncFunction: true, externalName: "readExternal", dispatchIdentity: "parent:read:slot")
+        let receiver = GenericInstanceSemanticType(owner, [SemanticTypes.intType()])
+        let selected = signature.instantiateReceiver(receiver)
+        expect(selected.identity.value).toBe(signature.identity.value)
+        expect(selected.dispatchIdentity).toBe("parent:read:slot")
+        expect(selected.externalName).toBe("readExternal")
+        expect(selected.asyncFunction).toBe(true)
+        expect(selected.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+        let checked = CallTypeChecker.check(signature, receiver, [SemanticTypes.intType()], fixture.range())
+        expect(checked.valid).toBe(true)
+        expect(checked.target.dispatchIdentity).toBe(selected.dispatchIdentity)
+        expect(checked.target.externalName).toBe(selected.externalName)
+        expect(checked.target.asyncFunction).toBe(true)
+        expect(signature.parameterTypes().first.value()).toBe(parameter.value())
+    }
+
+    test `generic evidence selection`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.symbolIdentity("convert", "instance-method", 42)
+        let owner = fixture.userType("Converter", 41)
+        let parameter = GenericParameterSemanticType(identity.declaration, "Value", 0)
+        let signature = CallableSignature(identity, "convert", CallableKind("instance-method"),
+            [parameter], parameter, owner, genericParameterValues: [parameter],
+            asyncFunction: true, externalName: "convertExternal", dispatchIdentity: "base:convert")
+        let checked = CallTypeChecker.check(signature, owner, [SemanticTypes.intType()], fixture.range())
+        expect(checked.valid).toBe(true)
+        expect(checked.target.genericParameters().count).toBe(0)
+        expect(checked.target.asyncFunction).toBe(true)
+        expect(checked.target.externalName).toBe("convertExternal")
+        expect(checked.target.dispatchIdentity).toBe("base:convert")
+        expect(checked.target.identity.value).toBe(identity.value)
+        let resolved = OverloadResolver.resolve("convert", [signature], owner,
+            [SemanticTypes.intType()], fixture.range())
+        expect(resolved.resolved).toBe(true)
+        expect(resolved.selected.asyncFunction).toBe(true)
+        expect(resolved.selected.externalName).toBe("convertExternal")
+        expect(resolved.selected.dispatchIdentity).toBe("base:convert")
+    }
+
+    test `composed evidence substitution`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Mapper", 50)
+        let identity = fixture.symbolIdentity("map", "instance-method", 51)
+        let element = GenericParameterSemanticType(owner.declarationIdentity, "Element", 0)
+        let output = GenericParameterSemanticType(identity.declaration, "Output", 0)
+        let signature = CallableSignature(identity, "map", CallableKind("instance-method"),
+            [element, output], output, owner, genericParameterValues: [output],
+            ownerGenericDeclaration: GenericDeclaration(owner.declarationIdentity, [element], owner),
+            asyncFunction: true, externalName: "mapExternal", dispatchIdentity: "ancestor:map")
+        let receiver = GenericInstanceSemanticType(owner, [SemanticTypes.intType()])
+        let checked = CallTypeChecker.check(signature, receiver,
+            [SemanticTypes.intType(), SemanticTypes.stringType()], fixture.range())
+        expect(checked.valid).toBe(true)
+        expect(checked.target.ownerInstance.value()).toBe(receiver.value())
+        expect(checked.target.parameterTypes()[0].value()).toBe(SemanticTypes.intType().value())
+        expect(checked.target.parameterTypes()[1].value()).toBe(SemanticTypes.stringType().value())
+        expect(checked.target.asyncFunction).toBe(true)
+        expect(checked.target.externalName).toBe("mapExternal")
+        expect(checked.target.dispatchIdentity).toBe("ancestor:map")
+        expect(checked.target.identity.value).toBe(identity.value)
+    }
+
+    test `owner evidence retention`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Buffer", 31)
+        let parameter = GenericParameterSemanticType(owner.declarationIdentity, "E", 0)
+        let signature = CallableSignature(fixture.symbolIdentity("Buffer", "constructor", 32),
+            "Buffer", CallableKind("constructor"), [ArraySemanticType(parameter)], owner, owner,
+            ownerGenericDeclaration: GenericDeclaration(owner.declarationIdentity, [parameter], owner),
+            externalName: "ExternalBuffer")
+        let selected = signature.instantiateConstructor([SemanticTypes.intType()])
+        expect(selected.externalName).toBe("ExternalBuffer")
+        expect(selected.asyncFunction).toBe(false)
+        expect(selected.dispatchIdentity).toBe(null)
+        let inferred = CallTypeChecker.check(signature, null,
+            [ArraySemanticType(SemanticTypes.intType())], fixture.range())
+        expect(inferred.valid).toBe(true)
+        expect(inferred.target.externalName).toBe("ExternalBuffer")
+    }
+
+    test `invalid callable evidence`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Example", 31)
+        var Int rejected
+        let blankNames = String[]
+        blankNames.add("")
+        blankNames.add("   ")
+        for (blank in blankNames) {
+            try {
+                let invalidExternal = CallableSignature(fixture.symbolIdentity("read", "function"), "read", CallableKind("function"),
+                    SemanticType[], SemanticTypes.intType(), externalName: blank)
+            } catch (Exception error) { rejected++ }
+            try {
+                let invalidSlot = CallableSignature(fixture.symbolIdentity("read", "instance-method"), "read",
+                    CallableKind("instance-method"), SemanticType[], SemanticTypes.intType(), owner,
+                    dispatchIdentity: blank)
+            } catch (Exception error) { rejected++ }
+        }
+        let nonvirtualKinds = ["function", "static-method", "constructor"]
+        for (kind in nonvirtualKinds) {
+            try {
+                let invalidKind = CallableSignature(fixture.symbolIdentity("Example", kind), "Example", CallableKind(kind),
+                    SemanticType[], kind == "constructor" ? owner : SemanticTypes.intType(),
+                    kind == "function" ? null : owner, dispatchIdentity: "base:slot")
+            } catch (Exception error) { rejected++ }
+        }
+        try {
+            let invalidAsync = CallableSignature(fixture.symbolIdentity("Example", "constructor"), "Example", CallableKind("constructor"),
+                SemanticType[], owner, owner, asyncFunction: true)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(8)
+    }
+
     test `checks instantiated receiver arguments`() {
         let fixture = TypeSystem_TestFixture()
         let owner = fixture.userType("Buffer", 31)

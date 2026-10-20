@@ -1,0 +1,411 @@
+package flat/compiler
+
+import flat/eventstream
+import flat/future
+
+/** Controlled API lifecycle tests, not production-package/self-host acceptance.
+ * Every wait is driven by an observed transition, never a sleep. The small arrays
+ * are finite test fixtures; no production scheduling/materialization is added.
+ */
+testable class {
+    class SourceGate {
+        visible String identity
+        visible Future.CompletableFuture<Bool> entered = Future.create<Bool>()
+        visible Future.CompletableFuture<Bool> release = Future.create<Bool>()
+        visible Future.CompletableFuture<Bool> cleanupEntered = Future.create<Bool>()
+        visible Future.CompletableFuture<Bool> cleanupRelease = Future.create<Bool>()
+        visible Future.CompletableFuture<Bool> settled = Future.create<Bool>()
+        visible var Int entryCount
+        visible var Int settlementCount
+
+        public construct(String identity, Bool holdCleanup = false) {
+            this.identity = identity
+            if (!holdCleanup) cleanupRelease.complete(true)
+        }
+    }
+
+    class GatedProvider extends CompilerSourceProvider {
+        visible SourceGate[] gates = SourceGate[]
+        visible String[] settlementOrder = String[]
+        visible var Int active
+        visible var Int peak
+
+        public construct(Int count, Bool holdCleanup = false) {
+            for (index in 0..count) gates.add(SourceGate("Value#index.flat", holdCleanup))
+        }
+
+        override public identities() -> String[] => gates.map({ _.identity })
+
+        override public async load(String identity) -> CompilerSource {
+            let gate = gates.firstWhere({ _.identity == identity })
+            if (!gate) throw Exception("Unknown controlled source '#identity'")
+            gate.entryCount++
+            active++
+            peak = Math.max(peak, active)
+            gate.entered.complete(true)
+            try {
+                gate.release.get()
+                return CompilerSource(identity, "class #{identity.substring(0, identity.count - 5)} {}")
+            } finally {
+                gate.cleanupEntered.complete(true)
+                gate.cleanupRelease.get()
+                gate.settlementCount++
+                active--
+                settlementOrder.add(identity)
+                gate.settled.complete(true)
+            }
+        }
+    }
+
+    class GatedCompiler extends FlatEs6SourceCompiler {
+        visible SourceGate[] gates = SourceGate[]
+        visible String[] failures = String[]
+        visible String[] settlementOrder = String[]
+        visible var Int active
+        visible var Int peak
+
+        public construct(Int count, Bool immediate = false, Bool holdCleanup = false) {
+            for (index in 0..count) {
+                let gate = SourceGate("Value#index.flat", holdCleanup)
+                if (immediate) gate.release.complete(true)
+                gates.add(gate)
+            }
+        }
+
+        public sources() -> CompilerSource[] => gates.map({ CompilerSource(_.identity, "controlled") })
+
+        override public async compile(CompilerSource source) -> String {
+            let gate = gates.firstWhere({ _.identity == source.identity })
+            if (!gate) throw Exception("Unknown controlled source '#{source.identity}'")
+            gate.entryCount++
+            active++
+            peak = Math.max(peak, active)
+            gate.entered.complete(true)
+            try {
+                gate.release.get()
+                if (failures.contains(source.identity)) throw Exception("controlled failure")
+                return "// #{source.identity}\n"
+            } finally {
+                gate.cleanupEntered.complete(true)
+                gate.cleanupRelease.get()
+                gate.settlementCount++
+                active--
+                settlementOrder.add(source.identity)
+                gate.settled.complete(true)
+            }
+        }
+    }
+
+    async test `real package artifact agrees at concurrency one and three with observed reversed settlement`() {
+        let serial = packageSchedule(1, false)
+        let forward = packageSchedule(3, false)
+        let reversed = packageSchedule(3, true)
+        expect(forward).toBe(serial)
+        expect(reversed).toBe(serial)
+    }
+
+    async packageSchedule(Int parallelism, Bool reverse) -> String {
+        let provider = GatedProvider(4)
+        let sink = MemoryCompilerArtifactSink()
+        let session = CompilerSession()
+        CompilerEngine(maxActiveSources: parallelism).startPackage(provider, sink, "ordered.js", session)
+        for (index in 0..parallelism) provider.gates[index].entered.get()
+        expect(provider.active).toBe(parallelism)
+        expect(provider.gates[parallelism].entryCount).toBe(0)
+
+        // Await settlement after each release: reverse is an observed schedule,
+        // not merely the order complete() happened to be called on the gates.
+        if (reverse) {
+            var index = parallelism
+            while (index > 0) {
+                index--
+                provider.gates[index].release.complete(true)
+                provider.gates[index].settled.get()
+            }
+            expect(provider.settlementOrder.first).toBe("Value2.flat")
+            expect(provider.settlementOrder[1]).toBe("Value1.flat")
+            expect(provider.settlementOrder[2]).toBe("Value0.flat")
+        } else {
+            for (index in 0..parallelism) {
+                provider.gates[index].release.complete(true)
+                provider.gates[index].settled.get()
+            }
+        }
+        for (index in parallelism..4) {
+            provider.gates[index].entered.get()
+            provider.gates[index].release.complete(true)
+            provider.gates[index].settled.get()
+        }
+        let summary = session.completion.get()
+        expect(summary.diagnosticCount).toBe(0)
+        expect(summary.artifactCount).toBe(1)
+        expect(summary.sourceCount).toBe(4)
+        expect(summary.cleanupSettled).toBe(true)
+        expect(summary.peakActiveSourceReads).toBe(parallelism)
+        expect(summary.peakRetainedSourceReads <= parallelism).toBe(true)
+        expect(provider.peak).toBe(parallelism)
+        expect(provider.active).toBe(0)
+        expect(provider.gates.all({ _.entryCount == 1 && _.settlementCount == 1 })).toBe(true)
+        expect(sink.artifacts().count).toBe(1)
+        expect(sink.artifacts().first.identity).toBe("ordered.js")
+        expect(session.artifacts.receive().value.code).toBe(sink.artifacts().first.code)
+        expect(session.artifacts.receive().completed).toBe(true)
+        expect(session.artifactBackpressure.get()).toBe(false)
+        emitLifecycle(reverse ? "package-reverse" : "package-forward", parallelism,
+            provider.gates, provider.settlementOrder, provider.peak, provider.active,
+            parallelism, session, summary)
+        return sink.artifacts().first.code
+    }
+
+    async test `three source workers publish unrelated success before stable failure retirement`() {
+        expect(failureSchedule(3)).toBe(failureSchedule(1))
+    }
+
+    async failureSchedule(Int parallelism) -> String[] {
+        let compiler = GatedCompiler(3)
+        compiler.failures.add("Value0.flat")
+        compiler.failures.add("Value1.flat")
+        let executor = ParallelExecutor(maxParallel: parallelism, maxQueued: 0)
+        let sink = MemoryCompilerArtifactSink()
+        let session = CompilerSession()
+        let diagnostics = session.diagnostics.subscribe(2)
+        var Int unrelatedArtifactsBeforeFirstSettlement = -1
+        CompilerEngine(executor: executor, sourceCompiler: compiler,
+            maxActiveSources: parallelism, maxQueuedSources: 1).start(
+            MemoryCompilerSourceProvider(compiler.sources()), sink, session)
+        if (parallelism == 3) {
+            for (gate in compiler.gates) gate.entered.get()
+            expect(executor.activeCount).toBe(3)
+            expect(session.retainedSourceCount <= 4).toBe(true)
+            compiler.gates[2].release.complete(true)
+            compiler.gates[2].settled.get()
+            expect(session.artifacts.receive().value.identity).toBe("Value2.flat.js")
+            expect(compiler.gates[0].settled.completed).toBe(false)
+            unrelatedArtifactsBeforeFirstSettlement = sink.artifacts().count
+            expect(session.completion.completed).toBe(false)
+            compiler.gates[1].release.complete(true)
+            compiler.gates[1].settled.get()
+            expect(diagnostics.bufferedCount).toBe(0)
+            compiler.gates[0].release.complete(true)
+            compiler.gates[0].settled.get()
+        } else {
+            for (gate in compiler.gates) {
+                gate.entered.get()
+                gate.release.complete(true)
+                gate.settled.get()
+            }
+            expect(session.artifacts.receive().value.identity).toBe("Value2.flat.js")
+        }
+        let first = diagnostics.receive().value
+        let second = diagnostics.receive().value
+        expect(first).toBe("Failed to compile 'Value0.flat': controlled failure")
+        expect(second).toBe("Failed to compile 'Value1.flat': controlled failure")
+        let summary = session.completion.get()
+        expect(summary.diagnosticCount).toBe(2)
+        expect(summary.artifactCount).toBe(1)
+        expect(summary.cleanupSettled).toBe(true)
+        expect(compiler.peak).toBe(parallelism)
+        expect(compiler.active).toBe(0)
+        expect(compiler.gates.all({ _.settlementCount == 1 })).toBe(true)
+        expect(session.inFlightSourceCount).toBe(0)
+        expect(session.retainedSourceCount).toBe(0)
+        expect(session.retainedSourceCodeCharacters).toBe(0)
+        expect(executor.activeCount).toBe(0)
+        expect(executor.queuedCount).toBe(0)
+        expect(sink.artifacts().first.code).toBe("// Value2.flat\n")
+        emitLifecycle("source-failure-isolation", parallelism, compiler.gates,
+            compiler.settlementOrder, compiler.peak, compiler.active, parallelism + 1,
+            session, summary, executor.activeCount, executor.queuedCount,
+            unrelatedArtifactsBeforeFirstSettlement: unrelatedArtifactsBeforeFirstSettlement)
+        return [first, second, sink.artifacts().first.code]
+    }
+
+    async test `package cancellation at one and three waits for every admitted cleanup callback`() {
+        cancellationSchedule(1)
+        cancellationSchedule(3)
+    }
+
+    async cancellationSchedule(Int parallelism) {
+        let provider = GatedProvider(4, holdCleanup: true)
+        let sink = MemoryCompilerArtifactSink()
+        let session = CompilerSession()
+        CompilerEngine(maxActiveSources: parallelism).startPackage(provider, sink, "cancelled.js", session)
+        for (index in 0..parallelism) provider.gates[index].entered.get()
+        session.cancel()
+        expect(session.completion.completed).toBe(false)
+        var Int cleanupWaitSamples
+        var index = parallelism
+        while (index > 0) {
+            index--
+            provider.gates[index].release.complete(true)
+            provider.gates[index].cleanupEntered.get()
+            expect(provider.gates[index].settled.completed).toBe(false)
+            if (!session.completion.completed) cleanupWaitSamples++
+            expect(session.completion.completed).toBe(false)
+        }
+        for (index in 0..parallelism) {
+            expect(session.completion.completed).toBe(false)
+            provider.gates[index].cleanupRelease.complete(true)
+            provider.gates[index].settled.get()
+        }
+        let summary = session.completion.get()
+        expect(summary.cancelled).toBe(true)
+        expect(summary.cleanupSettled).toBe(true)
+        expect(summary.artifactCount).toBe(0)
+        expect(provider.active).toBe(0)
+        expect(provider.gates[parallelism].entryCount).toBe(0)
+        for (index in 0..parallelism) expect(provider.gates[index].settlementCount).toBe(1)
+        expect(sink.artifacts().count).toBe(0)
+        expect(session.artifacts.receive().completed).toBe(true)
+        expect(session.artifactBackpressure.get()).toBe(false)
+        emitLifecycle("package-cancellation", parallelism, provider.gates,
+            provider.settlementOrder, provider.peak, provider.active, parallelism,
+            session, summary, cleanupWaitSamples: cleanupWaitSamples)
+    }
+
+    async test `running executor source cancellation waits for callback finally at one and three`() {
+        runningCancellationSchedule(1)
+        runningCancellationSchedule(3)
+    }
+
+    async runningCancellationSchedule(Int parallelism) {
+        let compiler = GatedCompiler(4, holdCleanup: true)
+        let executor = ParallelExecutor(maxParallel: parallelism, maxQueued: 0)
+        let sink = MemoryCompilerArtifactSink()
+        let session = CompilerSession()
+        CompilerEngine(executor: executor, sourceCompiler: compiler,
+            maxActiveSources: parallelism, maxQueuedSources: 1).start(
+            MemoryCompilerSourceProvider(compiler.sources()), sink, session)
+        for (index in 0..parallelism) compiler.gates[index].entered.get()
+        expect(executor.activeCount).toBe(parallelism)
+        session.cancel()
+        expect(session.completion.completed).toBe(false)
+        var Int cleanupWaitSamples
+        for (index in 0..parallelism) {
+            compiler.gates[index].release.complete(true)
+            compiler.gates[index].cleanupEntered.get()
+            if (!session.completion.completed) cleanupWaitSamples++
+            expect(session.completion.completed).toBe(false)
+        }
+        var index = parallelism
+        while (index > 0) {
+            index--
+            expect(session.completion.completed).toBe(false)
+            compiler.gates[index].cleanupRelease.complete(true)
+            compiler.gates[index].settled.get()
+        }
+        let summary = session.completion.get()
+        expect(summary.cancelled).toBe(true)
+        expect(summary.cleanupSettled).toBe(true)
+        expect(compiler.gates[parallelism].entryCount).toBe(0)
+        for (index in 0..parallelism) expect(compiler.gates[index].settlementCount).toBe(1)
+        expect(compiler.active).toBe(0)
+        expect(executor.activeCount).toBe(0)
+        expect(executor.queuedCount).toBe(0)
+        expect(session.inFlightSourceCount).toBe(0)
+        expect(session.retainedSourceCount).toBe(0)
+        expect(session.retainedSourceCodeCharacters).toBe(0)
+        expect(sink.artifacts().count).toBe(0)
+        expect(session.artifacts.receive().completed).toBe(true)
+        emitLifecycle("running-source-cancellation", parallelism, compiler.gates,
+            compiler.settlementOrder, compiler.peak, compiler.active, parallelism + 1,
+            session, summary, executor.activeCount, executor.queuedCount,
+            cleanupWaitSamples: cleanupWaitSamples)
+    }
+
+    async test `artifact saturation bounds retained work and cancellation releases pending delivery`() {
+        let compiler = GatedCompiler(9, immediate: true)
+        let sink = MemoryCompilerArtifactSink()
+        let session = CompilerSession()
+        CompilerEngine(sourceCompiler: compiler, maxActiveSources: 3, maxQueuedSources: 1).start(
+            MemoryCompilerSourceProvider(compiler.sources()), sink, session)
+        expect(session.artifactBackpressure.get()).toBe(true)
+        expect(session.artifacts.bufferedCount).toBe(4)
+        expect(session.artifacts.pendingSendCount).toBe(1)
+        let pendingArtifactSendsAtPressure = session.artifacts.pendingSendCount
+        let bufferedArtifactsAtPressure = session.artifacts.bufferedCount
+        expect(session.retainedSourceCount <= 4).toBe(true)
+        expect(session.peakActiveSourceCount <= 3).toBe(true)
+        expect(session.completion.completed).toBe(false)
+        // The final input cannot enter while publication owns this full window.
+        expect(compiler.gates.last.entryCount).toBe(0)
+        session.cancel()
+        let summary = session.completion.get()
+        expect(summary.cancelled).toBe(true)
+        expect(summary.cleanupSettled).toBe(true)
+        expect(compiler.active).toBe(0)
+        expect(session.artifacts.pendingSendCount).toBe(0)
+        expect(session.inFlightSourceCount).toBe(0)
+        expect(session.retainedSourceCount).toBe(0)
+        expect(session.retainedSourceCodeCharacters).toBe(0)
+        expect(compiler.gates.all({ _.entryCount == _.settlementCount })).toBe(true)
+        let committed = sink.artifacts().count
+        // Graceful cancellation keeps already accepted delivery, not pending sends.
+        for (index in 0..4) expect(session.artifacts.receive().received).toBe(true)
+        expect(session.artifacts.receive().completed).toBe(true)
+        expect(sink.artifacts().count).toBe(committed)
+        emitLifecycle("artifact-backpressure-cancellation", 3, compiler.gates,
+            compiler.settlementOrder, compiler.peak, compiler.active, 4, session, summary,
+            pendingArtifactSendsAtPressure: pendingArtifactSendsAtPressure,
+            bufferedArtifactsAtPressure: bufferedArtifactsAtPressure)
+    }
+
+    async test `cancelling executor queued sources never enters their callbacks`() {
+        let compiler = GatedCompiler(4)
+        let executor = ControlledExecutor(3)
+        let sink = MemoryCompilerArtifactSink()
+        let session = CompilerSession()
+        CompilerEngine(executor: executor, sourceCompiler: compiler,
+            maxActiveSources: 3, maxQueuedSources: 1).start(
+            MemoryCompilerSourceProvider(compiler.sources()), sink, session)
+        expect(executor.queuedCount).toBe(3)
+        expect(session.retainedSourceCount).toBe(4)
+        expect(compiler.gates.all({ _.entryCount == 0 })).toBe(true)
+        session.cancel()
+        let summary = session.completion.get()
+        expect(summary.cancelled).toBe(true)
+        expect(summary.cleanupSettled).toBe(true)
+        expect(executor.queuedCount).toBe(0)
+        expect(compiler.gates.all({ _.entryCount == 0 && _.settlementCount == 0 })).toBe(true)
+        expect(sink.artifacts().count).toBe(0)
+        expect(session.inFlightSourceCount).toBe(0)
+        expect(session.retainedSourceCount).toBe(0)
+        emitLifecycle("queued-source-cancellation", 3, compiler.gates,
+            compiler.settlementOrder, compiler.peak, compiler.active, 4, session, summary,
+            executorQueuedAfter: executor.queuedCount)
+    }
+
+    // Only closed test-owned ASCII scenario/source labels are serialized below.
+    // Never interpolate diagnostics, paths or arbitrary production text here.
+    // H also receives the authoritative session object as its existing schema line.
+    async emitLifecycle(String scenario, Int concurrency, SourceGate[] gates,
+        String[] settlementOrder, Int peak, Int activeAfter, Int retainedCapacity,
+        CompilerSession session, CompilationSummary summary,
+        Int executorActiveAfter = -1, Int executorQueuedAfter = -1,
+        Int cleanupWaitSamples = 0, Int unrelatedArtifactsBeforeFirstSettlement = -1,
+        Int pendingArtifactSendsAtPressure = -1, Int bufferedArtifactsAtPressure = -1
+    ) {
+        var Int entered
+        var Int settled
+        var String order = "["
+        for (gate in gates) {
+            entered += gate.entryCount
+            settled += gate.settlementCount
+        }
+        for (identity in settlementOrder) {
+            if (order != "[") order += ","
+            order += "\"#identity\""
+        }
+        order += "]"
+        let retainedPeak = Math.max(summary.peakRetainedSources, summary.peakRetainedSourceReads)
+        let executorActive = executorActiveAfter < 0 ? "null" : "#executorActiveAfter"
+        let executorQueued = executorQueuedAfter < 0 ? "null" : "#executorQueuedAfter"
+        let unrelated = unrelatedArtifactsBeforeFirstSettlement < 0 ? "null" : "#unrelatedArtifactsBeforeFirstSettlement"
+        let pendingAtPressure = pendingArtifactSendsAtPressure < 0 ? "null" : "#pendingArtifactSendsAtPressure"
+        let bufferedAtPressure = bufferedArtifactsAtPressure < 0 ? "null" : "#bufferedArtifactsAtPressure"
+        // Completion is awaited by each caller, and all assertions precede output.
+        // No pass/status or broad acceptance flags are synthesized from labels.
+        Console.log(CompilerEvidence.render(summary))
+        Console.log("{\"schema\":\"flat.compiler.lifecycle.v1\",\"scenario\":\"#scenario\",\"concurrency\":#concurrency,\"settlementOrder\":#order,\"activeCapacity\":#concurrency,\"retainedCapacity\":#retainedCapacity,\"peakActive\":#peak,\"peakRetained\":#retainedPeak,\"enteredCount\":#entered,\"settledCount\":#settled,\"activeAfter\":#activeAfter,\"executorActiveAfter\":#executorActive,\"executorQueuedAfter\":#executorQueued,\"inFlightAfter\":#{session.inFlightSourceCount},\"retainedSourcesAfter\":#{session.retainedSourceCount},\"retainedCodeCharactersAfter\":#{session.retainedSourceCodeCharacters},\"pendingArtifactSendsAfter\":#{session.artifacts.pendingSendCount},\"artifactBackpressure\":#{session.artifactBackpressure.get()},\"cancelled\":#{summary.cancelled},\"cleanupSettled\":#{summary.cleanupSettled},\"unrelatedArtifactsBeforeFirstSettlement\":#unrelated,\"pendingArtifactSendsAtPressure\":#pendingAtPressure,\"bufferedArtifactsAtPressure\":#bufferedAtPressure,\"cleanupWaitSamples\":#cleanupWaitSamples,\"unobserved\":[\"children_reaped\",\"temporary_outputs_removed\"]}")
+    }
+}

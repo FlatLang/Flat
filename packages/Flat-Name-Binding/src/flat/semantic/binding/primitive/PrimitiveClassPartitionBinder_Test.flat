@@ -10,6 +10,255 @@ import flat/io/File
 import flat/io/FileReader
 
 testable class {
+    async test `member lexical scopes keep configured defaults separate while canonical members remain shared`() {
+        let baseSnapshot = SourceSnapshotIdentity(SourceIdentity("app/Owner.flat"), "one")
+        let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("app/Owner.js.flat"), "one")
+        let leftSnapshot = SourceSnapshotIdentity(SourceIdentity("left/Choice.flat"), "one")
+        let rightSnapshot = SourceSnapshotIdentity(SourceIdentity("right/Choice.flat"), "one")
+        let snapshots = [baseSnapshot, overlaySnapshot, leftSnapshot, rightSnapshot]
+        let sources = ["class Owner { base() -> Int { return 1; } }",
+            "class Owner { overlay() -> Int { return base(); } }",
+            "class Choice {}", "class Choice {}"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int index
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshots[index++]))
+        }
+        let merged = syntaxes.first.mergedWith(syntaxes[1])
+        let contexts = [PrimitiveSourceBindingContext("app", baseSnapshot, [merged],
+                defaultImports: [PrimitiveDefaultImport("left/Choice")]),
+            PrimitiveSourceBindingContext("app", overlaySnapshot, PrimitiveClassSyntax[],
+                defaultImports: [PrimitiveDefaultImport("right/Choice")]),
+            PrimitiveSourceBindingContext("left", leftSnapshot, [syntaxes[2]]),
+            PrimitiveSourceBindingContext("right", rightSnapshot, [syntaxes[3]])]
+        for (mode in 0..2) {
+            let PrimitiveSourceBindingContext[] inputs = mode == 0 ? contexts : contexts.reverse()
+            let scope = PrimitiveResolvedDeclarationContext(contexts.first, inputs)
+            let overlayScope = scope.scopeForSnapshot(overlaySnapshot)
+            expect(overlayScope.resolve("Choice", syntaxes[1].range).syntaxIdentity.snapshot).toBe(rightSnapshot)
+            expect(overlayScope.scopeForSnapshot(baseSnapshot).resolve("Choice", syntaxes.first.range).syntaxIdentity.snapshot).toBe(leftSnapshot)
+            // Type membership stays canonical despite lexical scope replacement.
+            let owner = overlayScope.classFor(scope.classIdentity(merged))
+            expect(owner.methodValues().map({ _.name })).toBe(["base", "overlay"])
+            let bound = PrimitiveClassPartitionBinder().bindContexts(inputs).typeUnits().firstOrNull({ _.identity.name == "Owner" })
+            expect(bound.functionUnits().any({ _.name == "overlay" })).toBe(true)
+        }
+    }
+
+    async test `overlay member signatures fields and bodies use only originating source imports`() {
+        let baseSnapshot = SourceSnapshotIdentity(SourceIdentity("app/Reader.flat"), "one")
+        let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("app/Reader.js.flat"), "one")
+        let leftSnapshot = SourceSnapshotIdentity(SourceIdentity("left/Item.flat"), "one")
+        let rightSnapshot = SourceSnapshotIdentity(SourceIdentity("right/Item.flat"), "one")
+        let snapshots = [baseSnapshot, overlaySnapshot, leftSnapshot, rightSnapshot]
+        let sources = ["class Reader { base(Item value) -> Item { return value; } }",
+            "class Reader { visible Item selected; construct(Item value) { selected = value; } " +
+                "overlay(Item value) -> Item { return value; } }",
+            "class Item { construct() {} }", "class Item { construct() {} }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int index
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshots[index++]))
+        }
+        let contexts = [PrimitiveSourceBindingContext("app", baseSnapshot, [syntaxes[0].mergedWith(syntaxes[1])],
+                importValues: [PrimitiveBindingImport("left/Item", syntaxes[0].range)]),
+            PrimitiveSourceBindingContext("app", overlaySnapshot, PrimitiveClassSyntax[],
+                importValues: [PrimitiveBindingImport("right/Item", syntaxes[1].range)]),
+            PrimitiveSourceBindingContext("left", leftSnapshot, [syntaxes[2]]),
+            PrimitiveSourceBindingContext("right", rightSnapshot, [syntaxes[3]])]
+        for (mode in 0..2) {
+            let PrimitiveSourceBindingContext[] inputs = mode == 0 ? contexts : contexts.reverse()
+            let result = PrimitiveClassPartitionBinder().bindContexts(inputs).typeUnits().firstOrNull({ _.identity.name == "Reader" })
+            let left = UserClassSemanticType(DeclarationIdentity(SyntaxIslandIdentity(leftSnapshot, "class", 0), "class", "Item"))
+            let right = UserClassSemanticType(DeclarationIdentity(SyntaxIslandIdentity(rightSnapshot, "class", 0), "class", "Item"))
+            let base = result.functionUnits().firstOrNull({ _.name == "base" })
+            let overlay = result.functionUnits().firstOrNull({ _.name == "overlay" })
+            expect(base.returnType.value()).toBe(left.value())
+            expect(base.parameterValues().first.semanticType.value()).toBe(left.value())
+            expect(overlay.returnType.value()).toBe(right.value())
+            expect(overlay.parameterValues().first.semanticType.value()).toBe(right.value())
+            expect(result.fieldUnits().firstOrNull({ _.name == "selected" }).semanticType.value()).toBe(right.value())
+            let constructor = result.functionUnits().firstOrNull((candidate) =>
+                candidate.constructorFunction && candidate.range.snapshot == overlaySnapshot &&
+                candidate.parameterValues().count == 1 && candidate.parameterValues().first.name == "value")
+            expect(constructor != null).toBe(true)
+            expect(constructor.parameterValues().first.semanticType.value()).toBe(right.value())
+        }
+    }
+
+    async test `bodyless generic callable methods publish native storage defaults and parameter identities`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:bodyless-interface-publication"), "one")
+        let traitStream = Lexer().lex("trait Bridge<E> { native_array read(native_array E[] input, Int count = 1) -> E[] " +
+            "identity<T>(T value) -> T native text() -> String }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let classStream = Lexer().lex("class Reader { native_array read(Bridge<Int> bridge, native_array Int[] input) -> Int[] { " +
+            "return bridge.read(input, 1); } omitted(Bridge<Int> bridge, native_array Int[] input) -> Void { bridge.read(input); } identity(Bridge<Int> bridge) -> Int { return bridge.identity(42); } " +
+            "native text(Bridge<Int> bridge) -> String { return bridge.text(); } }")
+        classStream.emit("start")
+        let syntax = PrimitiveClassParser().parse(classStream.consumeAll<Token>("data"), snapshot, 100)
+        let context = PrimitiveSourceBindingContext("flat", snapshot, [syntax], [contract])
+        let unit = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().first
+        let read = unit.functionUnits().firstOrNull({ _.name == "read" })
+        expect(read.returnType.kind()).toBe("array")
+        let readStatements = read.statements()
+        let readStatementObject = (Object)readStatements.first
+        let readStatement = (BoundReturnStatement)readStatementObject
+        let readCallObject = (Object)readStatement.value
+        let readCall = (BoundCallExpression)readCallObject
+        expect(readCall.target.optionalParameterCount).toBe(1)
+        expect(readCall.target.parameterNames()).toBe(["input", "count"])
+        expect(readCall.target.parameterTypes().first.kind()).toBe("array")
+        expect(readCall.target.returnType.kind()).toBe("array")
+        expect(unit.functionUnits().firstOrNull({ _.name == "identity" }).returnType.value()).toBe(SemanticTypes.intType().value())
+        expect(unit.functionUnits().firstOrNull({ _.name == "text" }).returnType.kind()).toBe("string")
+        expect(contract.methodValues().first.implementation()).toBe(null)
+    }
+
+    async test `zero argument native executable defaults and properties publish their storage representation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:zero-native-interface-publication"), "one")
+        let traitStream = Lexer().lex("trait Text { native text() -> String => \"ok\" visible native String raw }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let classStream = Lexer().lex("class Reader { native read(Text value) -> String { return value.text(); } " +
+            "native raw(Text value) -> String { return value.raw; } }")
+        classStream.emit("start")
+        let syntax = PrimitiveClassParser().parse(classStream.consumeAll<Token>("data"), snapshot, 100)
+        let result = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, [syntax], [contract])]).typeUnits().first
+        for (method in result.functionUnits().filter({ !_.constructorFunction })) {
+            expect(method.returnType.kind()).toBe("string")
+        }
+    }
+
+    async test `inherited contract storage publication retains native array representation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:trait-native-storage"), "one")
+        let traitStream = Lexer().lex("trait Storage<E> { visible native_array var E[] data }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let classStream = Lexer().lex("class Buffer implements Storage<Int> { native_array read() -> Int[] { return data; } }")
+        classStream.emit("start")
+        let syntax = PrimitiveClassParser().parse(classStream.consumeAll<Token>("data"), snapshot, 100)
+        let result = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, [syntax], [contract])]).typeUnits().first
+        let field = result.fieldUnits().firstOrNull({ _.name == "data" })
+        expect(field.nativeArrayStorage).toBe(true)
+        expect(field.semanticType.kind()).toBe("array")
+        expect(result.functionUnits().firstOrNull({ _.name == "read" }).returnType.value()).toBe(field.semanticType.value())
+    }
+
+    async test `inherited contract storage substitutes only complete generic type identifiers`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:trait-storage-identifiers"), "one")
+        let traitStream = Lexer().lex("trait Storage<E> { visible var Entry entry visible var E item }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let sources = ["class Entry { construct() {} }", "class Buffer implements Storage<Int> {}"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset = 100
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let result = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, syntaxes, [contract])]).typeUnits().last
+        let entry = result.fieldUnits().firstOrNull({ _.name == "entry" })
+        expect(entry.semanticType.kind()).toBe("user-class")
+        let entryTypeObject = (Object)entry.semanticType
+        let entryType = (UserClassSemanticType)entryTypeObject
+        expect(entryType.declarationIdentity.name).toBe("Entry")
+        expect(result.fieldUnits().firstOrNull({ _.name == "item" }).semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `same named contracts retain selected source declaration identities`() {
+        let contexts = PrimitiveSourceBindingContext[]
+        let expected = DeclarationIdentity[]
+        let namespaces = ["left", "right"]
+        for (namespace in namespaces) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:#namespace-interface-identity"), "one")
+            let traitStream = Lexer().lex("trait Contract { read(Int value) -> Int }")
+            traitStream.emit("start")
+            let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+            let classStream = Lexer().lex("class Reader { read(Contract value) -> Int { return value.read(42); } }")
+            classStream.emit("start")
+            let syntax = PrimitiveClassParser().parse(classStream.consumeAll<Token>("data"), snapshot, 100)
+            contexts.add(PrimitiveSourceBindingContext(namespace, snapshot, [syntax], [contract]))
+            let member = contract.methodValues().first
+            expected.add(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "instance-method", member.range.startTokenIndex),
+                "instance-method", "read"))
+        }
+        for (mode in 0..2) {
+            let PrimitiveSourceBindingContext[] inputs = mode == 0 ? contexts : contexts.reverse()
+            let units = PrimitiveClassPartitionBinder().bindContexts(inputs).typeUnits()
+            for (unit in units) {
+                let function = unit.functionUnits().firstOrNull({ _.name == "read" })
+                let functionStatements = function.statements()
+                let statementObject = (Object)functionStatements.first
+                let returned = (BoundReturnStatement)statementObject
+                let expressionObject = (Object)returned.value
+                let call = (BoundCallExpression)expressionObject
+                let selected = expected.firstOrNull({ _.syntaxIdentity.snapshot == function.range.snapshot })
+                expect(call.target.identity.declaration.value).toBe(selected.value)
+                expect(call.target.ownerType.declarationIdentity.syntaxIdentity.snapshot).toBe(function.range.snapshot)
+            }
+        }
+        expect(expected.first.value != expected.last.value).toBe(true)
+    }
+
+    async test `asynchronous named method evidence survives binding and default copying`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:async-external-bound-publication"), "one")
+        let traitStream = Lexer().lex("trait Runtime { async external_name native text() -> String { return \"ok\"; } }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let classStream = Lexer().lex("class Reader implements Runtime { async native forward() -> String { return text(); } }")
+        classStream.emit("start")
+        let syntax = PrimitiveClassParser().parse(classStream.consumeAll<Token>("data"), snapshot, 100)
+        let result = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, [syntax], [contract])]).typeUnits().first
+        let method = result.functionUnits().firstOrNull({ _.name == "text" })
+        expect(method.asyncFunction).toBe(true)
+        expect(method.externalName).toBe("text")
+        expect(method.returnType.kind()).toBe("string")
+        expect(method.range).toBe(contract.methodValues().first.range)
+        expect(method.identity.syntaxIdentity.snapshot).toBe(snapshot)
+        let forward = result.functionUnits().firstOrNull({ _.name == "forward" })
+        let forwardStatements = forward.statements()
+        let statementObject = (Object)forwardStatements.first
+        let returned = (BoundReturnStatement)statementObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+        expect(call.target.asyncFunction).toBe(true)
+        expect(call.target.externalName).toBe("text")
+    }
+
+    async test `field literal wrapping forwards canonical declaration context`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:field-native-text-wrapping"), "one")
+        let sources = ["class String { visible native String data; construct(native String text) { data = text; } }",
+            "class Holder { visible String label = \"ok\"; }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, syntaxes)]).typeUnits()
+        let field = units.firstOrNull({ _.identity.name == "Holder" }).fieldUnits().first
+        expect(field.semanticType.kind()).toBe("user-class")
+        let initializerObject = (Object)field.initializer
+        let initializer = (BoundCallExpression)initializerObject
+        expect(initializer.target.callableKind.value).toBe("constructor")
+        expect(initializer.target.ownerType.declarationIdentity.name).toBe("String")
+        expect(initializer.target.parameterTypes().first.kind()).toBe("string")
+    }
+
     async test `native returns preserve published body and parameter representations and canonical String construction`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-return-binding"), "one")
         let sources = [
@@ -629,13 +878,12 @@ testable class {
     }
 
     async test `conditional reference return permission does not widen scalar local or call conversions`() {
-        let methods = [
-            "choose(Bool flag) -> Int { return flag ? null : 1; }",
-            "choose(Bool flag, Other other, Value value) -> Value { return flag ? other : value; }",
-            "choose(Bool flag, Value value) -> Value { let Value local = flag ? null : value; return local; }",
-            "take(Value value) -> Value { return value; } choose(Bool flag, Value value) -> Value { return take(flag ? null : value); }",
-            "choose(Value value = null) -> Value { return value; }"
-        ]
+        let methods = String[]
+        methods.add("choose(Bool flag) -> Int { return flag ? null : 1; }")
+        methods.add("choose(Bool flag, Other other, Value value) -> Value { return flag ? other : value; }")
+        methods.add("choose(Bool flag, Value value) -> Value { let Value local = flag ? null : value; return local; }")
+        methods.add("take(Value value) -> Value { return value; } choose(Bool flag, Value value) -> Value { return take(flag ? null : value); }")
+        methods.add("choose(Value value = null) -> Value { return value; }")
         for (index in 0..methods.count) {
             let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-return-invalid:#{index}"), "one")
             let stream = Lexer().lex("class Value {} class Other {} class Owner { " + methods[index] + " }")
@@ -3131,7 +3379,7 @@ testable class {
         expect(units.last.functionUnits().firstOrNull({ _.name == "equals" }).returnType.value()).toBe(SemanticTypes.boolType().value())
     }
 
-    async test `importless target member retains canonical operator imports`() {
+    async test `target member imports remain source local after canonical merge`() {
         let baseSnapshot = SourceSnapshotIdentity(SourceIdentity("flat/datastruct/list/Array.flat"), "compiler-input")
         let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("flat/datastruct/list/Array.js.flat"), "compiler-input")
         let traitSnapshot = SourceSnapshotIdentity(SourceIdentity("flat/operators/PlusOperator.flat"), "compiler-input")
@@ -3149,6 +3397,18 @@ testable class {
                 importValues: [PrimitiveBindingImport("flat/operators", base.range)]),
             PrimitiveSourceBindingContext("flat/datastruct/list", overlaySnapshot, empty),
             PrimitiveSourceBindingContext("flat/operators", traitSnapshot, empty, [contract])]
+        // A canonical merge shares members, not the base source's lexical imports.
+        for (mode in 0..2) {
+            let PrimitiveSourceBindingContext[] inputs = mode == 0 ? contexts : contexts.reverse()
+            var PrimitiveContextBindingException missing
+            try { PrimitiveClassPartitionBinder().bindContexts(inputs) }
+            catch (PrimitiveContextBindingException error) { missing = error }
+            if (!missing) throw Exception("Importless overlay borrowed canonical imports")
+            expect(missing.diagnostic.code).toBe("binding.type-unresolved")
+            expect(missing.diagnostic.range.snapshot).toBe(overlaySnapshot)
+        }
+        contexts[1] = PrimitiveSourceBindingContext("flat/datastruct/list", overlaySnapshot, empty,
+            importValues: [PrimitiveBindingImport("flat/operators/PlusOperator", overlay.range)])
         let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
         expect(units.first.functionUnits().firstOrNull({ _.name == "identity" }).returnType.kind()).toBe("generic-instance")
         expect(units.first.functionUnits().firstOrNull({ _.name == "identity" }).range.snapshot).toBe(overlaySnapshot)
@@ -3164,6 +3424,19 @@ testable class {
             importValues: [PrimitiveBindingImport("other", overlay.range)]))
         collisions.add(contexts.last)
         collisions.add(PrimitiveSourceBindingContext("other", conflictingSnapshot, empty, [conflicting]))
+        // A different qualified import in the overlay is valid despite the base's
+        // identically named import. Ambiguity exists only within one lexical source.
+        for (mode in 0..2) {
+            let PrimitiveSourceBindingContext[] inputs = mode == 0 ? collisions : collisions.reverse()
+            let bound = PrimitiveClassPartitionBinder().bindContexts(inputs).typeUnits().first
+            let parameter = bound.functionUnits().firstOrNull({ _.name == "identity" }).parameterValues().first
+            let parameterObject = (Object)parameter.semanticType
+            let instance = (GenericInstanceSemanticType)parameterObject
+            expect(instance.declarationType.declarationIdentity.syntaxIdentity.snapshot).toBe(conflictingSnapshot)
+        }
+        collisions[1] = PrimitiveSourceBindingContext("flat/datastruct/list", overlaySnapshot, empty,
+            importValues: [PrimitiveBindingImport("other/PlusOperator", overlay.range),
+                PrimitiveBindingImport("flat/operators/PlusOperator", overlay.range)])
         var PrimitiveContextBindingException failure
         try { PrimitiveClassPartitionBinder().bindContexts(collisions) }
         catch (PrimitiveContextBindingException error) { failure = error }

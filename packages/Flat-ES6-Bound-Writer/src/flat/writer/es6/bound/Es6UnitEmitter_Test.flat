@@ -26,6 +26,9 @@ testable class {
             "async __chainAsync(args) {\n  return this;\n}\n"
         )
 
+        expect(emitter.emitFunction(functionIdentity, String[], "return await read();\n", asyncFunction: true)).toBe(
+            "async function " + Es6NameMangler.mangle(functionIdentity) + "() {\n  return await read();\n}\n"
+        )
         expect(functionCode).toBe(
             "function " + Es6NameMangler.mangle(functionIdentity) + "() {\n" +
             "  return 'Hello, Flat';\n}\n"

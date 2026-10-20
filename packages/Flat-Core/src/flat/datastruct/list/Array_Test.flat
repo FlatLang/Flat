@@ -1,6 +1,39 @@
 package flat/datastruct/list
 
 testable class {
+    test `reversed arrays append without overwriting existing values`() {
+        let original = ["first", "second", "third"]
+        let reversed = original.reverse()
+        reversed.add("last")
+        expect(reversed).toBe(["third", "second", "first", "last"])
+        expect(reversed.count).toBe(4)
+        expect(original).toBe(["first", "second", "third"])
+
+        let empty = String[].reverse()
+        empty.add("only")
+        expect(empty).toBe(["only"])
+    }
+
+    test `cleared storage is independent of subsequent appends`() {
+        let value = ["first", "second"]
+        let removed = value.clear()
+        value.add("new")
+        expect(removed).toBe(["first", "second"])
+        expect(value).toBe(["new"])
+        removed.add("third")
+        expect(removed).toBe(["first", "second", "third"])
+        expect(value).toBe(["new"])
+    }
+
+    test `removal and insertion preserve append position`() {
+        let value = ["first", "middle", "last"]
+        expect(value.removeAtIndex(1)).toBe("middle")
+        value.add("tail")
+        value.add(0, "head")
+        expect(value).toBe(["head", "first", "last", "tail"])
+        expect(value.count).toBe(4)
+    }
+
     test `indexed insertion shifts a full array without creating an element`() {
         let value = Array<String>():addAll(["first", "last"])
         value.add(1, "middle")

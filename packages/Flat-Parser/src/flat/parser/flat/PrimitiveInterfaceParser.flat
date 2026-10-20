@@ -79,37 +79,35 @@ class {
         let methods = PrimitiveInterfaceMethodSyntax[]
         while (index < tokens.count && tokens[index].value != "}") {
             let memberStart = index
-            while (index < tokens.count && modifier(tokens[index].value)) index++
+            var SourceRange nativeReturnRange
+            var SourceRange nativeArrayReturnRange
+            while (index < tokens.count && modifier(tokens[index].value)) {
+                if (tokens[index].value == "native") {
+                    if (nativeReturnRange) syntax("Duplicate native return modifier", index)
+                    nativeReturnRange = range(index, index + 1)
+                } else if (tokens[index].value == "native_array") {
+                    if (nativeArrayReturnRange) syntax("Duplicate native_array return modifier", index)
+                    nativeArrayReturnRange = range(index, index + 1)
+                }
+                index++
+            }
             let storageProperty = index < tokens.count && tokens[index].value == "var"
             if (storageProperty) index++
+            let memberTypeStart = index
             var Int propertyCursor = index
             var String propertyType
             if (propertyCursor < tokens.count &&
                 tokens[propertyCursor].type == Token.Type.IDENTIFIER) {
-                propertyType = tokens[propertyCursor++].value
-                if (propertyCursor < tokens.count && tokens[propertyCursor].value == "<") {
-                    propertyType += "<"
-                    propertyCursor++
-                    var Bool firstArgument = true
-                    while (propertyCursor < tokens.count &&
-                        tokens[propertyCursor].value != ">") {
-                        if (!firstArgument) propertyType += ","
-                        propertyType += tokens[propertyCursor++].value
-                        firstArgument = false
-                        if (propertyCursor < tokens.count &&
-                            tokens[propertyCursor].value == ",") propertyCursor++
-                        else break
-                    }
-                    requireAt(">", propertyCursor)
-                    propertyType += ">"
-                    propertyCursor++
-                }
+                propertyType = parseTypeName("Expected interface member type")
+                propertyCursor = index
+                index = memberTypeStart
             }
             if (propertyType && propertyCursor < tokens.count &&
                 tokens[propertyCursor].type == Token.Type.IDENTIFIER &&
                 (propertyCursor + 1 >= tokens.count ||
                     tokens[propertyCursor + 1].value == "=>" ||
                     tokens[propertyCursor + 1].value == "}" ||
+                    tokens[propertyCursor + 1].type == Token.Type.IDENTIFIER ||
                     modifier(tokens[propertyCursor + 1].value))) {
                 let methodName = tokens[propertyCursor++].value
                 index = propertyCursor
@@ -125,9 +123,12 @@ class {
                         expressionStart + tokenIndexOffset
                     )
                 }
+                validateNativeReturn(propertyType, nativeReturnRange, nativeArrayReturnRange)
                 methods.add(PrimitiveInterfaceMethodSyntax(
                     methodName, String[], propertyType, range(memberStart, index), value,
-                    storageProperty: storageProperty
+                    storageProperty: storageProperty,
+                    nativeReturnModifierRange: nativeReturnRange,
+                    nativeArrayReturnModifierRange: nativeArrayReturnRange
                 ))
                 continue
             }
@@ -154,24 +155,42 @@ class {
                 if (index < tokens.count && tokens[index].value == "=") {
                     index++
                     var Int defaultBraceDepth
+                    var Int defaultParenDepth
+                    var Int defaultBracketDepth
+                    let defaultStart = index
                     while (index < tokens.count) {
-                        if (tokens[index].value == "{") defaultBraceDepth++
-                        else if (tokens[index].value == "}") defaultBraceDepth--
-                        if (defaultBraceDepth == 0 &&
-                            (tokens[index].value == "," || tokens[index].value == ")")) break
+                        let value = tokens[index].value
+                        if (defaultBraceDepth == 0 && defaultParenDepth == 0 && defaultBracketDepth == 0 &&
+                            (value == "," || value == ")")) break
+                        if (value == "{") defaultBraceDepth++
+                        else if (value == "}") {
+                            if (defaultBraceDepth == 0) syntax("Expected interface parameter default")
+                            defaultBraceDepth--
+                        } else if (value == "(") defaultParenDepth++
+                        else if (value == ")") defaultParenDepth--
+                        else if (value == "[") defaultBracketDepth++
+                        else if (value == "]") defaultBracketDepth--
                         index++
                     }
+                    if (index == defaultStart || defaultBraceDepth != 0 ||
+                        defaultParenDepth != 0 || defaultBracketDepth != 0) {
+                        syntax("Expected complete interface parameter default")
+                    }
                 }
-                if (tokens[index].value != ",") break
+                if (index >= tokens.count || tokens[index].value != ",") break
                 index++
+                if (index >= tokens.count || tokens[index].value == ")") {
+                    syntax("Expected interface parameter after ','")
+                }
             }
             require(")")
-            var String returnType = "Unknown"
+            var String returnType = "Unit"
             var PrimitiveExpressionSyntax defaultValue
             if (index < tokens.count && tokens[index].value == "->") {
                 index++
                 returnType = parseTypeName("Expected interface return type")
             } else if (index < tokens.count && tokens[index].value == "=>") {
+                returnType = "Unknown"
                 index++
                 let expressionStart = index
                 if (index + 1 < tokens.count && tokens[index].value == "this" &&
@@ -200,7 +219,11 @@ class {
                 } catch (Exception error) {
                     throw Exception("Primitive interface method '#methodName' failed: #{error.message}")
                 }
-            } else syntax("Expected '->' or '=>'")
+            } else if (index < tokens.count && tokens[index].value != "{" &&
+                tokens[index].value != "}" && tokens[index].type != Token.Type.IDENTIFIER) {
+                syntax("Expected interface return type or body")
+            }
+            validateNativeReturn(returnType, nativeReturnRange, nativeArrayReturnRange)
             if (index < tokens.count && tokens[index].value == "=>") {
                 index++
                 let expressionStart = index
@@ -231,7 +254,10 @@ class {
             }
             methods.add(PrimitiveInterfaceMethodSyntax(
                 methodName, parameterTypes, returnType, range(memberStart, index), defaultValue,
-                (bracedBody || defaultValue) ? tokens.skip(memberStart).take(index - memberStart) : Token[]
+                (bracedBody || defaultValue) ? tokens.skip(memberStart).take(index - memberStart) : Token[],
+                signatureTokens: (bracedBody || defaultValue) ? Token[] : tokens.skip(memberStart).take(index - memberStart),
+                nativeReturnModifierRange: nativeReturnRange,
+                nativeArrayReturnModifierRange: nativeArrayReturnRange
             ))
         }
         require("}")
@@ -239,8 +265,21 @@ class {
         return PrimitiveInterfaceSyntax(range(start, index), name, genericParameterName, methods, genericParameters, parentTypes)
     }
 
+    validateNativeReturn(String typeName, SourceRange scalarRange, SourceRange arrayRange) {
+        if (arrayRange && !typeName.endsWith("[]")) {
+            syntax("native_array return modifier requires an array return type",
+                arrayRange.startTokenIndex - tokenIndexOffset)
+        }
+        if (scalarRange && (typeName == "Unit" || typeName == "Unknown")) {
+            syntax("Native return modifier requires an explicit return type",
+                scalarRange.startTokenIndex - tokenIndexOffset)
+        }
+    }
+
     parseParameterType() -> String {
         var Bool asyncType
+        while (index < tokens.count && (tokens[index].value == "native" ||
+            tokens[index].value == "native_array")) index++
         if (index < tokens.count && tokens[index].value == "var") index++
         if (index < tokens.count && tokens[index].value == "async") {
             asyncType = true
@@ -275,10 +314,18 @@ class {
 
     parseTypeName(String message) -> String {
         var String result = identifier(message)
+        while (index < tokens.count && tokens[index].value == ".") {
+            index++
+            result += "." + identifier("Expected qualified interface type name")
+        }
         if (index < tokens.count && tokens[index].value == "<") {
             result += "<"
             index++
             result += parseTypeName("Expected generic interface type argument")
+            while (index < tokens.count && tokens[index].value == ",") {
+                index++
+                result += "," + parseTypeName("Expected generic interface type argument")
+            }
             require(">")
             result += ">"
         }
@@ -286,6 +333,10 @@ class {
             tokens[index + 1].value == "]") {
             result += "[]"
             index += 2
+        }
+        if (index < tokens.count && tokens[index].value == "?") {
+            result += "?"
+            index++
         }
         return result
     }
@@ -309,7 +360,9 @@ class {
 
     modifier(String value) -> Bool =>
         value == "public" || value == "private" || value == "protected" ||
-            value == "visible" || value == "async" || value == "override"
+            value == "visible" || value == "async" || value == "override" ||
+            value == "abstract" || value == "native" || value == "native_array" ||
+            value == "external_name"
 
     identifier(String message) -> String {
         if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax(message)
@@ -336,7 +389,8 @@ class {
         )
     }
 
-    syntax(String message) {
-        throw Exception("Primitive interface syntax error at token #index: #message")
+    syntax(String message, Int tokenIndex = -1) {
+        let errorIndex = (tokenIndex < 0 ? index : tokenIndex) + tokenIndexOffset
+        throw Exception("Primitive interface syntax error at token #errorIndex: #message")
     }
 }

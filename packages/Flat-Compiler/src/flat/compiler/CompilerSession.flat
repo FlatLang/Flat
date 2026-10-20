@@ -1,5 +1,6 @@
 package flat/compiler
 
+import flat/semantic/binding/BindingDiagnostic
 import flat/eventstream
 import flat/future
 
@@ -31,7 +32,17 @@ class {
     var Int sourceCount
     var Int artifactCount
     var Int diagnosticCount
+    var BindingDiagnostic bindingDiagnostic
+    protected recordBindingDiagnostic(BindingDiagnostic diagnostic) { bindingDiagnostic = diagnostic }
     var String terminalDiagnostic
+    var Int packagePeakActiveReads
+    var Int packagePeakRetainedReads
+    protected recordPackageReadPeaks(Int active, Int retained) {
+        packagePeakActiveReads = active
+        packagePeakRetainedReads = retained
+    }
+    var CompilerReuseEvidence reuseEvidence = CompilerReuseEvidence()
+    protected recordReuse(CompilerReuseEvidence evidence) { reuseEvidence = evidence }
 
     var Future<ExecutorTaskResult> task
     var Future.CompletableFuture<ExecutorTaskResult> packageCallbackSettlement = Future.create<ExecutorTaskResult>()
@@ -361,7 +372,9 @@ class {
         }
         let terminal = (Future.CompletableFuture<CompilationSummary>)completion
         terminal.complete(CompilationSummary(
-            sourceCount, artifactCount, diagnosticCount, cancelled, terminalDiagnostic
+            sourceCount, artifactCount, diagnosticCount, cancelled, terminalDiagnostic,
+            reuseEvidence, peakActiveSources, peakRetainedSources, true,
+            packagePeakActiveReads, packagePeakRetainedReads, bindingDiagnostic
         ))
     }
 

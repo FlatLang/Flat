@@ -1,0 +1,38 @@
+package flat/project
+
+/** ES6 source selection and overlay order, independent of filesystem enumeration. */
+class Es6SourceSelection {
+    public static accepts(String location) -> Bool {
+        if (!location || !location.endsWith(".flat")) return false
+        let slash = location.lastIndexOf("/", defaultReturnValue: -1)
+        let first = location.indexOf(".", start: slash + 1, defaultReturnValue: -1)
+        let last = location.lastIndexOf(".")
+        if (first == last) return true
+        let suffix = location.substring(first + 1, last).toLowerCase()
+        return suffix == "js" || suffix == "es6"
+    }
+
+    public static overlay(String location) -> Bool {
+        return location.endsWith(".js.flat") || location.endsWith(".es6.flat")
+    }
+
+    public static baseLocation(String location) -> String {
+        if (location.endsWith(".js.flat")) return location.substring(0, location.count - 8) + ".flat"
+        if (location.endsWith(".es6.flat")) return location.substring(0, location.count - 9) + ".flat"
+        return location
+    }
+
+    /** Base declarations precede shared JS overlays, then target-specific ES6. */
+    public static compare(String left, String right) -> Int {
+        let base = baseLocation(left).compareTo(baseLocation(right))
+        if (base != 0) return base
+        let rank = priority(left) - priority(right)
+        return rank != 0 ? rank : left.compareTo(right)
+    }
+
+    static priority(String location) -> Int {
+        if (location.endsWith(".es6.flat")) return 2
+        if (location.endsWith(".js.flat")) return 1
+        return 0
+    }
+}

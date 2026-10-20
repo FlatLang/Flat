@@ -58,7 +58,7 @@ class extends Number<Char> implements Integer {
     public minusReal(Double other) => this.value - other
     public minusInteger(Long other) => this.value - other
 
-    public minusEquals(Char other) => this.value - other
+    public minusEquals(Char other) => this.value -= other
     public minusEqualsReal(Double other) => this.value -= other
     public minusEqualsInteger(Long other) => this.value -= other
 

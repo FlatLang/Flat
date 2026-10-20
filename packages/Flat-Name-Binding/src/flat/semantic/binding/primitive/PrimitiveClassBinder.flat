@@ -83,7 +83,7 @@ class {
             })) constructors.add(CallableSignature(
                 SymbolIdentity(constructorIdentity, "constructor"), syntax.name,
                 CallableKind("constructor"),
-                constructorSyntax.parameterValues().map((parameter) => typeOf(parameter.typeName, parameter.nativeArrayStorage, parameter.nativeScalarStorage)),
+                constructorSyntax.parameterValues().map((parameter) => typeOf(parameter.typeName, parameter.nativeArrayStorage, parameter.nativeScalarStorage, parameter.range)),
                 type, type,
                 constructorSyntax.parameterValues().filter({ _.defaultValue != null }).count,
                 constructorSyntax.parameterValues().map({ _.name }),
@@ -179,7 +179,8 @@ class {
                 if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value)
                     inferredMethodReturn = methodTypeResolver(method).constructorResult(inferredSyntax.value)
                 if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value) {
-                    let inferred = PrimitiveExpressionBinder().bind(inferredSyntax.value)
+                    let inferred = PrimitiveExpressionBinder().bind(inferredSyntax.value,
+                        declarationContext: declarationContext)
                     if (inferred.succeeded) inferredMethodReturn = methodTypeResolver(method).inferredExpressionResult(inferred.expression.semanticType)
                 }
             }
@@ -201,7 +202,8 @@ class {
                 CallableKind(methodKind), parameterTypes, methodReturnType, type,
                 method.parameterValues().filter({ _.defaultValue != null }).count,
                 method.parameterValues().map({ _.name }), methodGenerics,
-                genericParameter ? GenericDeclaration(typeIdentity, [genericParameter], type) : null
+                genericParameter ? GenericDeclaration(typeIdentity, [genericParameter], type) : null,
+                asyncFunction: method.asyncMethod, externalName: method.externalName
             ))
         }
         let fields = BoundFieldUnit[]
@@ -228,6 +230,11 @@ class {
         var Int fieldIndex
         while (fieldIndex < fieldSyntaxValues.count) {
             let field = fieldSyntaxValues[fieldIndex]
+            let previousFieldContext = declarationContext
+            let previousFieldRange = declarationLookupRange
+            if (declarationContext) declarationContext = declarationContext.scopeForSnapshot(field.range.snapshot)
+            declarationLookupRange = field.range
+            try {
             let identity = SymbolIdentity(typeIdentity, "field", fieldIndex)
             let fieldRange = SourceRange(
                 snapshot, field.range.startTokenIndex, field.range.endTokenIndex,
@@ -243,7 +250,7 @@ class {
             var BoundExpression initializer
             if (field.initializer) {
                 let untyped = PrimitiveExpressionBinder().bind(
-                    field.initializer, callables: constructors
+                    field.initializer, callables: constructors, declarationContext: declarationContext
                 )
                 if (!untyped.succeeded) throw Exception(untyped.diagnostic.message)
                 if (untyped.expression.semanticType.kind() == "null") {
@@ -252,10 +259,13 @@ class {
                     }
                     fieldType = fieldType.kind() == "nullable" ? fieldType : NullableSemanticType(fieldType)
                     initializer = untyped.expression
+                } else if (untyped.expression.semanticType.kind() == "string" &&
+                    fieldType.kind() == "user-class") {
+                    initializer = adaptText(untyped.expression, fieldType)
                 } else {
                     let bound = PrimitiveExpressionBinder().bind(
                         field.initializer, requiredType: fieldType,
-                        callables: constructors
+                        callables: constructors, declarationContext: declarationContext
                     )
                     if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                     initializer = bound.expression
@@ -267,14 +277,18 @@ class {
                 nativeArrayStorage: field.nativeArrayStorage
             ))
             fieldIndex++
+            } finally {
+                declarationContext = previousFieldContext
+                declarationLookupRange = previousFieldRange
+            }
         }
         for (parameter in fieldParameters) {
             if (fieldSyntaxValues.none({ _.name == parameter.name })) {
                 fields.add(BoundFieldUnit(
                     parameter.name, SymbolIdentity(typeIdentity, "field", fieldIndex),
                     nullDefault(parameter) ? NullableSemanticType(
-                        typeOf(parameter.typeName, parameter.nativeArrayStorage, parameter.nativeScalarStorage)
-                    ) : typeOf(parameter.typeName, parameter.nativeArrayStorage, parameter.nativeScalarStorage),
+                        typeOf(parameter.typeName, parameter.nativeArrayStorage, parameter.nativeScalarStorage, parameter.range)
+                    ) : typeOf(parameter.typeName, parameter.nativeArrayStorage, parameter.nativeScalarStorage, parameter.range),
                     parameter.range, parameter.visibleParameter,
                     nativeArrayStorage: parameter.nativeArrayStorage                ))
                 fieldIndex++
@@ -338,7 +352,9 @@ class {
                                 signature.identity, signature.name, signature.callableKind,
                                 signature.parameterTypes(), boundMethod.returnType, signature.ownerType,
                                 signature.optionalParameterCount, signature.parameterNames(),
-                                signature.genericParameters(), signature.ownerGenericDeclaration
+                                signature.genericParameters(), signature.ownerGenericDeclaration,
+                                ownerInstance: signature.ownerInstance, asyncFunction: signature.asyncFunction,
+                                externalName: signature.externalName, dispatchIdentity: signature.dispatchIdentity
                             )
                         }
                         signatureIndex++
@@ -367,6 +383,29 @@ class {
     }
 
     bindConstructor(
+        PrimitiveClassSyntax owner,
+        PrimitiveConstructorSyntax syntax,
+        Int ordinal,
+        DeclarationIdentity typeIdentity,
+        UserClassSemanticType type,
+        BoundFieldUnit[] fields,
+        CallableSignature parentConstructor,
+        BoundFieldUnit[] inheritedFields
+    ) -> BoundFunctionUnit {
+        let previousContext = declarationContext
+        let previousRange = declarationLookupRange
+        if (declarationContext) declarationContext = declarationContext.scopeForSnapshot(syntax.range.snapshot)
+        declarationLookupRange = syntax.range
+        try {
+            return bindConstructorBody(owner, syntax, ordinal, typeIdentity, type, fields,
+                parentConstructor, inheritedFields)
+        } finally {
+            declarationContext = previousContext
+            declarationLookupRange = previousRange
+        }
+    }
+
+    bindConstructorBody(
         PrimitiveClassSyntax owner,
         PrimitiveConstructorSyntax syntax,
         Int ordinal,
@@ -483,7 +522,11 @@ class {
                     !_.class.isOfType(PrimitiveConstructorDelegationSyntax.class)
                 })), syntax.range.snapshot,
                 locals, constructors, receiver, allFields, arrayGetter, arraySetter,
-                publishedFields
+                publishedFields, PrimitiveStructuralTypeResolver(
+                    callables: constructors, genericParameter: genericParameter,
+                    receiverType: type, interfaces: interfaces, implementationOwner: owner,
+                    implementationRange: syntax.range, declarationContext: declarationContext,
+                    lookupRange: syntax.range), typeHierarchy
             )
         } catch (Exception error) {
             throw Exception("Constructor #{owner.name} token #{syntax.range.startTokenIndex}: #{error.message}")
@@ -537,7 +580,9 @@ class {
             }
             arraySetter = CallableSignature(signature.identity, signature.name, signature.callableKind,
                 [signature.parameterTypes().first, arrayGetter.returnType], SemanticTypes.unitType(),
-                signature.ownerType, ownerGenericDeclaration: signature.ownerGenericDeclaration)
+                signature.ownerType, ownerGenericDeclaration: signature.ownerGenericDeclaration,
+                asyncFunction: signature.asyncFunction, externalName: signature.externalName,
+                dispatchIdentity: signature.dispatchIdentity)
         }
         let identity = signature.identity.declaration
         let parameters = BoundFunctionParameter[]
@@ -568,7 +613,8 @@ class {
                 signature.identity, signature.name, signature.callableKind,
                 signature.parameterTypes(), inferredType, signature.ownerType,
                 signature.optionalParameterCount, signature.parameterNames(),
-                signature.genericParameters(), signature.ownerGenericDeclaration, signature.ownerInstance
+                signature.genericParameters(), signature.ownerGenericDeclaration, signature.ownerInstance,
+                signature.asyncFunction, signature.externalName, signature.dispatchIdentity
             )
             arrayGetter = effectiveSignature
         }
@@ -1104,7 +1150,7 @@ class {
                 throw Exception("Default constructor parameters must be trailing")
             }
             var SemanticType type = method ? methodTypeResolver(method).resolveParameter(value) :
-                typeOf(value.typeName, value.nativeArrayStorage, value.nativeScalarStorage)
+                typeOf(value.typeName, value.nativeArrayStorage, value.nativeScalarStorage, value.range)
             if (nullDefault(value) && referenceType(type)) type = NullableSemanticType(type)
             if (method) type = PrimitiveStructuralTypeResolver(interfaces: interfaces).specializedParameterType(method, index, type)
             var BoundExpression defaultValue
@@ -1118,7 +1164,8 @@ class {
                 }
                 if (value.defaultValue.class.isOfType(PrimitiveLambdaSyntax.class)) {
                     bound = PrimitiveExpressionBinder().bind(
-                        value.defaultValue, requiredType: type, locals: defaultLocals
+                        value.defaultValue, requiredType: type, locals: defaultLocals,
+                        declarationContext: declarationContext
                     )
                     if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                     defaultValue = bound.expression
@@ -1127,7 +1174,8 @@ class {
                         value.defaultValue, receiver, fields, defaultLocals
                     )
                 } else {
-                    bound = PrimitiveExpressionBinder().bind(value.defaultValue, locals: defaultLocals)
+                    bound = PrimitiveExpressionBinder().bind(value.defaultValue, locals: defaultLocals,
+                        declarationContext: declarationContext)
                     if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                     defaultValue = bound.expression
                 }
@@ -1223,7 +1271,8 @@ class {
         TypeHierarchyComponent hierarchy = null,
         FunctionSemanticType originalContract = null) -> PrimitiveExpressionBindingResult {
         let fallbackResult = PrimitiveExpressionBinder().bindCallback(syntax, context, locals,
-            callables, hierarchy, originalContract: originalContract)
+            callables, hierarchy, originalContract: originalContract,
+            declarationContext: declarationContext)
         if (fallbackResult.succeeded || syntax.statementValues().isNotEmpty || syntax.emptyBody) return fallbackResult
         if (syntax.parameterValues().isNotEmpty &&
             syntax.parameterValues().count != context.parameterTypes().count) return fallbackResult
@@ -1671,7 +1720,10 @@ class {
                             return CallableSignature(candidate.identity, candidate.name, candidate.callableKind,
                                 candidate.parameterTypes().map({ remainingSubstitution.apply(explicitSubstitution.apply(_)) }),
                                 remainingSubstitution.apply(explicitSubstitution.apply(candidate.returnType)), candidate.ownerType,
-                                candidate.optionalParameterCount, candidate.parameterNames(), inferredParameters)
+                                candidate.optionalParameterCount, candidate.parameterNames(), inferredParameters,
+                                ownerGenericDeclaration: candidate.ownerGenericDeclaration,
+                                ownerInstance: candidate.ownerInstance, asyncFunction: candidate.asyncFunction,
+                                externalName: candidate.externalName, dispatchIdentity: candidate.dispatchIdentity)
                         })
                         if (staticCandidates.isEmpty) throw Exception("Explicit static type argument arity mismatch")
                     }
@@ -2469,6 +2521,8 @@ class {
             }
             let field = fields.firstOrNull({ _.name == value.name })
             if (field) {
+                if (field.staticField) return BoundReferenceExpression(value.range, field.semanticType,
+                    field.name, field.identity, staticOwner: field.identity.declaration)
                 if (!receiver) throw Exception("Static method cannot access instance field '#{field.name}'")
                 return BoundMemberAccessExpression(
                     value.range, field.semanticType, receiver, field.name, field.identity
@@ -3059,7 +3113,10 @@ class {
                         property = CallableSignature(property.identity, property.name, property.callableKind,
                             property.parameterTypes(), property.returnType,
                             (UserClassSemanticType)projectedReceiver.semanticType,
-                            property.optionalParameterCount, property.parameterNames(), property.genericParameters())
+                            property.optionalParameterCount, property.parameterNames(), property.genericParameters(),
+                            ownerGenericDeclaration: property.ownerGenericDeclaration, ownerInstance: property.ownerInstance,
+                            asyncFunction: property.asyncFunction, externalName: property.externalName,
+                            dispatchIdentity: property.dispatchIdentity)
                     }
                     let checked = CallTypeChecker.check(
                         property, projectedReceiver.semanticType,
@@ -3092,7 +3149,7 @@ class {
         let result = PrimitiveExpressionBinder().bind(
             syntax, locals: locals, callables: constructors,
             requiredType: syntax.class.isOfType(PrimitiveArraySyntax.class) ? requiredType : null,
-            hierarchy: typeHierarchy
+            hierarchy: typeHierarchy, declarationContext: declarationContext
         )
         if (!result.succeeded) throw Exception(result.diagnostic.message)
         return result.expression
@@ -3145,7 +3202,7 @@ class {
         if (parameter.defaultValue.class.isOfType(PrimitiveLambdaSyntax.class)) {
             let bound = PrimitiveExpressionBinder().bind(
                 parameter.defaultValue, requiredType: target.parameterTypes()[parameterIndex],
-                locals: defaultLocals
+                locals: defaultLocals, declarationContext: declarationContext
             )
             if (!bound.succeeded) throw Exception(bound.diagnostic.message)
             return bound.expression
@@ -3166,7 +3223,7 @@ class {
     bindNamedDefault(CallableSignature target, PrimitiveExpressionSyntax syntax,
         BoundReferenceExpression retained, LocalBinding[] parameterLocals) -> BoundExpression {
         let owner = declarationContext.classFor(target.ownerType.declarationIdentity)
-        let scope = declarationContext.scopeFor(target.ownerType.declarationIdentity)
+        let scope = declarationContext.scopeForSnapshot(syntax.range.snapshot)
         let ownerFields = publishedFields.filter((field) =>
             field.identity.declaration.value == target.ownerType.declarationIdentity.value)
         let scopedLocals = LocalBinding[]:addAll(parameterLocals)
@@ -3181,7 +3238,16 @@ class {
 
     namedDefaultSyntax(CallableSignature target, Int index) -> PrimitiveExpressionSyntax {
         let owner = declarationContext ? declarationContext.classFor(target.ownerType.declarationIdentity) : null
-        if (!owner) return null
+        if (!owner) {
+            let contract = declarationContext ? declarationContext.interfaceFor(target.ownerType.declarationIdentity) : null
+            if (!contract) return null
+            let member = contract.methodValues().firstOrNull((candidate) =>
+                candidate.range && candidate.range.snapshot == target.identity.declaration.syntaxIdentity.snapshot &&
+                candidate.range.startTokenIndex == target.identity.declaration.syntaxIdentity.ordinal)
+            let declaration = member ? member.declaration() : null
+            if (!declaration || index >= declaration.parameterValues().count) return null
+            return declaration.parameterValues()[index].defaultValue
+        }
         let method = owner.methodValues().firstOrNull((candidate) => candidate.range.snapshot == target.identity.declaration.syntaxIdentity.snapshot &&
             candidate.range.startTokenIndex == target.identity.declaration.syntaxIdentity.ordinal)
         if (!method || index >= method.parameterValues().count) return null
@@ -3370,12 +3436,15 @@ class {
         )
     }
 
-    typeOf(String name, Bool nativeArrayStorage = false, Bool nativeScalarStorage = false) -> SemanticType {
+    typeOf(String name, Bool nativeArrayStorage = false, Bool nativeScalarStorage = false,
+        SourceRange memberRange = null) -> SemanticType {
         if (nativeScalarStorage && name == "String") return SemanticTypes.stringType()
         let resolver = scopedTypeResolver ?: PrimitiveStructuralTypeResolver(
             callables: constructors, genericParameter: genericParameter,
             receiverType: boundType, interfaces: interfaces,
-            declarationContext: declarationContext, lookupRange: declarationLookupRange)
+            declarationContext: declarationContext && memberRange ?
+                declarationContext.scopeForSnapshot(memberRange.snapshot) : declarationContext,
+            lookupRange: memberRange ?: declarationLookupRange)
         return nativeArrayStorage ? resolver.resolveNativeArrayStorage(name) : resolver.resolve(name)
     }
 }

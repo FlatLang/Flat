@@ -5,10 +5,12 @@ class {
     public emitFunction(
         String stableIdentity,
         String[] parameterNames,
-        String body
+        String body,
+        Bool asyncFunction = false,
+        String externalName = null
     ) -> String {
-        let name = Es6NameMangler.mangle(stableIdentity)
-        return "function " + name + "(" + parameterNames.join(", ") + ") {\n" +
+        let name = externalName ?: Es6NameMangler.mangle(stableIdentity)
+        return (asyncFunction ? "async " : "") + "function " + name + "(" + parameterNames.join(", ") + ") {\n" +
             indent(body, "  ") + "}\n"
     }
 

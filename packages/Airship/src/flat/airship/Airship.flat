@@ -121,6 +121,7 @@ class {
                     cliArgs.quietArg,
                     cliArgs.flatcRuntimeArg,
                     cliArgs.flatcJarArg,
+                    cliArgs.flatcScriptArg,
                     cliArgs.gitProtocolArg,
                     cliArgs.publishCommand,
                     cliArgs.useLinksArg,
@@ -574,6 +575,15 @@ class {
         }
         if (target) {
             args.addAll(["-t", target])
+        }
+        if (cliArgs.flatcRuntimeArg.enabled) {
+            args.addAll(["--flatc-runtime", cliArgs.flatcRuntimeValueArg.value])
+        }
+        if (cliArgs.flatcScriptArg.enabled) {
+            args.addAll(["--flatc-script", cliArgs.flatcScriptValueArg.value])
+        }
+        if (cliArgs.flatcJarArg.enabled) {
+            args.addAll(["--flatc-jar", cliArgs.flatcJarValueArg.value])
         }
         if (cliArgs.targetRuntimeArg.enabled) {
             args.addAll(["-r", cliArgs.targetRuntimeArg["runtime"].value])

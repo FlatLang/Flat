@@ -15,6 +15,20 @@ class {
         return engine.compile(sources, artifacts)
     }
 
+    public startPackage(CompilerSourceProvider sources, CompilerArtifactSink artifacts,
+        String artifactIdentity, CompilerSession session, String mainClass = null,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]) -> CompilerSession {
+        return engine.startPackage(sources, artifacts, artifactIdentity, session, mainClass, defaultImports)
+    }
+
+    public async compilePackageSnapshots(CompilerSource[] sources, CompilerArtifactSink artifacts,
+        String artifactIdentity, String mainClass = null,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[],
+        String toolFingerprint = "unspecified") -> CompilerSession {
+        return engine.compilePackageSnapshots(sources, artifacts, artifactIdentity, mainClass,
+            defaultImports, toolFingerprint)
+    }
+
     /** Compile one bounded package into a relative library or selected-main executable artifact. */
     public async compilePackage(
         CompilerSourceProvider sources,

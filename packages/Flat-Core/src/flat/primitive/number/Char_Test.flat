@@ -1,0 +1,23 @@
+package flat/primitive/number
+
+testable class {
+    test `minusEquals updates the character wrapper value`() {
+        let value = Char('c')
+        expect(value.minusEquals((Char)1)).toBe('b')
+        expect(value.value).toBe('b')
+        expect(value.toString()).toBe("b")
+    }
+
+    test `character construction and case conversion preserve text`() {
+        expect(Char.toString('a')).toBe("a")
+        expect(Char.toLowerCase('A')).toBe('a')
+        expect(Char.toUpperCase('z')).toBe('Z')
+        expect(Char.toLowerCase('1')).toBe('1')
+        expect(Char.isNumber('0')).toBe(true)
+        expect(Char.isNumber('9')).toBe(true)
+        expect(Char.isNumber('/')).toBe(false)
+        expect(Char.isNumber(':')).toBe(false)
+        expect(Char.isWhitespace('\t')).toBe(true)
+        expect(Char.isWhitespace('x')).toBe(false)
+    }
+}

@@ -56,7 +56,7 @@ class {
 
     public compareTo(String other) -> Int {
         external {
-            return #{chars.data}.localeCompare(#{other.chars.data});
+            return #{chars.data} === #{other.chars.data} ? 0 : (#{chars.data} > #{other.chars.data} ? 1 : -1);
         }
     }
 

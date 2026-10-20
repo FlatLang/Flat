@@ -65,7 +65,8 @@ class {
     ) -> Es6CodeResult {
         if (!expression || !operand) throw Exception("ES6 unary emission requires expression and operand")
         if (!operand.emitted) return operand
-        return Es6CodeResult(code: expression.operator + operand.code)
+        // Parenthesize the operand: -(-x) must not become the update token --x.
+        return Es6CodeResult(code: "(" + expression.operator + "(" + operand.code + "))")
     }
 
     public emitBinary(
@@ -130,7 +131,8 @@ class {
                 "es6.numeric-unbox-unsupported", "ES6 numeric unbox supports only identity Double projection", expression.range))
         }
         let owner = Es6NameMangler.mangle(expression.numberType.declarationIdentity.value)
-        let getter = Es6NameMangler.mangle(expression.projection.identity.declaration.value)
+        let getter = expression.projection.externalName ?: Es6NameMangler.mangle(
+            expression.projection.dispatchIdentity ?: expression.projection.identity.declaration.value)
         return Es6CodeResult(code: "((value) => { if (value === null || !(value instanceof " + owner +
             ")) throw new TypeError('Invalid numeric unboxing cast'); return value." + getter + "(); })(" + value.code + ")")
     }
@@ -144,6 +146,13 @@ class {
         }
         if (!value.emitted) return value
         if (expression.conversion.conversionKind == "checked-reference-cast") {
+            if (expression.semanticType.kind() != "user-class") {
+                return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+                    "es6.unsupported-checked-cast",
+                    "Checked reference casts require declared class runtime evidence",
+                    expression.range
+                ))
+            }
             let target = (UserClassSemanticType)expression.semanticType
             let name = Es6NameMangler.mangle(target.declarationIdentity.value)
             return Es6CodeResult(code: "((value) => { if (value === null || value instanceof " + name +
@@ -154,7 +163,11 @@ class {
             return Es6CodeResult(code: "Math.trunc(" + value.code + ")")
         }
         if (expression.conversion.conversionKind == "numeric-unboxing") {
-            return Es6CodeResult(code: "Number(" + value.code + ")")
+            return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+                "es6.unlowered-numeric-unboxing",
+                "Numeric unboxing requires a resolved BoundNumericUnboxExpression projection",
+                expression.range
+            ))
         }
         return value
     }

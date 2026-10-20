@@ -79,7 +79,9 @@ class {
                 parameterTypes.map({ substitution.apply(_) }),
                 substitution.apply(target.returnType), target.ownerType,
                 target.optionalParameterCount, target.parameterNames(),
-                ownerGenericDeclaration: target.ownerGenericDeclaration, ownerInstance: target.ownerInstance
+                ownerGenericDeclaration: target.ownerGenericDeclaration, ownerInstance: target.ownerInstance,
+                asyncFunction: target.asyncFunction, externalName: target.externalName,
+                dispatchIdentity: target.dispatchIdentity
             )
             return check(instantiated, receiverType, argumentTypes, range, hierarchy)
         }

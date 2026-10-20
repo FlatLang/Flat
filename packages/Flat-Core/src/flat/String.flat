@@ -116,12 +116,14 @@ class implements Comparable<String>, PlusOperator<String, String>, MultiplyOpera
 
         while (searchCount > 0 && i < count && i >= 0) {
             var Int j = 0
+            var Bool matched = false
 
-            while (j < searches.count) {
-                if ((searches[j] != chars[i]) == invert) return i
-
+            while (j < searches.count && !matched) {
+                matched = searches[j] == chars[i]
                 j++
             }
+
+            if (matched != invert) return i
 
             i += direction
             searchCount--
@@ -162,14 +164,12 @@ class implements Comparable<String>, PlusOperator<String, String>, MultiplyOpera
         indexOf(search, start, -1, defaultReturnValue: defaultReturnValue)
 
     public validateSubstringBounds(Int start, Int end, Bool throwException = false) => true {
-        if (end - start <= 0) {
-            if (end - start < 0) {
-                if (throwException) {
-                    throw Exception("Substring bounds of [#start, #end] are invalid")
-                }
-
-                return false
+        if (start < 0 || end < start || end > count) {
+            if (throwException) {
+                throw Exception("Substring bounds of [#start, #end] are invalid")
             }
+
+            return false
         }
     }
 
@@ -242,7 +242,7 @@ class implements Comparable<String>, PlusOperator<String, String>, MultiplyOpera
 
     public getStringBetween(String before, String after, Int start = 0) =>
         (let s = indexOf(before, start)) >= 0 &&
-        (let e = indexOf(after, s + 1)) > 0 ?
+        (let e = indexOf(after, s + before.count)) >= 0 ?
             substring(s + before.count, e) : null
 
     public reverse(Bool symmetrical = false) -> String {
@@ -284,9 +284,10 @@ class implements Comparable<String>, PlusOperator<String, String>, MultiplyOpera
     }
 
     public getGroupedChars(Char[] chars, Int start = 0, Int end = count, Bool opposite = false) -> String {
+        validateSubstringBounds(start, end, true)
         var i = start
 
-        while (start < end && chars.contains(this.chars[i]) != opposite) {
+        while (i < end && chars.contains(this.chars[i]) != opposite) {
             i++
         }
 

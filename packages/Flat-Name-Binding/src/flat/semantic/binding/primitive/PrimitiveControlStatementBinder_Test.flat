@@ -7,6 +7,55 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `static table reads preserve canonical field ownership without an instance`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-table-control"), "one")
+        let sources = ["class Long { static native_array Int[] FILE_SIZES = [1, 2]; " +
+                "public static count() -> Int { var Int index = 0; while (index < FILE_SIZES.count - 1) { index += 1; } return FILE_SIZES[index]; } " +
+                "public static native_array table() -> Int[] { return FILE_SIZES; } }",
+            "class Other { static native_array Int[] FILE_SIZES = [3]; }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 200
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("app", snapshot, syntaxes)]).typeUnits()
+        let owner = units.firstOrNull({ _.identity.name == "Long" })
+        let field = owner.fieldUnits().firstOrNull({ _.name == "FILE_SIZES" })
+        expect(field.staticField).toBe(true)
+        expect(field.nativeArrayStorage).toBe(true)
+        let table = owner.functionUnits().firstOrNull({ _.name == "table" })
+        let statements = table.statements()
+        let statementObject = (Object)statements.first
+        let returned = (BoundReturnStatement)statementObject
+        let valueObject = (Object)returned.value
+        let reference = (BoundReferenceExpression)valueObject
+        expect(reference.staticOwner.value).toBe(owner.identity.value)
+        expect(reference.symbolIdentity.value).toBe(field.identity.value)
+        expect(reference.semanticType.value()).toBe(field.semanticType.value())
+        expect(reference.range.snapshot).toBe(snapshot)
+        expect(owner.functionUnits().firstOrNull({ _.name == "count" }).returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `static table fallback never grants access to instance storage`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:instance-table-rejection"), "one")
+        let sources = ["class Long { native_array Int[] FILE_SIZES; public static count() -> Int { var Int index = 0; while (index < FILE_SIZES.count) { index += 1; } return index; } }",
+            "class Long { native_array Int[] FILE_SIZES; public static native_array table() -> Int[] { return FILE_SIZES; } }"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            var String failure
+            try { PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("app", snapshot, [syntax])]) }
+            catch (Exception error) { failure = error.message }
+            expect(failure != null).toBe(true)
+            expect(failure.contains("instance field")).toBe(true)
+        }
+    }
+
     async test `while continue retains loop context inside try`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:while-try-continue"), "one")
         let stream = Lexer().lex("while (true) { try { continue; } finally { let done = 1; } }")

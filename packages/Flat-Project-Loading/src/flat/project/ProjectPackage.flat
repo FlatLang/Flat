@@ -17,7 +17,13 @@ data class {
         SourceExclusion[] exclusions = SourceExclusion[]
     ) {
         if (!name || name.trim().count == 0) throw Exception("Project package name cannot be empty")
-        if (!sourceRoots || sourceRoots.isEmpty) throw Exception("Project package requires a source root")
+        if (!sourceRoots || sourceRoots.isEmpty || sourceRoots.any({ !_ })) {
+            throw Exception("Project package requires valid source roots")
+        }
+        if (!dependencies || dependencies.any({ !_ }) || !imports || imports.any({ !_ }) ||
+            !defaultImports || defaultImports.any({ !_ }) || !exclusions || exclusions.any({ !_ })) {
+            throw Exception("Project package requires valid dependency/import/exclusion values")
+        }
         this.name = name
         this.sourceRoots = sourceRoots.copy()
         this.dependencies = dependencies.copy()

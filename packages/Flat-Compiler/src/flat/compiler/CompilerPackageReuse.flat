@@ -1,5 +1,7 @@
 package flat/compiler
 
+import flat/semantic/binding/primitive/PrimitiveDefaultImport
+
 /**
  * Optional in-process reuse of one successful, exact ES6 package partition.
  * No filesystem lookup, digest, TTL, persistence, session or event replay.
@@ -30,16 +32,41 @@ class {
         retained = null
     }
 
-    protected capture(CompilerSource[] sources, String mainClass, FlatEs6PackageLinker linker) -> CompilerPackageSnapshot {
+    protected capture(CompilerSource[] sources, String mainClass, FlatEs6PackageLinker linker,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[],
+        String toolFingerprint = "unspecified") -> CompilerPackageSnapshot {
+        if (!toolFingerprint || toolFingerprint.trim().count == 0 || !defaultImports ||
+            defaultImports.count > linker.maxTokensPerSource || defaultImports.any({ !_ })) {
+            throw Exception("Package reuse requires a tool identity and bounded configured imports")
+        }
         if (!sources || sources.isEmpty || sources.count > maxSources || sources.any({ !_ })) {
             throw Exception("Package reuse requires nonempty bounded supplied snapshots")
         }
         // Target is ES6; null mainClass means library. Array declaration is always
         // the linker's default null, as in the existing engine package API.
-        let options = "es6:default-array:#{linker.maxSources}:#{linker.maxSourceCharacters}:" +
+        var Long configurationBytes = toolFingerprint.count
+        configurationBytes *= 8 // encoded key plus separately owned tool identity
+        if (configurationBytes > maxBytes) throw Exception("Package snapshot exceeds reuse byte capacity")
+        let defaults = PrimitiveDefaultImport[]
+        var String encodedDefaults = ""
+        for (value in defaultImports) {
+            Long locationBytes = value.location.count
+            configurationBytes += locationBytes * 8 + 128
+            if (configurationBytes > maxBytes) throw Exception("Package snapshot exceeds reuse byte capacity")
+            defaults.add(PrimitiveDefaultImport(value.location, value.staticImport))
+            encodedDefaults += "#{value.location.count}:#{value.location}:#{value.staticImport};"
+        }
+        let options = "#{toolFingerprint.count}:#toolFingerprint:#{encodedDefaults.count}:#encodedDefaults:" +
+            "es6:default-array:#{linker.maxSources}:#{linker.maxSourceCharacters}:" +
             "#{linker.maxTokensPerSource}:#{linker.maxTypes}:#{linker.maxFragments}"
         var Long bytes = options.count
         bytes *= 4
+        Long ownedToolBytes = toolFingerprint.count
+        bytes += ownedToolBytes * 4
+        for (value in defaults) {
+            Long ownedDefaultBytes = value.location.count
+            bytes += ownedDefaultBytes * 4
+        }
         if (mainClass) {
             Long mainBytes = mainClass.count
             bytes += mainBytes * 4
@@ -62,7 +89,32 @@ class {
             index++
         }
         generation++
-        return CompilerPackageSnapshot(ordered, mainClass, linker, options, bytes, generation)
+        return CompilerPackageSnapshot(ordered, mainClass, linker, options, bytes, generation,
+            defaults, toolFingerprint)
+    }
+
+    protected evidence(CompilerPackageSnapshot input, Bool reused) -> CompilerReuseEvidence {
+        var Int unchanged
+        var Int changed
+        var Int added
+        var Int removed
+        for (identity in input.identities()) {
+            let previous = retained ? retained.load(identity) : null
+            if (!previous) added++
+            else if (previous.text == input.load(identity).text) unchanged++
+            else changed++
+        }
+        if (retained) {
+            for (identity in retained.identities()) {
+                if (!input.load(identity)) removed++
+            }
+        }
+        var String reason = "closure-changed"
+        if (reused) reason = "exact-hit"
+        else if (!retained) reason = "cold"
+        else if (retained.options != input.options || retained.mainClass != input.mainClass ||
+            retained.linker != input.linker) reason = "configuration-changed"
+        return CompilerReuseEvidence(reused, reason, unchanged, changed, added, removed, input.toolFingerprint)
     }
 
     protected find(CompilerPackageSnapshot input) -> String => null {
@@ -98,9 +150,15 @@ class CompilerPackageSnapshot extends CompilerSourceProvider {
         visible Long ticket
         visible String code => compiledCode != null ? compiledCode.concat("") : null
         var String compiledCode
+        var PrimitiveDefaultImport[] defaults
+        visible String toolFingerprint
+        public defaultImportValues() -> PrimitiveDefaultImport[] {
+            return defaults.map({ PrimitiveDefaultImport(_.location, _.staticImport) })
+        }
 
         protected construct(CompilerSource[] values, String mainClass, FlatEs6PackageLinker linker,
-            String options, Long bytes, Long ticket) {
+            String options, Long bytes, Long ticket, PrimitiveDefaultImport[] defaults,
+            String toolFingerprint) {
             this.values = CompilerSource[]
             for (value in values) {
                 this.values.add(CompilerSource(value.identity.concat(""), value.text.concat("")))
@@ -109,6 +167,8 @@ class CompilerPackageSnapshot extends CompilerSourceProvider {
             this.linker = linker
             ownedOptions = options.concat("")
             this.bytes = bytes
+            this.defaults = defaults.map({ PrimitiveDefaultImport(_.location, _.staticImport) })
+            this.toolFingerprint = toolFingerprint.concat("")
             this.ticket = ticket
         }
 
@@ -123,7 +183,8 @@ class CompilerPackageSnapshot extends CompilerSourceProvider {
         }
 
         protected detached(String code) -> CompilerPackageSnapshot {
-            let copy = CompilerPackageSnapshot(values, ownedMainClass, linker, ownedOptions, bytes, ticket)
+            let copy = CompilerPackageSnapshot(values, ownedMainClass, linker, ownedOptions, bytes, ticket,
+                defaults, toolFingerprint)
             copy.recordCode(code)
             return copy
         }

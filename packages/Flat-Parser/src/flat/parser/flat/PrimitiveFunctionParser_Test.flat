@@ -1,8 +1,31 @@
 package flat/parser/flat
 
 import flat/compiler/models
+import flat/lexer/Lexer
 
 testable class {
+    async test `signature mode is explicit and preserves ordinary Unit defaults`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:signature-mode"), "one")
+        let stream = Lexer().lex("notify(Int value)")
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        var String failure
+        try { PrimitiveFunctionParser().parse(tokens, snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+        let declaration = PrimitiveFunctionParser().parse(tokens, snapshot,
+            allowBodylessDeclaration: true).functionValues().first
+        expect(declaration.abstractMethod).toBe(true)
+        expect(declaration.returnTypeName).toBe("Unit")
+        expect(declaration.statements().isEmpty).toBe(true)
+        let bodyStream = Lexer().lex("notify(Int value) {}")
+        bodyStream.emit("start")
+        let ordinary = PrimitiveFunctionParser().parse(bodyStream.consumeAll<Token>("data"), snapshot,
+            allowBodylessDeclaration: true).functionValues().first
+        expect(ordinary.abstractMethod).toBe(false)
+        expect(ordinary.returnTypeName).toBe("Unit")
+    }
+
     test `native return modifier evidence is independent of native parameters`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-return"), "one")
         let parsed = PrimitiveFunctionParser().parse([

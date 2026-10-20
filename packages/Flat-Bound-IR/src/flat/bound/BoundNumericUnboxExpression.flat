@@ -23,7 +23,7 @@ data class extends BoundExpression {
             conversion.conversionKind != "numeric-unboxing" ||
             conversion.fromType.value() != value.semanticType.value() ||
             conversion.toType.value() != semanticType.value() ||
-            projection.callableKind.value != "instance-method" ||
+            projection.callableKind.value != "instance-method" || projection.asyncFunction ||
             !projection.ownerType || projection.ownerType.value() != numberType.value() ||
             projection.parameterTypes().isNotEmpty ||
             !projectionConversion.applicable ||

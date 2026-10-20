@@ -58,12 +58,12 @@ testable class {
                 "package app\nimport flat/primitive/number/Char\nimport flat/meta/Class\nimport flat/meta/Field\n" +
                 "import flat/exception/NullAccessException\nclass Main { public static main() { " + metadata +
                 "external js { console.log(" + reference + "); } } }")
-            // Explicit finite acceptance budgets include the real core partition;
-            // production CLI defaults are neither bypassed nor raised globally.
+            // Explicit immutable compiler selection exercises Airship's generated-tool
+            // path without implicit dependency lookup or a legacy fallback.
             let installed = System.execute([
                 "node", airship.normalizedLocation, "--use-links", "-f", root.normalizedLocation,
-                "--flatc-runtime", "flat", "install", "-t", "es6", "--",
-                "--max-sources", "128", "--max-types", "512"
+                "--flatc-runtime", "flat", "--flatc-script", compiler.normalizedLocation,
+                "install", "-t", "es6"
             ], silent: true, shell: false)
             if (installed.exitCode != 0) {
                 throw Exception("Airship Flat runtime package install failed: " + installed.stdout.join("") + installed.stderr.join(""))

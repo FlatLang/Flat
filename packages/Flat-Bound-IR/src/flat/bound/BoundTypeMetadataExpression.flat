@@ -3,12 +3,22 @@ package flat/bound
 import flat/compiler/models
 import flat/semantic/types
 
-/** Immutable static class metadata value owned by one declared class identity. */
+/** Immutable static type metadata owned by one declared identity.
+ * interfaceType distinguishes interface membership evidence from class
+ * construction/prototype evidence without backend declaration lookup.
+ */
 data class extends BoundExpression {
+    // Keep constructor evidence as a declared private field so the bootstrap
+    // data-class generator recognizes the validating constructor as canonical.
+    // Otherwise it synthesizes a second all-default constructor and builder
+    // calls become ambiguous (inherited semanticType differs from this name).
+    var SemanticType metadataValueType
+
     public construct(
         SourceRange range,
         visible UserClassSemanticType referencedType,
-        SemanticType metadataValueType = null
+        SemanticType metadataValueType,
+        visible Bool interfaceType
     ) {
         if (!range || !referencedType) {
             throw Exception("Bound type metadata requires source range and class type")
@@ -16,8 +26,19 @@ data class extends BoundExpression {
         // Referenced declaration identity drives metadata selection; the value's
         // semantic type is the resolved metadata class when available. Omission
         // retains the foundational Object contract for existing IR producers.
-        super(range, metadataValueType ?: SemanticTypes.objectType())
+        this.metadataValueType = metadataValueType ?: SemanticTypes.objectType()
+        super(range, this.metadataValueType)
     }
+
+    // Explicit arities avoid optional-middle-argument ambiguity in the seed.
+    public construct(SourceRange range, UserClassSemanticType referencedType,
+        SemanticType metadataValueType) => this(range, referencedType, metadataValueType, false)
+
+    public construct(SourceRange range, UserClassSemanticType referencedType,
+        Bool interfaceType) => this(range, referencedType, SemanticTypes.objectType(), interfaceType)
+
+    public construct(SourceRange range, UserClassSemanticType referencedType) =>
+        this(range, referencedType, SemanticTypes.objectType(), false)
 
     override public expressionKind() => "type-metadata"
 }

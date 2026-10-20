@@ -2,6 +2,22 @@ package flat/writer/es6/bound
 
 /** Pure ES6 call syntax rendering from validated names and argument text. */
 class {
+    /** Validate reduced intrinsic input before syntax emission, without resolving methods. */
+    public diagnoseIntrinsicMember(String memberName, Int argumentCount) -> Es6BackendDiagnostic {
+        let oneArgument = memberName == "repeat" || memberName == "add" ||
+            memberName == "map" || memberName == "contains"
+        let noArguments = memberName == "toLowerCase" || memberName == "toUpperCase"
+        let supported = oneArgument || noArguments || memberName == "set" || memberName == "join"
+        if (!supported) return Es6BackendDiagnostic(
+            "es6.unsupported-intrinsic-member", "ES6 backend does not support reduced intrinsic '#memberName'")
+        if ((oneArgument && argumentCount != 1) || (noArguments && argumentCount != 0) ||
+            (memberName == "set" && argumentCount != 2) ||
+            (memberName == "join" && argumentCount != 0 && argumentCount != 1)) {
+            return Es6BackendDiagnostic("es6.intrinsic-arity", "Invalid reduced intrinsic argument count for '#memberName'")
+        }
+        return null
+    }
+
     public emitFunctionCall(String mangledName, String argumentText) -> String {
         return mangledName + "(" + argumentText + ")"
     }
@@ -15,8 +31,9 @@ class {
             return receiver + ".repeat(" + argumentText + ")"
         }
         if (memberName == "set") {
-            return "((__flatArgs) => " + receiver + "[__flatArgs[0]] = " +
-                "__flatArgs[1])([" + argumentText + "])"
+            // Evaluate receiver, index, then value exactly once, as for an ordinary member call.
+            return "((__flatReceiver, __flatIndex, __flatValue) => " +
+                "__flatReceiver[__flatIndex] = __flatValue)(" + receiver + ", " + argumentText + ")"
         }
         if (memberName == "add") {
             return receiver + ".push(" + argumentText + ")"

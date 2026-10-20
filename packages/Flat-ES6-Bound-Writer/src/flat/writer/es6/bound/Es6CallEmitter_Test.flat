@@ -15,6 +15,8 @@ testable class {
             .toBe("globalThis['console']['log']('Hello, Flat')")
         expect(emitter.emitIntrinsicMemberCall("'x'", "repeat", "3"))
             .toBe("'x'.repeat(3)")
+        expect(emitter.emitIntrinsicMemberCall("readReceiver()", "set", "readIndex(), readValue()"))
+            .toBe("((__flatReceiver, __flatIndex, __flatValue) => __flatReceiver[__flatIndex] = __flatValue)(readReceiver(), readIndex(), readValue())")
         expect(emitter.emitIntrinsicMemberCall("values", "add", "item"))
             .toBe("values.push(item)")
         expect(emitter.emitIntrinsicMemberCall("values", "map", "mapper"))

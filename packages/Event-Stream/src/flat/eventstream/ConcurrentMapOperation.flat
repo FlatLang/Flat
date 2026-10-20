@@ -2,6 +2,16 @@ package flat/eventstream
 
 import flat/future
 
+/**
+ * Single-start bounded mapping operation. Input remains caller-owned: cancellation
+ * detaches this operation's pending receive, not other consumers or the producer.
+ * Mapping futures are owned until their results are sent or discarded. cancel()
+ * invokes their cancellation hooks; producers must release their own resources in
+ * those hooks (cancelling a Future is not preemption of arbitrary async code).
+ * completion settles only after owned tasks and the ordered emitter have drained.
+ * Accepted output drains gracefully on cancellation; internal reorder/results are
+ * discarded. Ordered indexes are input admission order, never completion order.
+ */
 class<In, Out> {
     visible var Int inFlightCount
     visible var Int peakInFlightCount
@@ -12,15 +22,17 @@ class<In, Out> {
     visible var Bool finished
     visible var Int blockedOutputSendCount
     visible var Int peakBlockedOutputSendCount
+    /** Settles true at first output saturation, otherwise false at terminal cleanup. */
     visible Future<Bool> outputBackpressure = Future.create<Bool>()
 
     visible BoundedFlow<ConcurrentMapResult<Out>> output
     visible Future<Bool> completion = Future.create<Bool>()
     var Future<Bool> orderedEmitterCompletion = Future.create<Bool>()
 
-    var BoundedChannel<Bool> workerCompletions
+    var Future.CompletableFuture<Bool> workerProgress = Future.create<Bool>()
     var BoundedChannel<ConcurrentMapResult<Out>> orderedCompletions
-    var BoundedChannel<Bool> orderedProgress
+    var Future.CompletableFuture<Bool> orderedProgress = Future.create<Bool>()
+    var Bool started
     var ConcurrentMapResult<Out>[] reorder = ConcurrentMapResult<Out>[]
     var ConcurrentMapTask<In, Out>[] activeTasks = ConcurrentMapTask<In, Out>[]
     var Future<ChannelReceiveResult<In>> currentReceive
@@ -61,16 +73,17 @@ class<In, Out> {
             maxPendingOutputSends,
             1
         )
-        workerCompletions = BoundedChannel<Bool>(maxParallel, maxParallel, 1)
         orderedCompletions = BoundedChannel<ConcurrentMapResult<Out>>(
             maxParallel,
             maxParallel,
             1
         )
-        orderedProgress = BoundedChannel<Bool>(0, 1, 1)
     }
 
+    /** Single-shot startup; repeated calls never create a second dispatcher. */
     public start() {
+        if (started || finished) return
+        started = true
         run()$
     }
 
@@ -82,8 +95,10 @@ class<In, Out> {
         activeTasks.copy().forEach({ _.cancel() })
         reorder.clear()
         output.close()
-        orderedCompletions.close()
-        orderedProgress.close()
+        // No consumer remains for internal buffered results after cancellation.
+        orderedCompletions.fail(CancellationException())
+        signalWorkerProgress()
+        signalOrderedProgress()
     }
 
     async run() {
@@ -110,11 +125,11 @@ class<In, Out> {
     async dispatch() {
         while (!cancelled) {
             while (!cancelled && inFlightCount >= maxParallel) {
-                workerCompletions.receive()
+                workerProgress.get()
             }
 
             while (!cancelled && ordered && nextInputIndex > nextOutputIndex + maxReorder) {
-                orderedProgress.receive()
+                orderedProgress.get()
             }
 
             if (cancelled) return
@@ -136,6 +151,11 @@ class<In, Out> {
                 process(task)$
             } else if (received.completed) {
                 return
+            } else if (received.capacityExceeded) {
+                // A shared input may already have its allowed receivers. This
+                // operation cannot wait by polling an immediately rejected read.
+                upstreamFailure = Exception("Concurrent map input receive capacity exceeded")
+                return
             } else if (received.failed) {
                 upstreamFailure = received.error
                 output.fail(received.error)
@@ -156,7 +176,7 @@ class<In, Out> {
 
         activeTasks.removeFirstWhere({ Object.referenceEquals(_, task) })
         inFlightCount--
-        workerCompletions.send(true)
+        signalWorkerProgress()
     }
 
     async sendOutput(ConcurrentMapResult<Out> result) {
@@ -180,7 +200,7 @@ class<In, Out> {
 
     async drainWorkers() {
         while (inFlightCount > 0) {
-            workerCompletions.receive()
+            workerProgress.get()
         }
     }
 
@@ -222,14 +242,31 @@ class<In, Out> {
             reorder.removeFirstWhere({ Object.referenceEquals(_, next) })
             sendOutput(next)
             nextOutputIndex++
-            orderedProgress.send(true)$
+            signalOrderedProgress()
         }
+    }
+
+    // Progress is a coalesced notification, never queued work. Predicates own
+    // the state; replacing before completion lets resumed waiters observe the
+    // next generation. No producer can block on a stale progress notification.
+    signalWorkerProgress() {
+        let previous = workerProgress
+        workerProgress = Future.create<Bool>()
+        previous.complete(true)
+    }
+
+    signalOrderedProgress() {
+        let previous = orderedProgress
+        orderedProgress = Future.create<Bool>()
+        previous.complete(true)
     }
 
     finishOutput() {
         if (finished) return
 
         finished = true
+        currentReceive = null
+        reorder.clear()
 
         if (cancelled) {
             output.close()

@@ -55,7 +55,8 @@ class {
                 parseProperties(requireValue(arguments, index), properties)
             } else if (argument == "-threads") {
                 index++
-                concurrency = Int.parseInt(requireValue(arguments, index))
+                let concurrencyText = requireValue(arguments, index)
+                concurrency = AirshipCompilerArguments.parsePositiveCapacity(concurrencyText)
             } else if (argument == "-parallel") {
                 concurrency = Math.max(2, concurrency)
             } else if (argument.startsWith("-")) {
@@ -84,6 +85,23 @@ class {
             exclusions: exclusions
         )
         return ProjectModel("airship:arguments", [package], options)
+    }
+
+    /** Strict decimal parser shared by scheduler and compiler selection capacities. */
+    public static parsePositiveCapacity(String text) -> Int {
+        if (!text || text.count == 0) throw Exception("Compiler capacity requires a positive decimal integer")
+        let digits = "0123456789"
+        var Int capacity
+        for (index in 0..text.count) {
+            let character = text[index]
+            let digit = digits.indexOf(character, defaultReturnValue: -1)
+            if (digit < 0) throw Exception("Compiler capacity requires decimal digits")
+            if (capacity > 214748364) throw Exception("Compiler capacity exceeds 2147483647")
+            if (capacity == 214748364 && digit > 7) throw Exception("Compiler capacity exceeds 2147483647")
+            capacity = capacity * 10 + digit
+        }
+        if (capacity == 0) throw Exception("Compiler capacity must be positive")
+        return capacity
     }
 
     requireValue(String[] arguments, Int index) -> String {

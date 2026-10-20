@@ -1,0 +1,269 @@
+package flat/compiler
+
+import flat/io
+
+/**
+ * ES6/Node persistent package fingerprint manifest. One lock is held from admission
+ * through output/manifest publication, scoped to a destination, never the project.
+ * Only SHA-256 source metadata is retained; reads/hash buffers are bounded. A hit
+ * requires the current closure, exact CLI options, actual executing compiler bytes,
+ * and destination bytes to match. No cached generated payload or mtime shortcut.
+ *
+ * The manifest is published after the artifact. A crash between them leaves a safe
+ * miss (output digest disagreement), never authority to accept stale output. A
+ * failed/cancelled compilation never replaces the prior manifest. Lock acquisition
+ * fails visibly rather than waiting unboundedly or stealing another process's lock.
+ */
+class extends CompilerSourceProvider {
+    native var Object state
+    private CompilerSourceProvider provider
+    visible Bool reused
+
+    public construct(CompilerSourceProvider provider, File[] files, String[] arguments,
+        File destination, Long maxArtifactBytes, Int maxSourceCharacters = 1048576,
+        String toolLocation = null) {
+        if (!provider || !files || !arguments || !destination || maxArtifactBytes <= 0 ||
+            maxSourceCharacters <= 0) throw Exception("Persistent compiler state requires bounded inputs")
+        this.provider = provider
+        native_array native var Char[] errorMessage
+        var Bool hit
+        external js {
+            const fs = #{File.FileGlobal.fs};
+            const crypto = require('crypto');
+            const path = require('path');
+            const destinationPath = path.resolve(#{destination.location.chars.data});
+            const manifest = destinationPath + '.flat-incremental.json';
+            const lock = manifest + '.lock';
+            let owned = false;
+            try {
+                fs.mkdirSync(path.dirname(destinationPath), {recursive:true});
+                try { fs.mkdirSync(lock); }
+                catch (error) {
+                    if (error.code === 'EEXIST') {
+                        throw new Error('Incremental destination is locked: ' + lock +
+                            '. Inspect owner.json; wait for the owner, or stop all writers and quarantine this exact lock directory before retrying. No lock is deleted automatically.');
+                    }
+                    throw error;
+                }
+                owned = true;
+                fs.writeFileSync(path.join(lock,'owner.json'), JSON.stringify({pid:process.pid,
+                    host:require('os').hostname(), startedAt:new Date().toISOString(),
+                    compiler:process.argv[1], destination:destinationPath}), {flag:'wx'});
+                const digestFile = (location, limit) => {
+                    const fd = fs.openSync(location, 'r');
+                    try {
+                        const stat = fs.fstatSync(fd);
+                        if (!stat.isFile() || stat.size > limit) throw new Error('Fingerprint input exceeds configured capacity: ' + location);
+                        const hash = crypto.createHash('sha256');
+                        const buffer = Buffer.alloc(65536);
+                        let total = 0, size;
+                        while ((size = fs.readSync(fd, buffer, 0, buffer.length, null)) > 0) {
+                            total += size;
+                            if (total > limit) throw new Error('Fingerprint input grew past capacity');
+                            hash.update(buffer.subarray(0,size));
+                        }
+                        return hash.digest('hex');
+                    } finally { fs.closeSync(fd); }
+                };
+                const maxSourceBytes = #{maxSourceCharacters} * 4;
+                const maxOutputBytes = Number(#{maxArtifactBytes});
+                if (#{files.count} > 16384 || #{arguments.count} > 65536) throw new Error('Incremental metadata exceeds entry capacity');
+                const options = #{arguments.map({ _.chars.data }).data};
+                if (options.some(value => value.length > 1048576) ||
+                    options.reduce((size,value) => size + Buffer.byteLength(value),0) > 4194304) {
+                    throw new Error('Incremental options exceed metadata capacity');
+                }
+                const tool = #{toolLocation != null} ? #{toolLocation ? toolLocation.chars.data : "".chars.data} : process.argv[1];
+                if (!tool) throw new Error('Persistent state requires the executing compiler file');
+                // A compiler executable is a separately bounded tool input, not a source unit.
+                const toolDigest = digestFile(path.resolve(tool), 268435456);
+                const entries = [];
+                let metadataBytes = 0;
+                const expected = new Map();
+                for (const identity of #{files.map({ _.normalizedLocation.chars.data }).data}) {
+                    const location = fs.realpathSync(identity);
+                    const digest = digestFile(location, maxSourceBytes);
+                    metadataBytes += Buffer.byteLength(location) + 128;
+                    if (Buffer.byteLength(location) > 16384 || metadataBytes > 4000000) {
+                        throw new Error('Incremental source metadata exceeds capacity');
+                    }
+                    entries.push({identity:location, digest});
+                    expected.set(identity, digest);
+                }
+                entries.sort((a,b) => a.identity < b.identity ? -1 : a.identity > b.identity ? 1 : 0);
+                const configuration = crypto.createHash('sha256').update(JSON.stringify({
+                    schema:'flat.compiler.incremental.v1', options, tool:toolDigest,
+                    node:process.versions.node, maxSourceBytes, maxOutputBytes
+                })).digest('hex');
+                const key = crypto.createHash('sha256').update(JSON.stringify({configuration,entries})).digest('hex');
+                let previous = null;
+                if (fs.existsSync(manifest)) {
+                    try {
+                        const fd = fs.openSync(manifest,'r');
+                        try {
+                            if (fs.fstatSync(fd).size <= 4194304) {
+                                const buffer = Buffer.alloc(4194305);
+                                let total = 0, size;
+                                while (total < buffer.length && (size = fs.readSync(fd,buffer,total,buffer.length-total,null)) > 0) total += size;
+                                if (total <= 4194304) previous = JSON.parse(buffer.subarray(0,total).toString('utf8'));
+                            }
+                        } finally { fs.closeSync(fd); }
+                        if (!previous || previous.schema !== 'flat.compiler.incremental.v1' ||
+                            !Array.isArray(previous.entries) || previous.entries.length > 16384 ||
+                            !previous.diagnostics || previous.diagnostics.complete !== true ||
+                            !Array.isArray(previous.diagnostics.records) || previous.diagnostics.records.length !== 0 ||
+                            typeof previous.output !== 'string' || typeof previous.key !== 'string' ||
+                            previous.entries.some(value => !value || typeof value.identity !== 'string' ||
+                                !/^[0-9a-f]{64}$/.test(value.digest))) previous = null;
+                    } catch (_) { previous = null; }
+                }
+                let unchanged = 0, changed = 0, added = 0, removed = 0;
+                const old = new Map(previous ? previous.entries.map(value => [value.identity,value.digest]) : []);
+                for (const value of entries) {
+                    if (!old.has(value.identity)) added++;
+                    else if (old.get(value.identity) === value.digest) unchanged++;
+                    else changed++;
+                    old.delete(value.identity);
+                }
+                removed = old.size;
+                let hit = false;
+                if (previous && previous.key === key && fs.existsSync(destinationPath)) {
+                    try { hit = digestFile(destinationPath,maxOutputBytes) === previous.output; }
+                    catch (_) { hit = false; }
+                }
+                const reason = hit ? 'exact-hit' : !previous ? 'cold' :
+                    previous.configuration !== configuration ? 'configuration-changed' :
+                    previous.key !== key ? 'closure-changed' : 'output-changed';
+                #{state} = {fs, crypto, digestFile, manifest, lock, destinationPath, entries,
+                    expected, configuration, key, toolDigest, maxSourceBytes, maxOutputBytes,
+                    tool:path.resolve(tool), owned:true, hit, previousOutput:previous ? previous.output : null,
+                    evidence:{schema:'flat.compiler.incremental.v1', scope:'persistent-cli-package',
+                        reused:hit, reason, unchangedSources:unchanged, changedSources:changed,
+                        addedSources:added, removedSources:removed, toolFingerprint:'sha256:'+toolDigest,
+                        inputFingerprint:'sha256:'+key, manifestPublished:false,
+                        diagnostics:{complete:hit, records:hit ? [] : null}}};
+                #{hit} = hit;
+            } catch (error) {
+                let message = error.message;
+                if (owned) {
+                    try { fs.unlinkSync(path.join(lock,'owner.json')); }
+                    catch (cleanup) { if (cleanup.code !== 'ENOENT') message += '; owner cleanup failed: ' + cleanup.message; }
+                    try { fs.rmdirSync(lock); }
+                    catch (cleanup) { message += '; incremental lock cleanup failed: ' + cleanup.message; }
+                }
+                #{errorMessage} = message;
+            }
+        }
+        if (errorMessage) throw Exception(String(errorMessage))
+        reused = hit
+    }
+
+    override public identities() -> String[] => provider.identities()
+    override public checkpoint() { provider.checkpoint() }
+    override public async load(String identity) -> CompilerSource {
+        let value = provider.load(identity)
+        if (!value) return null
+        native_array native var Char[] errorMessage
+        external js {
+            const expected = #{state}.expected.get(#{identity.chars.data});
+            const actual = #{state}.crypto.createHash('sha256').update(#{value.text.chars.data}, 'utf8').digest('hex');
+            if (!expected || expected !== actual) #{errorMessage} = 'Source changed after incremental admission';
+        }
+        if (errorMessage) throw Exception(String(errorMessage))
+        return value
+    }
+
+    /** Revalidate before publication; cancellation never writes persistent state. */
+    public validate() {
+        native_array native var Char[] errorMessage
+        external js {
+            try {
+                const s = #{state};
+                if (!s.owned) throw new Error('Incremental transaction is closed');
+                if (s.digestFile(s.tool,268435456) !== s.toolDigest) throw new Error('Compiler changed during compilation');
+                const expectedOutput = s.hit ? s.previousOutput : null;
+                if (expectedOutput && s.digestFile(s.destinationPath,s.maxOutputBytes) !== expectedOutput) {
+                    throw new Error('Output changed during incremental admission');
+                }
+                for (const value of s.entries) {
+                    if (s.digestFile(value.identity,s.maxSourceBytes) !== value.digest) throw new Error('Source changed during compilation');
+                }
+            } catch (error) { #{errorMessage} = error.message; }
+        }
+        if (errorMessage) throw Exception(String(errorMessage))
+    }
+
+    /** Call only after successful atomic destination publication or a validated hit. */
+    public commit(CompilationSummary summary) {
+        if (!summary || summary.cancelled || !summary.cleanupSettled || summary.diagnosticCount != 0 ||
+            summary.artifactCount != 1) throw Exception("Persistent publication requires successful settled compilation")
+        validate()
+        native_array native var Char[] errorMessage
+        external js {
+            const s = #{state};
+            let temporary = null;
+            try {
+                const output = s.digestFile(s.destinationPath,s.maxOutputBytes);
+                const contents = JSON.stringify({schema:'flat.compiler.incremental.v1',
+                    key:s.key, configuration:s.configuration, entries:s.entries, output,
+                    diagnostics:{complete:true, records:[]}});
+                if (Buffer.byteLength(contents) > 4194304) throw new Error('Incremental manifest exceeds capacity');
+                temporary = s.fs.mkdtempSync(s.manifest+'.tmp-');
+                const staged = temporary + '/manifest';
+                const fd = s.fs.openSync(staged,'wx');
+                try { s.fs.writeFileSync(fd,contents); s.fs.fsyncSync(fd); }
+                finally { s.fs.closeSync(fd); }
+                s.fs.renameSync(staged,s.manifest);
+                s.evidence.manifestPublished = true;
+                s.evidence.diagnostics = {complete:true, records:[]};
+            } catch (error) { #{errorMessage} = error.message; }
+            finally {
+                if (temporary) {
+                    try {
+                        if (s.fs.existsSync(temporary+'/manifest')) s.fs.unlinkSync(temporary+'/manifest');
+                        s.fs.rmdirSync(temporary);
+                    } catch (cleanup) {
+                        #{errorMessage} = 'Incremental manifest cleanup failed: ' + cleanup.message;
+                    }
+                }
+            } }
+        }
+        if (errorMessage) throw Exception(String(errorMessage))
+    }
+
+    public revision() -> String {
+        native_array native var Char[] value
+        external js { #{value} = 'sha256:' + #{state}.key; }
+        return String(value)
+    }
+
+    /** A warm diagnostic batch exists only after revalidation of successful cached output. */
+    public cachedDiagnostics() -> String {
+        validate()
+        if (!reused) throw Exception("Cached diagnostic batch requires a validated hit")
+        native_array native var Char[] value
+        external js {
+            #{value} = JSON.stringify({schema:'flat.compiler.diagnostics.v1',
+                revision:'sha256:'+#{state}.key, complete:true, records:[]}) + '\n';
+        }
+        return String(value)
+    }
+
+    public evidence() -> String {
+        native_array native var Char[] json
+        external js { #{json} = JSON.stringify(#{state}.evidence) + '\n'; }
+        return String(json)
+    }
+
+    public dispose() {
+        native_array native var Char[] errorMessage
+        external js {
+            const s = #{state};
+            if (s && s.owned) {
+                try { s.fs.unlinkSync(s.lock+'/owner.json'); s.fs.rmdirSync(s.lock); s.owned=false; }
+                catch (error) { #{errorMessage}=error.message; }
+            }
+        }
+        if (errorMessage) throw Exception(String(errorMessage))
+    }
+}

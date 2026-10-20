@@ -9,7 +9,18 @@ const moduleApi = require('node:module');
 const policyFile = process.env.FLAT_BOOTSTRAP_POLICY;
 if (!policyFile) throw Error('Missing bootstrap subprocess policy');
 const policy = JSON.parse(fs.readFileSync(policyFile, 'utf8'));
-const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+const hash = file => {
+  const value = crypto.createHash('sha256');
+  const buffer = Buffer.allocUnsafe(1024 * 1024);
+  const fd = fs.openSync(file, 'r');
+  try {
+    let count;
+    while ((count = fs.readSync(fd, buffer, 0, buffer.length, null)) > 0) {
+      value.update(buffer.subarray(0, count));
+    }
+  } finally { fs.closeSync(fd); }
+  return value.digest('hex');
+};
 function record(decision, command, args, reason) {
   if (fs.existsSync(policy.journal) && fs.statSync(policy.journal).size > 16 * 1024 * 1024) {
     throw Error('Bootstrap admission journal capacity exceeded');
@@ -78,15 +89,20 @@ function admit(command, args = [], options = {}) {
       let script = path.resolve(options.cwd || process.cwd(), args[0]);
       const lookup = path.join(fs.realpathSync(path.dirname(script)), path.basename(script));
       if (lookup === policy.compiler && policy.stage > 0) {
-        // Admission only: Node receives Airship's original lookup path. The
-        // filesystem facade must resolve to the immutable seed; never rewrite
-        // argv here or silently execute a different compiler.
-        if (fs.realpathSync(script) !== policy.seed) throw Error('Compiler lookup is not mapped to immutable seed');
+        // Admission only: Airship explicitly selected this immutable script.
+        // Retain realpath/hash checks; never substitute another compiler argv.
+        if (fs.realpathSync(script) !== policy.seed) throw Error('Compiler script is not the immutable seed');
         verify(policy.seed, policy.seedSha256);
       } else if (script === policy.airship) {
         verify(script, policy.airshipSha256);
       } else {
+        if (policy.stage > 0 && script === policy.compilerOutput) {
+          throw Error('Compiler output is not an admitted compiler input');
+        }
         const real = fs.realpathSync(script);
+        if (policy.stage > 0 && real === policy.compilerOutput) {
+          throw Error('Compiler output alias is not an admitted compiler input');
+        }
         if (!real.startsWith(policy.root + path.sep) || !real.endsWith('.js')) {
           throw Error('Script outside stage workspace');
         }

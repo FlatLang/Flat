@@ -1,0 +1,114 @@
+name: Full production dogfood acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed_manifest:
+        description: Absolute reviewed seed manifest on provisioned runner
+        required: true
+        type: string
+      review_receipt:
+        description: Absolute independently reviewed seed provenance receipt
+        required: true
+        type: string
+      review_sha256:
+        description: Independent expected SHA-256 of seed review
+        required: true
+        type: string
+      bootstrap_output:
+        description: Absolute completed stage_bootstrap output with retained workspaces
+        required: true
+        type: string
+      changed_input:
+        description: Reviewed existing Flat-Core source for controlled byte-change probe
+        required: true
+        type: string
+      removed_input:
+        description: Reviewed independently removable Flat-Core source for removal probe
+        required: true
+        type: string
+      production_evidence:
+        description: Absolute reviewed supplemental production evidence receipt (with retained referenced files)
+        required: true
+        type: string
+      production_evidence_sha256:
+        description: Independent expected SHA-256 of production evidence receipt
+        required: true
+        type: string
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  receipt-tests:
+    name: Acceptance harness tests (NOT production acceptance)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run isolated receipt validation tests
+        run: python3 -B -m unittest discover -s packages/Airship/test -p test_dogfood_acceptance.py
+
+  production-acceptance:
+    # Only explicitly dispatched gates claim production acceptance. No untrusted
+    # PR code executes on the provisioned runner; normal CI is receipt tests only.
+    if: github.event_name == 'workflow_dispatch'
+    needs: receipt-tests
+    runs-on: [self-hosted, flat-dogfood]
+    environment: flat-dogfood-acceptance
+    timeout-minutes: 190
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute actual stage2 production Core and retained-output/clean comparisons
+        shell: bash
+        env:
+          SEEDS: ${{ inputs.seed_manifest }}
+          REVIEW: ${{ inputs.review_receipt }}
+          REVIEW_SHA256: ${{ inputs.review_sha256 }}
+          STAGES: ${{ inputs.bootstrap_output }}
+          CHANGED: ${{ inputs.changed_input }}
+          REMOVED: ${{ inputs.removed_input }}
+        run: |
+          set -euo pipefail
+          python3 -B packages/Airship/test/dogfood_acceptance.py \
+            --produce --repo "$GITHUB_WORKSPACE" \
+            --output "$RUNNER_TEMP/flat-production-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            --bootstrap-output "$STAGES" \
+            --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256" \
+            --changed-input "$CHANGED" --removed-input "$REMOVED"
+      - name: Validate complete production and self-host evidence
+        shell: bash
+        env:
+          SEEDS: ${{ inputs.seed_manifest }}
+          REVIEW: ${{ inputs.review_receipt }}
+          REVIEW_SHA256: ${{ inputs.review_sha256 }}
+          STAGES: ${{ inputs.bootstrap_output }}
+          EVIDENCE: ${{ inputs.production_evidence }}
+          EVIDENCE_SHA256: ${{ inputs.production_evidence_sha256 }}
+        run: |
+          set -euo pipefail
+          for receipt in "$SEEDS" "$REVIEW" "$EVIDENCE"; do
+            test -n "$receipt" && test -f "$receipt" || { echo 'Required approved receipt is not provisioned' >&2; exit 1; }
+          done
+          test -d "$STAGES" || { echo 'Required stage0/1/2 outputs are not provisioned' >&2; exit 1; }
+          python3 -B packages/Airship/test/dogfood_acceptance.py \
+            --repo "$GITHUB_WORKSPACE" \
+            --output "$RUNNER_TEMP/flat-dogfood-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256" \
+            --bootstrap-output "$STAGES" \
+            --evidence "$EVIDENCE" --evidence-sha256 "$EVIDENCE_SHA256"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-dogfood-receipt-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/flat-dogfood-${{ github.run_id }}-${{ github.run_attempt }}/
+            ${{ runner.temp }}/flat-production-${{ github.run_id }}-${{ github.run_attempt }}/
+          if-no-files-found: error

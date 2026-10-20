@@ -1,0 +1,22 @@
+package flat/compiler
+
+/**
+ * Evidence for exact in-process package reuse. Not a persistent incremental cache,
+ * digest proof, or claim of member-level invalidation. Counts compare the admitted
+ * complete immutable closure with the last retained successful closure. Tool input
+ * identity is caller supplied (prefer a verified executable digest); no tool is run.
+ */
+data class {
+    public construct(
+        visible Bool reused = false,
+        visible String reason = "disabled",
+        visible Int unchangedSources = 0,
+        visible Int changedSources = 0,
+        visible Int addedSources = 0,
+        visible Int removedSources = 0,
+        visible String toolFingerprint = "unspecified"
+    ) {
+        if (!reason || !toolFingerprint || unchangedSources < 0 || changedSources < 0 ||
+            addedSources < 0 || removedSources < 0) throw Exception("Invalid package reuse evidence")
+    }
+}

@@ -52,6 +52,7 @@ class {
     }
 
     async checkInstallCompiler() {
+        validateCompilerSelection()
         let runtime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() ?: "java"
 
         match runtime {
@@ -95,10 +96,35 @@ class {
 
     getOutputDirectory(PackageSource source) => File("#{airship.packageLocation.normalizedLocation}/#{source.outDirectory}")
 
-    public async getInstallCommand(String installationTarget, PackageSource source, Dependency[] dependencies) -> String[] {
-        if (cliArgs.flatcJarValueArg.value && cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() == "flat") {
+    validateCompilerSelection() {
+        let runtime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() ?: "java"
+        if (cliArgs.flatcJarValueArg.value && runtime == "flat") {
             throw ExecutionFailureException("--flatc-jar cannot be used with --flatc-runtime flat; remove --flatc-jar to use the Flat compiler or select --flatc-runtime java")
         }
+        if (let script = cliArgs.flatcScriptValueArg.value) {
+            if (script.trim().isEmpty) {
+                throw ExecutionFailureException("--flatc-script requires a nonempty compiler path")
+            }
+            if (runtime != "flat") {
+                throw ExecutionFailureException("--flatc-script requires --flatc-runtime flat")
+            }
+        }
+    }
+
+    public validateCompilerOutput(PackageSource source) {
+        if (let script = cliArgs.flatcScriptValueArg.value) {
+            if (source.outFile) {
+                let output = File("#{getOutputDirectory(source).normalizedLocation}/#{source.outFile}")
+                if (File(script).normalizedLocation == output.normalizedLocation) {
+                    throw ExecutionFailureException("Explicit Flat compiler input cannot be the output being built; select an independent --flatc-script")
+                }
+            }
+        }
+    }
+
+    public async getInstallCommand(String installationTarget, PackageSource source, Dependency[] dependencies) -> String[] {
+        validateCompilerSelection()
+        validateCompilerOutput(source)
         let arguments = getFlatcExecutableArguments(installationTarget, source)
         return getFlatcExecutableCommand(dependencies).plus(arguments)
     }
@@ -109,6 +135,14 @@ class {
     }
 
     public async getFlatCompilerCommand() -> String[] {
+        validateCompilerSelection()
+        if (let script = cliArgs.flatcScriptValueArg.value) {
+            let file = File(script)
+            if (!file.isFile) {
+                throw ExecutionFailureException("Explicit Flat compiler script is not installed at #{script}; no fallback is permitted")
+            }
+            return ["node", file.normalizedLocation]
+        }
         let dependency = getFlatCompilerDependency()
         let packageFile = File("#{dependency.getLocation()}/flat.json")
         if (!packageFile.isFile) {
@@ -391,6 +425,49 @@ class {
         return args
     }
 
+    /** A prior artifact cannot prove that this compiler invocation produced output.
+     * Only the selected file is invalidated; sibling artifacts remain untouched.
+     */
+    public async prepareCompilerOutput(PackageSource source) -> File {
+        validateCompilerOutput(source)
+        if (!source.outFile) return null
+        let output = File("#{getOutputDirectory(source).normalizedLocation}/#{source.outFile}")
+        if (output.exists && !output.isFile) {
+            throw FlatInstallationFailureException("Compiler output is not a file: #{output.normalizedLocation}")
+        }
+        if (output.isFile) output.delete()
+        if (output.exists) {
+            throw FlatInstallationFailureException("Could not invalidate previous compiler output: #{output.normalizedLocation}")
+        }
+        return output
+    }
+
+    public validateCompilerResult(Int exitCode, File output) {
+        if (exitCode != 0) {
+            throw FlatInstallationFailureException("Compilation failed: exit code #{exitCode}")
+        }
+        if (output && !output.isFile) {
+            throw FlatInstallationFailureException("Compilation produced no fresh output at #{output.normalizedLocation}")
+        }
+    }
+
+    public async executeCompilerCommand(PackageSource source, String[] cmd) {
+        let output = prepareCompilerOutput(source)
+        try {
+            // Flat CLI owns glob interpretation; Java retains its documented
+            // shell-compatible argument construction until its adapter changes.
+            let flatRuntime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() == "flat"
+            let response = flatRuntime
+                ? System.executeExact(cmd, silent: cliArgs.quietArg.enabled, shell: false)
+                : System.execute(cmd, silent: cliArgs.quietArg.enabled)
+            validateCompilerResult(response.exitCode, output)
+        } catch (Exception error) {
+            // Failed/aborted compilation must not leave a runnable partial file.
+            if (output?.isFile) output.delete()
+            throw error
+        }
+    }
+
     async installLocalPackage(String package) {
         log.debug("Installing local package #{airship.packageLocation.normalizedLocation} with target \"#package\"")
 
@@ -401,12 +478,15 @@ class {
             return
         }
 
+        // Reject incompatible or unavailable tool selection before dependency
+        // acquisition can perform incidental work. Command building rechecks it.
+        validateCompilerOutput(source)
+        checkInstallCompiler()
         let dependencies = installDependencies(package, source)
 
         let cmd = getInstallCommand(package, source, dependencies)
 
         checkInstallTarget()
-        checkInstallCompiler()
 
         if (airship.debug) {
             Console.writeLine(cmd.map({ System.sanitizeCliArgument(_) }).join(" "))
@@ -418,16 +498,7 @@ class {
 
         log.debug("Executing command: #cmd")
 
-        // Flat CLI owns source/exclusion glob interpretation. A shell must not
-        // expand an exclusion into positional source arguments before admission.
-        let flatRuntime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() == "flat"
-        let response = flatRuntime
-            ? System.executeExact(cmd, silent: cliArgs.quietArg.enabled, shell: false)
-            : System.execute(cmd, silent: cliArgs.quietArg.enabled)
-
-        if (response.exitCode != 0) {
-            throw FlatInstallationFailureException("Compilation failed: exit code #{response.exitCode}")
-        }
+        executeCompilerCommand(source, cmd)
 
         assetService.copyAssets(getOutputDirectory(source), package, source)
 

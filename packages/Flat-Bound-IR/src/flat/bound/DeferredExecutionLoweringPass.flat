@@ -13,7 +13,7 @@ class extends BoundFunctionLoweringPass {
             input.identity, input.name, input.returnType, output, input.range,
             input.parameterValues(), input.staticFunction, input.mainFunction,
             input.constructorFunction, input.dispatchIdentity, input.parentConstructorCall, input.constructorDelegation,
-            input.asyncFunction, input.externalName
+            input.asyncFunction, input.externalName, input.abstractFunction, input.lazyProperty
         )
     }
 
@@ -75,7 +75,7 @@ class extends BoundFunctionLoweringPass {
                     call.target,
                     call.receiver,
                     arguments,
-                    call.argumentConversions()
+                    call.argumentConversions(), call.safeAccess, call.receiverConversion, call.suppressAwait
                 )
             )
         }

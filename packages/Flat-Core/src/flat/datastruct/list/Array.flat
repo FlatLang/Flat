@@ -568,6 +568,8 @@ class<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<E>>, P
             array.data[count - ++i] = element
         }
 
+        array.position = count
+
         return array
     }
 

@@ -23,6 +23,10 @@ class {
 
     public emitFunction(BoundFunctionUnit functionUnit, Int ordinal) -> Es6EmissionResult {
         if (!functionUnit) throw Exception("ES6 function unit is required")
+        if (functionUnit.abstractFunction) {
+            return Es6EmissionResult(diagnostic: Es6BackendDiagnostic(
+                "es6.abstract-function-body", "Abstract declarations have no executable function body"))
+        }
         if (functionUnit.lazyProperty) {
             return Es6EmissionResult(diagnostic: Es6BackendDiagnostic(
                 "es6.unlowered-lazy-property", "Lazy properties require type lowering before emission"))
@@ -33,7 +37,8 @@ class {
         let parameters = parameterNames(loweredFunction)
         let code = loweredFunction.constructorFunction ?
             units.emitConstructor(parameters, body.code) :
-            units.emitFunction(loweredFunction.identity.value, parameters, body.code)
+            units.emitFunction(loweredFunction.identity.value, parameters, body.code,
+                asyncFunction: loweredFunction.asyncFunction, externalName: loweredFunction.externalName)
         return Es6EmissionResult(
             fragment: Es6ArtifactFragment(loweredFunction.identity.value, ordinal, code)
         )
@@ -55,6 +60,10 @@ class {
 
     public emitMethod(BoundFunctionUnit functionUnit) -> Es6CodeResult {
         if (!functionUnit) throw Exception("ES6 method unit is required")
+        if (functionUnit.abstractFunction) {
+            return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+                "es6.abstract-function-body", "Abstract declarations have no executable method body"))
+        }
         if (functionUnit.lazyProperty) {
             return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
                 "es6.unlowered-lazy-property", "Lazy properties require type lowering before emission"))
@@ -129,19 +138,28 @@ class {
         ))
     }
 
+    metadataLiteral(String value) -> String {
+        return "'" + value.replace("\\", "\\\\").replace("'", "\\'")
+            .replace("\r", "\\r").replace("\n", "\\n")
+            .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029") + "'"
+    }
+
     emitMetadata(BoundTypeUnit typeUnit) -> String {
         let owner = Es6NameMangler.mangle(typeUnit.identity.value)
         let typeName = typeUnit.identity.name
         var String result = owner + "." + Es6RuntimeAbi().typeMetadataProperty +
-            " = { name: '" + typeName + "' };\n"
+            " = { name: " + metadataLiteral(typeName) + " };\n"
         let implemented = typeUnit.metadata().filter({ _.metadataKind == "implements" })
+        let identities = implemented.filter({ _.declarationIdentity != null })
+        let identityValues = identities.map({ metadataLiteral(_.declarationIdentity.value) })
+        result += owner + ".__flatType.interfaceIdentities = [" + identityValues.join(", ") + "];\n"
         if (implemented.isNotEmpty) {
-            let names = implemented.map({ "'" + _.value + "'" })
+            let names = implemented.map({ metadataLiteral(_.value) })
             result += owner + ".__flatType.interfaces = [" + names.join(", ") + "];\n"
         }
         let reified = typeUnit.metadata().filter({ _.metadataKind == "reified" })
         if (reified.isEmpty) return result
-        let values = reified.map({ "'" + _.value + "'" })
+        let values = reified.map({ metadataLiteral(_.value) })
         return result + owner + ".__flatReified = [" + values.join(", ") + "];\n"
     }
 
@@ -190,7 +208,9 @@ class {
         return Es6EmissionResult(fragment: Es6ArtifactFragment(
             loweredType.identity.value,
             ordinal,
-            classCode + staticFields + emitMetadata(loweredType)
+            // Metadata must exist before a static initializer calls a method that reads it.
+            // Field initialization itself retains the published source order.
+            classCode + emitMetadata(loweredType) + staticFields
         ))
     }
 }

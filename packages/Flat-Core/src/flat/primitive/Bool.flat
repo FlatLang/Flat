@@ -5,7 +5,7 @@ import flat/datastruct
 class extends Primitive implements Comparable<Bool> {
     public construct(public Bool value) {}
 
-    public compareTo(Bool other) => value == other ? 0 : -1
+    public compareTo(Bool other) => value == other ? 0 : (value ? 1 : -1)
     public equals(Object other) => (other || !this) && other.class.isOfType(Bool.class) && value == ((Bool)other)
     public toString() => toString(value)
 

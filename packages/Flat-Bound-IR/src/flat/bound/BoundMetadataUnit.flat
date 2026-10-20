@@ -1,16 +1,24 @@
 package flat/bound
 
-/** Immutable target-independent metadata consumed by capable backends/runtime assembly. */
+import flat/compiler/models/DeclarationIdentity
+
+/** Immutable target-independent metadata consumed by capable backends/runtime assembly.
+ * implements.declarationIdentity is the resolved interface identity (including
+ * published superinterface closure). name/value remain descriptive only and
+ * cannot establish runtime membership when identity evidence is absent.
+ */
 data class {
     public construct(
         visible String metadataKind,
         visible String name,
-        visible String value
+        visible String value,
+        visible DeclarationIdentity declarationIdentity = null
     ) {
         if ((metadataKind != "data-class" && metadataKind != "generic" &&
              metadataKind != "reified" && metadataKind != "annotation" &&
              metadataKind != "implements") ||
-            !name || name.trim().count == 0 || !value) {
+            !name || name.trim().count == 0 || !value ||
+            (declarationIdentity && metadataKind != "implements")) {
             throw Exception("Bound metadata requires supported kind, name, and value")
         }
     }

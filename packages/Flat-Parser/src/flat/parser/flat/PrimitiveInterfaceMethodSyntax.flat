@@ -7,6 +7,7 @@ data class {
     var String[] parameterTypes
     var Token[] implementationTokens
     var SourceRange implementationRange
+    var Token[] declarationTokens
 
     public construct(
         visible String name,
@@ -15,7 +16,10 @@ data class {
         visible SourceRange range = null,
         visible PrimitiveExpressionSyntax defaultValue = null,
         Token[] bodyDeclarationTokens = Token[],
-        visible Bool storageProperty = false
+        visible Bool storageProperty = false,
+        Token[] signatureTokens = Token[],
+        visible SourceRange nativeReturnModifierRange = null,
+        visible SourceRange nativeArrayReturnModifierRange = null
     ) {
         if (!name || name.trim().isEmpty || !parameterTypeNames ||
             parameterTypeNames.any((parameterTypeName) =>
@@ -28,6 +32,11 @@ data class {
             (bodyDeclarationTokens.isNotEmpty && !range)) {
             throw Exception("Interface implementation requires tokens and source range")
         }
+        if (!signatureTokens || signatureTokens.any({ !_ }) ||
+            (signatureTokens.isNotEmpty && !range)) {
+            throw Exception("Interface declaration requires tokens and source range")
+        }
+        declarationTokens = Token[]:addAll(signatureTokens)
         implementationTokens = Token[]:addAll(bodyDeclarationTokens)
         implementationRange = range
         parameterTypes = String[]
@@ -42,6 +51,18 @@ data class {
                 implementationRange.snapshot, implementationRange.startTokenIndex).functionValues().first
         } catch (Exception error) {
             throw Exception("Trait implementation '#name' token #{implementationRange.startTokenIndex}: #{error.message}")
+        }
+    }
+
+    /** Full callable contract, including bodyless declarations; never fabricates a default body. */
+    public declaration() -> PrimitiveFunctionSyntax {
+        if (implementationTokens.isNotEmpty || declarationTokens.isEmpty) return implementation()
+        try {
+            return PrimitiveFunctionParser().parse(declarationTokens,
+                implementationRange.snapshot, implementationRange.startTokenIndex,
+                allowBodylessDeclaration: true).functionValues().first
+        } catch (Exception error) {
+            throw Exception("Interface declaration '#name' token #{implementationRange.startTokenIndex}: #{error.message}")
         }
     }
 

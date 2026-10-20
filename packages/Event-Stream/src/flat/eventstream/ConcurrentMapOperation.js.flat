@@ -21,6 +21,10 @@ class<In, Out> {
 
     completeOperation() {
         external {
+            if (!#{outputBackpressure.completed}) {
+                #{outputBackpressure.completed} = true;
+                #{outputBackpressure.resolveFunc}(false);
+            }
             #{completion.completed} = true;
             #{completion.resolveFunc}(true);
         }

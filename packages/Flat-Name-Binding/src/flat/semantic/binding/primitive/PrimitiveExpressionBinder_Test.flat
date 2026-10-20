@@ -7,6 +7,305 @@ import flat/bound
 import flat/lexer/Lexer
 
 testable class {
+    // Erase legacy generic-array projections before narrowing their bound node.
+    arrayNode(Object value) -> BoundArrayExpression => (BoundArrayExpression)value
+    arrayCall(Object value) -> BoundCallExpression => (BoundCallExpression)value
+    arrayLiteral(Object value) -> BoundLiteralExpression => (BoundLiteralExpression)value
+    arrayConversion(Object value) -> BoundConversionExpression => (BoundConversionExpression)value
+    arrayFunction(Object value) -> FunctionSemanticType => (FunctionSemanticType)value
+    arrayLambda(Object value) -> BoundLambdaExpression => (BoundLambdaExpression)value
+    arrayRange(String name, Int start = 0) -> SourceRange => SourceRange(
+        SourceSnapshotIdentity(SourceIdentity("memory:#name"), "one"), start, start + 1,
+        Location(lineNumber: 1, column: start + 1), Location(lineNumber: 1, column: start + 2))
+
+    arrayTextContext(SourceRange range) -> PrimitiveResolvedDeclarationContext {
+        let syntax = PrimitiveClassSyntax(range, "String", null, null, PrimitiveFieldSyntax[],
+            PrimitiveConstructorSyntax(range, PrimitiveFunctionParameterSyntax[], PrimitiveStatementSyntax[]),
+            PrimitiveFunctionSyntax[])
+        let source = PrimitiveSourceBindingContext("flat", range.snapshot, [syntax])
+        return PrimitiveResolvedDeclarationContext(source, [source])
+    }
+
+    arrayStorageConstructor(SourceRange range) -> CallableSignature {
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "class", 100), "class", "Array")
+        let type = UserClassSemanticType(owner)
+        let parameter = GenericParameterSemanticType(owner, "Type", 0)
+        let declaration = GenericDeclaration(owner, [parameter], type)
+        return CallableSignature(SymbolIdentity(owner, "constructor", 0), "Array", CallableKind("constructor"),
+            [ArraySemanticType(parameter), SemanticTypes.intType()], type, type,
+            ownerGenericDeclaration: declaration)
+    }
+
+    arrayTextConstructor(UserClassSemanticType type) -> CallableSignature => CallableSignature(
+        SymbolIdentity(type.declarationIdentity, "constructor", 0), "String", CallableKind("constructor"),
+        [SemanticTypes.stringType()], type, type)
+
+    test `declared text array storage selection`() {
+        let range = arrayRange("declared-string-array")
+        let context = arrayTextContext(range)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let arrayConstructor = arrayStorageConstructor(range)
+        let textConstructor = arrayTextConstructor(text)
+        let required = GenericInstanceSemanticType(arrayConstructor.ownerType, [text])
+        let result = PrimitiveExpressionBinder().bind(PrimitiveArraySyntax(range, [
+            PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"B\""),
+            PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"KB\""),
+            PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"MB\"")]), required,
+            callables: [arrayConstructor, textConstructor], declarationContext: context)
+        expect(result.succeeded).toBe(true)
+        let call = (BoundCallExpression)result.expression
+        expect(call.target.identity.value).toBe(arrayConstructor.identity.value)
+        expect(call.semanticType.value()).toBe(required.value())
+        let storage = arrayNode(call.argumentValues().first)
+        expect(storage.semanticType.value()).toBe(ArraySemanticType(text).value())
+        expect(storage.elementValues().count).toBe(3)
+        var Int index
+        for (element in storage.elementValues()) {
+            let wrapped = (BoundCallExpression)element
+            expect(wrapped.target.identity.value).toBe(textConstructor.identity.value)
+            expect(wrapped.argumentValues().count).toBe(1)
+            expect(wrapped.argumentValues().first.semanticType.value()).toBe(SemanticTypes.stringType().value())
+            index++
+        }
+        expect((arrayLiteral(call.argumentValues()[1])).sourceValue).toBe("3")
+        let firstText = arrayCall(storage.elementValues()[0])
+        let lastText = arrayCall(storage.elementValues()[2])
+        expect((arrayLiteral(firstText.argumentValues().first)).sourceValue).toBe("\"B\"")
+        expect((arrayLiteral(lastText.argumentValues().first)).sourceValue).toBe("\"MB\"")
+    }
+
+    test `mixed text array order`() {
+        let range = arrayRange("mixed-string-array")
+        let context = arrayTextContext(range)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let arrayConstructor = arrayStorageConstructor(range)
+        let owner = text.declarationIdentity
+        let native = CallableSignature(SymbolIdentity(owner, "function", 1), "nativeText",
+            CallableKind("function"), SemanticType[], SemanticTypes.stringType())
+        let declared = CallableSignature(SymbolIdentity(owner, "function", 2), "declaredText",
+            CallableKind("function"), SemanticType[], text)
+        let required = GenericInstanceSemanticType(arrayConstructor.ownerType, [text])
+        let result = PrimitiveExpressionBinder().bind(PrimitiveArraySyntax(range, [
+            PrimitiveCallSyntax(range, "nativeText", PrimitiveExpressionSyntax[]),
+            PrimitiveCallSyntax(range, "declaredText", PrimitiveExpressionSyntax[])]), required,
+            callables: [declared, arrayTextConstructor(text), native, arrayConstructor], declarationContext: context)
+        expect(result.succeeded).toBe(true)
+        let storage = arrayNode(arrayCall(result.expression).argumentValues().first)
+        let first = arrayCall(storage.elementValues()[0])
+        expect((arrayCall(first.argumentValues().first)).target.identity.value).toBe(native.identity.value)
+        expect((arrayCall(storage.elementValues()[1])).target.identity.value).toBe(declared.identity.value)
+        expect(storage.elementValues().count).toBe(2)
+    }
+
+    test `empty array contextual storage`() {
+        let range = arrayRange("empty-array-context")
+        let syntax = PrimitiveArraySyntax(range, PrimitiveExpressionSyntax[])
+        let binder = PrimitiveExpressionBinder()
+        let untyped = binder.bind(syntax)
+        expect(untyped.succeeded).toBe(false)
+        expect(untyped.diagnostic.code).toBe("type.array-element-context")
+        let native = binder.bind(syntax, ArraySemanticType(SemanticTypes.stringType()))
+        expect(native.succeeded).toBe(true)
+        expect((arrayNode(native.expression)).elementValues().count).toBe(0)
+        let constructor = arrayStorageConstructor(range)
+        let required = GenericInstanceSemanticType(constructor.ownerType, [SemanticTypes.stringType()])
+        let declared = binder.bind(syntax, required, callables: [constructor])
+        expect(declared.succeeded).toBe(true)
+        let call = (BoundCallExpression)declared.expression
+        expect(call.semanticType.value()).toBe(required.value())
+        expect((arrayNode(call.argumentValues().first)).elementValues().count).toBe(0)
+        expect((arrayLiteral(call.argumentValues()[1])).sourceValue).toBe("0")
+    }
+
+    test `text storage and numeric widening`() {
+        let range = arrayRange("native-array-representation")
+        let text = PrimitiveArraySyntax(range, [PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"native\"")])
+        let inferred = PrimitiveExpressionBinder().bind(text)
+        let expected = PrimitiveExpressionBinder().bind(text, ArraySemanticType(SemanticTypes.stringType()))
+        expect(inferred.succeeded).toBe(true)
+        expect(expected.succeeded).toBe(true)
+        expect(inferred.expression.semanticType.value()).toBe(ArraySemanticType(SemanticTypes.stringType()).value())
+        expect((arrayNode(expected.expression)).elementValues().first.expressionKind()).toBe("literal")
+        let widened = PrimitiveExpressionBinder().bind(PrimitiveArraySyntax(range, [
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1")]), ArraySemanticType(SemanticTypes.longType()))
+        expect(widened.succeeded).toBe(true)
+        let element = arrayConversion(arrayNode(widened.expression).elementValues().first)
+        expect(element.semanticType.value()).toBe(SemanticTypes.longType().value())
+        expect(element.value.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    test `nested array adaptation`() {
+        let range = arrayRange("nested-array-context")
+        let context = arrayTextContext(range)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let constructor = arrayStorageConstructor(range)
+        let inner = GenericInstanceSemanticType(constructor.ownerType, [text])
+        let outer = GenericInstanceSemanticType(constructor.ownerType, [inner])
+        let result = PrimitiveExpressionBinder().bind(PrimitiveArraySyntax(range, [
+            PrimitiveArraySyntax(range, [PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"inner\"")]),
+            PrimitiveArraySyntax(range, PrimitiveExpressionSyntax[])]), outer,
+            callables: [constructor, arrayTextConstructor(text)], declarationContext: context)
+        expect(result.succeeded).toBe(true)
+        let storage = arrayNode(arrayCall(result.expression).argumentValues().first)
+        expect(storage.semanticType.value()).toBe(ArraySemanticType(inner).value())
+        let first = arrayCall(storage.elementValues()[0])
+        let innerStorage = arrayNode(first.argumentValues().first)
+        expect(innerStorage.elementValues().first.semanticType.value()).toBe(text.value())
+        let second = arrayCall(storage.elementValues()[1])
+        expect((arrayNode(second.argumentValues().first)).elementValues().count).toBe(0)
+    }
+
+    test `invalid array element ranges`() {
+        let range = arrayRange("invalid-array-element")
+        let badRange = SourceRange(range.snapshot, 7, 8,
+            Location(lineNumber: 1, column: 8), Location(lineNumber: 1, column: 9))
+        let invalid = PrimitiveExpressionBinder().bind(PrimitiveArraySyntax(range, [
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1"),
+            PrimitiveLiteralSyntax(badRange, Token.Type.BOOL, "true")]), ArraySemanticType(SemanticTypes.intType()))
+        expect(invalid.succeeded).toBe(false)
+        expect(invalid.diagnostic.code).toBe("type.array-element-conversion")
+        expect(invalid.diagnostic.range.startTokenIndex).toBe(7)
+        let context = arrayTextContext(range)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let constructor = arrayStorageConstructor(range)
+        let nullable = LocalBinding("maybe", SymbolIdentity(text.declarationIdentity, "local", 0), NullableSemanticType(text))
+        let rejected = PrimitiveExpressionBinder().bind(PrimitiveArraySyntax(range, [
+            PrimitiveReferenceSyntax(badRange, "maybe")]), GenericInstanceSemanticType(constructor.ownerType, [text]),
+            locals: [nullable], callables: [constructor, arrayTextConstructor(text)], declarationContext: context)
+        expect(rejected.succeeded).toBe(false)
+        expect(rejected.diagnostic.code).toBe("type.array-element-conversion")
+        expect(rejected.diagnostic.range.startTokenIndex).toBe(7)
+    }
+
+    test `missing text adaptation contracts`() {
+        let range = arrayRange("array-missing-text-contract")
+        let context = arrayTextContext(range)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let constructor = arrayStorageConstructor(range)
+        let required = GenericInstanceSemanticType(constructor.ownerType, [text])
+        let syntax = PrimitiveArraySyntax(range, [PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"value\"")])
+        let missingContext = PrimitiveExpressionBinder().bind(syntax, required,
+            callables: [constructor, arrayTextConstructor(text)])
+        expect(missingContext.succeeded).toBe(false)
+        expect(missingContext.diagnostic.code).toBe("type.array-element-conversion")
+        let missingConstructor = PrimitiveExpressionBinder().bind(syntax, required,
+            callables: [constructor], declarationContext: context)
+        expect(missingConstructor.succeeded).toBe(false)
+        expect(missingConstructor.diagnostic.code).toBe("type.array-element-conversion")
+        let duplicate = arrayTextConstructor(text)
+        let ambiguous = PrimitiveExpressionBinder().bind(syntax, required,
+            callables: [constructor, duplicate, duplicate], declarationContext: context)
+        expect(ambiguous.succeeded).toBe(false)
+        expect(ambiguous.diagnostic.code).toBe("type.array-element-conversion")
+    }
+
+    test `noncanonical text adaptation rejection`() {
+        let range = arrayRange("array-spoofed-string")
+        let context = arrayTextContext(range)
+        let shadow = UserClassSemanticType(DeclarationIdentity(
+            SyntaxIslandIdentity(range.snapshot, "class", 20), "class", "String"))
+        let constructor = arrayStorageConstructor(range)
+        let required = GenericInstanceSemanticType(constructor.ownerType, [shadow])
+        let result = PrimitiveExpressionBinder().bind(PrimitiveArraySyntax(range, [
+            PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"not-shadow\"")]), required,
+            callables: [constructor, arrayTextConstructor(shadow)], declarationContext: context)
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.code).toBe("type.array-element-conversion")
+    }
+
+    test `text context invocation lifetime`() {
+        let range = arrayRange("array-context-lifetime")
+        let context = arrayTextContext(range)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let constructor = arrayStorageConstructor(range)
+        let required = GenericInstanceSemanticType(constructor.ownerType, [text])
+        let syntax = PrimitiveArraySyntax(range, [PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"value\"")])
+        let binder = PrimitiveExpressionBinder()
+        let first = binder.bind(syntax, required, callables: [constructor, arrayTextConstructor(text)],
+            declarationContext: context)
+        expect(first.succeeded).toBe(true)
+        let second = binder.bind(syntax, required, callables: [constructor, arrayTextConstructor(text)])
+        expect(second.succeeded).toBe(false)
+        expect(second.diagnostic.code).toBe("type.array-element-conversion")
+    }
+
+    test `array branch and callback context`() {
+        let range = arrayRange("array-branch-callback")
+        let context = arrayTextContext(range)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let constructor = arrayStorageConstructor(range)
+        let required = GenericInstanceSemanticType(constructor.ownerType, [text])
+        let branch = PrimitiveConditionalSyntax(range, PrimitiveLiteralSyntax(range, Token.Type.BOOL, "true"),
+            PrimitiveArraySyntax(range, PrimitiveExpressionSyntax[]),
+            PrimitiveArraySyntax(range, [PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"right\"")]))
+        let result = PrimitiveExpressionBinder().bind(branch, required,
+            callables: [constructor, arrayTextConstructor(text)], declarationContext: context)
+        expect(result.succeeded).toBe(true)
+        expect(result.expression.semanticType.value()).toBe(required.value())
+        let callback = PrimitiveExpressionBinder().bindCallback(
+            PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], branch),
+            FunctionSemanticType(SemanticType[], required), LocalBinding[],
+            [constructor, arrayTextConstructor(text)], declarationContext: context)
+        expect(callback.succeeded).toBe(true)
+        expect((arrayLambda(callback.expression)).body.semanticType.value()).toBe(required.value())
+    }
+
+    test `nested storage element adaptation`() {
+        let range = arrayRange("nested-native-array")
+        let inner = ArraySemanticType(SemanticTypes.longType())
+        let result = PrimitiveExpressionBinder().bind(PrimitiveArraySyntax(range, [
+            PrimitiveArraySyntax(range, [PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "7")]),
+            PrimitiveArraySyntax(range, PrimitiveExpressionSyntax[])]), ArraySemanticType(inner))
+        expect(result.succeeded).toBe(true)
+        let storage = arrayNode(result.expression)
+        expect(storage.semanticType.value()).toBe(ArraySemanticType(inner).value())
+        let first = arrayNode(storage.elementValues().first)
+        expect(first.elementValues().first.semanticType.value()).toBe(SemanticTypes.longType().value())
+        expect((arrayNode(storage.elementValues()[1])).elementValues().count).toBe(0)
+    }
+
+    test `array storage contract rejection`() {
+        let range = arrayRange("array-storage-contract")
+        let constructor = arrayStorageConstructor(range)
+        let required = GenericInstanceSemanticType(constructor.ownerType, [SemanticTypes.stringType()])
+        let syntax = PrimitiveArraySyntax(range, [PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"value\"")])
+        let missing = PrimitiveExpressionBinder().bind(syntax, required)
+        expect(missing.succeeded).toBe(false)
+        let wrong = CallableSignature(constructor.identity, "Array", CallableKind("constructor"),
+            [ArraySemanticType(SemanticTypes.intType()), SemanticTypes.intType()], constructor.ownerType,
+            constructor.ownerType, ownerGenericDeclaration: constructor.ownerGenericDeclaration)
+        let invalid = PrimitiveExpressionBinder().bind(syntax, required, callables: [wrong])
+        expect(invalid.succeeded).toBe(false)
+    }
+
+    test `function reference evidence retention`() {
+        let range = arrayRange("async-function-reference")
+        let identity = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "function", 1), "function", "read")
+        let target = CallableSignature(SymbolIdentity(identity, "function"), "read", CallableKind("function"),
+            SemanticType[], SemanticTypes.intType(), asyncFunction: true, externalName: "readExternal")
+        let result = PrimitiveExpressionBinder().bind(PrimitiveFunctionReferenceSyntax(range, "read"), callables: [target])
+        expect(result.succeeded).toBe(true)
+        let function = arrayFunction(result.expression.semanticType)
+        expect(function.asyncFunction).toBe(true)
+        let synchronous = PrimitiveExpressionBinder().bind(PrimitiveFunctionReferenceSyntax(range, "read"),
+            FunctionSemanticType(SemanticType[], SemanticTypes.intType()), callables: [target])
+        expect(synchronous.succeeded).toBe(false)
+    }
+
+    test `constructed call evidence retention`() {
+        let range = arrayRange("external-constructor-copy")
+        let owner = UserClassSemanticType(DeclarationIdentity(
+            SyntaxIslandIdentity(range.snapshot, "class", 1), "class", "Example"))
+        let target = CallableSignature(SymbolIdentity(owner.declarationIdentity, "constructor"), "Example",
+            CallableKind("constructor"), SemanticType[], owner, owner, externalName: "ExternalExample")
+        let result = PrimitiveExpressionBinder().bind(
+            PrimitiveConstructionSyntax(range, "Example", PrimitiveExpressionSyntax[]), callables: [target])
+        expect(result.succeeded).toBe(true)
+        let call = (BoundCallExpression)result.expression
+        expect(call.target.externalName).toBe("ExternalExample")
+        expect(call.target.identity.value).toBe(target.identity.value)
+    }
+
     async test `control expression fallback rejects intrinsic numeric unboxing`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:control-unbox-fallback"), "one")
         let stream = Lexer().lex("let converted = (Double)other;")

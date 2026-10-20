@@ -4,6 +4,7 @@ import flat/test
 
 import flat/time
 import flat/io
+import flat/primitive
 import flat/primitive/number
 
 import flat/meta
@@ -15,7 +16,9 @@ import flat/datastruct/list
     List_Test,
     Class_Test,
     String_Test,
+    Bool_Test,
     Long_Test,
+    Char_Test,
     Double_Test
 ]]
 class {

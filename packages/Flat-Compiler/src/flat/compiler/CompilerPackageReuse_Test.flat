@@ -10,6 +10,57 @@ import flat/time/Time
 import flat/writer/es6/bound
 
 testable class {
+    async test `reuse receipts distinguish actual hits closure changes removals and tool changes`() {
+        let linker = CountingLinker()
+        let engine = CompilerEngine(packageLinker: linker, packageReuse: CompilerPackageReuse())
+        let first = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "first.js",
+            toolFingerprint: "sha256:tool-one").completion.get()
+        expect(first.reuse.reason).toBe("cold")
+        expect(first.reuse.addedSources).toBe(2)
+        expect(first.reuse.reused).toBe(false)
+        let warm = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "warm.js",
+            toolFingerprint: "sha256:tool-one").completion.get()
+        expect(warm.reuse.reused).toBe(true)
+        expect(warm.reuse.unchangedSources).toBe(2)
+        expect(linker.calls).toBe(1)
+        let changed = sources()
+        changed[0] = CompilerSource(changed[0].identity, changed[0].text + "\n")
+        let edit = engine.compilePackageSnapshots(changed, MemoryCompilerArtifactSink(), "edit.js",
+            toolFingerprint: "sha256:tool-one").completion.get()
+        expect(edit.reuse.reason).toBe("closure-changed")
+        expect(edit.reuse.changedSources).toBe(1)
+        expect(edit.reuse.unchangedSources).toBe(1)
+        expect(linker.calls).toBe(2)
+        let removed = engine.compilePackageSnapshots([CompilerSource("Only.flat", "class Only {}")],
+            MemoryCompilerArtifactSink(), "removed.js", toolFingerprint: "sha256:tool-one").completion.get()
+        expect(removed.reuse.removedSources).toBe(2)
+        expect(removed.reuse.addedSources).toBe(1)
+        let tool = engine.compilePackageSnapshots([CompilerSource("Only.flat", "class Only {}")],
+            MemoryCompilerArtifactSink(), "tool.js", toolFingerprint: "sha256:tool-two").completion.get()
+        expect(tool.reuse.reason).toBe("configuration-changed")
+        expect(tool.reuse.reused).toBe(false)
+        expect(tool.reuse.toolFingerprint).toBe("sha256:tool-two")
+        expect(linker.calls).toBe(4)
+    }
+
+    async test `configured import changes invalidate exact package reuse`() {
+        let linker = CountingLinker()
+        let engine = CompilerEngine(packageLinker: linker, packageReuse: CompilerPackageReuse())
+        let values = [CompilerSource("Only.flat", "class Only {}")]
+        let defaults = [PrimitiveDefaultImport("app/First")]
+        let first = engine.compilePackageSnapshots(values, MemoryCompilerArtifactSink(), "one.js",
+            defaultImports: defaults).completion.get()
+        expect(first.diagnosticCount).toBe(0)
+        let warm = engine.compilePackageSnapshots(values, MemoryCompilerArtifactSink(), "two.js",
+            defaultImports: defaults).completion.get()
+        expect(warm.reuse.reused).toBe(true)
+        let next = engine.compilePackageSnapshots(values, MemoryCompilerArtifactSink(), "three.js",
+            defaultImports: [PrimitiveDefaultImport("app/Second")]).completion.get()
+        expect(next.reuse.reason).toBe("configuration-changed")
+        expect(next.reuse.reused).toBe(false)
+        expect(linker.calls).toBe(2)
+    }
+
     class CountingLinker extends FlatEs6PackageLinker {
         visible var Int calls
         visible var Bool fail

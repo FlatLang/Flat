@@ -12,7 +12,8 @@ class {
     public parse(
         Token[] tokenValues,
         SourceSnapshotIdentity sourceSnapshot,
-        Int sourceTokenIndexOffset = 0
+        Int sourceTokenIndexOffset = 0,
+        Bool allowBodylessDeclaration = false
     ) -> PrimitiveFunctionSyntaxResult {
         if (!tokenValues || !sourceSnapshot) {
             throw Exception("Primitive function parsing requires tokens and snapshot")
@@ -25,11 +26,11 @@ class {
         tokenIndexOffset = sourceTokenIndexOffset
         index = 0
         let functions = PrimitiveFunctionSyntax[]
-        while (index < tokens.count) functions.add(parseFunction())
+        while (index < tokens.count) functions.add(parseFunction(allowBodylessDeclaration))
         return PrimitiveFunctionSyntaxResult(functions)
     }
 
-    parseFunction() -> PrimitiveFunctionSyntax {
+    parseFunction(Bool allowBodylessDeclaration = false) -> PrimitiveFunctionSyntax {
         let start = index
         var Bool staticMethod
         var Bool asyncMethod
@@ -135,8 +136,8 @@ class {
         if (nativeReturnModifierRange && returnType == "Unit")
             syntax("Native return modifier requires an explicit return type",
                 nativeReturnModifierRange.startTokenIndex - tokenIndexOffset)
-        if (abstractMethod) {
-            if (returnType == "Unit") {
+        if (abstractMethod || (allowBodylessDeclaration && index == tokens.count)) {
+            if (abstractMethod && returnType == "Unit") {
                 syntax("Abstract method requires explicit return type", index)
             }
             return PrimitiveFunctionSyntax(
@@ -424,6 +425,10 @@ class {
             tokens[index + 1].value == "]") {
             result += "[]"
             index += 2
+        }
+        if (index < tokens.count && tokens[index].value == "?") {
+            result += "?"
+            index++
         }
         return result
     }

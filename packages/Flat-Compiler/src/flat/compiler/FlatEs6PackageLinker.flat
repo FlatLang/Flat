@@ -1,5 +1,7 @@
 package flat/compiler
 
+import flat/semantic/types
+import flat/project/Es6SourceSelection
 import flat/lexer
 import flat/bound
 import flat/compiler/models
@@ -11,11 +13,11 @@ import flat/writer/es6/bound
 /** Bounded package-scoped reduced class linker preserving source identities. */
 class {
     public construct(
-        visible Int maxSources = 64,
-        visible Int maxSourceCharacters = 65536,
-        visible Int maxTokensPerSource = 8192,
-        visible Int maxTypes = 256,
-        visible Int maxFragments = 256
+        visible Int maxSources = 4096,
+        visible Int maxSourceCharacters = 1048576,
+        visible Int maxTokensPerSource = 131072,
+        visible Int maxTypes = 4096,
+        visible Int maxFragments = 4096
     ) {
         if (maxSources <= 0 || maxSourceCharacters <= 0 || maxTokensPerSource <= 0 ||
             maxTypes <= 0 || maxFragments <= 0) {
@@ -38,7 +40,7 @@ class {
         if (!sourceValues || sourceValues.any({ !_ }) || sourceValues.count > maxSources) {
             throw Exception("Flat ES6 package linking requires bounded sources")
         }
-        let ordered = sourceValues.sort({ _a.identity.compareTo(_b.identity) })
+        let ordered = sourceValues.sort({ Es6SourceSelection.compare(_a.identity, _b.identity) })
         return linkSelected(MemoryCompilerSourceProvider(ordered),
             ordered.map({ _.identity }), arrayDeclaration, ordered, defaultImports: defaultImports)
     }
@@ -60,7 +62,7 @@ class {
             identities.any((identity) => !identity || identity.trim().count == 0)) {
             throw Exception("Flat ES6 package linking requires bounded source identities")
         }
-        let ordered = identities.sort({ _a.compareTo(_b) })
+        let ordered = identities.sort({ Es6SourceSelection.compare(_a, _b) })
         var Int identityIndex = 1
         while (identityIndex < ordered.count) {
             if (ordered[identityIndex - 1] == ordered[identityIndex]) {
@@ -92,6 +94,7 @@ class {
         var Int typeCount
         var Int sourceIndex
         for (identity in ordered) {
+            provider.checkpoint()
             let source = suppliedSources ? suppliedSources[sourceIndex++] : provider.load(identity)
             if (!source) throw Exception("Missing source '#identity'")
             if (source.identity != identity) {
@@ -107,12 +110,13 @@ class {
                 throw Exception("Flat package source exceeds configured token capacity")
             }
             let snapshot = SourceSnapshotIdentity(SourceIdentity(source.identity), "compiler-input")
-            let overlay = source.identity.endsWith(".js.flat")
+            let overlay = Es6SourceSelection.overlay(source.identity)
             let scanner = FlatSourceMilestoneScanner(snapshot, maxTokensPerSource, maxTokensPerSource)
             let imports = PrimitiveBindingImport[]
             var String namespaceName = ""
             var Int tokenIndex
             while (tokenIndex <= tokens.count) {
+                provider.checkpoint()
                 let islands = tokenIndex < tokens.count
                     ? scanner.accept(tokens[tokenIndex], tokenIndex) : scanner.end()
                 for (island in islands) {
@@ -142,6 +146,7 @@ class {
                 maxTypeTokens: maxTokensPerSource, maxTypes: maxTypes
             ).partition(tokens, snapshot, "js")
             for (partition in partitions) {
+                provider.checkpoint()
                 if (partition.declarationKind != "class" &&
                     partition.declarationKind != "trait" &&
                     partition.declarationKind != "interface") {
@@ -185,9 +190,8 @@ class {
                             var Int classIndex
                             while (classIndex < owned.count && !merged) {
                                 if (owned[classIndex].name == parsed.name &&
-                                    (owned[classIndex].range.snapshot.source.value == source.identity ||
-                                        owned[classIndex].range.snapshot.source.value ==
-                                            source.identity.substring(0, source.identity.count - 8) + ".flat")) {
+                                    Es6SourceSelection.baseLocation(owned[classIndex].range.snapshot.source.value) ==
+                                        Es6SourceSelection.baseLocation(source.identity)) {
                                     owned[classIndex] = owned[classIndex].mergedWith(parsed)
                                     contexts[contextIndex] = PrimitiveSourceBindingContext(
                                         owner.namespaceName, owner.snapshot, owned,
@@ -209,6 +213,7 @@ class {
         // Preserve the owning binder's source-ranged control diagnostic before
         // partition binding can flatten it into an untyped method exception.
         for (context in contexts) {
+            provider.checkpoint()
             for (syntax in context.classValues()) {
                 for (method in syntax.methodValues()) {
                     let diagnostic = PrimitiveControlStatementBinder().controlDiagnostic(method.statements())
@@ -222,6 +227,7 @@ class {
                 }
             }
         }
+        provider.checkpoint()
         let types = PrimitiveClassPartitionBinder().bindContexts(
             contexts, maxTypes: maxTypes, arrayDeclaration: arrayDeclaration,
             maxContexts: maxSources, maxImportsPerContext: maxTokensPerSource
@@ -232,6 +238,7 @@ class {
         let fragments = Es6ArtifactFragment[]
         var Int index
         while (index < types.count) {
+            provider.checkpoint()
             let emitted = Es6UnitOrchestrator().emitType(TypeFeatureLowering.lowerLazyProperties(types[index]), index)
             if (!emitted.emitted) {
                 throw Exception("#{emitted.diagnostic.code}: #{emitted.diagnostic.message}")
@@ -239,6 +246,7 @@ class {
             fragments.add(emitted.fragment)
             index++
         }
+        provider.checkpoint()
         let assembly = Es6FragmentAssembler(maxFragments).assemble(fragments)
         if (!assembly.assembled) {
             throw Exception("#{assembly.diagnostic.code}: #{assembly.diagnostic.message}")
@@ -258,7 +266,32 @@ class {
             if (methods.count != 1) {
                 throw Exception("Executable main class '#mainClass' requires exactly one static main method")
             }
-            let entrypoint = Es6EntrypointEmitter().emit(owner, methods.first)
+            var CallableSignature nativeStringConstructor
+            let parameters = methods.first.parameterValues()
+            if (parameters.count == 1 && parameters.first.semanticType.kind() == "array") {
+                let array = (ArraySemanticType)parameters.first.semanticType
+                if (array.elementType.kind() == "user-class") {
+                    let element = (UserClassSemanticType)array.elementType
+                    // Only the canonical production String declaration is an argv wrapper.
+                    let strings = declarations.candidates("flat/String")
+                    if (strings.count != 1 || strings.first.value != element.declarationIdentity.value) {
+                        throw Exception("Executable String[] arguments require canonical flat/String")
+                    }
+                    let wrapper = types.firstOrNull({ _.identity.value == element.declarationIdentity.value })
+                    if (!wrapper) throw Exception("Executable String[] wrapper has no bound declaration")
+                    let constructors = wrapper.functionUnits().filter((method) => method.constructorFunction &&
+                        method.parameterValues().count == 1 &&
+                        method.parameterValues().first.semanticType.value() == SemanticTypes.stringType().value())
+                    if (constructors.count != 1) {
+                        throw Exception("Executable String[] requires exactly one native-string constructor")
+                    }
+                    let selected = constructors.first
+                    nativeStringConstructor = CallableSignature(SymbolIdentity(selected.identity, "constructor"),
+                        wrapper.identity.name, CallableKind("constructor"), [SemanticTypes.stringType()],
+                        element, element, names: selected.parameterValues().map({ _.name }))
+                }
+            }
+            let entrypoint = Es6EntrypointEmitter().emit(owner, methods.first, nativeStringConstructor)
             if (!entrypoint.emitted) {
                 throw Exception("#{entrypoint.diagnostic.code}: #{entrypoint.diagnostic.message}")
             }

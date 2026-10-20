@@ -1,0 +1,19 @@
+package flat/compiler
+
+/** Session-scoped cooperative cancellation; never retained by package reuse. */
+class extends CompilerSourceProvider {
+    public construct(private CompilerSourceProvider source, private CompilerSession session) {
+        if (!source || !session) throw Exception("Session source provider requires source and session")
+    }
+    override public identities() -> String[] => source.identities()
+    override public checkpoint() {
+        if (session.cancelled) throw Exception("Compilation cancelled")
+        source.checkpoint()
+    }
+    override public async load(String identity) -> CompilerSource {
+        checkpoint()
+        let value = source.load(identity)
+        checkpoint()
+        return value
+    }
+}

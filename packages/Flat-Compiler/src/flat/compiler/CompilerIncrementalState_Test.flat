@@ -1,0 +1,231 @@
+package flat/compiler
+
+import flat/future
+import flat/io
+import flat/time/Time
+import flat/writer/es6/bound
+
+/** Persistent admission is reopened for each operation, just like separate CLI processes. */
+testable class {
+    class CancellingProvider extends CompilerSourceProvider {
+        public construct(visible CompilerSourceProvider source, visible CompilerSession session) {}
+        override public identities() -> String[] => source.identities()
+        override public load(String identity) -> CompilerSource {
+            let value = source.load(identity)
+            session.cancel()
+            return value
+        }
+    }
+
+    async test `cancellation does not replace prior valid persistent manifest or artifact`() {
+        let root = File(".flat-incremental-cancel-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+        Es6ArtifactFiles.write(source, "class Main {}")
+        Es6ArtifactFiles.write(tool, "// tool")
+        Es6ArtifactFiles.write(output, "previous")
+        let files = [source]
+        try {
+            let initial = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try { initial.commit(CompilationSummary(1, 1, 0, false)) } finally { initial.dispose() }
+            let original = Es6ArtifactFiles.read(manifest)
+            let session = CompilerSession()
+            let selected = CancellingProvider(FilesystemCompilerSourceProvider(files), session)
+            let cancelled = CompilerIncrementalState(selected, files, ["changed-options"], output,
+                1048576, toolLocation: tool.normalizedLocation)
+            try {
+                let sink = MemoryCompilerArtifactSink()
+                CompilerEngine().startPackage(cancelled, sink, "program.js", session)
+                let summary = session.completion.get()
+                expect(summary.cancelled).toBe(true)
+                expect(summary.cleanupSettled).toBe(true)
+                expect(summary.artifactCount).toBe(0)
+                var Bool rejected
+                try { cancelled.commit(summary) } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                Console.log(CompilerEvidence.render(summary, "persistent-cancel-before-publication"))
+                expect(sink.artifacts().count).toBe(0)
+            } finally { cancelled.dispose() }
+            expect(Es6ArtifactFiles.read(manifest)).toBe(original)
+            expect(Es6ArtifactFiles.read(output)).toBe("previous")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `separate generated compiler processes reuse persisted manifest then agree with clean output`() {
+        let compiler = File("dist/es6/index.js")
+        if (!compiler.isFile) throw Exception("Separate-process incremental acceptance requires bootstrapped flatc")
+        let root = File(".flat-incremental-process-#{Time.currentTimeMillis}")
+        let sources = File(root, "src")
+        Es6ArtifactFiles.ensureDirectory(sources)
+        let source = File(sources, "Main.flat")
+        let removed = File(sources, "Unused.flat")
+        let output = File(root, "program.js")
+        let clean = File(root, "clean.js")
+        Es6ArtifactFiles.write(source, "package app\nclass Main { public static main() { external js { console.log('cold'); } } }")
+        Es6ArtifactFiles.write(removed, "class Unused {}")
+        let command = ["node", compiler.normalizedLocation, sources.normalizedLocation, "-target", "es6",
+            "-main", "app/Main", "-o", output.normalizedLocation]
+        try {
+            let cold = System.execute(command, silent: true, shell: false)
+            expect(cold.exitCode).toBe(0)
+            expect(cold.stdout.join("").contains("\"scope\":\"persistent-cli-package\"")).toBe(true)
+            expect(cold.stdout.join("").contains("\"reused\":false")).toBe(true)
+            let warm = System.execute(command, silent: true, shell: false)
+            expect(warm.exitCode).toBe(0)
+            expect(warm.stdout.join("").contains("\"reused\":true")).toBe(true)
+            Es6ArtifactFiles.write(source, "package app\nclass Main { public static main() { external js { console.log('changed'); } } }")
+            let changed = System.execute(command, silent: true, shell: false)
+            expect(changed.exitCode).toBe(0)
+            expect(changed.stdout.join("").contains("\"changedSources\":1")).toBe(true)
+            Es6ArtifactFiles.remove(removed)
+            let without = System.execute(command, silent: true, shell: false)
+            expect(without.exitCode).toBe(0)
+            expect(without.stdout.join("").contains("\"removedSources\":1")).toBe(true)
+            let rebuilt = System.execute(["node", compiler.normalizedLocation, sources.normalizedLocation,
+                "-target", "es6", "-main", "app/Main", "-o", clean.normalizedLocation], silent: true, shell: false)
+            expect(rebuilt.exitCode).toBe(0)
+            expect(Es6ArtifactFiles.read(output)).toBe(Es6ArtifactFiles.read(clean))
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `persistent manifest cold warm changed removed and output corruption invalidate exactly`() {
+        let root = File(".flat-incremental-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let dependency = File(root, "Unused.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        let files = [source, dependency]
+        let arguments = ["-main", "app/Main", "-target", "es6"]
+        Es6ArtifactFiles.write(source, "class Main {}")
+        Es6ArtifactFiles.write(dependency, "class Unused {}")
+        Es6ArtifactFiles.write(tool, "// immutable compiler one")
+        try {
+            let cold = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                arguments, output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                expect(cold.reused).toBe(false)
+                expect(cold.evidence().contains("\"reason\":\"cold\"")).toBe(true)
+                Es6ArtifactFiles.write(output, "first")
+                cold.commit(CompilationSummary(2, 1, 0, false))
+            } finally { cold.dispose() }
+            let warm = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                arguments, output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                expect(warm.reused).toBe(true)
+                expect(warm.cachedDiagnostics().contains("\"complete\":true,\"records\":[]")).toBe(true)
+                expect(warm.cachedDiagnostics().contains("\"revision\":\"sha256:")).toBe(true)
+                expect(warm.evidence().contains("\"unchangedSources\":2")).toBe(true)
+            } finally { warm.dispose() }
+            Es6ArtifactFiles.write(source, "class Main { static changed() -> Int { return 2; } }")
+            let changed = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                arguments, output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                expect(changed.reused).toBe(false)
+                expect(changed.evidence().contains("\"changedSources\":1")).toBe(true)
+                Es6ArtifactFiles.write(output, "second")
+                changed.commit(CompilationSummary(2, 1, 0, false))
+            } finally { changed.dispose() }
+            let removed = CompilerIncrementalState(FilesystemCompilerSourceProvider([source]), [source],
+                arguments, output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                expect(removed.reused).toBe(false)
+                expect(removed.evidence().contains("\"removedSources\":1")).toBe(true)
+                removed.commit(CompilationSummary(1, 1, 0, false))
+            } finally { removed.dispose() }
+            Es6ArtifactFiles.write(output, "tampered")
+            let corrupt = CompilerIncrementalState(FilesystemCompilerSourceProvider([source]), [source],
+                arguments, output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                expect(corrupt.reused).toBe(false)
+                expect(corrupt.evidence().contains("\"reason\":\"output-changed\"")).toBe(true)
+            } finally { corrupt.dispose() }
+            let optionArguments = arguments.copy()
+            optionArguments.addAll(["-default-import", "app/Value"])
+            let options = CompilerIncrementalState(FilesystemCompilerSourceProvider([source]), [source],
+                optionArguments, output, 1048576,
+                toolLocation: tool.normalizedLocation)
+            try {
+                expect(options.reused).toBe(false)
+                expect(options.evidence().contains("\"reason\":\"configuration-changed\"")).toBe(true)
+            } finally { options.dispose() }
+            Es6ArtifactFiles.write(tool, "// immutable compiler two")
+            let changedTool = CompilerIncrementalState(FilesystemCompilerSourceProvider([source]), [source],
+                arguments, output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                expect(changedTool.reused).toBe(false)
+                expect(changedTool.evidence().contains("\"reason\":\"configuration-changed\"")).toBe(true)
+            } finally { changedTool.dispose() }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `incremental lock rejects another writer and malformed manifest never authorizes reuse`() {
+        let root = File(".flat-incremental-lock-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+        let files = [source]
+        Es6ArtifactFiles.write(source, "class Main {}")
+        Es6ArtifactFiles.write(tool, "// tool")
+        Es6ArtifactFiles.write(output, "previous")
+        Es6ArtifactFiles.write(manifest, "{invalid")
+        try {
+            let first = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                expect(first.reused).toBe(false)
+                var Bool rejected
+                try {
+                    CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                        ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+                } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(Es6ArtifactFiles.read(output)).toBe("previous")
+                expect(Es6ArtifactFiles.read(manifest)).toBe("{invalid")
+            } finally { first.dispose() }
+            let next = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try { expect(next.reused).toBe(false) } finally { next.dispose() }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `aborted incremental transaction preserves valid manifest and rejects changed admitted input`() {
+        let root = File(".flat-incremental-abort-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+        let files = [source]
+        Es6ArtifactFiles.write(source, "class Main {}")
+        Es6ArtifactFiles.write(tool, "// tool")
+        Es6ArtifactFiles.write(output, "previous")
+        try {
+            let initial = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try { initial.commit(CompilationSummary(1, 1, 0, false)) } finally { initial.dispose() }
+            let previous = Es6ArtifactFiles.read(manifest)
+            let aborted = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["changed-options"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                expect(aborted.reused).toBe(false)
+                Es6ArtifactFiles.write(source, "class Changed {}")
+                var Bool rejected
+                try { aborted.load(source.normalizedLocation) } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+            } finally { aborted.dispose() }
+            expect(Es6ArtifactFiles.read(manifest)).toBe(previous)
+            expect(Es6ArtifactFiles.read(output)).toBe("previous")
+            Es6ArtifactFiles.write(source, "class Main {}")
+            let recovered = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try { expect(recovered.reused).toBe(true) } finally { recovered.dispose() }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+}

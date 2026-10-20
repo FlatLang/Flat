@@ -9,6 +9,8 @@ import flat/compiler/Compiler
 [TestSuite [
     Compiler_Test,
     CompilerPackage_Test,
+    CompilerDogfoodLifecycle_Test,
+    CompilerIncrementalState_Test,
     CompilerPackageReuse_Test,
     CompilerArtifactSink_Test,
     CompilerCli_Test,

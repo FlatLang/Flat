@@ -91,9 +91,16 @@ class {
         }
         if (expression.class.isOfType(BoundLambdaExpression.class)) {
             let value = (BoundLambdaExpression)expression
-            let parameters = value.parameterValues().map({
-                Es6NameMangler.mangle(_.identity.value)
-            })
+            let parameters = String[]
+            for (parameter in value.parameterValues()) {
+                var String name = Es6NameMangler.mangle(parameter.identity.value)
+                if (parameter.defaultValue) {
+                    let defaultValue = emit(parameter.defaultValue)
+                    if (!defaultValue.emitted) return defaultValue
+                    name += " = " + defaultValue.code
+                }
+                parameters.add(name)
+            }
             let body = emit(value.body)
             if (!body.emitted) return body
             let functionType = (FunctionSemanticType)value.semanticType
@@ -107,7 +114,8 @@ class {
         }
         if (expression.class.isOfType(BoundFunctionValue.class)) {
             let value = (BoundFunctionValue)expression
-            let method = Es6NameMangler.mangle(value.target.identity.declaration.value)
+            let method = value.target.externalName ?: Es6NameMangler.mangle(
+                value.target.dispatchIdentity ?: value.target.identity.declaration.value)
             if (value.target.callableKind.value == "static-method") {
                 let owner = Es6NameMangler.mangle(
                     value.target.ownerType.declarationIdentity.value
@@ -127,6 +135,12 @@ class {
             if (!elements.emitted) return elements
             return Es6CodeResult(code: "[" + elements.code + "]")
         }
+        if (expression.class.isOfType(BoundNativeArrayDataExpression.class)) {
+            // ABI flat-es6-abi-1 stores reduced arrays in their native representation already.
+            // This is a backing-storage projection, not a copy or wrapper allocation.
+            let value = (BoundNativeArrayDataExpression)expression
+            return emit(value.receiver)
+        }
         if (expression.class.isOfType(BoundArrayLengthExpression.class)) {
             let value = (BoundArrayLengthExpression)expression
             let receiver = emit(value.receiver)
@@ -143,6 +157,10 @@ class {
         }
         if (expression.class.isOfType(BoundTypeMetadataExpression.class)) {
             let value = (BoundTypeMetadataExpression)expression
+            if (value.interfaceType) {
+                return Es6CodeResult(code: "({ __flatInterfaceIdentity: " +
+                    metadataLiteral(value.referencedType.declarationIdentity.value) + " })")
+            }
             return Es6CodeResult(code: Es6NameMangler.mangle(
                 value.referencedType.declarationIdentity.value
             ))
@@ -151,6 +169,18 @@ class {
             let value = (BoundTypeTestExpression)expression
             let tested = emit(value.value)
             if (!tested.emitted) return tested
+            if (value.typeMetadata.interfaceType) {
+                let identity = value.typeMetadata.referencedType.declarationIdentity.value
+                return Es6CodeResult(code: "((__flatValue) => { if (__flatValue == null) return false; " +
+                    "for (let __flatPrototype = Object.getPrototypeOf(__flatValue); __flatPrototype; " +
+                    "__flatPrototype = Object.getPrototypeOf(__flatPrototype)) { " +
+                    "if (!Object.prototype.hasOwnProperty.call(__flatPrototype, 'constructor')) continue; " +
+                    "const __flatOwner = __flatPrototype.constructor; " +
+                    "if (!Object.prototype.hasOwnProperty.call(__flatOwner, '__flatType')) continue; " +
+                    "const __flatInterfaces = __flatOwner.__flatType.interfaceIdentities; " +
+                    "if (__flatInterfaces && __flatInterfaces.includes(" + metadataLiteral(identity) + ")) return true; " +
+                    "} return false; })(" + tested.code + ")")
+            }
             let metadata = emit(value.typeMetadata)
             if (!metadata.emitted) return metadata
             return Es6CodeResult(code: "(" + tested.code + " instanceof " + metadata.code + ")")
@@ -175,6 +205,8 @@ class {
         }
         if (expression.class.isOfType(BoundIntrinsicMemberCallExpression.class)) {
             let value = (BoundIntrinsicMemberCallExpression)expression
+            let diagnostic = calls.diagnoseIntrinsicMember(value.memberName, value.argumentValues().count)
+            if (diagnostic) return Es6CodeResult(diagnostic: diagnostic)
             let receiver = emit(value.receiver)
             if (!receiver.emitted) return receiver
             let arguments = emitArguments(value.argumentValues())
@@ -228,14 +260,15 @@ class {
         if (!arguments.emitted) return arguments
         let kind = expression.target.callableKind.value
         let identity = expression.target.identity.declaration.value
-        let name = Es6NameMangler.mangle(identity)
+        let name = expression.target.externalName ?: Es6NameMangler.mangle(
+            expression.target.dispatchIdentity ?: identity)
         let String argumentText = arguments.code
         if (kind == "function") {
-            return Es6CodeResult(code: calls.emitFunctionCall(name, argumentText))
+            return selectedCall(expression, calls.emitFunctionCall(name, argumentText))
         }
         if (kind == "static-method") {
             let owner = Es6NameMangler.mangle(expression.target.ownerType.declarationIdentity.value)
-            return Es6CodeResult(code: calls.emitStaticCall(owner, name, argumentText))
+            return selectedCall(expression, calls.emitStaticCall(owner, name, argumentText))
         }
         if (kind == "constructor") {
             let owner = Es6NameMangler.mangle(expression.target.ownerType.declarationIdentity.value)
@@ -257,13 +290,24 @@ class {
             }
             let receiver = emit(expression.receiver)
             if (!receiver.emitted) return receiver
-            return Es6CodeResult(code: calls.emitInstanceCall(receiver.code, name, argumentText))
+            return selectedCall(expression, calls.emitInstanceCall(receiver.code, name, argumentText))
         }
         return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
             "es6.unsupported-call-kind",
             "ES6 backend does not yet support call kind '#kind'",
             expression.range
         ))
+    }
+
+    metadataLiteral(String value) -> String {
+        return "'" + value.replace("\\", "\\\\").replace("'", "\\'")
+            .replace("\r", "\\r").replace("\n", "\\n")
+            .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029") + "'"
+    }
+
+    selectedCall(BoundCallExpression expression, String code) -> Es6CodeResult {
+        return Es6CodeResult(code: expression.target.asyncFunction && !expression.suppressAwait ?
+            "(await " + code + ")" : code)
     }
 
     emitNativeCall(BoundNativeCallExpression expression) -> Es6CodeResult {

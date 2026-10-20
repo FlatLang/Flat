@@ -1,5 +1,6 @@
 package flat/compiler
 
+import flat/project
 import flat/io
 import flat/system
 import flat/time/Time
@@ -29,6 +30,146 @@ testable class {
             }
         }
         return values
+    }
+
+    async test `CLI persistent incremental output agrees with clean after changed and removed input`() {
+        let root = File(".flat-cli-incremental-#{Time.currentTimeMillis}")
+        let sources = File(root, "src")
+        Es6ArtifactFiles.ensureDirectory(sources)
+        let source = File(sources, "Main.flat")
+        let unused = File(sources, "Unused.flat")
+        let output = File(root, "program.js")
+        let clean = File(root, "clean.js")
+        let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+        Es6ArtifactFiles.write(source, "package app\nclass Main { public static main() { external js { console.log('one'); } } }")
+        Es6ArtifactFiles.write(unused, "class Unused {}")
+        let arguments = ["flatc", sources.normalizedLocation, "-target", "es6", "-main", "app/Main", "-o", output.normalizedLocation]
+        try {
+            expect(CompilerCli.run(arguments)).toBe(0)
+            let first = Es6ArtifactFiles.read(manifest)
+            expect(CompilerCli.run(arguments)).toBe(0)
+            expect(Es6ArtifactFiles.read(manifest)).toBe(first)
+            Es6ArtifactFiles.write(source, "package app\nclass Main { public static main() { external js { console.log('two'); } } }")
+            expect(CompilerCli.run(arguments)).toBe(0)
+            Es6ArtifactFiles.remove(unused)
+            expect(CompilerCli.run(arguments)).toBe(0)
+            expect(CompilerCli.run(["flatc", sources.normalizedLocation, "-target", "es6", "-main", "app/Main",
+                "-o", clean.normalizedLocation])).toBe(0)
+            expect(Es6ArtifactFiles.read(output)).toBe(Es6ArtifactFiles.read(clean))
+            let execution = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(execution.exitCode).toBe(0)
+            expect(execution.stdout.join("")).toBe("two\n")
+            let previous = Es6ArtifactFiles.read(output)
+            let previousManifest = Es6ArtifactFiles.read(manifest)
+            Es6ArtifactFiles.write(source, "class Main { broken")
+            expect(CompilerCli.run(arguments)).toBe(1)
+            expect(Es6ArtifactFiles.read(output)).toBe(previous)
+            expect(Es6ArtifactFiles.read(manifest)).toBe(previousManifest)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `production String wrapper argv uses its selected native-string constructor`() {
+        let root = File(".flat-cli-wrapper-argv-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let source = File(root, "Main.flat")
+            let output = File(root, "program.js")
+            var String reference = ""
+            reference += '#'
+            reference += "{args[0].count}"
+            Es6ArtifactFiles.write(source, "package app\nclass Main { public static main(String[] args) { external js { console.log(" + reference + "); } } }")
+            let arguments = String[]
+            for (argument in realArguments(output)) {
+                if (argument != "-library") arguments.add(argument)
+            }
+            arguments.addAll([source.normalizedLocation, "-main", "app/Main"])
+            expect(CompilerCli.run(arguments)).toBe(0)
+            let response = System.execute(["node", output.normalizedLocation, "dogfood"], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("7\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `source discovery selects glob closure beyond 64 files with explicit bounds`() {
+        let root = File(".flat-discovery-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            for (index in 0..70) Es6ArtifactFiles.write(File(root, "Value#index.flat"), "class Value#index {}")
+            Es6ArtifactFiles.write(File(root, "Foreign.java.flat"), "invalid")
+            Es6ArtifactFiles.write(File(root, "Ignored_Test.flat"), "invalid")
+            Es6ArtifactFiles.write(File(root, "Value0.js.flat"), "class Value0 {}")
+            Es6ArtifactFiles.write(File(root, "Value0.es6.flat"), "class Value0 {}")
+            let package = ProjectPackage("discovery", [SourceRoot(root.normalizedLocation + "/*.flat")],
+                dependencies: [ProjectDependency("duplicate", root.normalizedLocation)],
+                exclusions: [SourceExclusion(root.normalizedLocation + "/*_Test.flat")])
+            let files = CompilerSourceDiscovery().discover(package)
+            expect(files.count).toBe(72)
+            expect(files[0].name).toBe("Value0.flat")
+            expect(files[1].name).toBe("Value0.js.flat")
+            expect(files[2].name).toBe("Value0.es6.flat")
+            var Bool rejected
+            try { CompilerSourceDiscovery(maxSources: 64).discover(package) }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `source discovery prunes excluded directories before enumeration and enforces depth`() {
+        let root = File(".flat-discovery-depth-#{Time.currentTimeMillis}")
+        let nested = File(root, "nested/deep")
+        Es6ArtifactFiles.ensureDirectory(nested)
+        Es6ArtifactFiles.write(File(root, "Main.flat"), "class Main {}")
+        Es6ArtifactFiles.write(File(nested, "Hidden.flat"), "class Hidden {}")
+        try {
+            let package = ProjectPackage("pruned", [SourceRoot(root.normalizedLocation)],
+                exclusions: [SourceExclusion(File(root, "nested").normalizedLocation)])
+            let selected = CompilerSourceDiscovery(maxDirectories: 1, maxDepth: 1).discover(package)
+            expect(selected.count).toBe(1)
+            expect(selected.first.name).toBe("Main.flat")
+            var Bool rejected
+            try {
+                CompilerSourceDiscovery(maxDepth: 1).discover(ProjectPackage("deep", [SourceRoot(root.normalizedLocation)]))
+            } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `CLI executes identical generated package with selectable read concurrency`() {
+        let root = File(".flat-cli-parallel-execution-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let input = File(root, "Main.flat")
+        let second = File(root, "Other.flat")
+        Es6ArtifactFiles.write(input, "package app\nclass Main { public static main() { external js { console.log('bounded'); } } }")
+        Es6ArtifactFiles.write(second, "package app\nclass Other {}")
+        var String previous
+        try {
+            for (capacity in [1, 2]) {
+                let output = File(root, "program#capacity.js")
+                expect(CompilerCli.run(["flatc", input.normalizedLocation, second.normalizedLocation,
+                    "-target", "es6", "-main", "app/Main", "--threads", "#capacity",
+                    "-o", output.normalizedLocation])).toBe(0)
+                let code = Es6ArtifactFiles.read(output)
+                if (previous == null) previous = code
+                else expect(code).toBe(previous)
+                let execution = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+                expect(execution.exitCode).toBe(0)
+                expect(execution.stdout.join("")).toBe("bounded\n")
+            }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `CLI accepts bounded source read concurrency and preserves output on invalid input`() {
+        let root = File(".flat-cli-concurrency-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let input = File(root, "Broken.flat")
+        let output = File(root, "library.js")
+        Es6ArtifactFiles.write(input, "class Broken { static read() -> Int { return missing; } }")
+        Es6ArtifactFiles.write(output, "previous")
+        try {
+            expect(CompilerCli.run(["flatc", input.normalizedLocation, "-target", "es6", "-library",
+                "--threads", "2", "-o", output.normalizedLocation])).toBe(1)
+            expect(Es6ArtifactFiles.read(output)).toBe("previous")
+        } finally { Es6ArtifactFiles.remove(root) }
     }
 
     test `CLI artifact byte capacity rejects malformed and overflow values`() {
@@ -365,7 +506,6 @@ testable class {
         expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library", "-target-runtime", "browser", "-o", output.normalizedLocation])).toBe(1)
         expect(CompilerCli.run(["flatc", source, "-t", "es6", "-library", "-o", output.normalizedLocation])).toBe(1)
         expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library", "--unknown-option", "-o", output.normalizedLocation])).toBe(1)
-        expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library", "-threads", "2", "-o", output.normalizedLocation])).toBe(1)
         expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library"])).toBe(1)
         expect(output.exists).toBe(false)
         if (root.exists) Es6ArtifactFiles.remove(root)

@@ -1,6 +1,100 @@
 package flat
 
+import flat/datastruct/list
+
 testable class {
+    test `inverted character searches exclude every member of the search set`() {
+        expect(" abx".indexOf([' ', 'a', 'b'], invert: true)).toBe(3)
+        expect(" aba".indexOf([' ', 'a', 'b'], invert: true)).toBe(-1)
+        expect("xxb".indexOf(['a', 'b'])).toBe(2)
+        expect("abc".indexOf(Char[])).toBe(-1)
+        expect("abc".indexOf(Char[], invert: true)).toBe(0)
+        expect("xaba".indexOf(['a', 'b'], start: 3, direction: -1, invert: true)).toBe(0)
+    }
+
+    test `comparison uses deterministic character order rather than locale collation`() {
+        expect("Z".compareTo("a") < 0).toBe(true)
+        expect("a".compareTo("Z") > 0).toBe(true)
+        expect("z".compareTo("ä") < 0).toBe(true)
+        expect("same".compareTo("same")).toBe(0)
+        expect("a".compareTo("aa") < 0).toBe(true)
+        expect("".compareTo("a") < 0).toBe(true)
+    }
+
+    test `declared concatenation evaluates each operand once in left to right order`() {
+        let probe = CoreStringEvaluationProbe()
+        let result = probe.left() + probe.right()
+        expect(probe.log).toBe("LR")
+        expect(result).toBe("leftright")
+        expect(result.count).toBe(9)
+    }
+
+    test `character array copies append after their existing elements`() {
+        let chars = StringCharArray(['a', 'b'])
+        let copy = chars.toCharArray()
+        copy.add('c')
+        expect(copy).toBe(['a', 'b', 'c'])
+        expect(chars.toString()).toBe("ab")
+    }
+
+    test `empty native character storage remains an initialized wrapper`() {
+        let chars = StringCharArray(0)
+        expect(chars.count).toBe(0)
+        expect(chars.toCharArray().count).toBe(0)
+        expect(chars.toString()).toBe("")
+        expect(chars.reverse().toString()).toBe("")
+        expect("".reverse().count).toBe(0)
+        expect("".reverse()).toBe("")
+    }
+
+    test `native character storage reverses and mutates without changing length`() {
+        let chars = StringCharArray(['a', 'b', 'c'])
+        chars[1] = 'x'
+        expect(chars.count).toBe(3)
+        expect(chars.toString()).toBe("axc")
+        expect(chars.reverse().toString()).toBe("cxa")
+        expect(chars.toString()).toBe("axc")
+        expect("abc".reverse()).toBe("cba")
+    }
+
+    test `substring bounds reject negative reversed and oversized ranges`() {
+        let value = "abc"
+        expect(value.validateSubstringBounds(0, 3)).toBe(true)
+        expect(value.validateSubstringBounds(3, 3)).toBe(true)
+        expect(value.validateSubstringBounds(0, 0)).toBe(true)
+        expect(value.validateSubstringBounds(-1, 2)).toBe(false)
+        expect(value.validateSubstringBounds(0, 4)).toBe(false)
+        expect(value.validateSubstringBounds(4, 4)).toBe(false)
+        expect(value.validateSubstringBounds(2, 1)).toBe(false)
+        expect("".validateSubstringBounds(0, 0)).toBe(true)
+
+        var Bool rejected = false
+        try {
+            value.substring(-1, 2)
+        } catch (Exception error) {
+            rejected = true
+        }
+        expect(rejected).toBe(true)
+        expect(value.substring(3, 3)).toBe("")
+        expect(value.substring(1, 3)).toBe("bc")
+    }
+
+    test `grouped characters stop at the requested end`() {
+        expect("aaaa".getGroupedChars(['a'], 0, 2)).toBe("aa")
+        expect("aaaa".getGroupedChars(['a'])).toBe("aaaa")
+        expect("baaa".getGroupedChars(['a'], 1, 3)).toBe("aa")
+        expect("aabb".getGroupedChars(['a'])).toBe("aa")
+        expect("bbaa".getGroupedChars(['a'], opposite: true)).toBe("bb")
+        expect("".getGroupedChars(['a'])).toBe("")
+    }
+
+    test `between search starts after the complete opening delimiter`() {
+        expect("<x>body<x>".getStringBetween("<x>", "<x>")).toBe("body")
+        expect("<<>>".getStringBetween("<<", ">>")).toBe("")
+        expect("abc".getStringBetween("[", "]")).toBe(null)
+        expect("[abc".getStringBetween("[", "]")).toBe(null)
+    }
+
     test `can split string on single letter string delimiter`() {
         let str = "this is a test"
 
@@ -29,5 +123,19 @@ testable class {
         let str = "a\\b\\c\\d\\e\\f"
 
         expect(str.replace("\\", "/")).toBe("a/b/c/d/e/f")
+    }
+}
+
+class CoreStringEvaluationProbe {
+    visible var String log = ""
+
+    public left() -> String {
+        log += "L"
+        return "left"
+    }
+
+    public right() -> String {
+        log += "R"
+        return "right"
     }
 }

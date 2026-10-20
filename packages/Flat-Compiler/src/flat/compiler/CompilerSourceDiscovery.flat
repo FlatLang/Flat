@@ -1,0 +1,102 @@
+package flat/compiler
+
+import flat/io
+import flat/system
+import flat/project
+import flat/glob/Glob
+import flat/regex
+
+/**
+ * One bounded, deterministic source/dependency closure. Only identities are retained;
+ * source text is opened later by the provider. IO exposes one directory listing as
+ * an array, so traversal materializes one directory at a time, never its subtree.
+ * Canonical directory identities prevent symlink cycles. Limits fail explicitly;
+ * no source prefix is silently accepted. Instantiate per discovery request.
+ */
+class {
+    var File[] selected = File[]
+    var Int directoryCount
+
+    public construct(visible Int maxSources = 4096, visible Int maxDirectories = 16384,
+        visible Int maxDepth = 128) {
+        if (maxSources <= 0 || maxDirectories <= 0 || maxDepth <= 0) {
+            throw Exception("Source discovery requires positive capacities")
+        }
+    }
+
+    public async discover(ProjectPackage package) -> File[] {
+        if (!package) throw Exception("Source discovery requires a package")
+        // A discovery object has no reusable mutable project index.
+        selected = File[]
+        directoryCount = 0
+        for (root in package.sourceRoots) select(root.location, package.exclusions)
+        for (dependency in package.dependencies) select(dependency.sourceLocation, package.exclusions)
+        return selected.sort({ Es6SourceSelection.compare(_a.normalizedLocation, _b.normalizedLocation) })
+    }
+
+    async select(String location, SourceExclusion[] exclusions) {
+        let wildcard = location.indexOf("*", defaultReturnValue: -1)
+        if (wildcard < 0) {
+            let root = File(location)
+            if (!root.isFile && !root.isDirectory) throw Exception("Source does not exist: #location")
+            walk(root, exclusions, String[], 0)
+            return
+        }
+        let prefix = location.substring(0, wildcard)
+        let slash = prefix.lastIndexOf("/", defaultReturnValue: -1)
+        let base = slash >= 0 ? File(prefix.substring(0, slash + 1)) : File(System.workingDirectory)
+        if (!base.isDirectory) throw Exception("Source glob root does not exist: #location")
+        let pattern = slash >= 0 ? location.substring(slash + 1) : location
+        walk(base, exclusions, String[], 0, base.getCanonicalFileSync(), pattern)
+    }
+
+    async walk(File file, SourceExclusion[] exclusions, String[] visited, Int depth,
+        File globBase = null, String pattern = null) {
+        if (depth > maxDepth) throw Exception("Source discovery exceeds configured depth capacity")
+        for (exclusion in exclusions) {
+            if (matchesExclusion(exclusion.location, file)) return
+        }
+        if (file.isDirectory) {
+            let canonical = file.getCanonicalPath()
+            if (visited.contains(canonical)) return
+            if (directoryCount >= maxDirectories || depth >= maxDepth) {
+                throw Exception("Source discovery exceeds configured directory/depth capacity")
+            }
+            directoryCount++
+            visited.add(canonical)
+            // Stable traversal makes capacity failure independent of filesystem order.
+            let children = file.getChildFiles(includeDirectories: true)
+                .sort({ _a.normalizedLocation.compareTo(_b.normalizedLocation) })
+            for (child in children) walk(child, exclusions, visited, depth + 1, globBase, pattern)
+            return
+        }
+        if (!file.isFile || !Es6SourceSelection.accepts(file.normalizedLocation)) return
+        let canonical = file.getCanonicalFileSync()
+        if (pattern && (!canonical.normalizedLocation.startsWith(globBase.normalizedLocation + "/") ||
+            !Glob.matchesGlobPattern(pattern, globBase, canonical))) return
+        let identity = canonical.normalizedLocation
+        if (selected.any({ _.normalizedLocation == identity })) return
+        if (selected.count >= maxSources) throw Exception("Source discovery exceeds configured source capacity")
+        selected.add(canonical)
+    }
+
+    public static async matchesExclusion(String exclusion, File file) -> Bool {
+        if (exclusion.contains("*")) {
+            let wildcard = exclusion.indexOf("*")
+            let prefix = exclusion.substring(0, wildcard)
+            let slash = prefix.lastIndexOf("/", defaultReturnValue: -1)
+            let base = slash >= 0 ? File(prefix.substring(0, slash + 1)) : File(System.workingDirectory)
+            let pattern = slash >= 0 ? exclusion.substring(slash + 1) : exclusion
+            let canonicalBase = base.getCanonicalFileSync()
+            let canonicalFile = file.getCanonicalFileSync()
+            if (!canonicalFile.normalizedLocation.startsWith(canonicalBase.normalizedLocation + "/")) return false
+            return Glob.matchesGlobPattern(pattern, canonicalBase, canonicalFile)
+        }
+        let excluded = File(exclusion)
+        let path = file.getCanonicalPath()
+        let excludedPath = excluded.getCanonicalPath()
+        if (path == excludedPath) return true
+        if (excluded.isDirectory && path.startsWith(excludedPath + "/")) return true
+        return path.matches(Pattern(exclusion))
+    }
+}

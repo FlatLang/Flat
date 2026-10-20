@@ -4,6 +4,18 @@ import flat/compiler/models
 import flat/datastruct/HashMap
 
 testable class {
+    test `ES6 source selection rejects foreign and trailing extensions and orders overlays`() {
+        expect(Es6SourceSelection.accepts("src/Value.flat")).toBe(true)
+        expect(Es6SourceSelection.accepts("src/Value.js.flat")).toBe(true)
+        expect(Es6SourceSelection.accepts("src/Value.es6.flat")).toBe(true)
+        expect(Es6SourceSelection.accepts("src/Value.java.flat")).toBe(false)
+        expect(Es6SourceSelection.accepts("src/Value.flat.bak")).toBe(false)
+        expect(Es6SourceSelection.baseLocation("src/Value.es6.flat")).toBe("src/Value.flat")
+        let overlayLocations = ["src/Value.es6.flat", "src/Value.js.flat", "src/Value.flat"]
+        let ordered = overlayLocations.sort({ Es6SourceSelection.compare(_a, _b) })
+        expect(ordered).toBe(["src/Value.flat", "src/Value.js.flat", "src/Value.es6.flat"])
+    }
+
     test `project model owns immutable package dependency import and target options`() {
         let properties = HashMap<String, String>():add("name", "Example")
         let options = CompilerOptions(
@@ -35,6 +47,28 @@ testable class {
         expect(project.options.runtime).toBe("node")
         expect(project.options.maxConcurrency).toBe(4)
         expect(project.options.applicationProperties["name"]).toBe("Example")
+    }
+
+    test `project configuration rejects null members before discovery`() {
+        var Int rejected
+        try { ProjectPackage("invalid", [null]) } catch (Exception error) { rejected++ }
+        try { ProjectPackage("invalid", [SourceRoot("src")], dependencies: [null]) }
+        catch (Exception error) { rejected++ }
+        try { ProjectPackage("invalid", [SourceRoot("src")], exclusions: [null]) }
+        catch (Exception error) { rejected++ }
+        try { ProjectModel("invalid", [null], CompilerOptions("es6", library: true)) }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(4)
+    }
+
+    test `filesystem provider rejects invalid bounds and accepts an exact source bound`() {
+        var Int rejected
+        try { FilesystemSourceProvider("res/sources", maxSources: 0) } catch (Exception error) { rejected++ }
+        try { FilesystemSourceProvider("res/sources", maxDirectories: 0) } catch (Exception error) { rejected++ }
+        try { FilesystemSourceProvider("res/sources", maxDepth: 0) } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(3)
+        let provider = FilesystemSourceProvider("res/sources", maxSources: 1)
+        expect(provider.identities().count).toBe(1)
     }
 
     test `project model rejects invalid target mode and ownership`() {
@@ -71,6 +105,31 @@ testable class {
         expect(project.options.runtime).toBe("node")
         expect(project.options.maxConcurrency).toBe(4)
         expect(project.options.applicationProperties["version"]).toBe("1.0.0")
+    }
+
+    test `Airship concurrency rejects partial numbers signs and overflow`() {
+        var Int rejected
+        let invalid = ["", "0", "1x", "+2", "-2", "1.5", "2147483648", "999999999999"]
+        for (value in invalid) {
+            try { AirshipCompilerArguments.parsePositiveCapacity(value) }
+            catch (Exception error) { rejected++ }
+        }
+        expect(rejected).toBe(invalid.count)
+        expect(AirshipCompilerArguments.parsePositiveCapacity("1")).toBe(1)
+        expect(AirshipCompilerArguments.parsePositiveCapacity("2147483647")).toBe(2147483647)
+        expect(AirshipCompilerArguments.parsePositiveCapacity("2147483640")).toBe(2147483640)
+        expect(AirshipCompilerArguments.parsePositiveCapacity("0002")).toBe(2)
+        expect(AirshipCompilerArguments().fromArguments([
+            "src", "-library", "-threads", "2"
+        ]).options.maxConcurrency).toBe(2)
+        var Int rejectedArguments
+        let invalidArguments = ["2147483648", "21474836470", "2x", "0"]
+        for (value in invalidArguments) {
+            try {
+                AirshipCompilerArguments().fromArguments(["src", "-library", "-threads", value])
+            } catch (Exception error) { rejectedArguments++ }
+        }
+        expect(rejectedArguments).toBe(4)
     }
 
     test `Airship library arguments map library mode and reject unsupported options`() {

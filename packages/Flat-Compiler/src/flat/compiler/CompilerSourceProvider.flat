@@ -2,5 +2,7 @@ package flat/compiler
 
 abstract class {
     public identities() -> String[] => String[]
+    /** Cooperative cancellation/lifecycle boundary; default providers need no hook. */
+    public checkpoint() {}
     public load(String identity) -> CompilerSource => null
 }

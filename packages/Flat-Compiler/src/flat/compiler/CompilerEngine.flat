@@ -1,5 +1,6 @@
 package flat/compiler
 
+import flat/project/Es6SourceSelection
 import flat/eventstream
 import flat/future
 import flat/compiler/CompilerPackageReuse.CompilerPackageSnapshot
@@ -62,9 +63,10 @@ class {
     }
 
     /**
-     * Same lifecycle as start. The finite package signature barrier of the linker is
-     * unchanged. Cancellation cannot interrupt linkSources: it waits for return,
-     * suppresses a later commit, then settles completion after cleanup.
+     * Same lifecycle as start. Source reads overlap up to maxActiveSources;
+     * parsing/binding/emission remain serial within the finite signature boundary.
+     * Cancellation checkpoints stop later reads and emission. Already admitted reads
+     * settle before completion; the semantic binder itself is not preemptible.
      */
     public startPackage(
         CompilerSourceProvider sources,
@@ -100,9 +102,6 @@ class {
         for (value in defaultImports) {
             selectedDefaults.add(PrimitiveDefaultImport(value.location, value.staticImport))
         }
-        if (snapshot && selectedDefaults.isNotEmpty) {
-            throw Exception("Package snapshot reuse does not support configured default imports")
-        }
         validatePackageArtifactIdentity(artifactIdentity)
         // Executor admission must not retain caller-owned mutable String storage.
         let selectedArtifactIdentity = copySubmissionString(artifactIdentity)
@@ -112,7 +111,7 @@ class {
             identities.any((identity) => !identity || identity.trim().count == 0)) {
             throw Exception("Package compilation requires nonempty bounded source identities")
         }
-        let ordered = identities.sort({ _a.compareTo(_b) })
+        let ordered = identities.sort({ Es6SourceSelection.compare(_a, _b) })
         var Int index = 1
         while (index < ordered.count) {
             if (ordered[index - 1] == ordered[index]) {
@@ -187,21 +186,24 @@ class {
      * default streaming path. The complete bounded partition is already supplied
      * by the caller; capture and linking use exactly the same immutable strings.
      * Like compilePackage, returns a fresh closed/drained compatibility session.
-     * Configured default imports are deliberately unsupported by this API: reuse
-     * always uses empty linker defaults, so no unkeyed option can affect code.
+     * Configured imports, entrypoint, linker limits and explicit tool identity are
+     * exact key inputs. Evidence describes bounded in-process package reuse only.
      */
     public async compilePackageSnapshots(
         CompilerSource[] sources,
         CompilerArtifactSink sink,
         String artifactIdentity,
-        String mainClass = null
+        String mainClass = null,
+        PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[],
+        String toolFingerprint = "unspecified"
     ) -> CompilerSession {
         if (!packageReuse) throw Exception("Package snapshot reuse requires explicit engine configuration")
-        let snapshot = packageReuse.capture(sources, mainClass, packageLinker)
+        let snapshot = packageReuse.capture(sources, mainClass, packageLinker, defaultImports, toolFingerprint)
         let session = CompilerSession()
         let Future<Bool> drained = Future.from<Bool>(async { return drainArtifacts(session) })$
         try {
-            startSelectedPackage(snapshot, sink, artifactIdentity, session, snapshot.mainClass, snapshot)
+            startSelectedPackage(snapshot, sink, artifactIdentity, session, snapshot.mainClass, snapshot,
+                snapshot.defaultImportValues())
             let summary = session.completion.get()
             packageReuse.remember(snapshot, summary)
         } finally {
@@ -232,9 +234,12 @@ class {
     ) {
         if (session.cancelled) return
         session.enter()
+        let reads = PackageCompilerSourceProvider(SessionCompilerSourceProvider(sources, session), session, ordered,
+            maxActiveSources, packageLinker.maxSourceCharacters)
         try {
             let cached = snapshot ? packageReuse.find(snapshot) : null
-            let code = cached != null ? cached : packageLinker.linkSources(sources, ordered,
+            if (snapshot) session.recordReuse(packageReuse.evidence(snapshot, cached != null))
+            let code = cached != null ? cached : packageLinker.linkSources(reads, ordered,
                 mainClass: mainClass, defaultImports: defaultImports)
             if (!session.cancelled) {
                 // Capture private cache bytes before exposing mutable code to the sink or stream.
@@ -250,6 +255,7 @@ class {
                 var String message = error.message
                 if (error.class.isOfType(PrimitiveContextBindingException.class)) {
                     let diagnostic = ((PrimitiveContextBindingException)error).diagnostic
+                    session.recordBindingDiagnostic(diagnostic)
                     message = "#{diagnostic.code}: #{diagnostic.name} at " +
                         "#{diagnostic.range.snapshot.source.value}:#{diagnostic.range.start.lineNumber}:" +
                         "#{diagnostic.range.start.column}"
@@ -259,7 +265,7 @@ class {
                 }
                 publishDiagnostic(session, "Failed to compile package '#artifactIdentity': #message")
             }
-        }
+        } finally { reads.dispose() }
     }
 
     protected async publishArtifact(CompilerSession session, CompilerArtifact artifact) {

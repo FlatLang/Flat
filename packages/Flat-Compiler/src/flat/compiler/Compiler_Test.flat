@@ -13,6 +13,160 @@ import flat/future
 import flat/semantic/binding/primitive/PrimitiveDefaultImport
 
 testable class {
+    test `terminal evidence serializes real reuse fields with bounded JSON escaping`() {
+        let summary = CompilationSummary(3, 1, 0, false, reuse:
+            CompilerReuseEvidence(true, "exact-hit", 3, 0, 0, 0, "tool\"\\\n"),
+            peakActiveSourceReads: 2, peakRetainedSourceReads: 2)
+        let receipt = CompilerEvidence.render(summary)
+        expect(receipt.contains("\"schema\":\"flat.compiler.session.v1\"")).toBe(true)
+        expect(receipt.contains("\"peakActiveSourceReads\":2")).toBe(true)
+        expect(receipt.contains("\"scope\":\"exact-in-process-package\"")).toBe(true)
+        let batch = CompilerEvidence.renderDiagnostics(summary, "sha256:test-input")
+        expect(batch.contains("\"schema\":\"flat.compiler.diagnostics.v1\"")).toBe(true)
+        expect(batch.contains("\"revision\":\"sha256:test-input\"")).toBe(true)
+        expect(batch.contains("\"complete\":true,\"records\":[]")).toBe(true)
+        let cancelledBatch = CompilerEvidence.renderDiagnostics(CompilationSummary(1, 0, 0, true), "cancelled-input")
+        expect(cancelledBatch.contains("\"complete\":false")).toBe(true)
+        let unknown = CompilerEvidence.renderDiagnostics(CompilationSummary(1, 0, 1, false, "untyped failure"), "failed-input")
+        expect(unknown.contains("\"complete\":false")).toBe(true)
+        expect(receipt.contains("\"reused\":true")).toBe(true)
+        expect(receipt.contains("\"diagnostics\":{\"complete\":true,\"records\":[]}")).toBe(true)
+        expect(receipt.contains("\"toolFingerprint\":\"tool\\\"\\\\\\u000a\"")).toBe(true)
+    }
+
+    async test `default package closure compiles more than 64 sources without truncation`() {
+        let values = CompilerSource[]
+        for (index in 0..70) values.add(CompilerSource("Value#index.flat", "class Value#index {}"))
+        let sink = MemoryCompilerArtifactSink()
+        let summary = CompilerEngine(maxActiveSources: 2).compilePackage(
+            MemoryCompilerSourceProvider(values), sink, "closure.js").completion.get()
+        expect(summary.sourceCount).toBe(70)
+        expect(summary.artifactCount).toBe(1)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(summary.peakRetainedSourceReads).toBe(2)
+        expect(sink.artifacts().count).toBe(1)
+    }
+
+    async test `ES6 target overlay wins after shared JS overlay independent of provider order`() {
+        let values = [
+            CompilerSource("app/Main.es6.flat", "package app\nclass Main { public static main() { external js { console.log('es6'); } } }"),
+            CompilerSource("app/Main.js.flat", "package app\nclass Main { public static main() { external js { console.log('js'); } } }"),
+            CompilerSource("app/Main.flat", "package app\nclass Main { public static main() { external js { console.log('base'); } } }")
+        ]
+        let sink = MemoryCompilerArtifactSink()
+        let summary = CompilerEngine(maxActiveSources: 2).compilePackage(
+            MemoryCompilerSourceProvider(values), sink, "program.js", "app/Main").completion.get()
+        expect(summary.diagnosticCount).toBe(0)
+        expect(summary.artifactCount).toBe(1)
+        let root = File(".flat-es6-overlay-execution-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "program.js")
+            Es6ArtifactFiles.write(output, sink.artifacts().first.code)
+            let response = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("es6\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    class FailingPackageProvider extends CompilerSourceProvider {
+        visible Future.CompletableFuture<Bool> gate = Future.create<Bool>()
+        visible var Int reads
+        visible var Bool secondSettled
+        override public identities() -> String[] => ["A.flat", "B.flat", "C.flat"]
+        override public async load(String identity) -> CompilerSource {
+            reads++
+            if (identity == "A.flat") throw Exception("controlled source read failure")
+            if (identity == "B.flat") {
+                try { gate.get() } finally { secondSettled = true }
+            }
+            return CompilerSource(identity, "class B {}")
+        }
+    }
+
+    async test `package failure settles all admitted reads without publishing or admitting later sources`() {
+        let provider = FailingPackageProvider()
+        let sink = MemoryCompilerArtifactSink()
+        let pending = Future.from<CompilerSession>(async {
+            return CompilerEngine(maxActiveSources: 2).compilePackage(provider, sink, "failed.js")
+        })$
+        expect(provider.reads).toBe(2)
+        expect(provider.secondSettled).toBe(false)
+        provider.gate.complete(true)
+        let summary = pending.get().completion.get()
+        expect(summary.diagnosticCount).toBe(1)
+        expect(summary.artifactCount).toBe(0)
+        expect(summary.cleanupSettled).toBe(true)
+        expect(provider.secondSettled).toBe(true)
+        expect(provider.reads).toBe(2)
+        expect(sink.artifacts().count).toBe(0)
+    }
+
+    class GatedPackageProvider extends CompilerSourceProvider {
+        visible Future.CompletableFuture<Bool> firstGate = Future.create<Bool>()
+        visible Future.CompletableFuture<Bool> secondGate = Future.create<Bool>()
+        visible var Int reads
+        visible var Int settled
+        override public identities() -> String[] => ["A.flat", "B.flat", "C.flat"]
+        override public async load(String identity) -> CompilerSource {
+            reads++
+            try {
+                if (identity == "A.flat") firstGate.get()
+                if (identity == "B.flat") secondGate.get()
+                return CompilerSource(identity, "class #{identity.substring(0, 1)} {}")
+            } finally { settled++ }
+        }
+    }
+
+    async test `package read overlap is bounded and cancellation completion awaits admitted reads`() {
+        for (capacity in [1, 2]) {
+            let provider = GatedPackageProvider()
+            let session = CompilerSession()
+            let sink = MemoryCompilerArtifactSink()
+            let engine = CompilerEngine(maxActiveSources: capacity)
+            engine.startPackage(provider, sink, "cancelled.js", session)
+            expect(provider.reads).toBe(capacity)
+            session.cancel()
+            expect(session.completion.completed).toBe(false)
+            provider.firstGate.complete(true)
+            if (capacity == 2) expect(session.completion.completed).toBe(false)
+            provider.secondGate.complete(true)
+            let summary = session.completion.get()
+            Console.log(CompilerEvidence.render(summary, "package-read-cancel-capacity-#capacity"))
+            expect(summary.cancelled).toBe(true)
+            expect(summary.cleanupSettled).toBe(true)
+            expect(provider.settled).toBe(capacity)
+            expect(provider.reads).toBe(capacity)
+            expect(sink.artifacts().count).toBe(0)
+            expect(summary.peakActiveSourceReads).toBe(capacity)
+            expect(summary.peakRetainedSourceReads).toBe(capacity)
+        }
+    }
+
+    async test `reverse read completion preserves package artifact across capacities`() {
+        var String expected
+        for (capacity in [1, 2]) {
+            let provider = GatedPackageProvider()
+            let sink = MemoryCompilerArtifactSink()
+            let engine = CompilerEngine(maxActiveSources: capacity)
+            let pending = Future.from<CompilerSession>(async {
+                return engine.compilePackage(provider, sink, "ordered.js")
+            })$
+            expect(provider.reads).toBe(capacity)
+            provider.secondGate.complete(true)
+            provider.firstGate.complete(true)
+            let summary = pending.get().completion.get()
+            Console.log(CompilerEvidence.render(summary, "package-read-reverse-capacity-#capacity"))
+            expect(summary.diagnosticCount).toBe(0)
+            expect(summary.artifactCount).toBe(1)
+            expect(summary.cleanupSettled).toBe(true)
+            expect(summary.peakActiveSourceReads).toBe(capacity)
+            let code = sink.artifacts().first.code
+            if (expected == null) expected = code
+            else expect(code).toBe(expected)
+        }
+    }
+
     class DefaultImportLinker extends FlatEs6PackageLinker {
         visible var String observedLocation
         visible var Bool observedStatic

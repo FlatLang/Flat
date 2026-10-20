@@ -24,7 +24,9 @@ class extends BoundFunctionLoweringPass {
             input.dispatchIdentity,
             input.parentConstructorCall, input.constructorDelegation,
             input.asyncFunction,
-            input.externalName
+            input.externalName,
+            input.abstractFunction,
+            input.lazyProperty
         )
     }
 
@@ -100,7 +102,7 @@ class extends BoundFunctionLoweringPass {
                 call.target,
                 call.receiver,
                 call.argumentValues().map({ lowerExpression(_) }),
-                call.argumentConversions()
+                call.argumentConversions(), call.safeAccess, call.receiverConversion, call.suppressAwait
             )
         }
         if (expression.class.isOfType(BoundConversionExpression.class)) {

@@ -3,35 +3,38 @@ package flat/compiler
 import flat/io
 import flat/system
 import flat/project
-import flat/glob/Glob
-import flat/regex
 import flat/writer/es6/bound
 import flat/semantic/binding/primitive/PrimitiveDefaultImport
 
 /** CLI presentation and filesystem composition; semantic work belongs to Compiler. */
 class CompilerCli {
     public static async main(String[] args) {
-        System.exit(run(args))
+        // Generated Node entrypoints supply user argv only, unlike run's harness API.
+        let invocation = ["flatc"]
+        invocation.addAll(args)
+        System.exit(run(invocation))
     }
 
     public static async run(String[] args) -> Int {
+        var Bool diagnosticBatchEmitted
         try {
             let tokens = args.skip(1)
             if (tokens.count > 0 && (tokens.first == "help" || tokens.first == "--help")) {
                 Console.log("flatc <sources...> [-l dependency] [-x exclusion] -target es6 (-library | -main qualified/Class) (-o file | -d directory)\n" +
                     "Node executable and library compilation.\n" +
-                    "Aliases: --target, --exclude, --threads. -t is ambiguous and unsupported.\n" +
+                    "Aliases: --target, --exclude, --threads. -threads N bounds overlapping source reads, not semantic workers. -t is ambiguous and unsupported.\n" +
                     "Configured defaults: -default-import owner, -default-static-import owner.\n" +
-                    "Sources may be files or directories; directory enumeration includes .flat and .js.flat.\n" +
+                    "Sources may be files, directories or globs; .flat, .js.flat and .es6.flat are selected in overlay order.\n" +
                     "Artifact staging: --max-artifact-bytes N (default 67108864, maximum 2147483647).\n" +
+                    "Persistent state: <output>.flat-incremental.json verifies source/options/tool/output SHA-256; destination lock conflicts fail visibly.\n" +
                     "Budget charges four bytes per UTF-16 identity/payload code unit; linker still materializes one complete artifact.\n" +
-                    "Package bounds: --max-sources N (default 64), --max-types N (default 256). Unsupported options fail without publishing output.")
+                    "Package bounds: --max-sources N (default 4096), --max-types N (default 4096). Unsupported options fail without publishing output.")
                 return 0
             }
             let arguments = String[]
             var Bool quiet
-            var Int maxSources = 64
-            var Int maxTypes = 256
+            var Int maxSources = 4096
+            var Int maxTypes = 4096
             var Long maxArtifactBytes = 67108864
             var String capacityOption
             for (token in tokens) {
@@ -39,7 +42,7 @@ class CompilerCli {
                     if (capacityOption == "--max-artifact-bytes") {
                         maxArtifactBytes = parseArtifactByteCapacity(token)
                     } else {
-                        let capacity = Int.parseInt(token)
+                        let capacity = AirshipCompilerArguments.parsePositiveCapacity(token)
                         if (capacity <= 0) throw Exception("Package capacities must be positive")
                         if (capacityOption == "--max-sources") maxSources = capacity
                         else maxTypes = capacity
@@ -62,7 +65,7 @@ class CompilerCli {
                 throw Exception("Compilation supports only -target es6")
             }
             if (options.runtime) throw Exception("Library target runtime selection is unsupported")
-            if (options.maxConcurrency != 1) throw Exception("CLI package concurrency selection is unsupported")
+            let compilerConcurrency = options.maxConcurrency
             if (options.applicationProperties.count > 0) throw Exception("Application properties are unsupported for library compilation")
             let package = project.packages.first
             let linker = FlatEs6PackageLinker(maxSources: maxSources, maxTypes: maxTypes, maxFragments: maxTypes)
@@ -74,38 +77,67 @@ class CompilerCli {
                 defaultImports.add(PrimitiveDefaultImport(value.location, value.staticImport))
             }
             let output = Es6ArtifactOutput.from(options)
-            let files = File[]
-            for (root in package.sourceRoots) {
-                collectFiles(root.location, package.exclusions, files, maxSources)
-            }
-            for (dependency in package.dependencies) {
-                collectFiles(dependency.sourceLocation, package.exclusions, files, maxSources)
-            }
+            let files = CompilerSourceDiscovery(maxSources).discover(package)
             if (files.count == 0) throw Exception("Compilation requires at least one source")
             let location = output.destination.normalizedLocation
             let slash = location.lastIndexOf("/")
             let parent = slash >= 0 ? location.substring(0, slash) : "."
             let root = File(parent.count > 0 ? parent : "/")
-            let destination = FilesystemCompilerArtifactSink(root, 1)
-            let spool = SpooledCompilerArtifactSink(root, 1, maxArtifactBytes)
-            var Exception failure
+            let incremental = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                tokens, output.destination, maxArtifactBytes, linker.maxSourceCharacters)
             try {
-                let compiler = Compiler(CompilerEngine(packageLinker: linker))
-                let session = compiler.compilePackage(
-                    FilesystemCompilerSourceProvider(files), spool, output.destination.name, options.mainClass,
-                    defaultImports: defaultImports
-                )
-                let summary = session.completion.get()
-                if (summary.cancelled || summary.diagnosticCount > 0 || summary.artifactCount != 1) {
-                    throw Exception(summary.packageDiagnostic ?: "Package compilation failed; output unchanged")
+                if (incremental.reused) {
+                    validateClosure(package, files, maxSources)
+                    incremental.validate()
+                    Console.log(incremental.cachedDiagnostics())
+                    diagnosticBatchEmitted = true
+                    Console.log(CompilerEvidence.renderPersistent(incremental))
+                    if (!quiet) Console.log("Unchanged #{output.destination.normalizedLocation}")
+                    return 0
                 }
-            } catch (Exception error) { failure = error }
-            publishArtifacts(spool, destination, failure)
-            if (!quiet) Console.log("Compiled #{options.library ? "library" : "executable"} #{output.destination.normalizedLocation}")
-            return 0
+                let destination = FilesystemCompilerArtifactSink(root, 1)
+                let spool = SpooledCompilerArtifactSink(root, 1, maxArtifactBytes)
+                var Exception failure
+                var CompilationSummary summary
+                try {
+                    let compiler = Compiler(CompilerEngine(packageLinker: linker, maxActiveSources: compilerConcurrency))
+                    let session = compiler.compilePackage(incremental, spool, output.destination.name,
+                        options.mainClass, defaultImports: defaultImports)
+                    summary = session.completion.get()
+                    Console.log(CompilerEvidence.render(summary, "cli-package"))
+                    Console.log(CompilerEvidence.renderDiagnostics(summary, incremental.revision()))
+                    diagnosticBatchEmitted = true
+                    if (summary.cancelled || summary.diagnosticCount > 0 || summary.artifactCount != 1) {
+                        throw Exception(summary.packageDiagnostic ?: "Package compilation failed; output unchanged")
+                    }
+                    validateClosure(package, files, maxSources)
+                    incremental.validate()
+                } catch (Exception error) { failure = error }
+                publishArtifacts(spool, destination, failure)
+                incremental.commit(summary)
+                Console.log(CompilerEvidence.renderPersistent(incremental))
+                if (!quiet) Console.log("Compiled #{options.library ? "library" : "executable"} #{output.destination.normalizedLocation}")
+                return 0
+            } finally { incremental.dispose() }
         } catch (Exception error) {
+            if (!diagnosticBatchEmitted) {
+                Console.log(CompilerEvidence.renderDiagnostics(
+                    CompilationSummary(0, 0, 1, false), "unavailable-before-terminal-session"))
+            }
             Console.log("flatc: #{error.message}")
             return 1
+        }
+    }
+
+    static async validateClosure(ProjectPackage package, File[] admitted, Int maxSources) {
+        let current = CompilerSourceDiscovery(maxSources).discover(package)
+        if (current.count != admitted.count) throw Exception("Source closure changed during compilation")
+        var Int index
+        while (index < admitted.count) {
+            if (current[index].normalizedLocation != admitted[index].normalizedLocation) {
+                throw Exception("Source closure changed during compilation")
+            }
+            index++
         }
     }
 
@@ -169,72 +201,7 @@ class CompilerCli {
         }
     }
 
-    static async collectFiles(String location, SourceExclusion[] exclusions, File[] files, Int maxSources) {
-        let root = File(location)
-        if (!root.isFile && !root.isDirectory) throw Exception("Source does not exist: #location")
-        for (exclusion in exclusions) {
-            if (matchesExclusion(exclusion.location, root)) return
-        }
-        if (root.isFile) {
-            addFile(root, exclusions, files, maxSources)
-        } else {
-            // Enumeration is scoped to one explicitly supplied root. The selected
-            // package is capped before loading source text; no project text barrier.
-            for (file in root.getChildFiles(true)) {
-                if (file.isFile && file.extensionName == "flat") addFile(file, exclusions, files, maxSources)
-            }
-        }
-    }
-
-    static async addFile(File file, SourceExclusion[] exclusions, File[] files, Int maxSources) {
-        // Target suffixes follow Flat's file contract: ES6 accepts native ES6
-        // and shared JS overlays, never Java/C/other target implementations.
-        let firstDot = file.name.indexOf(".", defaultReturnValue: -1)
-        let lastDot = file.name.lastIndexOf(".")
-        if (firstDot >= 0 && firstDot != lastDot) {
-            let target = file.name.substring(firstDot + 1, lastDot).toLowerCase()
-            if (target != "js" && target != "es6") return
-        }
-        for (exclusion in exclusions) {
-            if (matchesExclusion(exclusion.location, file)) return
-        }
-        String canonicalPath = file.getCanonicalPath()
-        for (existing in files) {
-            String existingPath = existing.getCanonicalPath()
-            if (existingPath == canonicalPath) return
-        }
-        if (files.count >= maxSources) throw Exception("CLI package exceeds configured #maxSources source capacity")
-        files.add(file)
-    }
-
     public static async matchesExclusion(String exclusion, File file) -> Bool {
-        if (exclusion.contains("*")) {
-            // Glob matches paths relative to its explicit base. Dependency roots
-            // may be outside the CLI working directory; anchor at the non-glob
-            // directory prefix instead of truncating an unrelated absolute path.
-            let wildcard = exclusion.indexOf("*")
-            let prefix = exclusion.substring(0, wildcard)
-            let slash = prefix.lastIndexOf("/")
-            let base = slash >= 0 ? File(prefix.substring(0, slash + 1)) : File(System.workingDirectory)
-            let pattern = slash >= 0 ? exclusion.substring(slash + 1) : exclusion
-            let canonicalBase = base.getCanonicalFileSync()
-            let canonicalFile = file.getCanonicalFileSync()
-            // Glob's relative-path adapter requires a strict descendant. A root
-            // directory itself (or an unrelated dependency root) cannot match
-            // the child pattern and must not be sliced past its path length.
-            if (!canonicalFile.normalizedLocation.startsWith(canonicalBase.normalizedLocation + "/")) return false
-            return Glob.matchesGlobPattern(pattern, canonicalBase, canonicalFile)
-        }
-        // A named file/directory is an exclusion identity, not merely a regex
-        // against its canonical path. Resolve both paths before regex fallback.
-        File excluded = File(exclusion)
-        String canonicalPath = file.getCanonicalPath()
-        String excludedPath = excluded.getCanonicalPath()
-        if (canonicalPath == excludedPath) return true
-        if (excluded.isDirectory) {
-            let descendantPrefix = excludedPath.endsWith("/") ? excludedPath : excludedPath + "/"
-            if (canonicalPath.startsWith(descendantPrefix)) return true
-        }
-        return canonicalPath.matches(Pattern(exclusion))
+        return CompilerSourceDiscovery.matchesExclusion(exclusion, file)
     }
 }

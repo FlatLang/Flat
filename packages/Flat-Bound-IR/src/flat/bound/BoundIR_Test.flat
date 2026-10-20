@@ -4,6 +4,80 @@ import flat/compiler/models
 import flat/semantic/types
 
 testable class {
+    test `selected call await suppression and receiver conversion survive lowering`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = UserClassSemanticType(fixture.declaration("class", "AsyncOwner", 90))
+        let target = CallableSignature(fixture.symbol("method", "read", 91), "read",
+            CallableKind("instance-method"), SemanticType[], SemanticTypes.intType(), owner,
+            asyncFunction: true, externalName: "readAsync", dispatchIdentity: "slot:read")
+        let receiver = BoundLiteralExpression(fixture.range(), owner, "receiver")
+        let receiverConversion = TypeConversions.classify(owner, owner)
+        let call = BoundCallExpression(fixture.range(), SemanticTypes.intType(), target, receiver,
+            BoundExpression[], TypeConversion[], receiverConversion: receiverConversion, suppressAwait: true)
+        let unit = BoundFunctionUnit(fixture.declaration("function", "run", 92), "run", SemanticTypes.intType(),
+            [BoundReturnStatement(fixture.range(), SemanticTypes.intType(), call,
+                TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType()))], fixture.range())
+        let core = CoreLanguageLoweringPass().lower(unit)
+        let lowered = CollectionControlLoweringPass().lower(DeferredExecutionLoweringPass().lower(core))
+        let loweredStatements = lowered.statements()
+        var BoundReturnStatement statement
+        statement = (BoundReturnStatement)loweredStatements.first
+        let returnedValue = statement.value
+        var BoundCallExpression result
+        result = (BoundCallExpression)returnedValue
+        expect(result.suppressAwait).toBe(true)
+        expect(result.receiverConversion).toBe(receiverConversion)
+        expect(result.target.asyncFunction).toBe(true)
+        expect(result.target.externalName).toBe("readAsync")
+        expect(result.target.dispatchIdentity).toBe("slot:read")
+        let free = CallableSignature(fixture.symbol("function", "free", 93), "free", CallableKind("function"),
+            SemanticType[], SemanticTypes.intType(), asyncFunction: true)
+        expect(BoundCallExpression(fixture.range(), SemanticTypes.intType(), free,
+            BoundExpression[], TypeConversion[]).suppressAwait).toBe(false)
+        expect(BoundCallExpression(fixture.range(), SemanticTypes.intType(), free,
+            BoundExpression[], TypeConversion[], suppressAwait: true).suppressAwait).toBe(true)
+    }
+
+    test `contract metadata retains exact declaration identity separately from display name`() {
+        let fixture = BoundIR_TestFixture()
+        let identity = fixture.declaration("interface", "Readable", 94)
+        let metadata = BoundMetadataUnit("implements", "Readable", "Readable", identity)
+        let metadataType = UserClassSemanticType(identity)
+        var BoundTypeMetadataExpression expression
+        expression = BoundTypeMetadataExpression(fixture.range(), metadataType,
+            metadataValueType: SemanticTypes.objectType(), interfaceType: true)
+        expect(metadata.declarationIdentity).toBe(identity)
+        expect(expression.interfaceType).toBe(true)
+        expect(expression.referencedType.declarationIdentity).toBe(identity)
+        var Bool rejected
+        try { BoundMetadataUnit("annotation", "Readable", "Readable", identity) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    test `function lowering preserves bodyless and lazy declaration contracts`() {
+        let fixture = BoundIR_TestFixture()
+        let abstractUnit = BoundFunctionUnit(fixture.declaration("method", "required", 80),
+            "required", SemanticTypes.intType(), BoundStatement[], fixture.range(), abstractFunction: true)
+        let lazyUnit = BoundFunctionUnit(fixture.declaration("static-method", "cached", 81),
+            "cached", SemanticTypes.intType(), [BoundReturnStatement(fixture.range(), SemanticTypes.intType(),
+                BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "7"),
+                TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType()))],
+            fixture.range(), staticFunction: true, lazyProperty: true)
+        BoundFunctionLoweringPass[] passes = [CoreLanguageLoweringPass(), CollectionControlLoweringPass(),
+            DeferredExecutionLoweringPass(), ExternalNativeLoweringPass()]
+        for (pass in passes) {
+            let abstractResult = pass.lower(abstractUnit)
+            let lazyResult = pass.lower(lazyUnit)
+            expect(abstractResult.abstractFunction).toBe(true)
+            expect(abstractResult.statements().isEmpty).toBe(true)
+            expect(lazyResult.lazyProperty).toBe(true)
+            expect(lazyResult.staticFunction).toBe(true)
+            expect(lazyResult.identity.value).toBe(lazyUnit.identity.value)
+            expect(lazyResult.statements().count).toBe(1)
+        }
+    }
+
     test `numeric unbox preserves resolved virtual projection and conversion evidence`() {
         let fixture = BoundIR_TestFixture()
         let number = UserClassSemanticType(fixture.declaration("class", "Number", 70))
@@ -26,6 +100,15 @@ testable class {
                 projection, conversion, projected)
         } catch (Exception error) { rejected = true }
         expect(rejected).toBe(true)
+        var Bool asyncRejected
+        let asyncProjection = CallableSignature(projection.identity, projection.name,
+            projection.callableKind, projection.parameterTypes(), projection.returnType, number,
+            asyncFunction: true)
+        try {
+            BoundNumericUnboxExpression(fixture.range(), SemanticTypes.doubleType(), source,
+                number, asyncProjection, conversion, projected)
+        } catch (Exception error) { asyncRejected = true }
+        expect(asyncRejected).toBe(true)
     }
     test `foreach continuation stays in nearest loop`() {
         let fixture = BoundIR_TestFixture()

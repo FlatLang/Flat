@@ -17,7 +17,7 @@ class extends BoundFunctionLoweringPass {
             input.parameterValues(), input.staticFunction, input.mainFunction,
             input.constructorFunction, input.dispatchIdentity, input.parentConstructorCall,
             input.constructorDelegation,
-            input.asyncFunction, input.externalName
+            input.asyncFunction, input.externalName, input.abstractFunction, input.lazyProperty
         )
     }
 
@@ -241,7 +241,8 @@ class extends BoundFunctionLoweringPass {
         if (expression.class.isOfType(BoundMemberAccessExpression.class)) return requiresAwait(((BoundMemberAccessExpression)expression).receiver)
         if (expression.class.isOfType(BoundCallExpression.class)) {
             let value = (BoundCallExpression)expression
-            return requiresAwait(value.receiver) || value.argumentValues().any({ requiresAwait(_) })
+            return (value.target.asyncFunction && !value.suppressAwait) ||
+                requiresAwait(value.receiver) || value.argumentValues().any({ requiresAwait(_) })
         }
         if (expression.class.isOfType(BoundConditionalExpression.class)) {
             let value = (BoundConditionalExpression)expression
@@ -418,7 +419,8 @@ class extends BoundFunctionLoweringPass {
                 let condition = BoundBinaryExpression(call.range, SemanticTypes.boolType(), "==", checkedReceiver, nullValue)
                 let narrowed = BoundReferenceExpression(call.range, call.target.receiverType(), "receiver", identity)
                 let invoked = BoundCallExpression(call.range, call.target.returnType, call.target, narrowed,
-                    call.argumentValues().map({ lowerExpression(_) }), call.argumentConversions())
+                    call.argumentValues().map({ lowerExpression(_) }), call.argumentConversions(),
+                    suppressAwait: call.suppressAwait)
                 let body = BoundConditionalExpression(call.range, call.semanticType, condition,
                     BoundConversionExpression(call.range, call.semanticType, nullValue,
                         TypeConversions.classify(nullValue.semanticType, call.semanticType)),
@@ -438,7 +440,7 @@ class extends BoundFunctionLoweringPass {
                 call.target,
                 lowerExpression(call.receiver),
                 call.argumentValues().map({ lowerExpression(_) }),
-                call.argumentConversions()
+                call.argumentConversions(), call.safeAccess, call.receiverConversion, call.suppressAwait
             )
         }
         if (expression.class.isOfType(BoundConversionExpression.class)) {

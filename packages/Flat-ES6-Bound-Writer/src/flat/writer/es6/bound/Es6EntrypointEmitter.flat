@@ -5,7 +5,11 @@ import flat/semantic/types
 
 /** Node CLI boundary for an already-selected bound declaration; never resolves overloads. */
 class {
-    public emit(BoundTypeUnit owner, BoundFunctionUnit selectedMain) -> Es6CodeResult {
+    /** nativeStringConstructor is selected by semantic/project ownership, never discovered here.
+     * It adapts each Node argv native string to the declared entrypoint element type.
+     */
+    public emit(BoundTypeUnit owner, BoundFunctionUnit selectedMain,
+        CallableSignature nativeStringConstructor = null) -> Es6CodeResult {
         if (!owner || !selectedMain) {
             return failure("es6.entrypoint-owner", "Entrypoint requires a selected type and member")
         }
@@ -29,14 +33,34 @@ class {
                 return failure("es6.entrypoint-signature", "Entrypoint arguments require a native String array")
             }
             let arrayType = (ArraySemanticType)type
-            if (arrayType.dimensions != 1 ||
-                arrayType.elementType.value() != SemanticTypes.stringType().value() || parameters[0].defaultValue) {
-                return failure("es6.entrypoint-signature", "Entrypoint arguments require exactly native String[]")
+            if (arrayType.dimensions != 1 || parameters[0].defaultValue) {
+                return failure("es6.entrypoint-signature", "Entrypoint arguments require exactly String[]")
             }
-            // ABI flat-es6-abi-1 uses native-array and native-string, not Flat wrapper objects.
-            arguments = "process.argv.slice(2)"
+            if (arrayType.elementType.value() == SemanticTypes.stringType().value()) {
+                if (nativeStringConstructor) return failure("es6.entrypoint-adapter",
+                    "Native String[] does not require a wrapper constructor")
+                arguments = "process.argv.slice(2)"
+            } else {
+                if (!nativeStringConstructor || nativeStringConstructor.callableKind.value != "constructor" ||
+                    !nativeStringConstructor.ownerType ||
+                    nativeStringConstructor.ownerType.value() != arrayType.elementType.value() ||
+                    nativeStringConstructor.returnType.value() != arrayType.elementType.value() ||
+                    nativeStringConstructor.parameterTypes().count != 1 ||
+                    nativeStringConstructor.parameterTypes().first.value() != SemanticTypes.stringType().value()) {
+                    return failure("es6.entrypoint-signature",
+                        "Wrapper String[] requires the selected native-string constructor for its element type")
+                }
+                let target = nativeStringConstructor.identity.declaration
+                let wrapper = Es6NameMangler.mangle(nativeStringConstructor.ownerType.declarationIdentity.value)
+                let factory = target.syntaxIdentity.kind == "constructor-overload" ?
+                    Es6NameMangler.mangle(target.value) : null
+                let adapted = Es6CallEmitter().emitConstructorCall(wrapper, "__flatArgument", factory)
+                arguments = "process.argv.slice(2).map(__flatArgument => " + adapted + ")"
+            }
         } else if (parameters.count != 0) {
-            return failure("es6.entrypoint-signature", "Entrypoint accepts no parameters or one native String[]")
+            return failure("es6.entrypoint-signature", "Entrypoint accepts no parameters or one String[]")
+        } else if (nativeStringConstructor) {
+            return failure("es6.entrypoint-adapter", "Parameterless main does not require an argument adapter")
         }
         let ownerName = Es6NameMangler.mangle(owner.identity.value)
         let mainName = selectedMain.externalName ?: Es6NameMangler.mangle(

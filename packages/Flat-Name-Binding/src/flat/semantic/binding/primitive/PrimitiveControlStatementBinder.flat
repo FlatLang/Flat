@@ -816,7 +816,10 @@ class {
             let local = locals.reverse().firstOrNull({ _.name == value.name })
             if (local && local.identity.symbolKind == "field") {
                 let field = fields.firstOrNull({ _.identity == local.identity })
-                if (!receiver || !field) throw Exception("Invalid field reference '#{value.name}'")
+                if (!field) throw Exception("Invalid field reference '#{value.name}'")
+                if (field.staticField) return BoundReferenceExpression(value.range, field.semanticType,
+                    field.name, field.identity, staticOwner: field.identity.declaration)
+                if (!receiver) throw Exception("Invalid field reference '#{value.name}'")
                 return BoundMemberAccessExpression(
                     value.range, field.semanticType, receiver, field.name, field.identity
                 )
@@ -831,6 +834,8 @@ class {
                     receiver.symbolIdentity.declaration.name
             )
             if (field) {
+                if (field.staticField) return BoundReferenceExpression(value.range, field.semanticType,
+                    field.name, field.identity, staticOwner: field.identity.declaration)
                 if (!receiver) throw Exception("Static method cannot reference instance field")
                 return BoundMemberAccessExpression(
                     value.range, field.semanticType, receiver, field.name, field.identity

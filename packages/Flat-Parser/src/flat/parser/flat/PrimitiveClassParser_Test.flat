@@ -4,6 +4,190 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `bodyless callable declarations retain complete contracts`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:interface-callable-contract"), "one")
+        let stream = Lexer().lex("trait Bridge<E> { public native text() -> String " +
+            "public native_array read(native_array E[] input, Int count = 1) -> E[] " +
+            "public identity<T>(T value) -> T public notify(E value) " +
+            "public native_array E[] storage }")
+        stream.emit("start")
+        let syntax = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot, 17)
+        let methods = syntax.methodValues()
+        expect(methods.count).toBe(5)
+        expect(methods.first.implementation()).toBe(null)
+        let text = methods.first.declaration()
+        expect(text.abstractMethod).toBe(true)
+        expect(text.nativeReturnModifierRange.startTokenIndex).toBe(24)
+        expect(text.nativeReturnModifierRange.snapshot).toBe(snapshot)
+        let read = methods[1].declaration()
+        expect(read.nativeArrayReturnModifierRange != null).toBe(true)
+        expect(read.parameterValues().first.nativeArrayStorage).toBe(true)
+        expect(read.parameterValues().last.defaultValue != null).toBe(true)
+        expect(methods[2].declaration().genericParameterNames()).toBe(["T"])
+        expect(methods[3].declaration().returnTypeName).toBe("Unit")
+        expect(methods[4].nativeArrayReturnModifierRange != null).toBe(true)
+        expect(methods[4].returnTypeName).toBe("E[]")
+        expect(methods[4].declaration()).toBe(null)
+    }
+
+    async test `nested multi argument nullable types share callable and property grammar`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:interface-nested-types"), "one")
+        let stream = Lexer().lex("interface Contract { visible Pair<Int,Box<String[]>>? value " +
+            "read(Pair<Int,Box<String[]>>? input) -> Pair<Int,Box<String[]>>? }")
+        stream.emit("start")
+        let syntax = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(syntax.methodValues().first.returnTypeName).toBe("Pair<Int,Box<String[]>>?")
+        let declaration = syntax.methodValues().last.declaration()
+        expect(declaration.returnTypeName).toBe("Pair<Int,Box<String[]>>?")
+        expect(declaration.parameterValues().first.typeName).toBe(declaration.returnTypeName)
+        expect(declaration.parameterValues().first.range.snapshot).toBe(snapshot)
+        expect(declaration.parameterValues().first.range.startTokenIndex).toBe(19)
+        expect(declaration.parameterValues().first.range.endTokenIndex).toBe(32)
+        let invalidSources = ["interface Bad { read(Int?? value) -> Int }",
+            "interface Bad { read(Int? value?) -> Int }", "interface Bad { read(Int?) -> Int }"]
+        for (source in invalidSources) {
+            let invalid = Lexer().lex(source)
+            invalid.emit("start")
+            var String failure
+            try {
+                let contract = PrimitiveInterfaceParser().parse(invalid.consumeAll<Token>("data"), snapshot)
+                contract.methodValues().first.declaration()
+            } catch (Exception error) { failure = error.message }
+            expect(failure != null).toBe(true)
+        }
+    }
+
+    async test `native signatures reject invalid representations and missing type arguments`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-interface-contract"), "one")
+        let sources = ["trait Bad { native_array read() -> Int }",
+            "trait Bad { native read() }", "trait Bad { native native read() -> String }",
+            "trait Bad { native_array Int value }", "trait Bad { read() -> Pair<Int,> }",
+            "trait Bad { read() -> Pair<> }", "trait Bad { read() -> Pair<Int }",
+            "trait Bad { read() -> Int { return 1; }"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            var String failure
+            try { PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+            catch (Exception error) { failure = error.message }
+            expect(failure != null).toBe(true)
+        }
+    }
+
+    async test `parameter defaults retain nested calls arrays and neighboring members`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:interface-default-delimiters"), "one")
+        let stream = Lexer().lex("trait Defaults { read(Int count = choose(1, 2), Int[] values = [1, 2]) -> Int " +
+            "next() -> Int }")
+        stream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(contract.methodValues().count).toBe(2)
+        let declaration = contract.methodValues().first.declaration()
+        expect(declaration.parameterValues().count).toBe(2)
+        expect(declaration.parameterValues().first.defaultValue != null).toBe(true)
+        expect(declaration.parameterValues().last.defaultValue != null).toBe(true)
+        let invalidSources = ["trait Bad { read(Int count = ) -> Int }",
+            "trait Bad { read(Int count,) -> Int }", "trait Bad { read(Int count = choose(1, 2) -> Int }"]
+        for (source in invalidSources) {
+            let invalid = Lexer().lex(source)
+            invalid.emit("start")
+            var String failure
+            try { PrimitiveInterfaceParser().parse(invalid.consumeAll<Token>("data"), snapshot) }
+            catch (Exception error) { failure = error.message }
+            expect(failure != null).toBe(true)
+        }
+    }
+
+    async test `retains asynchronous receiver chain overlay evidence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("flat/Object.js.flat"), "one")
+        var String source = "class Object { async compiler_visible external_name __chainAsync(String funcName, Object[] args) => this { "
+        source += "external { await this["
+        source += '#'
+        source += "{funcName}].apply(this, "
+        source += '#'
+        source += "{args}); } } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().first
+        expect(method.asyncMethod).toBe(true)
+        expect(method.externalName).toBe("__chainAsync")
+        expect(method.returnTypeName).toBe("this")
+        expect(method.inferredReturnType).toBe(false)
+        expect(method.parameterValues().map({ _.name })).toBe(["funcName", "args"])
+        expect(method.parameterValues().map({ _.typeName })).toBe(["String", "Object[]"])
+        expect(method.statements().first.class.isOfType(PrimitiveExternalStatementSyntax.class)).toBe(true)
+        let statements = method.statements()
+        let statementObject = (Object)statements.first
+        let nativeStatement = (PrimitiveExternalStatementSyntax)statementObject
+        let interpolations = nativeStatement.segmentValues().filter({ _.interpolated() })
+        expect(interpolations.count).toBe(2)
+        expect(interpolations.first.pathValues()).toBe(["funcName"])
+        expect(interpolations.last.pathValues()).toBe(["args"])
+        expect(method.range.snapshot).toBe(snapshot)
+    }
+
+    async test `asynchronous named declarations and executable defaults retain callable evidence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:interface-async-external"), "one")
+        let stream = Lexer().lex("trait Runtime { public async external_name open(String path) -> Int " +
+            "public async external_name close(Int handle) -> Int { return handle; } }")
+        stream.emit("start")
+        let syntax = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot, 31)
+        let declaration = syntax.methodValues().first.declaration()
+        expect(declaration.asyncMethod).toBe(true)
+        expect(declaration.externalName).toBe("open")
+        expect(declaration.abstractMethod).toBe(true)
+        expect(declaration.range.startTokenIndex).toBe(34)
+        expect(syntax.methodValues().first.implementation()).toBe(null)
+        let implementation = syntax.methodValues().last.implementation()
+        expect(implementation.asyncMethod).toBe(true)
+        expect(implementation.externalName).toBe("close")
+        expect(implementation.abstractMethod).toBe(false)
+        expect(syntax.methodValues().last.declaration().range).toBe(implementation.range)
+        let invalid = Lexer().lex("trait Runtime { async external_name open(String path) -> }")
+        invalid.emit("start")
+        var String failure
+        try { PrimitiveInterfaceParser().parse(invalid.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+    }
+
+    async test `overlay method selection retains replacement asynchronous named and native declaration evidence`() {
+        let canonicalSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:runtime-canonical"), "one")
+        let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("memory:runtime-overlay"), "one")
+        let canonicalStream = Lexer().lex("class Runtime { read() -> String { return \"canonical\"; } }")
+        canonicalStream.emit("start")
+        let canonical = PrimitiveClassParser().parse(canonicalStream.consumeAll<Token>("data"), canonicalSnapshot)
+        let overlayStream = Lexer().lex("class Runtime { public async external_name native read() -> String { return \"overlay\"; } }")
+        overlayStream.emit("start")
+        let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), overlaySnapshot, 50)
+        let method = canonical.mergedWith(overlay).methodValues().first
+        expect(method.asyncMethod).toBe(true)
+        expect(method.externalName).toBe("read")
+        expect(method.range.snapshot).toBe(overlaySnapshot)
+        expect(method.nativeReturnModifierRange.snapshot).toBe(overlaySnapshot)
+        expect(method.range).toBe(overlay.methodValues().first.range)
+    }
+
+    async test `native diagnostics identify original modifier token offset`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:interface-native-diagnostic-range"), "one")
+        let stream = Lexer().lex("trait Bad { native_array read() -> Int }")
+        stream.emit("start")
+        var String failure
+        try { PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot, 19) }
+        catch (Exception error) { failure = error.message }
+        expect(failure).toBe("Primitive interface syntax error at token 22: native_array return modifier requires an array return type")
+    }
+
+    async test `zero argument executable default keeps native return evidence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:zero-argument-trait-default"), "one")
+        let stream = Lexer().lex("trait Bridge { native text() -> String => \"ok\" }")
+        stream.emit("start")
+        let member = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot).methodValues().first
+        expect(member.implementation().nativeReturnModifierRange != null).toBe(true)
+        expect(member.declaration().nativeReturnModifierRange).toBe(member.implementation().nativeReturnModifierRange)
+        expect(member.declaration().abstractMethod).toBe(false)
+    }
+
     async test `native return evidence survives method forms and overlays with precise invalid modifier diagnostics`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-return-forms"), "one")
         let sources = [

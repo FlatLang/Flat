@@ -1,6 +1,48 @@
 package flat/primitive/number
 
 testable class {
+    test `Object equality does not truncate fractional numeric wrappers`() {
+        let Object value = Long(1)
+        let Object integral = Double(1.0)
+        let Object fractional = Double(1.25)
+        let Object negative = Long(-1)
+        let Object negativeFractional = Double(-1.25)
+        let Object text = "1"
+        let Object absent = null
+        expect(value.equals(integral)).toBe(true)
+        expect(integral.equals(value)).toBe(true)
+        expect(value.equals(fractional)).toBe(false)
+        expect(fractional.equals(value)).toBe(false)
+        expect(negative.equals(negativeFractional)).toBe(false)
+        expect(value.equals(text)).toBe(false)
+        expect(value.equals(absent)).toBe(false)
+    }
+
+    test `comparisons preserve sign across large integer differences`() {
+        expect(Long.compareTo(4294967296, 0)).toBe(1)
+        expect(Long.compareTo(0, 4294967296)).toBe(-1)
+        expect(Long.compareTo(-4294967296, 4294967296)).toBe(-1)
+        expect(Long.compareTo(42, 42)).toBe(0)
+        expect(Long(4294967296).compareTo(0)).toBe(1)
+        expect(Long(0).compareToInteger(4294967296)).toBe(-1)
+        expect(Long.compareToInteger(4294967296, 0)).toBe(1)
+    }
+
+    test `comparisons preserve sign of fractional differences`() {
+        expect(Long(1).compareToReal(1.5)).toBe(-1)
+        expect(Long(2).compareToReal(1.5)).toBe(1)
+        expect(Long.compareToReal(1, 1.5)).toBe(-1)
+        expect(Long.compareToReal(2, 1.5)).toBe(1)
+        expect(Long.compareToReal(2, 2.0)).toBe(0)
+    }
+
+    test `decimal conversion preserves zero and negative values`() {
+        expect(Long.toString(0)).toBe("0")
+        expect(Long.toString(-12034)).toBe("-12034")
+        expect(Long.parseLong("12034")).toBe(12034)
+        expect(Long.parseLong("-12034")).toBe(-12034)
+    }
+
     test `toEnglish can get number less than 10`() {
         expect(Long.toEnglish(5)).toBe("5")
     }

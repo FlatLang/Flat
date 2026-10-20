@@ -1,5 +1,7 @@
 package flat/compiler
 
+import flat/semantic/binding/BindingDiagnostic
+
 /** Immutable terminal counts. sourceCount counts admitted identities, artifactCount
  * counts successful sink commits (including commits preceding cancellation), and
  * diagnosticCount counts recorded failures. Completion follows action cleanup.
@@ -13,7 +15,14 @@ data class {
         visible Int artifactCount,
         visible Int diagnosticCount,
         visible Bool cancelled,
-        visible String packageDiagnostic = null
+        visible String packageDiagnostic = null,
+        visible CompilerReuseEvidence reuse = CompilerReuseEvidence(),
+        visible Int peakActiveSources = 0,
+        visible Int peakRetainedSources = 0,
+        visible Bool cleanupSettled = true,
+        visible Int peakActiveSourceReads = 0,
+        visible Int peakRetainedSourceReads = 0,
+        visible BindingDiagnostic bindingDiagnostic = null
     ) {
         if (sourceCount < 0 || artifactCount < 0 || diagnosticCount < 0) {
             throw Exception("Compilation summary counts cannot be negative")

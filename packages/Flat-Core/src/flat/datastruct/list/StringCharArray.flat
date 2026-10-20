@@ -25,6 +25,8 @@ class {
             array[i] = c
         }
 
+        array.position = count
+
         return array
     }
 

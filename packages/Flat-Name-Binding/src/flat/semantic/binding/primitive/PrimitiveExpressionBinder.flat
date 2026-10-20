@@ -34,6 +34,7 @@ class {
 
     var Int implicitParameterIndex
     var TypeHierarchyComponent currentHierarchy
+    var PrimitiveResolvedDeclarationContext currentDeclarationContext
 
     /** Context supplies parameter types; call applicability validates the inferred result. */
     statementReferences(BoundStatement[] statements, String identity) -> Bool {
@@ -130,14 +131,42 @@ class {
         return BoundConversionExpression(operand.range, lifted, operand, TypeConversions.classify(operand.semanticType, lifted))
     }
 
+    arrayDiagnostic(String code, String message, SourceRange range) -> PrimitiveContextBindingException =>
+        PrimitiveContextBindingException(BindingDiagnostic(code, message,
+            SyntaxIslandIdentity(range.snapshot, "array-element", range.startTokenIndex), range))
+
+    /** Each element remains one expression, in source order, with a truthful storage type. */
+    adaptArrayElement(BoundExpression value, SemanticType required,
+        CallableSignature[] callables) -> BoundExpression {
+        var BoundExpression adapted = value
+        if (required.kind() == "user-class" &&
+            ((UserClassSemanticType)required).declarationIdentity.name == "String" &&
+            value.semanticType.kind() == "string") {
+            try {
+                adapted = PrimitiveStringAdapter.wrap(value, required, currentDeclarationContext, callables)
+            } catch (Exception error) {
+                throw arrayDiagnostic(
+                    "type.array-element-conversion", error.message ?: "Invalid array text element", value.range)
+            }
+        }
+        let conversion = TypeConversions.classify(adapted.semanticType, required, hierarchy: currentHierarchy)
+        if (!conversion.applicable) throw arrayDiagnostic(
+            "type.array-element-conversion",
+            "Array element '#{adapted.semanticType.value()}' cannot convert to '#{required.value()}'", value.range)
+        if (conversion.conversionKind == "identity") return adapted
+        return BoundConversionExpression(value.range, required, adapted, conversion)
+    }
+
     public bindCallback(PrimitiveLambdaSyntax syntax, FunctionSemanticType context,
         LocalBinding[] locals, CallableSignature[] callables,
         TypeHierarchyComponent hierarchy = null,
-        FunctionSemanticType originalContract = null) -> PrimitiveExpressionBindingResult {
+        FunctionSemanticType originalContract = null,
+        PrimitiveResolvedDeclarationContext declarationContext = null) -> PrimitiveExpressionBindingResult {
         originalCallbackContract = originalContract
         originalCallbackRange = syntax.range
         specializedGenericParameters = SymbolIdentity[]
         currentHierarchy = hierarchy
+        currentDeclarationContext = declarationContext
         try {
             return PrimitiveExpressionBindingResult(expression: bindSyntax(syntax, locals, callables, context))
         } catch (Exception error) {
@@ -162,9 +191,11 @@ class {
         LocalBinding[] locals = LocalBinding[],
         CallableSignature[] callables = CallableSignature[],
         Bool explicitConversion = false,
-        TypeHierarchyComponent hierarchy = null
+        TypeHierarchyComponent hierarchy = null,
+        PrimitiveResolvedDeclarationContext declarationContext = null
     ) -> PrimitiveExpressionBindingResult {
         currentHierarchy = hierarchy
+        currentDeclarationContext = declarationContext
         if (!syntax || !locals || !callables) throw Exception("Primitive binding requires syntax, locals, and callables")
         try {
             if (requiredType && requiredType.kind() == "function" &&
@@ -688,7 +719,8 @@ class {
                     candidate.returnType,
                     candidate.ownerType,
                     candidate.optionalParameterCount,
-                    candidate.parameterNames(), candidate.genericParameters(), candidate.ownerGenericDeclaration
+                    candidate.parameterNames(), candidate.genericParameters(), candidate.ownerGenericDeclaration,
+                    candidate.ownerInstance, candidate.asyncFunction, candidate.externalName, candidate.dispatchIdentity
                 )),
                 null,
                 arguments.map({ _.semanticType }),
@@ -866,7 +898,7 @@ class {
                     body = BoundLiteralExpression(value.range, resultType, "null")
                 } else body = value.emptyBody
                     ? BoundLiteralExpression(value.range, SemanticTypes.unitType(), "null")
-                    : bindSyntax(value.body, lambdaLocals, callables)
+                    : bindSyntax(value.body, lambdaLocals, callables, expected ? expected.returnType : null)
             } finally {
                 implicitParameters = previousImplicitParameters
                 implicitParameterIndex = previousImplicitIndex
@@ -907,20 +939,30 @@ class {
             let target = candidates.first
             return BoundFunctionValue(
                 value.range,
-                FunctionSemanticType(target.parameterTypes(), target.returnType),
+                FunctionSemanticType(target.parameterTypes(), target.returnType, target.asyncFunction),
                 target
             )
         }
         if (syntax.class.isOfType(PrimitiveArraySyntax.class)) {
             let value = (PrimitiveArraySyntax)syntax
+            // Context fixes storage representation before overload selection. Never
+            // reinterpret a native String[] as storage of declared String objects.
+            var SemanticType elementType
+            if (requiredType && requiredType.kind() == "array") {
+                elementType = ((ArraySemanticType)requiredType).elementType
+            } else if (requiredType && requiredType.kind() == "generic-instance") {
+                let instance = (GenericInstanceSemanticType)requiredType
+                if (instance.declarationType.declarationIdentity.name == "Array" &&
+                    instance.typeArguments().count == 1) elementType = instance.typeArguments().first
+            }
             let elements = BoundExpression[]
             for (element in value.elementValues()) {
-                elements.add(bindSyntax(element, locals, callables))
+                let bound = bindSyntax(element, locals, callables, elementType)
+                if (!elementType) elementType = bound.semanticType
+                elements.add(adaptArrayElement(bound, elementType, callables))
             }
-            let elementType = elements.first.semanticType
-            if (elements.any({
-                !TypeConversions.classify(_.semanticType, elementType).applicable
-            })) throw Exception("Array elements require a common type")
+            if (!elementType) throw arrayDiagnostic(
+                "type.array-element-context", "Empty array literal requires an element type", value.range)
             let storage = BoundArrayExpression(
                 value.range, ArraySemanticType(elementType), elements
             )
@@ -1050,8 +1092,8 @@ class {
             if (condition.semanticType.value() != SemanticTypes.boolType().value()) {
                 throw Exception("Conditional expression requires Bool condition")
             }
-            var BoundExpression whenTrue = bindSyntax(value.whenTrue, locals, callables)
-            var BoundExpression whenFalse = bindSyntax(value.whenFalse, locals, callables)
+            var BoundExpression whenTrue = bindSyntax(value.whenTrue, locals, callables, requiredType)
+            var BoundExpression whenFalse = bindSyntax(value.whenFalse, locals, callables, requiredType)
             if (whenTrue.semanticType.value() != whenFalse.semanticType.value()) {
                 let common = SemanticTypes.objectType()
                 let trueConversion = TypeConversions.classify(whenTrue.semanticType, common, hierarchy: currentHierarchy)

@@ -3,23 +3,48 @@ package flat/project
 import flat/compiler/models
 import flat/io
 
+/** Bounded, target-neutral filesystem source identities; snapshots are read on demand. */
 class extends SourceProvider {
-    var File[] sourceFiles
+    var File[] sourceFiles = File[]
+    var String[] visited = String[]
 
-    public construct(visible String root, visible String revisionPrefix = "filesystem") {
+    public construct(visible String root, visible String revisionPrefix = "filesystem",
+        visible Int maxSources = 4096, visible Int maxDirectories = 16384,
+        visible Int maxDepth = 128) {
+        if (maxSources <= 0 || maxDirectories <= 0 || maxDepth <= 0) {
+            throw Exception("Filesystem source capacities must be positive")
+        }
         let directory = File(root)
         if (!directory.isDirectory) throw Exception("Filesystem source root must be a directory")
-        let files = File[]
-        for (file in directory.getChildFiles(recursive: true)) {
-            if (file.isFile && file.extensionNames.contains("flat")) files.add(file)
+        collect(directory, 0)
+        sourceFiles = sourceFiles.sort({ _a.normalizedLocation.compareTo(_b.normalizedLocation) })
+        visited.clear()
+    }
+
+    collect(File directory, Int depth) {
+        let identity = directory.getCanonicalFileSync().normalizedLocation
+        if (visited.contains(identity)) return
+        if (visited.count >= maxDirectories || depth >= maxDepth) {
+            throw Exception("Filesystem source discovery exceeds directory/depth capacity")
         }
-        sourceFiles = files.sort({ _a.normalizedLocation.compareTo(_b.normalizedLocation) })
+        visited.add(identity)
+        // IO lists one directory at a time. Never recursively materialize a root.
+        let children = directory.getChildFiles(includeDirectories: true)
+            .sort({ _a.normalizedLocation.compareTo(_b.normalizedLocation) })
+        for (file in children) {
+            if (file.isDirectory) collect(file, depth + 1)
+            else if (file.isFile && file.extensionName == "flat") {
+                let canonical = file.getCanonicalFileSync()
+                if (!sourceFiles.any({ _.normalizedLocation == canonical.normalizedLocation })) {
+                    if (sourceFiles.count >= maxSources) throw Exception("Filesystem source discovery exceeds source capacity")
+                    sourceFiles.add(canonical)
+                }
+            }
+        }
     }
 
     override public identities() -> SourceIdentity[] {
-        let identities = SourceIdentity[]
-        for (file in sourceFiles) identities.add(SourceIdentity("file:#{file.normalizedLocation}"))
-        return identities
+        return sourceFiles.map({ SourceIdentity("file:#{_.normalizedLocation}") })
     }
 
     override public load(SourceIdentity identity) -> LoadedSource => null {
@@ -28,7 +53,10 @@ class extends SourceProvider {
         let location = identity.value.substring(prefix.count)
         let file = sourceFiles.firstWhere({ _.normalizedLocation == location })
         if (!file) return null
-        let contents = FileReader(file).readAllContents()
+        let reader = FileReader(file)
+        var String contents
+        try { contents = reader.readAllContents() } finally { reader.close() }
+        // Revision is a change hint, not a cryptographic artifact/tool identity.
         let revision = "#revisionPrefix:#{contents.count}:#{contents.hashCodeLong}"
         return LoadedSource(SourceSnapshotIdentity(identity, revision), contents)
     }

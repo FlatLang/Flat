@@ -55,13 +55,13 @@ class extends Number<Long> implements Integer {
         return String(data)
     }
 
-    public compareTo(Long other) => (Int)(this.value - other)
-    public compareToReal(Double other) => (Int)(this.value - other)
-    public compareToInteger(Long other) => (Int)(this.value - other)
+    public compareTo(Long other) => compareTo(value, other)
+    public compareToReal(Double other) => compareToReal(value, other)
+    public compareToInteger(Long other) => compareToInteger(value, other)
 
-    public static compareTo(Long value, Long other) => (Int)(value - other)
-    public static compareToReal(Long value, Double other) => (Int)(value - other)
-    public static compareToInteger(Long value, Long other) => (Int)(value - other)
+    public static compareTo(Long value, Long other) => value > other ? 1 : (value == other ? 0 : -1)
+    public static compareToReal(Long value, Double other) => value > other ? 1 : (value == other ? 0 : -1)
+    public static compareToInteger(Long value, Long other) => compareTo(value, other)
 
     public plus(Long other) => this.value + other
     public plusReal(Double other) => this.value + other
@@ -87,7 +87,7 @@ class extends Number<Long> implements Integer {
     public multiplyEqualsReal(Double other) => this.value *= other
     public multiplyEqualsInteger(Long other) => this.value *= other
 
-    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Long)other == value
+    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && ((Number)other).equalsInteger(value)
     public equals(Long other) => this.value == other
     public equalsReal(Double other) => this.value == other
     public equalsInteger(Long other) => this.value == other

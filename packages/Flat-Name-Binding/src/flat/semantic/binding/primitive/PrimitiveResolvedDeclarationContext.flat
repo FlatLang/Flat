@@ -177,15 +177,10 @@ class {
     public scopeForSnapshot(SourceSnapshotIdentity snapshot) -> PrimitiveResolvedDeclarationContext {
         let source = sources.firstOrNull({ _.snapshot == snapshot })
         if (!source || source == owner) return this
-        // Only a retained member of this canonical owner contributes merged lexical imports.
-        let merged = owner.classValues().any((syntax) =>
-            syntax.methodValues().any((method) => method.range.snapshot == snapshot) ||
-            syntax.fieldValues().any((field) => field.range.snapshot == snapshot) ||
-            syntax.constructorValues().any((constructor) => constructor.range.snapshot == snapshot))
-        if (!merged) return PrimitiveResolvedDeclarationContext(source, sources)
-        let scopes = PrimitiveSourceBindingContext[]:addAll(lexicalSources)
-        if (scopes.none({ _.snapshot == source.snapshot })) scopes.add(source)
-        return PrimitiveResolvedDeclarationContext(source, sources, scopes)
+        // Canonical type membership is global to the admitted component, but imports
+        // and configured defaults are lexical to the source that wrote this member.
+        // Merging target declarations must never merge their import namespaces.
+        return PrimitiveResolvedDeclarationContext(source, sources)
     }
 
     public scopeFor(DeclarationIdentity identity) -> PrimitiveResolvedDeclarationContext {

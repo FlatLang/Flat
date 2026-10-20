@@ -21,10 +21,10 @@ Default limits: one hour aggregate, ten minutes/command, 2 GiB run output,
 aggregate and one hour/command. Storage is a sampled watchdog, not an OS disk quota.
 
 Every stage uses a new source snapshot, FLAT_HOME, HOME, and log directory.
-Only stage0 has Java jars. All compiler launches in stage1/2 are redirected
-from Airship's existing workspace lookup to a verified read-only previous-stage
-seed, never from the output being built. The guard verifies this mapping and
-never rewrites compiler argv. All subprocesses are serial and audited.
+Only stage0 has Java jars. Stage1/2 select a verified read-only previous-stage
+compiler explicitly through Airship's --flatc-script option. Compiler inputs
+never alias the output being built; the guard verifies identity without rewriting
+compiler argv. All subprocesses are serial and audited.
 Any failed/missing gate fails the run; success requires stage1/2 byte equality.
 Source comparisons use relative manifest keys and exact content hashes; only
 known generated/cache directories are excluded (EXCLUDED below). Captured local
@@ -43,7 +43,6 @@ A seed Airship lacking --debug or printing a different lookup contract fails
 preflight; no seed lookup is inferred from mocks or substituted compiler argv.
 """
 import argparse
-from contextlib import contextmanager, nullcontext
 import shlex
 import hashlib
 import json
@@ -53,6 +52,9 @@ import shutil
 import re
 import signal
 import subprocess
+import select
+import sys
+import tempfile
 import time
 
 HERE = Path(__file__).resolve().parent
@@ -112,6 +114,23 @@ def reviewed_seeds(seeds, review, expected_sha256):
            for key in ('reviewer', 'provenance', 'source_revision')):
         raise ValueError('Review requires reviewer, provenance and producer source revision')
     return value
+
+
+SEED_NAMES = {'node', 'git', 'java', 'airship', 'java_compiler', 'java_backend'}
+
+
+def load_reviewed_bundle(seeds_file, review_file, review_sha256):
+    """Validate an independently provisioned bundle; never create its trust root."""
+    review = reviewed_seeds(seeds_file, review_file, review_sha256)
+    entries = json.loads(seeds_file.read_text())
+    if not isinstance(entries, dict) or set(entries) != SEED_NAMES:
+        raise ValueError('--seeds requires exactly: ' + ', '.join(sorted(SEED_NAMES)))
+    seeds = {name: (verified_seed(entries[name]), entries[name]['sha256'])
+             for name in sorted(SEED_NAMES)}
+    for name in ('node', 'git', 'java'):
+        if not os.access(seeds[name][0], os.X_OK):
+            raise ValueError(f'{name} must be executable')
+    return entries, review, seeds
 
 
 def source_revision(repo, git):
@@ -225,7 +244,8 @@ def artifacts(root):
     result = {}
     for name in PRODUCTS:
         path = root / name
-        if not path.is_file() or path.is_symlink() or not path.stat().st_size:
+        if (not path.is_file() or path.is_symlink() or path.resolve() != root.resolve() / name
+                or not path.stat().st_size):
             raise ValueError(f"Missing fresh stage product: {path}")
         result[name] = digest(path)
     return result
@@ -237,10 +257,46 @@ def compare_products(first, second):
 
 
 def write_json(path, value):
-    path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
+    # A reader must see either the last complete receipt or the new one, never a
+    # partially written JSON document. Stages and commands are serialized.
+    temporary = path.with_name(path.name + '.tmp')
+    try:
+        temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
+        temporary.replace(path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
 
 
-def run_command(command, cwd, env, log, journal, timeout=600, budget=None):
+def admission_records(journal, offset=0):
+    """Bound disk evidence; stream records instead of collecting child history."""
+    if not journal.exists():
+        return
+    if journal.stat().st_size > 16 * 1024 * 1024:
+        raise ValueError('Subprocess admission journal exceeded capacity')
+    with journal.open() as source:
+        source.seek(offset)
+        while True:
+            line = source.readline(1024 * 1024 + 1)
+            if not line:
+                break
+            if len(line) > 1024 * 1024:
+                raise ValueError('Subprocess admission record exceeded capacity')
+            record = json.loads(line)
+            if not isinstance(record, dict):
+                raise ValueError('Invalid subprocess admission record')
+            yield record
+
+
+class CommandFailure(ValueError):
+    """Preserve a real child exit status in failed stage evidence."""
+    def __init__(self, command, exit_code, log):
+        self.exit_code = exit_code
+        super().__init__(f'Command exited {exit_code}: {command}; see {log}')
+
+
+def run_command(command, cwd, env, log, journal, timeout=600, budget=None,
+                ready_gate=None, cleanup_observation=None):
     """One process group at a time; disk-backed logs, finite time/output budgets."""
     if budget:
         budget.check()
@@ -250,6 +306,8 @@ def run_command(command, cwd, env, log, journal, timeout=600, budget=None):
                                    stderr=subprocess.STDOUT, start_new_session=True)
         deadline = time.monotonic() + timeout
         try:
+            if ready_gate:
+                ready_gate(process)
             while process.poll() is None:
                 if budget:
                     budget.check()
@@ -258,7 +316,7 @@ def run_command(command, cwd, env, log, journal, timeout=600, budget=None):
                     raise ValueError(f"Command exceeded time/log capacity: {log}")
                 time.sleep(0.05)
             if process.returncode:
-                raise ValueError(f"Command exited {process.returncode}: {command}; see {log}")
+                raise CommandFailure(command, process.returncode, log)
         finally:
             # Also terminate surviving descendants of a parent that already exited.
             try:
@@ -269,20 +327,110 @@ def run_command(command, cwd, env, log, journal, timeout=600, budget=None):
                 process.wait(timeout=2)
             except subprocess.TimeoutExpired:
                 os.killpg(process.pid, signal.SIGKILL)
-                process.wait()
+                process.wait(timeout=2)
             try:
                 os.killpg(process.pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
+            if cleanup_observation is not None:
+                try:
+                    os.waitpid(process.pid, os.WNOHANG)
+                    reaped = False
+                except ChildProcessError:
+                    reaped = True
+                try:
+                    os.killpg(process.pid, 0)
+                    group_absent = False
+                except ProcessLookupError:
+                    group_absent = True
+                cleanup_observation.update(pid=process.pid, exit_code=process.returncode,
+                                           wait_completed=process.returncode is not None,
+                                           child_reaped=reaped, process_group_absent=group_absent)
     if log.stat().st_size > 100 * 1024 * 1024:
         raise ValueError(f"Command exceeded log capacity: {log}")
-    if journal.exists():
-        if journal.stat().st_size > 16 * 1024 * 1024:
-            raise ValueError("Subprocess admission journal exceeded capacity")
-        with journal.open() as source:
-            for line in source:
-                if json.loads(line)["decision"] == "reject":
-                    raise ValueError(f"Rejected subprocess (even if caught): {journal}")
+    for record in admission_records(journal):
+        if record['decision'] == 'reject':
+            raise ValueError(f"Rejected subprocess (even if caught): {journal}")
+    return process.returncode
+
+
+def observe_subprocess_cleanup(output, python=None, timeout=10):
+    """Actual watchdog observations, never production compiler lifecycle evidence.
+
+    Each fixture writes one FIFO-ready byte after creating a temporary output,
+    then blocks on a separate unreleased FIFO gate. No scheduling sleep proves
+    readiness. The watchdog uses its normal process-group cleanup and wait path.
+    """
+    if not 0 < timeout <= 60:
+        raise ValueError('Lifecycle watchdog timeout must be in (0, 60] seconds')
+    output = Path(output).resolve()
+    fresh_directory(output)
+    python = Path(python or sys.executable).resolve()
+    receipt = {'schema': 1, 'scope': 'watchdog-fixture-only', 'status': 'running',
+               'production_compiler_executed': False, 'children_reaped': False,
+               'temporary_outputs_removed': False, 'scenarios': [],
+               'python': str(python), 'python_sha256': digest(python)}
+    fixture = ("import os, pathlib, sys\n"
+               "pathlib.Path(sys.argv[3]).write_text('temporary lifecycle output')\n"
+               "print('lifecycle fixture created temporary output; entering controlled gate', flush=True)\n"
+               "with open(sys.argv[1], 'wb', buffering=0) as ready: ready.write(b'R')\n"
+               "with open(sys.argv[2], 'rb', buffering=0) as gate: gate.read(1)\n")
+    class Cancelled(ValueError):
+        pass
+    try:
+        for scenario in ('cancel', 'timeout'):
+            observed = {'scenario': scenario, 'ready_observed': False}
+            receipt['scenarios'].append(observed)
+            log = output / (scenario + '.log')
+            with tempfile.TemporaryDirectory(prefix='lifecycle-', dir=output) as temporary:
+                temporary = Path(temporary)
+                ready, gate, artifact = (temporary / name for name in ('ready', 'gate', 'partial.js'))
+                os.mkfifo(ready)
+                os.mkfifo(gate)
+                # O_RDWR keeps the read gate open without an EOF-before-writer race.
+                ready_fd = os.open(ready, os.O_RDWR | os.O_NONBLOCK)
+                def await_ready(process):
+                    readable, _, _ = select.select([ready_fd], [], [], timeout)
+                    if not readable or os.read(ready_fd, 1) != b'R':
+                        raise ValueError('Lifecycle fixture did not enter controlled gate')
+                    observed['ready_observed'] = artifact.is_file() and process.poll() is None
+                    if not observed['ready_observed']:
+                        raise ValueError('Lifecycle fixture readiness was incomplete')
+                    if scenario == 'cancel':
+                        raise Cancelled('controlled cancellation after child-ready gate')
+                command = [str(python), '-I', '-c', fixture, str(ready), str(gate), str(artifact)]
+                observed['argv'] = command
+                try:
+                    # timeout=0 expires only after the explicit ready gate returns.
+                    run_command(command, temporary, {'PATH': str(python.parent)}, log,
+                                output / 'unused-journal', timeout=0, ready_gate=await_ready,
+                                cleanup_observation=observed)
+                    raise RuntimeError('Blocked lifecycle fixture unexpectedly completed')
+                except Cancelled as error:
+                    observed['termination_reason'] = 'cancel'
+                    observed['error'] = str(error)
+                except ValueError as error:
+                    if scenario != 'timeout' or not observed['ready_observed'] or 'time/log capacity' not in str(error):
+                        raise
+                    observed['termination_reason'] = 'timeout'
+                    observed['error'] = str(error)
+                finally:
+                    os.close(ready_fd)
+                observed['temporary_output_existed_before_cleanup'] = artifact.is_file()
+            observed['temporary_outputs_removed'] = not temporary.exists()
+            observed['log'] = log.name
+            observed['log_sha256'] = digest(log)
+            if not all(observed.get(key) is True for key in (
+                    'ready_observed', 'wait_completed', 'child_reaped', 'process_group_absent',
+                    'temporary_output_existed_before_cleanup', 'temporary_outputs_removed')):
+                raise ValueError('Subprocess lifecycle cleanup did not settle')
+        receipt.update(status='observed', children_reaped=True, temporary_outputs_removed=True)
+        return receipt
+    except BaseException as error:
+        receipt.update(status='failed', error=str(error))
+        raise
+    finally:
+        write_json(output / 'subprocess-cleanup.json', receipt)
 
 
 def snapshot(repo, destination, manifest, budget=None):
@@ -312,42 +460,15 @@ def copy_seed(source, destination, expected):
     return destination
 
 
-@contextmanager
-def compiler_mapping(lookup, seed, backup, producing=False):
-    """Use Airship's filesystem lookup unchanged, never guard argv rewriting.
-
-    Preserve a newly built compiler outside its lookup path while the producer
-    seed is admitted. Only the compiler build may replace the seed facade.
-    """
-    preserved = lookup.is_file() and not lookup.is_symlink()
-    if preserved:
-        if backup.exists():
-            raise ValueError("Compiler mapping backup already exists")
-        lookup.rename(backup)
-    if lookup.is_symlink():
-        if lookup.resolve() != seed:
-            raise ValueError("Compiler facade points at wrong seed")
-    else:
-        lookup.parent.mkdir(parents=True, exist_ok=True)
-        lookup.symlink_to(seed)
-    try:
-        yield
-        if not producing and (not lookup.is_symlink() or lookup.resolve() != seed):
-            raise ValueError("Non-compiler command replaced seed facade")
-    finally:
-        if preserved:
-            if lookup.is_file() or lookup.is_symlink():
-                lookup.unlink()
-            backup.rename(lookup)
-
-
-def verify_resolution(log, expected):
+def verify_resolution(log, expected, runtime='flat'):
     """Verify real Airship --debug output, not a reimplementation of resolution.
 
-    No ANSI/path normalization or substring matches: exactly one printed argv
-    must start with the existing `node <workspace compiler>` public contract.
+    Exact one tool argv must select the admitted script or stage0 jar. No ANSI,
+    path normalization or substring matching can establish tool selection.
     """
     matches = []
+    executable = 'node' if runtime == 'flat' else 'java'
+    prefix = ['node', str(expected)] if runtime == 'flat' else ['java', '-jar', str(expected)]
     if not log.is_file():
         raise ValueError("Missing real Airship resolution log")
     with log.open() as source:
@@ -356,11 +477,33 @@ def verify_resolution(log, expected):
                 words = shlex.split(line)
             except ValueError:
                 continue
-            if words and words[0] == 'node':
+            if words and words[0] == executable:
                 matches.append(words)
-    if len(matches) != 1 or len(matches[0]) < 2 or matches[0][1] != str(expected):
-        raise ValueError("Real Airship debug compiler lookup does not match seed facade")
+    if len(matches) != 1 or matches[0][:len(prefix)] != prefix:
+        raise ValueError("Real Airship debug compiler lookup does not match explicit seed")
     return matches[0]
+
+
+def stage_command(node, runner, workspace, number, package, operation, source=None,
+                  jar=None, compiler_seed=None):
+    """Public Airship argv; stage tools are inputs, never workspace outputs."""
+    if number not in (0, 1, 2):
+        raise ValueError('Unknown bootstrap stage')
+    if operation not in ('install', 'run') or package not in REQUIRED_SUITES:
+        raise ValueError('Unsupported stage workload')
+    if number == 0 and (not jar or compiler_seed):
+        raise ValueError('Stage0 requires only the explicit Java compiler seed')
+    if number > 0 and (not compiler_seed or jar):
+        raise ValueError('Generated stages require only an explicit generated compiler')
+    command = [str(node), str(runner), '--use-links', '-f',
+               str(workspace / 'packages' / package), '--flatc-runtime',
+               'java' if number == 0 else 'flat', operation]
+    if source:
+        command.append(source)
+    command += ['-t', 'es6']
+    if operation == 'install':
+        command += ['--flatc-jar', str(jar)] if number == 0 else ['--flatc-script', str(compiler_seed)]
+    return command
 
 
 def stage(number, repo, output, sources, seeds, previous=None, budget=None, command_seconds=600,
@@ -398,15 +541,7 @@ def stage(number, repo, output, sources, seeds, previous=None, budget=None, comm
             link = flat_home / "packages/github.com/FlatLang" / package.name / "[link]"
             link.parent.mkdir(parents=True)
             link.symlink_to(package, target_is_directory=True)
-    mapped_compiler = workspace / PRODUCTS[0]
-    if compiler_seed:
-        # Airship checks existence at its normal lookup path before spawning.
-        # This facade satisfies that check; Node follows the symlink normally.
-        # The guard verifies realpath/hash and does not substitute another argv.
-        # A successful compiler must atomically replace it;
-        # artifacts() rejects a leftover facade as stale output.
-        mapped_compiler.parent.mkdir(parents=True, exist_ok=True)
-        mapped_compiler.symlink_to(compiler_seed)
+    mapped_compiler = compiler_seed if compiler_seed else workspace / PRODUCTS[0]
     journal = directory / "admissions.jsonl"
     policy = {
         "stage": number, "root": str(workspace), "node": str(seeds["node"][0]),
@@ -414,8 +549,9 @@ def stage(number, repo, output, sources, seeds, previous=None, budget=None, comm
         "java": str(seeds["java"][0]) if number == 0 else None,
         "javaSha256": seeds["java"][1] if number == 0 else None,
         "javaJar": str(jar) if jar else None, "javaJarSha256": seeds["java_compiler"][1] if jar else None,
-        "compiler": str(workspace / PRODUCTS[0]), "seed": str(compiler_seed) if compiler_seed else None,
+        "compiler": str(mapped_compiler), "seed": str(compiler_seed) if compiler_seed else None,
         "seedSha256": compiler_hash, "airship": str(airship), "airshipSha256": digest(airship),
+        "compilerOutput": str(workspace / PRODUCTS[0]),
         "journal": str(journal),
     }
     policy_file = directory / "policy.json"
@@ -429,64 +565,60 @@ def stage(number, repo, output, sources, seeds, previous=None, budget=None, comm
            'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG_GLOBAL': os.devnull,
            "AIRSHIP_LOCK_FILE_ENABLED": "false", "NODE_NO_WARNINGS": "1",
            "FLAT_BOOTSTRAP_POLICY": str(policy_file), "NODE_OPTIONS": "--require=" + str(guard)}
-    manifest = {"stage": number, "status": "running", "sources": sources,
+    manifest = {"schema": 2, "stage": number, "status": "running", "sources": sources,
+                "runtime": "java" if number == 0 else "flat",
+                "compiler_selection": "reviewed-java-seed" if number == 0 else "explicit-generated-script",
                 "policy": policy, "commands": [], 'source_origin': origin,
                 'source_origin_metadata': origin_metadata}
     manifest_file = directory / "manifest.json"
     write_json(manifest_file, manifest)
 
     fresh_tests = {}
+    generated_runner_hash = None
 
     def execute(package, operation, source=None, runner=airship):
         if snapshot_origin_manifest(workspace) != origin_metadata:
             raise ValueError('Isolated source origin metadata changed')
         if runner == airship and digest(runner) != policy["airshipSha256"]:
             raise ValueError("Immutable Airship seed changed")
+        if runner != airship and (runner != workspace / PRODUCTS[1] or
+                                  digest(runner) != generated_runner_hash):
+            raise ValueError('Generated Airship changed after production')
         if compiler_seed and digest(compiler_seed) != compiler_hash:
             raise ValueError("Immutable compiler seed changed")
         if digest(seeds["node"][0]) != seeds["node"][1]:
             raise ValueError("Pinned Node executable changed")
-        command = [str(seeds["node"][0]), str(runner), "--use-links", "-f",
-                   str(workspace / "packages" / package), "--flatc-runtime",
-                   "java" if number == 0 else "flat", operation]
-        if source:
-            command.append(source)
-        command += ["-t", "es6"]
-        if jar and operation == "install":
-            command += ["--flatc-jar", str(jar)]
-        manifest["commands"].append({"argv": command, "status": "running"})
+        command = stage_command(seeds['node'][0], runner, workspace, number,
+                                package, operation, source, jar, compiler_seed)
+        manifest["commands"].append({"argv": command, "status": "running",
+                                      "runner_sha256": digest(runner),
+                                      "compiler_sha256": digest(jar if jar else compiler_seed)})
         write_json(manifest_file, manifest)
         dist = workspace / "packages" / package / "dist"
         if operation == "install" and source == "test":
             if dist.exists() and any(dist.rglob("test.js")):
                 raise ValueError("Test output already exists before its build gate")
         offset = journal.stat().st_size if journal.exists() else 0
-        mapping = compiler_mapping(mapped_compiler, compiler_seed, seed_dir / 'built-compiler.js',
-                                   producing=operation == 'install' and source == 'flatc') if compiler_seed else nullcontext()
-        with mapping:
-            if number > 0 and operation == 'install':
-                resolution_log = logs / f"{len(manifest['commands']):02d}-resolution.log"
-                debug_policy_file = directory / 'debug-policy.json'
-                write_json(debug_policy_file, {**policy, 'debugOnly': True})
-                debug_env = {**env, 'FLAT_BOOTSTRAP_POLICY': str(debug_policy_file)}
-                run_command(command + ['--debug'], workspace / 'packages' / package,
-                            debug_env, resolution_log, journal, budget=budget, timeout=command_seconds)
-                manifest['commands'][-1]['resolution_argv'] = verify_resolution(resolution_log, mapped_compiler)
-                manifest['commands'][-1]['resolution_log_sha256'] = digest(resolution_log)
-                write_json(manifest_file, manifest)
-            run_command(command, workspace / "packages" / package, env,
-                        logs / f"{len(manifest['commands']):02d}.log", journal, budget=budget,
-                        timeout=command_seconds)
-        records = []
-        if journal.exists():
-            with journal.open() as source_log:
-                source_log.seek(offset)
-                records = [json.loads(line) for line in source_log]
+        if operation == 'install':
+            resolution_log = logs / f"{len(manifest['commands']):02d}-resolution.log"
+            debug_policy_file = directory / 'debug-policy.json'
+            write_json(debug_policy_file, {**policy, 'debugOnly': True})
+            debug_env = {**env, 'FLAT_BOOTSTRAP_POLICY': str(debug_policy_file)}
+            run_command(command + ['--debug'], workspace / 'packages' / package,
+                        debug_env, resolution_log, journal, budget=budget, timeout=command_seconds)
+            manifest['commands'][-1]['resolution_argv'] = verify_resolution(
+                resolution_log, jar if number == 0 else mapped_compiler,
+                runtime='java' if number == 0 else 'flat')
+            manifest['commands'][-1]['resolution_log_sha256'] = digest(resolution_log)
+            write_json(manifest_file, manifest)
+        exit_code = run_command(command, workspace / "packages" / package, env,
+                                logs / f"{len(manifest['commands']):02d}.log", journal, budget=budget,
+                                timeout=command_seconds)
         if operation == "install":
             expected = str(seeds["java"][0]) if number == 0 else str(seeds["node"][0])
             expected_script = str(jar) if number == 0 else str(mapped_compiler)
             if not any(record["command"] == expected and expected_script in record["args"]
-                       for record in records):
+                       for record in admission_records(journal, offset)):
                 raise ValueError("Install did not invoke the admitted compiler seed")
             if source == "test":
                 generated = list(dist.rglob("test.js")) if dist.exists() else []
@@ -494,7 +626,7 @@ def stage(number, repo, output, sources, seeds, previous=None, budget=None, comm
                     raise ValueError("Test installation did not produce a fresh test.js")
                 fresh_tests[package] = {str(path): digest(path) for path in generated}
         else:
-            executed = [Path(record["args"][0]) for record in records
+            executed = [Path(record["args"][0]) for record in admission_records(journal, offset)
                         if record["command"] == str(seeds["node"][0]) and record["args"]
                         and record["args"][0].endswith("/test.js")]
             selected = workspace / "packages" / package / "dist"
@@ -505,17 +637,19 @@ def stage(number, repo, output, sources, seeds, previous=None, budget=None, comm
             manifest["commands"][-1]["test_artifacts"] = {
                 str(path.relative_to(workspace)): digest(path) for path in executed
                 if selected in path.parents}
-        manifest["commands"][-1].update(status="passed", log_sha256=digest(logs / f"{len(manifest['commands']):02d}.log"))
+        manifest["commands"][-1].update(status="passed", exit_code=exit_code,
+                                         log_sha256=digest(logs / f"{len(manifest['commands']):02d}.log"))
         write_json(manifest_file, manifest)
 
     try:
         execute("Flat-Compiler", "install", "flatc")
         execute("Airship", "install")
         products = artifacts(workspace)
-        # Tests are compiled with the producer seed, run through the newly built
-        # Airship, and must include their real implicit Core dependency unchanged.
+        generated_runner_hash = products[PRODUCTS[1]]
+        # Generated Airship installs and runs every suite using the same selected
+        # compiler; implicit production Core dependencies remain untrimmed.
         for package in REQUIRED_SUITES:
-            execute(package, "install", "test")
+            execute(package, "install", "test", runner=workspace / PRODUCTS[1])
             execute(package, "run", "test", runner=workspace / PRODUCTS[1])
         if artifacts(workspace) != products:
             raise ValueError("Acceptance tests changed stage tool outputs")
@@ -525,12 +659,14 @@ def stage(number, repo, output, sources, seeds, previous=None, budget=None, comm
             raise ValueError("Build changed source/dependency snapshot")
         if digest(airship) != policy["airshipSha256"] or (compiler_seed and digest(compiler_seed) != compiler_hash):
             raise ValueError("Build mutated an immutable seed")
-        manifest.update(status="passed", products=products)
+        manifest.update(status="passed", products=products, admissions_sha256=digest(journal))
         return {"compiler": workspace / PRODUCTS[0], "compiler_hash": products[PRODUCTS[0]],
                 "airship": workspace / PRODUCTS[1], "airship_hash": products[PRODUCTS[1]]}
     except BaseException as error:
         if manifest["commands"] and manifest["commands"][-1]["status"] == "running":
             manifest["commands"][-1]["status"] = "failed"
+            manifest["commands"][-1]["exit_code"] = getattr(error, 'exit_code', None)
+            manifest["commands"][-1]["error"] = str(error)
         manifest.update(status="failed", error=str(error))
         raise
     finally:
@@ -546,6 +682,8 @@ def main():
                         help='Independently reviewed schema-1 seed provenance receipt')
     parser.add_argument('--review-sha256', required=True,
                         help='Expected review digest from protected provisioning, not calculated here')
+    parser.add_argument('--preflight-only', action='store_true',
+                        help='Validate reviewed seed delivery and write seed-preflight.json; launch no tools')
     parser.add_argument('--run-seconds', type=int, default=3600,
                         help='Aggregate deadline, default 3600; explicit experiments capped at 10800')
     parser.add_argument('--command-seconds', type=int, default=600,
@@ -555,16 +693,23 @@ def main():
     repo, output = args.repo.resolve(), args.output.resolve()
     if output == repo or repo in output.parents:
         parser.error("--output must be a new directory outside the checkout")
-    review = reviewed_seeds(args.seeds, args.review, args.review_sha256)
+    entries, review, seeds = load_reviewed_bundle(args.seeds, args.review, args.review_sha256)
     budget = RunBudget(output, seconds=run_seconds)
-    entries = json.loads(args.seeds.read_text())
-    names = {"node", "git", "java", "airship", "java_compiler", "java_backend"}
-    if set(entries) != names:
-        parser.error("--seeds requires exactly: " + ", ".join(sorted(names)))
-    seeds = {name: (verified_seed(entries[name]), entries[name]["sha256"]) for name in sorted(names)}
-    for name in ("node", "git", "java"):
-        if not os.access(seeds[name][0], os.X_OK):
-            parser.error(f"{name} must be executable")
+    if args.preflight_only:
+        fresh_directory(output)
+        write_json(output / 'seed-preflight.json', {
+            'schema': 1, 'status': 'validated-not-executed',
+            'acceptance': False, 'review_sha256': args.review_sha256,
+            'seeds_manifest_sha256': digest(args.seeds), 'review': review,
+            'seeds': {name: {'path': str(path), 'sha256': expected}
+                      for name, (path, expected) in seeds.items()},
+            'producer_contract': {
+                'airship': 'standalone Java-capable JS with --use-links, --flatc-jar and --debug',
+                'java_compiler': 'standalone executable jar',
+                'java_backend': 'standalone ES6 backend jar',
+                'generated': '--flatc-runtime flat --flatc-script; no Java or output aliasing'},
+        })
+        return
     # Snapshot only package inputs; do not import existing ignored/generated outputs.
     provenance = source_provenance(repo, seeds['git'][0])
     provenance['source_origin'] = capture_origin(repo, seeds['git'][0])
@@ -580,7 +725,11 @@ def main():
     source_manifest.chmod(0o444)
     source_manifest_digest = digest(source_manifest)
     write_json(output / 'source-provenance.json', provenance)
-    receipt = {"status": "running", 'source_revision': revision,
+    receipt = {"schema": 2, "status": "running", 'source_revision': revision,
+               'stages': [], 'acceptance_scope': 'isolated generated-tool rebuild and seven production suites',
+               'seed_manifest_sha256': digest(args.seeds), 'seed_review_sha256': args.review_sha256,
+               'seed_producer_revision': review['source_revision'],
+               'seed_producer_provenance': review['provenance'],
                'baseline_revision': revision, 'dirty': provenance['dirty'],
                'source_provenance_file_sha256': digest(output / 'source-provenance.json'),
                'input_identity': 'revision plus exact package source hashes; dirty inputs permitted',
@@ -589,6 +738,7 @@ def main():
                "source_manifest_file_sha256": source_manifest_digest,
                "source_manifest_sha256": hashlib.sha256(
         json.dumps(sources, sort_keys=True).encode()).hexdigest()}
+    write_json(output / 'acceptance.json', receipt)
     try:
         previous = None
         stages = []
@@ -596,6 +746,12 @@ def main():
             previous = stage(number, repo, output, sources, seeds, previous, budget=budget,
                              command_seconds=command_seconds, origin=provenance['source_origin'])
             stages.append(previous)
+            receipt['stages'].append({
+                'stage': number, 'manifest': f'stage{number}/manifest.json',
+                'manifest_sha256': digest(output / f'stage{number}/manifest.json'),
+                'runtime': 'java' if number == 0 else 'flat',
+                'products': {PRODUCTS[0]: previous['compiler_hash'], PRODUCTS[1]: previous['airship_hash']}})
+            write_json(output / 'acceptance.json', receipt)
         compare_products({key: value for key, value in stages[1].items() if key.endswith('_hash')},
                          {key: value for key, value in stages[2].items() if key.endswith('_hash')})
         if capture_origin(repo, seeds['git'][0]) != provenance['source_origin']:

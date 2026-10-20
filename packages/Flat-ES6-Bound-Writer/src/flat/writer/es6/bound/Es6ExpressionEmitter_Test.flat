@@ -196,9 +196,12 @@ testable class {
                 SemanticTypes.objectType(), SemanticTypes.byteType(), explicit: true
             )
         )
-        expect(emitter.emitConversion(
+        let unresolvedUnboxing = emitter.emitConversion(
             numericUnboxing, Es6CodeResult(code: "boxed")
-        ).code).toBe("Number(boxed)")
+        )
+        expect(unresolvedUnboxing.emitted).toBe(false)
+        expect(unresolvedUnboxing.code).toBe(null)
+        expect(unresolvedUnboxing.diagnostic.code).toBe("es6.unlowered-numeric-unboxing")
         let one = BoundLiteralExpression(
             fixture.range(), SemanticTypes.intType(), "1"
         )
@@ -217,7 +220,7 @@ testable class {
             one, two
         )
         let orchestrator = Es6ExpressionOrchestrator()
-        expect(orchestrator.emit(unary).code).toBe("-1")
+        expect(orchestrator.emit(unary).code).toBe("(-(1))")
         expect(orchestrator.emit(binary).code).toBe("(1 + 2)")
         let interpolation = BoundInterpolatedStringExpression(fixture.range(), [
             BoundInterpolatedStringSegment(fixture.range(), "\"Hello \"", null),

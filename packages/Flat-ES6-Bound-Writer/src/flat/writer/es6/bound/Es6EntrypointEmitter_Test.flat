@@ -82,6 +82,73 @@ testable class {
         expect(emitter.emit(owner(returnsValue), returnsValue).diagnostic.code).toBe("es6.entrypoint-signature")
     }
 
+    test `wrapper entrypoint requires selected element factory and rejects mismatched evidence`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let wrapper = UserClassSemanticType(fixture.declaration("class", "String", 40))
+        let other = UserClassSemanticType(fixture.declaration("class", "Other", 41))
+        let constructor = CallableSignature(fixture.symbol("constructor", "String", 42), "String",
+            CallableKind("constructor"), [SemanticTypes.stringType()], wrapper, wrapper)
+        let main = mainUnit([ArraySemanticType(wrapper)])
+        let emitter = Es6EntrypointEmitter()
+        expect(emitter.emit(owner(main), main).emitted).toBe(false)
+        let valid = emitter.emit(owner(main), main, constructor)
+        expect(valid.emitted).toBe(true)
+        expect(valid.code.contains("process.argv.slice(2).map(__flatArgument => new " +
+            Es6NameMangler.mangle(wrapper.declarationIdentity.value) + "(__flatArgument))")).toBe(true)
+        let mismatch = CallableSignature(fixture.symbol("constructor", "Other", 43), "Other",
+            CallableKind("constructor"), [SemanticTypes.stringType()], other, other)
+        expect(emitter.emit(owner(main), main, mismatch).diagnostic.code).toBe("es6.entrypoint-signature")
+        let wrongInput = CallableSignature(fixture.symbol("constructor", "String", 44), "String",
+            CallableKind("constructor"), [SemanticTypes.intType()], wrapper, wrapper)
+        expect(emitter.emit(owner(main), main, wrongInput).diagnostic.code).toBe("es6.entrypoint-signature")
+        let nativeMain = mainUnit([ArraySemanticType(SemanticTypes.stringType())])
+        expect(emitter.emit(owner(nativeMain), nativeMain, constructor).diagnostic.code).toBe("es6.entrypoint-adapter")
+    }
+
+    async test `wrapper argv uses selected overloaded factory once per argument and propagates failure`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let wrapperIdentity = fixture.declaration("class", "String", 45)
+        let wrapper = UserClassSemanticType(wrapperIdentity)
+        let constructorIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(fixture.snapshot, "constructor-overload", 46), "constructor", "String")
+        let constructor = CallableSignature(SymbolIdentity(constructorIdentity, "constructor"), "String",
+            CallableKind("constructor"), [SemanticTypes.stringType()], wrapper, wrapper)
+        let argumentName = Es6NameMangler.mangle(fixture.symbol("parameter", "arg0", 10).value)
+        let wrapperName = Es6NameMangler.mangle(wrapperIdentity.value)
+        let factory = Es6NameMangler.mangle(constructorIdentity.value)
+        let main = mainUnit([ArraySemanticType(wrapper)], body:
+            "if (calls !== " + argumentName + ".length) throw new Error('adaptation count'); " +
+            "if (!" + argumentName + ".every(value => value instanceof " + wrapperName + ")) throw new Error('wrapper identity'); " +
+            "console.log(JSON.stringify(" + argumentName + ".map(value => value.text)));",
+            asyncFunction: true)
+        let type = owner(main)
+        let bootstrap = Es6EntrypointEmitter().emit(type, main, constructor)
+        expect(bootstrap.emitted).toBe(true)
+        let emitted = Es6UnitOrchestrator().emitType(type, 0)
+        expect(emitted.emitted).toBe(true)
+        let code = "let calls = 0; class " + wrapperName + " { static " + factory + "(text) { " +
+            "calls++; if (text === 'reject') throw new Error('argument conversion failed'); " +
+            "const value = new this(); value.text = text; return value; } }\n" +
+            emitted.fragment.code + bootstrap.code
+        let root = File(".flat-es6-wrapper-entrypoint-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "main.js")
+            Es6ArtifactCommitter().commit(destination, code)
+            let response = System.executeExact(["node", "--unhandled-rejections=strict", destination.normalizedLocation,
+                "nonempty", "", "two words"], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("[\"nonempty\",\"\",\"two words\"]\n")
+            let rejected = System.executeExact(["node", "--unhandled-rejections=strict", destination.normalizedLocation,
+                "reject"], silent: true, shell: false)
+            expect(rejected.exitCode).toBe(1)
+            expect(rejected.stdout.join("")).toBe("")
+            expect(rejected.stderr.join("")).toBe("argument conversion failed\n")
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
     async test `generated executable forwards arguments and import does not invoke main`() {
         let fixture = Es6BoundWriter_TestFixture()
         let argumentName = Es6NameMangler.mangle(fixture.symbol("parameter", "arg0", 10).value)

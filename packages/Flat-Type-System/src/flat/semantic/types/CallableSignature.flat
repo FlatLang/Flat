@@ -19,7 +19,10 @@ data class {
         String[] names = String[],
         GenericParameterSemanticType[] genericParameterValues = GenericParameterSemanticType[],
         visible GenericDeclaration ownerGenericDeclaration = null,
-        visible GenericInstanceSemanticType ownerInstance = null
+        visible GenericInstanceSemanticType ownerInstance = null,
+        visible Bool asyncFunction = false,
+        visible String externalName = null,
+        visible String dispatchIdentity = null
     ) {
         if (!identity || !name || name.trim().count == 0 || !callableKind ||
             !parameterTypes || parameterTypes.any({ !_ }) || !returnType ||
@@ -29,6 +32,18 @@ data class {
                 names.filter({ _ == parameterName }).count != 1
             )) {
             throw Exception("Callable signature requires identity, name, kind, parameters, and return type")
+        }
+        // Declaration evidence is target-independent: the selected declaration
+        // may override a distinct inherited slot or declare an external name.
+        if ((externalName != null && externalName.trim().isEmpty) ||
+            (dispatchIdentity != null && dispatchIdentity.trim().isEmpty)) {
+            throw Exception("Callable external name and dispatch identity must be nonblank")
+        }
+        if (dispatchIdentity != null && callableKind.value != "instance-method") {
+            throw Exception("Only instance methods can carry virtual dispatch identity")
+        }
+        if (asyncFunction && callableKind.value == "constructor") {
+            throw Exception("Constructor callable cannot be asynchronous")
         }
         if (callableKind.value == "function" && ownerType) {
             throw Exception("Function callable cannot have an owning type")
@@ -83,7 +98,8 @@ data class {
         return CallableSignature(identity, name, callableKind,
             parameters.map({ substitution.apply(_) }),
             GenericInstanceSemanticType(ownerType, typeArguments), ownerType,
-            optionalParameterCount, parameterNames(), genericParameters(), ownerGenericDeclaration)
+            optionalParameterCount, parameterNames(), genericParameters(), ownerGenericDeclaration,
+            asyncFunction: asyncFunction, externalName: externalName, dispatchIdentity: dispatchIdentity)
     }
 
     public receiverType() -> SemanticType => ownerInstance ?: ownerType
@@ -97,7 +113,7 @@ data class {
         let substitution = GenericSubstitution(ownerGenericDeclaration.genericParameters(), receiver.typeArguments())
         return CallableSignature(identity, name, callableKind, parameters.map({ substitution.apply(_) }),
             substitution.apply(returnType), ownerType, optionalParameterCount, parameterNames(),
-            genericParameters(), ownerGenericDeclaration, receiver)
+            genericParameters(), ownerGenericDeclaration, receiver, asyncFunction, externalName, dispatchIdentity)
     }
 
     public genericParameters() -> GenericParameterSemanticType[] {

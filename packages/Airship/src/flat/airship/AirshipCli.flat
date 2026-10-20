@@ -115,6 +115,20 @@ class {
         args: [flatcJarValueArg]
     )
 
+    visible CliArg flatcScriptValueArg = CliArg(
+        name: "script",
+        description: "The generated Flat compiler ES6 script to execute",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg flatcScriptArg = CliArg(
+        name: "--flatc-script",
+        description: "Use an explicit generated compiler with --flatc-runtime flat",
+        args: [flatcScriptValueArg]
+    )
+
     visible CliArg gitProtocolValueArg = CliArg(
         name: "protocol",
         description: "The Git protocol to use: auto, ssh, or https",

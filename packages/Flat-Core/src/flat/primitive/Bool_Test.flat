@@ -1,0 +1,33 @@
+package flat/primitive
+
+testable class {
+    test `comparison orders false before true`() {
+        expect(Bool(false).compareTo(false)).toBe(0)
+        expect(Bool(true).compareTo(true)).toBe(0)
+        expect(Bool(false).compareTo(true)).toBe(-1)
+        expect(Bool(true).compareTo(false)).toBe(1)
+    }
+
+    test `Object equality distinguishes false from null and nonboolean values`() {
+        let Object value = Bool(false)
+        let Object equal = Bool(false)
+        let Object unequal = Bool(true)
+        let Object absent = null
+        let Object number = Int(0)
+        let Object text = "false"
+
+        expect(value.equals(equal)).toBe(true)
+        expect(value.equals(unequal)).toBe(false)
+        expect(value.equals(absent)).toBe(false)
+        expect(value.equals(number)).toBe(false)
+        expect(value.equals(text)).toBe(false)
+    }
+
+    test `boolean text round trips both values`() {
+        expect(Bool.toString(false)).toBe("false")
+        expect(Bool.toString(true)).toBe("true")
+        expect(Bool.fromString("false")).toBe(false)
+        expect(Bool.fromString("true")).toBe(true)
+        expect(Bool.fromString("TRUE")).toBe(false)
+    }
+}

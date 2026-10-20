@@ -1,0 +1,322 @@
+package flat/writer/es6/bound
+
+import flat/bound
+import flat/semantic/types
+import flat/io
+import flat/system
+import flat/time/Time
+
+/** Backend representation and evaluation-order regressions. Execution is deferred to the suite. */
+testable class {
+    test `invalid reduced intrinsic input returns diagnostics before syntax emission`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let receiver = BoundLiteralExpression(fixture.range(),
+            ArraySemanticType(SemanticTypes.intType()), "values")
+        let unsupported = BoundIntrinsicMemberCallExpression(fixture.range(), SemanticTypes.intType(),
+            receiver, "unresolved", BoundExpression[])
+        let invalidSet = BoundIntrinsicMemberCallExpression(fixture.range(), SemanticTypes.intType(),
+            receiver, "set", BoundExpression[])
+        expect(Es6ExpressionOrchestrator().emit(unsupported).diagnostic.code).toBe("es6.unsupported-intrinsic-member")
+        expect(Es6ExpressionOrchestrator().emit(invalidSet).diagnostic.code).toBe("es6.intrinsic-arity")
+        expect(Es6CallEmitter().diagnoseIntrinsicMember("join", 0)).toBe(null)
+        expect(Es6CallEmitter().diagnoseIntrinsicMember("join", 1)).toBe(null)
+        expect(Es6CallEmitter().diagnoseIntrinsicMember("join", 2).code).toBe("es6.intrinsic-arity")
+    }
+
+    test `bodyless contracts survive lowering and never gain executable bodies`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let unit = BoundFunctionUnit(fixture.declaration("method", "required", 30), "required",
+            SemanticTypes.intType(), BoundStatement[], fixture.range(), abstractFunction: true)
+        let lowered = CoreLanguageLoweringPass().lower(unit)
+        let writer = Es6UnitOrchestrator()
+        expect(writer.emitFunction(lowered, 0).diagnostic.code).toBe("es6.abstract-function-body")
+        expect(writer.emitMethod(lowered).diagnostic.code).toBe("es6.abstract-function-body")
+        let identity = fixture.declaration("class", "Contract", 31)
+        let owner = BoundTypeUnit(identity, UserClassSemanticType(identity), [lowered], fixture.range())
+        let emitted = writer.emitType(owner, 0)
+        expect(emitted.emitted).toBe(true)
+        expect(emitted.fragment.code.contains(Es6NameMangler.mangle(unit.identity.value))).toBe(false)
+    }
+
+    test `lazy marker cannot be erased by intermediate lowering`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let unit = BoundFunctionUnit(fixture.declaration("static-method", "cached", 32), "cached",
+            SemanticTypes.intType(), [BoundReturnStatement(fixture.range(), SemanticTypes.intType(),
+                BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "7"),
+                TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType()))],
+            fixture.range(), staticFunction: true, lazyProperty: true)
+        let lowered = ExternalNativeLoweringPass().lower(DeferredExecutionLoweringPass().lower(
+            CoreLanguageLoweringPass().lower(unit)))
+        expect(Es6UnitOrchestrator().emitFunction(lowered, 0).diagnostic.code).toBe("es6.unlowered-lazy-property")
+    }
+
+    test `selected public names apply consistently to free static and function-value emission`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let owner = UserClassSemanticType(fixture.declaration("class", "Owner", 53))
+        let target = CallableSignature(fixture.symbol("function", "read", 54), "read", CallableKind("function"),
+            SemanticType[], SemanticTypes.intType(), asyncFunction: true, externalName: "readPublic")
+        let emitter = Es6ExpressionOrchestrator()
+        let call = BoundCallExpression(fixture.range(), SemanticTypes.intType(), target, BoundExpression[], TypeConversion[])
+        expect(emitter.emit(call).code).toBe("(await readPublic())")
+        let functionType = FunctionSemanticType(SemanticType[], SemanticTypes.intType(), asyncFunction: true)
+        expect(emitter.emit(BoundFunctionValue(fixture.range(), functionType, target)).code).toBe("readPublic")
+        let staticTarget = CallableSignature(fixture.symbol("static-method", "read", 55), "read",
+            CallableKind("static-method"), SemanticType[], SemanticTypes.intType(), owner,
+            asyncFunction: true, externalName: "readStatic")
+        let ownerName = Es6NameMangler.mangle(owner.declarationIdentity.value)
+        expect(emitter.emit(BoundCallExpression(fixture.range(), SemanticTypes.intType(), staticTarget,
+            BoundExpression[], TypeConversion[])).code).toBe("(await " + ownerName + ".readStatic())")
+        expect(emitter.emit(BoundFunctionValue(fixture.range(), functionType, staticTarget)).code)
+            .toBe(ownerName + ".readStatic")
+        let unit = BoundFunctionUnit(target.identity.declaration, "read", SemanticTypes.intType(),
+            [BoundReturnStatement(fixture.range(), SemanticTypes.intType(),
+                BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "7"),
+                TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType()))], fixture.range(),
+            asyncFunction: true, externalName: "readPublic")
+        expect(Es6UnitOrchestrator().emitFunction(unit, 0).fragment.code.contains("async function readPublic()")).toBe(true)
+    }
+
+    async test `selected deferred public and virtual call evidence controls emitted invocation`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let owner = UserClassSemanticType(fixture.declaration("class", "Owner", 50))
+        let signature = CallableSignature(fixture.symbol("method", "read", 51), "read",
+            CallableKind("instance-method"), SemanticType[], SemanticTypes.intType(), owner,
+            asyncFunction: true, externalName: "readAsync", dispatchIdentity: "slot:read")
+        let receiver = BoundNativeCallExpression(fixture.range(), owner, "readReceiver", BoundExpression[])
+        let awaited = Es6ExpressionOrchestrator().emit(BoundCallExpression(fixture.range(),
+            SemanticTypes.intType(), signature, receiver, BoundExpression[], TypeConversion[]))
+        let preserved = Es6ExpressionOrchestrator().emit(BoundCallExpression(fixture.range(),
+            SemanticTypes.intType(), signature, receiver, BoundExpression[], TypeConversion[], suppressAwait: true))
+        expect(awaited.code.contains("(await ")).toBe(true)
+        expect(awaited.code.contains(".readAsync()")).toBe(true)
+        expect(preserved.code.contains("await")).toBe(false)
+        let virtual = CallableSignature(fixture.symbol("method", "otherDeclaration", 52), "read",
+            CallableKind("instance-method"), SemanticType[], SemanticTypes.intType(), owner,
+            dispatchIdentity: "slot:read")
+        let dispatched = Es6ExpressionOrchestrator().emit(BoundCallExpression(fixture.range(),
+            SemanticTypes.intType(), virtual, receiver, BoundExpression[], TypeConversion[]))
+        let slot = Es6NameMangler.mangle("slot:read")
+        expect(dispatched.code.contains("." + slot + "()")).toBe(true)
+        execute("let reads = 0, calls = 0, release; const gate = new Promise(resolve => { release = resolve; });\n" +
+            "const receiver = { readAsync() { calls++; return gate; }, " + slot + "() { return 9; } };\n" +
+            "globalThis.readReceiver = () => { reads++; return receiver; };\n" +
+            "(async () => { const preserved = " + preserved.code + "; if (preserved !== gate) throw new Error('lost promise identity');\n" +
+            "const run = async () => " + awaited.code + "; let complete = false; const pending = run().then(value => { complete = true; return value; });\n" +
+            "await Promise.resolve(); if (complete || calls !== 2 || reads !== 2) throw new Error('await boundary');\n" +
+            "release(7); if (await pending !== 7 || " + dispatched.code + " !== 9 || reads !== 3) throw new Error('selected dispatch');\n" +
+            "console.log('ok'); })().catch(error => { console.error(error); process.exitCode = 1; });\n")
+    }
+
+    async test `contract tests use exact identities and inherited metadata never simple names`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let first = fixture.declaration("interface", "Readable", 60)
+        let second = fixture.declaration("interface", "Readable", 61)
+        let ownerIdentity = fixture.declaration("class", "Implementation", 62)
+        let owner = Es6NameMangler.mangle(ownerIdentity.value)
+        let type = BoundTypeUnit(ownerIdentity, UserClassSemanticType(ownerIdentity), BoundFunctionUnit[], fixture.range(),
+            [BoundMetadataUnit("implements", "Readable", "Readable", first)])
+        let emitted = Es6UnitOrchestrator().emitType(type, 0)
+        expect(emitted.emitted).toBe(true)
+        let source = BoundNativeCallExpression(fixture.range(), SemanticTypes.objectType(), "readValue", BoundExpression[])
+        let firstType = UserClassSemanticType(first)
+        let secondType = UserClassSemanticType(second)
+        let objectMetadataType = SemanticTypes.objectType()
+        let firstMetadata = BoundTypeMetadataExpression(fixture.range(), firstType, objectMetadataType, true)
+        let secondMetadata = BoundTypeMetadataExpression(fixture.range(), secondType, objectMetadataType, true)
+        let firstTest = BoundTypeTestExpression(fixture.range(), source, firstMetadata)
+        let secondTest = BoundTypeTestExpression(fixture.range(), source, secondMetadata)
+        Es6CodeResult matchingResult = Es6ExpressionOrchestrator().emit(firstTest)
+        Es6CodeResult differentResult = Es6ExpressionOrchestrator().emit(secondTest)
+        Bool matchingEmitted = matchingResult.emitted
+        Bool differentEmitted = differentResult.emitted
+        expect(matchingEmitted).toBe(true)
+        expect(differentEmitted).toBe(true)
+        let matchingCode = matchingResult.code
+        let differentCode = differentResult.code
+        let program = emitted.fragment.code +
+            "class Child extends " + owner + " {} let current, reads = 0; globalThis.readValue = () => { reads++; return current; };\n" +
+            "for (current of [new " + owner + "(), new Child()]) { if (!(" + matchingCode + ") || " + differentCode + ") throw new Error('interface identity'); }\n" +
+            "for (current of [null, {}, 0, false]) { if (" + matchingCode + ") throw new Error('false interface match'); }\n" +
+            "if (reads !== 8) throw new Error('type test evaluated source twice'); console.log('ok');\n"
+        execute(program)
+    }
+
+    async test `lambda default evaluates only for omitted host arguments`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let intType = SemanticTypes.intType()
+        let parameter = BoundFunctionParameter("value", fixture.symbol("parameter", "value", 35), intType,
+            BoundNativeCallExpression(fixture.range(), intType, "defaultValue", BoundExpression[]))
+        let body = BoundReferenceExpression(fixture.range(), intType, "value", parameter.identity)
+        let lambda = BoundLambdaExpression(fixture.range(), FunctionSemanticType([intType], intType),
+            [parameter], BoundReferenceExpression[], body)
+        let emitted = Es6ExpressionOrchestrator().emit(lambda)
+        expect(emitted.emitted).toBe(true)
+        execute("let defaults = 0; globalThis.defaultValue = () => { defaults++; return 7; };\n" +
+            "const callback = " + emitted.code + ";\n" +
+            "if (callback(0) !== 0 || defaults !== 0 || callback() !== 7 || defaults !== 1 || " +
+            "callback(9) !== 9 || defaults !== 1) throw new Error('lambda defaults'); console.log('ok');\n")
+    }
+
+    async test `array set evaluates receiver index and value once in source order`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let arrayType = ArraySemanticType(SemanticTypes.stringType())
+        let expression = BoundIntrinsicMemberCallExpression(fixture.range(), SemanticTypes.stringType(),
+            BoundNativeCallExpression(fixture.range(), arrayType, "readReceiver", BoundExpression[]),
+            "set", [
+                BoundNativeCallExpression(fixture.range(), SemanticTypes.intType(), "readIndex", BoundExpression[]),
+                BoundNativeCallExpression(fixture.range(), SemanticTypes.stringType(), "readValue", BoundExpression[])
+            ])
+        let emitted = Es6ExpressionOrchestrator().emit(expression)
+        expect(emitted.emitted).toBe(true)
+        execute("let events = [], values = ['before'];\n" +
+            "globalThis.readReceiver = () => { events.push('receiver'); return values; };\n" +
+            "globalThis.readIndex = () => { events.push('index'); return 0; };\n" +
+            "globalThis.readValue = () => { events.push('value'); return 'after'; };\n" +
+            "const result = " + emitted.code + ";\n" +
+            "if (result !== 'after' || values[0] !== 'after' || " +
+            "events.join(',') !== 'receiver,index,value') throw new Error('set evaluation order');\n" +
+            "console.log('ok');\n")
+    }
+
+    async test `nested unary signs preserve operands without update token merging`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let value = BoundNativeCallExpression(fixture.range(), SemanticTypes.intType(), "readNumber", BoundExpression[])
+        let negative = BoundUnaryExpression(fixture.range(), SemanticTypes.intType(), "-", value)
+        let positive = BoundUnaryExpression(fixture.range(), SemanticTypes.intType(), "+", value)
+        let minus = Es6ExpressionOrchestrator().emit(BoundUnaryExpression(
+            fixture.range(), SemanticTypes.intType(), "-", negative))
+        let plus = Es6ExpressionOrchestrator().emit(BoundUnaryExpression(
+            fixture.range(), SemanticTypes.intType(), "+", positive))
+        expect(minus.emitted).toBe(true)
+        expect(plus.emitted).toBe(true)
+        execute("let reads = 0; globalThis.readNumber = () => { reads++; return 7; };\n" +
+            "if (" + minus.code + " !== 7 || " + plus.code + " !== 7 || reads !== 2) " +
+            "throw new Error('unary value or evaluation count');\nconsole.log('ok');\n")
+    }
+
+    async test `deferred free function preserves await and rejected host calls`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let identity = fixture.declaration("function", "read", 20)
+        let body = BoundExternalStatement(fixture.range(), "es6", [
+            BoundExternalCodeSegment(fixture.range(), "return await globalThis.readAsync();")
+        ])
+        let functionUnit = BoundFunctionUnit(identity, "read", SemanticTypes.intType(), [body],
+            fixture.range(), asyncFunction: true)
+        let emitted = Es6UnitOrchestrator().emitFunction(functionUnit, 0)
+        expect(emitted.emitted).toBe(true)
+        let name = Es6NameMangler.mangle(identity.value)
+        expect(emitted.fragment.code.contains("async function " + name)).toBe(true)
+        execute(emitted.fragment.code +
+            "let calls = 0; globalThis.readAsync = async () => { calls++; return 7; };\n" +
+            "(async () => { if (await " + name + "() !== 7 || calls !== 1) throw new Error('async return');\n" +
+            "globalThis.readAsync = async () => { throw new Error('expected'); };\n" +
+            "let rejected = false; try { await " + name + "(); } catch (error) { rejected = error.message === 'expected'; }\n" +
+            "if (!rejected) throw new Error('lost async failure'); console.log('ok');\n" +
+            "})().catch(error => { console.error(error); process.exitCode = 1; });\n")
+    }
+
+    async test `host backing projection preserves String and array storage without copying`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let arrayType = ArraySemanticType(SemanticTypes.stringType())
+        let receiver = BoundNativeCallExpression(fixture.range(), arrayType, "readStorage", BoundExpression[])
+        let projected = Es6ExpressionOrchestrator().emit(BoundNativeArrayDataExpression(fixture.range(), receiver))
+        expect(projected.emitted).toBe(true)
+        execute("let reads = 0, current; globalThis.readStorage = () => { reads++; return current; };\n" +
+            "for (current of [[], ['nonempty', ''], 'native characters']) {\n" +
+            "const result = " + projected.code + "; if (result !== current) throw new Error('backing identity'); }\n" +
+            "if (reads !== 3) throw new Error('projection evaluation count'); console.log('ok');\n")
+    }
+
+    async test `host slot clear releases storage once without weakening element type`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let arrayType = ArraySemanticType(SemanticTypes.stringType())
+        let storage = fixture.symbol("local", "storage", 25)
+        let receiver = BoundReferenceExpression(fixture.range(), arrayType, "storage", storage)
+        let index = BoundNativeCallExpression(fixture.range(), SemanticTypes.intType(), "readSlot", BoundExpression[])
+        let target = BoundArrayAccessExpression(fixture.range(), SemanticTypes.stringType(), receiver,
+            index, nativeStorageDeclaration: storage)
+        let emitted = Es6StatementOrchestrator().emit(BoundNativeArrayClearStatement(fixture.range(), target))
+        expect(emitted.emitted).toBe(true)
+        expect(target.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        let name = Es6NameMangler.mangle(storage.value)
+        execute("let reads = 0; const " + name + " = ['release', 'retain'];\n" +
+            "globalThis.readSlot = () => { reads++; return 0; };\n" + emitted.code +
+            "if (" + name + "[0] !== null || " + name + "[1] !== 'retain' || reads !== 1) " +
+            "throw new Error('native slot clear'); console.log('ok');\n")
+    }
+
+    async test `host String array return keeps array and element identities`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let type = ArraySemanticType(SemanticTypes.stringType())
+        let call = BoundNativeCallExpression(fixture.range(), type, "readStrings", BoundExpression[])
+        let identity = fixture.declaration("function", "strings", 21)
+        let unit = BoundFunctionUnit(identity, "strings", type, [BoundReturnStatement(
+            fixture.range(), type, call, TypeConversions.classify(type, type))], fixture.range())
+        let emitted = Es6UnitOrchestrator().emitFunction(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        execute(emitted.fragment.code +
+            "let calls = 0; const strings = ['nonempty', '', 'a\\u0000b', '\\u03bb'];\n" +
+            "globalThis.readStrings = () => { calls++; return strings; };\n" +
+            "const result = " + Es6NameMangler.mangle(identity.value) + "();\n" +
+            "if (!Array.isArray(result) || result !== strings || result[0] !== 'nonempty' || " +
+            "result[1] !== '' || result[2].length !== 3 || result[3] !== '\\u03bb' || calls !== 1) " +
+            "throw new Error('native String array representation');\nconsole.log('ok');\n")
+    }
+
+    async test `metadata exists before static initialization and escapes reified values`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let identity = fixture.declaration("class", "MetadataOwner", 22)
+        let owner = Es6NameMangler.mangle(identity.value)
+        let field = BoundFieldUnit("typeName", fixture.symbol("field", "typeName", 23),
+            SemanticTypes.stringType(), fixture.range(), true,
+            BoundLiteralExpression(fixture.range(), SemanticTypes.stringType(),
+                owner + ".__flatType.name"), true)
+        let unit = BoundTypeUnit(identity, UserClassSemanticType(identity), BoundFunctionUnit[],
+            fixture.range(), [BoundMetadataUnit("reified", "type-argument", "quote' slash\\ line\nend")], [field])
+        let emitted = Es6UnitOrchestrator().emitType(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        execute(emitted.fragment.code +
+            "if (" + owner + "." + Es6NameMangler.mangle(field.identity.value) + " !== 'MetadataOwner') " +
+            "throw new Error('metadata initialization order');\n" +
+            "const value = " + owner + ".__flatReified[0];\n" +
+            "if (!value.includes(String.fromCharCode(39)) || !value.includes(String.fromCharCode(92)) || " +
+            "!value.includes(String.fromCharCode(10))) throw new Error('metadata escaping');\n" +
+            "console.log('ok');\n")
+    }
+
+    test `unresolved numeric unboxing rejects coercion instead of using Number`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let value = BoundLiteralExpression(fixture.range(), SemanticTypes.objectType(), "source()")
+        let conversion = TypeConversions.classify(value.semanticType, SemanticTypes.doubleType(), explicit: true)
+        let result = Es6ExpressionOrchestrator().emit(BoundConversionExpression(
+            fixture.range(), SemanticTypes.doubleType(), value, conversion))
+        expect(result.emitted).toBe(false)
+        expect(result.diagnostic.code).toBe("es6.unlowered-numeric-unboxing")
+    }
+
+    test `checked nonclass casts reject with a structured diagnostic`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let source = UserClassSemanticType(fixture.declaration("class", "Source", 24))
+        let target = ArraySemanticType(SemanticTypes.stringType())
+        let value = BoundLiteralExpression(fixture.range(), source, "source()")
+        let conversion = TypeConversion(source, target, "checked-reference-cast", true, false, false, 20)
+        let result = Es6ExpressionOrchestrator().emit(BoundConversionExpression(
+            fixture.range(), target, value, conversion))
+        expect(result.emitted).toBe(false)
+        expect(result.diagnostic.code).toBe("es6.unsupported-checked-cast")
+    }
+
+    async execute(String code) {
+        let root = File(".flat-es6-representation-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "regression.js")
+            Es6ArtifactCommitter().commit(destination, code)
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("ok\n")
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+}

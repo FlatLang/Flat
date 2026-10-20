@@ -1,0 +1,73 @@
+package flat/compiler
+
+/**
+ * Machine-readable terminal evidence for an in-process lifecycle harness. This is
+ * a producer, not an acceptance verdict. The caller owns workload selection, tool
+ * digest verification, source revision, artifact hashes and atomic receipt storage.
+ * Never infer persistent incremental behavior from these exact in-process counts.
+ */
+class CompilerEvidence {
+    public static renderPersistent(CompilerIncrementalState state) -> String {
+        if (!state) throw Exception("Persistent compiler evidence requires admitted state")
+        return state.evidence()
+    }
+
+    public static renderDiagnostics(CompilationSummary summary, String revision) -> String {
+        if (!summary || !revision) throw Exception("Diagnostic batch requires terminal summary and input revision")
+        return "{\"schema\":\"flat.compiler.diagnostics.v1\",\"revision\":#{quote(revision)}," +
+            "\"complete\":#{diagnosticsComplete(summary)},\"records\":#{diagnosticRecords(summary)}}\n"
+    }
+
+    static diagnosticsComplete(CompilationSummary summary) -> Bool {
+        return !summary.cancelled && (summary.diagnosticCount == 0 ||
+            (summary.diagnosticCount == 1 && summary.bindingDiagnostic != null))
+    }
+
+    static diagnosticRecords(CompilationSummary summary) -> String {
+        if (summary.diagnosticCount != 1 || !summary.bindingDiagnostic) return "[]"
+        let diagnostic = summary.bindingDiagnostic
+        let range = diagnostic.range
+        return "[{\"code\":#{quote(diagnostic.code)},\"message\":#{quote(diagnostic.name)}," +
+            "\"source\":#{quote(range.snapshot.source.value)},\"range\":{" +
+            "\"startLine\":#{range.start.lineNumber},\"startColumn\":#{range.start.column}," +
+            "\"endLine\":#{range.end.lineNumber},\"endColumn\":#{range.end.column}," +
+            "\"startTokenIndex\":#{range.startTokenIndex},\"endTokenIndex\":#{range.endTokenIndex}}}]"
+    }
+
+    public static render(CompilationSummary summary, String scenario = null) -> String {
+        if (!summary) throw Exception("Compiler evidence requires a terminal summary")
+        let reuse = summary.reuse
+        let complete = diagnosticsComplete(summary)
+        let records = diagnosticRecords(summary)
+        let label = scenario != null ? quote(scenario) : "null"
+        return "{\"schema\":\"flat.compiler.session.v1\",\"scenario\":#label," +
+            "\"diagnostics\":{\"complete\":#complete,\"records\":#records}," +
+            "\"sourceCount\":#{summary.sourceCount},\"artifactCount\":#{summary.artifactCount}," +
+            "\"diagnosticCount\":#{summary.diagnosticCount},\"cancelled\":#{summary.cancelled}," +
+            "\"cleanupSettled\":#{summary.cleanupSettled}," +
+            "\"peakActiveSources\":#{summary.peakActiveSources}," +
+            "\"peakRetainedSources\":#{summary.peakRetainedSources}," +
+            "\"peakActiveSourceReads\":#{summary.peakActiveSourceReads}," +
+            "\"peakRetainedSourceReads\":#{summary.peakRetainedSourceReads}," +
+            "\"reuse\":{\"scope\":\"exact-in-process-package\",\"reused\":#{reuse.reused}," +
+            "\"reason\":#{quote(reuse.reason)},\"unchangedSources\":#{reuse.unchangedSources}," +
+            "\"changedSources\":#{reuse.changedSources},\"addedSources\":#{reuse.addedSources}," +
+            "\"removedSources\":#{reuse.removedSources},\"toolFingerprint\":#{quote(reuse.toolFingerprint)}}}\n"
+    }
+
+    static quote(String value) -> String {
+        if (value.count > 4096) throw Exception("Compiler evidence string exceeds receipt capacity")
+        var String encoded = "\""
+        let hex = "0123456789abcdef"
+        for (index in 0..value.count) {
+            let character = value[index]
+            if (character == '"') encoded += "\\\""
+            else if (character == '\\') encoded += "\\\\"
+            else if (character < ' ') {
+                Int code = character
+                encoded += "\\u00" + hex[code / 16] + hex[code % 16]
+            } else encoded += character
+        }
+        return encoded + "\""
+    }
+}

@@ -129,7 +129,9 @@ class {
                                     signature.identity, signature.name, signature.callableKind,
                                     signature.parameterTypes(), function.returnType, signature.ownerType,
                                     signature.optionalParameterCount, signature.parameterNames(),
-                                    signature.genericParameters(), signature.ownerGenericDeclaration
+                                    signature.genericParameters(), signature.ownerGenericDeclaration,
+                                    ownerInstance: signature.ownerInstance, asyncFunction: signature.asyncFunction,
+                                    externalName: signature.externalName, dispatchIdentity: signature.dispatchIdentity
                                 )
                             }
                             signatureIndex++
@@ -219,9 +221,8 @@ class {
                     methodGenericParameters: parameters, declarationContext: scope,
                     lookupRange: contract.range)
                 for (member in contract.methodValues()) {
-                    if (member.parameterTypeNames().isNotEmpty) {
-                        let implementation = member.implementation()
-                        if (!implementation) continue
+                    let implementation = member.declaration()
+                    if (implementation) {
                         let identity = DeclarationIdentity(SyntaxIslandIdentity(member.range.snapshot,
                             "instance-method", member.range.startTokenIndex), "instance-method", member.name)
                         let methodParameters = GenericParameterSemanticType[]
@@ -270,14 +271,17 @@ class {
                         signatures.add(CallableSignature(SymbolIdentity(identity, "instance-method"), member.name,
                             CallableKind("instance-method"), argumentTypes, returnType, owner,
                             optionalCount, argumentNames, methodParameters,
-                            parameters.isEmpty ? null : GenericDeclaration(owner.declarationIdentity, parameters, owner)))
+                            parameters.isEmpty ? null : GenericDeclaration(owner.declarationIdentity, parameters, owner),
+                            asyncFunction: implementation.asyncMethod, externalName: implementation.externalName))
                         continue
                     }
                     let identity = DeclarationIdentity(SyntaxIslandIdentity(member.range.snapshot,
                         "instance-method", member.range.startTokenIndex), "instance-method", member.name)
                     signatures.add(CallableSignature(SymbolIdentity(identity, "instance-method"),
                         member.name, CallableKind("instance-method"), SemanticType[],
-                        resolver.resolve(member.returnTypeName), owner,
+                        member.nativeArrayReturnModifierRange ? resolver.resolveNativeArrayStorage(member.returnTypeName) :
+                            member.nativeReturnModifierRange && member.returnTypeName == "String" ? SemanticTypes.stringType() :
+                            resolver.resolve(member.returnTypeName), owner,
                         ownerGenericDeclaration: parameters.isEmpty ? null :
                             GenericDeclaration(owner.declarationIdentity, parameters, owner)))
                 }
@@ -370,7 +374,8 @@ class {
                             signatures[signatureIndex] = CallableSignature(signature.identity, signature.name,
                                 signature.callableKind, signature.parameterTypes(), function.returnType, signature.ownerType,
                                 signature.optionalParameterCount, signature.parameterNames(), signature.genericParameters(),
-                                signature.ownerGenericDeclaration, signature.ownerInstance)
+                                signature.ownerGenericDeclaration, signature.ownerInstance,
+                                signature.asyncFunction, signature.externalName, signature.dispatchIdentity)
                         }
                         signatureIndex++
                     }
@@ -750,7 +755,8 @@ class {
         let open = implementedName.indexOf("<", defaultReturnValue: -1)
         let name = open < 0 ? implementedName : implementedName.substring(0, open)
         if (path.contains(name)) throw Exception("Trait storage cycle '#name'")
-        let contract = interfaces.firstOrNull({ _.name == name })
+        let contract = signatureContext ? signatureContext.interfaceFor(
+            signatureContext.resolve(name, syntax.range)) : interfaces.firstOrNull({ _.name == name })
         if (!contract) return
         let arguments = open < 0 ? String[] : splitOverrideTypes(implementedName.substring(open + 1, implementedName.count - 1))
         let parameters = contract.genericParameterNames()
@@ -758,20 +764,45 @@ class {
         for (member in contract.methodValues()) {
             if (!member.storageProperty || fields.any({ _.name == member.name }) ||
                 syntax.methodValues().any({ _.name == member.name })) continue
-            var String typeName = member.returnTypeName
-            var Int index
-            for (parameter in parameters) typeName = typeName.replace(parameter, arguments[index++])
+            let typeName = substituteTraitTypeNames(member.returnTypeName, parameters, arguments)
             fields.add(PrimitiveFieldSyntax(member.range, typeName, member.name, true,
-                member.defaultValue, mutableField: true))
+                member.defaultValue, mutableField: true,
+                nativeArrayStorage: member.nativeArrayReturnModifierRange != null,
+                nativeScalarStorage: member.nativeReturnModifierRange != null &&
+                    member.nativeArrayReturnModifierRange == null))
         }
         let visited = String[]:addAll(path)
         visited.add(name)
         for (parent in contract.parentTypeNames()) {
-            var String instantiated = parent
-            var Int index
-            for (parameter in parameters) instantiated = instantiated.replace(parameter, arguments[index++])
+            let instantiated = substituteTraitTypeNames(parent, parameters, arguments)
             publishTraitStorage(syntax, instantiated, fields, visited)
         }
+    }
+
+    /** Substitute complete type identifiers simultaneously, never substrings or inserted arguments. */
+    substituteTraitTypeNames(String value, String[] parameters, String[] arguments) -> String {
+        var String result = ""
+        var Int index
+        let identifierCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+        while (index < value.count) {
+            let start = index
+            while (index < value.count &&
+                identifierCharacters.contains(value.substring(index, index + 1))) index++
+            if (start == index) {
+                result += value.substring(index, index + 1)
+                index++
+                continue
+            }
+            let name = value.substring(start, index)
+            var String replacement = name
+            var Int parameterIndex
+            for (parameter in parameters) {
+                if (name == parameter) replacement = arguments[parameterIndex]
+                parameterIndex++
+            }
+            result += replacement
+        }
+        return result
     }
 
     /** Resolve each contract edge before publishing defaults; the path bounds cycles to this partition. */
@@ -1027,7 +1058,8 @@ class {
                                     if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
                                         let returned = (PrimitiveReturnSyntax)statement
                                         if (returned.value && returned.value.class.isOfType(PrimitiveLiteralSyntax.class)) {
-                                            let typed = PrimitiveExpressionBinder().bind(returned.value)
+                                            let typed = PrimitiveExpressionBinder().bind(returned.value,
+                                                declarationContext: signatureContext ? signatureContext.scopeForSnapshot(target.range.snapshot) : null)
                                             if (typed.succeeded) {
                                                 if (literalResult && literalResult.value() != typed.expression.semanticType.value()) conflictingLiteral = true
                                                 literalResult = typed.expression.semanticType
@@ -1052,7 +1084,8 @@ class {
                         inferredMethodReturn = inferredResolver.constructorResult(inferredSyntax.value)
                     }
                     if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value) {
-                        let inferred = PrimitiveExpressionBinder().bind(inferredSyntax.value)
+                        let inferred = PrimitiveExpressionBinder().bind(inferredSyntax.value,
+                            declarationContext: signatureContext ? signatureContext.scopeForSnapshot(method.range.snapshot) : null)
                         if (inferred.succeeded) inferredMethodReturn = PrimitiveStructuralTypeResolver(
                             declarationContext: signatureContext ? signatureContext.scopeForSnapshot(method.range.snapshot) : null,
                             implementationOwner: syntax, implementationRange: method.range
@@ -1087,7 +1120,8 @@ class {
                     parameterTypes, returnType, owner,
                     method.parameterValues().filter({ _.defaultValue != null }).count,
                     method.parameterValues().map({ _.name }), methodGenerics,
-                    classGeneric ? GenericDeclaration(owner.declarationIdentity, [classGeneric], owner) : null
+                    classGeneric ? GenericDeclaration(owner.declarationIdentity, [classGeneric], owner) : null,
+                    asyncFunction: method.asyncMethod, externalName: method.externalName
                 ))
                 ordinal++
             }
@@ -1126,6 +1160,7 @@ class {
                 for (parameter in constructor.parameterValues()) {
                     let parameterType = signatureType(
                         parameter.typeName, syntaxes, snapshot, classGeneric,
+                        implementationOwner: syntax, implementationRange: parameter.range,
                         nativeArrayStorage: parameter.nativeArrayStorage, nativeScalarStorage: parameter.nativeScalarStorage
                     )
                     parameterTypes.add(parameter.defaultValue &&
@@ -1198,7 +1233,9 @@ class {
                         result.add(CallableSignature(
                             candidate.identity, candidate.name, candidate.callableKind,
                             candidate.parameterTypes(), candidate.returnType, owner,
-                            candidate.optionalParameterCount, candidate.parameterNames()
+                            candidate.optionalParameterCount, candidate.parameterNames(), candidate.genericParameters(),
+                            candidate.ownerGenericDeclaration, candidate.ownerInstance,
+                            candidate.asyncFunction, candidate.externalName, candidate.dispatchIdentity
                         ))
                     }
                 }
@@ -1317,7 +1354,9 @@ class {
                 )
                 result.add(BoundFieldUnit(
                     field.name, SymbolIdentity(ownerIdentity, "field", ordinal),
-                    signatureType(field.typeName, syntaxes, snapshot, classGeneric, nativeArrayStorage: field.nativeArrayStorage, nativeScalarStorage: field.nativeScalarStorage), fieldRange,
+                    signatureType(field.typeName, syntaxes, snapshot, classGeneric,
+                        implementationOwner: syntax, implementationRange: field.range,
+                        nativeArrayStorage: field.nativeArrayStorage, nativeScalarStorage: field.nativeScalarStorage), fieldRange,
                     field.visibleField, staticField: field.staticField,
                     mutableField: field.mutableField, nativeArrayStorage: field.nativeArrayStorage
                 ))
@@ -1340,7 +1379,8 @@ class {
                     parameter.range.start, parameter.range.end
                 )
                 let parameterType = signatureType(parameter.typeName, syntaxes, snapshot,
-                    classGeneric, nativeArrayStorage: parameter.nativeArrayStorage, nativeScalarStorage: parameter.nativeScalarStorage)
+                    classGeneric, implementationOwner: syntax, implementationRange: parameter.range,
+                    nativeArrayStorage: parameter.nativeArrayStorage, nativeScalarStorage: parameter.nativeScalarStorage)
                 let nullableDefault = parameter.defaultValue &&
                     parameter.defaultValue.class.isOfType(PrimitiveLiteralSyntax.class) &&
                     ((PrimitiveLiteralSyntax)parameter.defaultValue).sourceValue == "null"

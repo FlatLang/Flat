@@ -16,8 +16,8 @@ class extends CompilerSourceProvider {
         let file = files.firstOrNull({ _.normalizedLocation == identity })
         if (!file) return null
         let reader = FileReader(file)
-        let text = reader.readString()
-        reader.close()
+        var String text
+        try { text = reader.readString() } finally { reader.close() }
         return CompilerSource(identity, text)
     }
 }

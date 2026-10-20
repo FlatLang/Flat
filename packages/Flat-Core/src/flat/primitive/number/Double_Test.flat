@@ -1,6 +1,28 @@
 package flat/primitive/number
 
 testable class {
+    test `numeric overlays preserve fractions and signed decimal input`() {
+        expect(Double.toString(1.25)).toBe("1.25")
+        expect(Double.toString(-1.25)).toBe("-1.25")
+        expect(Double.parseDouble("1.25")).toBe(1.25)
+        expect(Double.parseDouble("-0.125")).toBe(-0.125)
+        expect(Double.withinTolerance(Double.parseDouble("12.345"), 12.345)).toBe(true)
+        expect(Double.withinTolerance(1.25, 1.5)).toBe(false)
+    }
+
+    test `Object equality preserves zero and negative fractional values`() {
+        let Object zero = Double(0.0)
+        let Object integerZero = Long(0)
+        let Object negative = Double(-1.25)
+        let Object equal = Double(-1.25)
+        let Object unequal = Double(-1.5)
+        let Object absent = null
+        expect(zero.equals(integerZero)).toBe(true)
+        expect(zero.equals(absent)).toBe(false)
+        expect(negative.equals(equal)).toBe(true)
+        expect(negative.equals(unequal)).toBe(false)
+    }
+
     test `Object equality preserves finite Double fractions`() {
         let Object value = Double(1.25)
         let Object equal = Double(1.25)

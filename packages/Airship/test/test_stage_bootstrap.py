@@ -20,6 +20,133 @@ SPEC.loader.exec_module(bootstrap)
 
 
 class BootstrapTests(unittest.TestCase):
+    def test_observed_watchdog_cleanup_uses_ready_gate_and_retains_receipt(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory).resolve() / 'observed'
+            # Readiness is a FIFO handshake; Popen.wait may internally poll with
+            # sleeps, which are an implementation detail, not a readiness proof.
+            receipt = bootstrap.observe_subprocess_cleanup(output)
+            self.assertEqual(receipt['status'], 'observed')
+            self.assertEqual(receipt['scope'], 'watchdog-fixture-only')
+            self.assertFalse(receipt['production_compiler_executed'])
+            self.assertTrue(receipt['children_reaped'])
+            self.assertTrue(receipt['temporary_outputs_removed'])
+            self.assertEqual([value['termination_reason'] for value in receipt['scenarios']], ['cancel', 'timeout'])
+            for value in receipt['scenarios']:
+                self.assertTrue(value['wait_completed'])
+                self.assertTrue(value['process_group_absent'])
+                self.assertTrue(value['child_reaped'])
+                self.assertEqual(value['exit_code'], -bootstrap.signal.SIGTERM)
+                self.assertEqual(bootstrap.digest(output / value['log']), value['log_sha256'])
+            self.assertEqual(json.loads((output / 'subprocess-cleanup.json').read_text()), receipt)
+            self.assertEqual(sorted(path.name for path in output.iterdir()),
+                             ['cancel.log', 'subprocess-cleanup.json', 'timeout.log'])
+
+    def test_lifecycle_fixture_launch_failure_never_claims_cleanup_success(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory).resolve() / 'failed'
+            with mock.patch.object(bootstrap.subprocess, 'Popen', side_effect=OSError('launch failed')):
+                with self.assertRaisesRegex(OSError, 'launch failed'):
+                    bootstrap.observe_subprocess_cleanup(output)
+            receipt = json.loads((output / 'subprocess-cleanup.json').read_text())
+            self.assertEqual(receipt['status'], 'failed')
+            self.assertFalse(receipt['children_reaped'])
+            self.assertFalse(receipt['temporary_outputs_removed'])
+            self.assertFalse(any(path.name.startswith('lifecycle-') for path in output.iterdir()))
+
+    def test_lifecycle_timeout_capacity_is_validated_before_output(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / 'unused'
+            for timeout in (0, -1, 61):
+                with self.assertRaises(ValueError):
+                    bootstrap.observe_subprocess_cleanup(output, timeout=timeout)
+            self.assertFalse(output.exists())
+
+    def test_reviewed_bundle_checks_delivery_before_any_tool_launch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            tool = root / 'seed'
+            tool.write_text('reviewed test seed; never execute')
+            tool.chmod(0o755)
+            seeds = root / 'seeds.json'
+            seeds.write_text(json.dumps({name: {'path': str(tool.resolve()), 'sha256': bootstrap.digest(tool)}
+                                         for name in bootstrap.SEED_NAMES}))
+            review = root / 'review.json'
+            review.write_text(json.dumps({'schema': 1, 'seeds_sha256': bootstrap.digest(seeds),
+                                          'reviewer': 'test reviewer', 'provenance': 'test producer receipt',
+                                          'source_revision': 'a' * 40}))
+            with mock.patch.object(bootstrap.subprocess, 'run') as run, \
+                    mock.patch.object(bootstrap.subprocess, 'Popen') as start:
+                entries, receipt, selected = bootstrap.load_reviewed_bundle(seeds, review, bootstrap.digest(review))
+                self.assertEqual(set(selected), bootstrap.SEED_NAMES)
+                self.assertEqual(receipt['provenance'], 'test producer receipt')
+                run.assert_not_called()
+                start.assert_not_called()
+                tool.write_text('changed after review')
+                with self.assertRaisesRegex(ValueError, 'Seed digest mismatch'):
+                    bootstrap.load_reviewed_bundle(seeds, review, bootstrap.digest(review))
+
+    def test_preflight_records_delivery_without_claiming_acceptance(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            output = root / 'preflight'
+            tool = root / 'seed'
+            tool.write_text('not executed')
+            seeds = {name: (tool, bootstrap.digest(tool)) for name in bootstrap.SEED_NAMES}
+            argv = ['stage_bootstrap.py', '--repo', str(root / 'repo'), '--output', str(output),
+                    '--seeds', str(root / 'seeds.json'), '--review', str(root / 'review.json'),
+                    '--review-sha256', 'a' * 64, '--preflight-only']
+            with mock.patch.object(sys, 'argv', argv), \
+                    mock.patch.object(bootstrap, 'load_reviewed_bundle', return_value=({}, {'schema': 1}, seeds)), \
+                    mock.patch.object(bootstrap, 'digest', return_value='b' * 64), \
+                    mock.patch.object(bootstrap, 'stage') as stage, \
+                    mock.patch.object(bootstrap.subprocess, 'run') as run:
+                bootstrap.main()
+                stage.assert_not_called()
+                run.assert_not_called()
+            receipt = json.loads((output / 'seed-preflight.json').read_text())
+            self.assertEqual(receipt['status'], 'validated-not-executed')
+            self.assertFalse(receipt['acceptance'])
+            self.assertFalse((output / 'acceptance.json').exists())
+            self.assertEqual(set(receipt['seeds']), bootstrap.SEED_NAMES)
+
+    def test_failed_command_preserves_exit_status(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaises(bootstrap.CommandFailure) as caught:
+                bootstrap.run_command([sys.executable, '-c', 'raise SystemExit(7)'], root,
+                                      os.environ.copy(), root / 'command.log', root / 'journal')
+            self.assertEqual(caught.exception.exit_code, 7)
+            self.assertIn('Command exited 7', str(caught.exception))
+
+    def test_receipt_publication_is_atomic_and_preserves_last_complete_value(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'manifest.json'
+            bootstrap.write_json(path, {'status': 'running'})
+            with mock.patch.object(Path, 'replace', side_effect=OSError('publication failed')):
+                with self.assertRaisesRegex(OSError, 'publication failed'):
+                    bootstrap.write_json(path, {'status': 'passed'})
+            self.assertEqual(json.loads(path.read_text()), {'status': 'running'})
+            self.assertFalse(path.with_name('manifest.json.tmp').exists())
+            bootstrap.write_json(path, {'status': 'passed'})
+            self.assertEqual(json.loads(path.read_text()), {'status': 'passed'})
+
+    def test_admission_records_are_streamed_from_command_offset_and_bounded(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'journal.jsonl'
+            self.assertEqual(list(bootstrap.admission_records(path)), [])
+            first = json.dumps({'decision': 'allow', 'command': 'old'}) + '\n'
+            second = json.dumps({'decision': 'allow', 'command': 'selected'}) + '\n'
+            path.write_text(first + second)
+            self.assertEqual(list(bootstrap.admission_records(path, len(first))),
+                             [{'decision': 'allow', 'command': 'selected'}])
+            path.write_text('x' * (1024 * 1024 + 1))
+            with self.assertRaisesRegex(ValueError, 'record exceeded capacity'):
+                list(bootstrap.admission_records(path))
+            path.write_text('[]\n')
+            with self.assertRaisesRegex(ValueError, 'Invalid subprocess admission record'):
+                list(bootstrap.admission_records(path))
+
     def test_snapshot_byte_capacity_and_aggregate_limits(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -174,6 +301,24 @@ class BootstrapTests(unittest.TestCase):
             digest = hashlib.sha256(b"seed").hexdigest()
             self.assertEqual(bootstrap.verified_seed({"path": str(path), "sha256": digest}), path.resolve())
 
+    def test_artifact_parent_symlink_cannot_supply_outside_stale_output(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            workspace = root / 'workspace'
+            outside = root / 'outside'
+            for name in bootstrap.PRODUCTS:
+                path = workspace / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('fresh test output')
+            product = workspace / bootstrap.PRODUCTS[0]
+            product.unlink()
+            product.parent.rmdir()
+            outside.mkdir()
+            (outside / product.name).write_text('outside stale output')
+            product.parent.symlink_to(outside, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, 'Missing fresh stage product'):
+                bootstrap.artifacts(workspace)
+
     def test_outputs_cannot_be_empty_or_stale(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -199,6 +344,19 @@ class BootstrapTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 bootstrap.inventory(root)
 
+    def test_stage0_resolution_must_select_reviewed_jar_exactly(self):
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / 'resolution.log'
+            expected = Path('/reviewed/compiler seed.jar')
+            log.write_text('java -jar "/reviewed/compiler seed.jar" -target es6\n')
+            self.assertEqual(bootstrap.verify_resolution(log, expected, 'java')[:3],
+                             ['java', '-jar', str(expected)])
+            for text in ('java -jar /wrong.jar\n', 'java -version\n',
+                         'java -jar "/reviewed/compiler seed.jar"\njava -jar other.jar\n'):
+                log.write_text(text)
+                with self.assertRaises(ValueError):
+                    bootstrap.verify_resolution(log, expected, 'java')
+
     def test_real_resolution_log_requires_exact_single_lookup(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -215,26 +373,26 @@ class BootstrapTests(unittest.TestCase):
             log.write_text(f'node {expected} -target es6\n')
             self.assertEqual(bootstrap.verify_resolution(log, expected)[1], str(expected))
 
-    def test_filesystem_seed_mapping_restores_built_tool_without_argv_substitution(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory).resolve()
-            seed = root / 'seed.js'
-            seed.write_text('immutable compiler')
-            lookup = root / 'packages/Flat-Compiler/dist/es6/index.js'
-            lookup.parent.mkdir(parents=True)
-            lookup.write_text('newly built compiler')
-            backup = root / 'backup.js'
-            with bootstrap.compiler_mapping(lookup, seed, backup):
-                self.assertTrue(lookup.is_symlink())
-                self.assertEqual(lookup.resolve(), seed)
-                self.assertEqual(backup.read_text(), 'newly built compiler')
-            self.assertFalse(lookup.is_symlink())
-            self.assertEqual(lookup.read_text(), 'newly built compiler')
-            self.assertFalse(backup.exists())
-            with self.assertRaisesRegex(RuntimeError, 'build failed'):
-                with bootstrap.compiler_mapping(lookup, seed, backup):
-                    raise RuntimeError('build failed')
-            self.assertEqual(lookup.read_text(), 'newly built compiler')
+    def test_stage_commands_select_tools_explicitly_without_output_facades(self):
+        workspace = Path('/isolated/workspace')
+        seed = Path('/isolated/seeds/flatc.js')
+        for number in (1, 2):
+            command = bootstrap.stage_command('/node', '/airship.js', workspace, number,
+                                              'Flat-Compiler', 'install', 'flatc', compiler_seed=seed)
+            self.assertEqual(command[command.index('--flatc-script') + 1], str(seed))
+            self.assertEqual(command[command.index('--flatc-runtime') + 1], 'flat')
+            self.assertIn('--use-links', command)
+            self.assertNotIn('--flatc-jar', command)
+            self.assertNotIn(str(workspace / bootstrap.PRODUCTS[0]), command)
+        command = bootstrap.stage_command('/node', '/seed-airship.js', workspace, 0,
+                                          'Airship', 'install', jar='/seed.jar')
+        self.assertIn('--flatc-jar', command)
+        self.assertNotIn('--flatc-script', command)
+        for number, options in ((0, {}), (1, {}), (0, {'jar': '/seed.jar', 'compiler_seed': seed}),
+                                (1, {'jar': '/seed.jar', 'compiler_seed': seed})):
+            with self.subTest(number=number, options=options), self.assertRaises(ValueError):
+                bootstrap.stage_command('/node', '/airship.js', workspace, number,
+                                        'Airship', 'install', **options)
 
     def test_stage_chain_isolated_explicit_and_missing_gate_fails(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -269,14 +427,23 @@ class BootstrapTests(unittest.TestCase):
                     self.assertNotIn('--flatc-jar', command)
                 if '--debug' in command:
                     self.assertIs(policy.get('debugOnly'), True)
-                    self.assertTrue(Path(policy['compiler']).is_symlink())
-                    self.assertEqual(Path(policy['compiler']).resolve(), Path(policy['seed']))
-                    log.write_text('node ' + policy['compiler'] + ' -target es6\n')
+                    if policy['stage'] > 0:
+                        self.assertFalse(Path(policy['compiler']).is_symlink())
+                        self.assertEqual(Path(policy['compiler']), Path(policy['seed']))
+                        self.assertEqual(command[command.index('--flatc-script') + 1], policy['seed'])
+                        log.write_text('node ' + policy['compiler'] + ' -target es6\n')
+                    else:
+                        self.assertEqual(command[command.index('--flatc-jar') + 1], policy['javaJar'])
+                        log.write_text('java -jar ' + policy['javaJar'] + ' -target es6\n')
                     return
                 calls.append((policy['stage'], command))
                 log.write_text('fake runner; not compiler acceptance')
                 install = 'install' in command
                 if install:
+                    if 'test' in command:
+                        self.assertEqual(Path(command[1]), workspace / bootstrap.PRODUCTS[1])
+                    if policy['stage'] > 0:
+                        self.assertEqual(command[command.index('--flatc-script') + 1], policy['seed'])
                     if command[command.index('install') + 1] == 'flatc':
                         names = (bootstrap.PRODUCTS[0],)
                     elif command[command.index('install') + 1] == '-t':
@@ -302,6 +469,7 @@ class BootstrapTests(unittest.TestCase):
                     record = {'command': policy['node'], 'args': [str(test)], 'decision': 'allow'}
                 with journal.open('a') as stream:
                     stream.write(json.dumps(record) + '\n')
+                return 0
 
             with mock.patch.object(bootstrap, 'run_command', side_effect=fake_command):
                 previous = None
@@ -309,7 +477,13 @@ class BootstrapTests(unittest.TestCase):
                     previous = bootstrap.stage(number, repo, output, sources, seeds, previous,
                                                origin='git@github.com:FlatLang/Flat.git')
                     manifest = json.loads((output / f'stage{number}/manifest.json').read_text())
+                    self.assertEqual(manifest['schema'], 2)
                     self.assertEqual(manifest['status'], 'passed')
+                    self.assertEqual(manifest['runtime'], 'java' if number == 0 else 'flat')
+                    self.assertEqual(manifest['admissions_sha256'], bootstrap.digest(output / f'stage{number}/admissions.jsonl'))
+                    self.assertTrue(all(item['exit_code'] == 0 for item in manifest['commands']))
+                    self.assertTrue(all(len(item['runner_sha256']) == 64 and len(item['compiler_sha256']) == 64
+                                        for item in manifest['commands']))
                     self.assertEqual(manifest['source_origin'], 'git@github.com:FlatLang/Flat.git')
                     self.assertEqual(set(manifest['source_origin_metadata']), {'.git/HEAD', '.git/config'})
                     self.assertEqual(len(manifest['commands']), 16)
@@ -396,6 +570,40 @@ class GuardTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("immutable seed", result.stdout)
 
+    def test_explicit_compiler_script_outside_workspace_is_verified(self):
+        policy = json.loads(self.policy.read_text())
+        policy['compiler'] = str(self.seed)
+        self.policy.write_text(json.dumps(policy))
+        result = self.run_probe("require('child_process').spawnSync('node', [" +
+                                json.dumps(str(self.seed)) + "], {stdio:'inherit'});")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('immutable seed', result.stdout)
+        records = [json.loads(line) for line in self.journal.read_text().splitlines()]
+        self.assertEqual(records[-1]['args'][0], str(self.seed))
+        self.assertEqual(records[-1]['decision'], 'allow')
+
+    def test_generated_compiler_output_is_not_an_admitted_seed(self):
+        output = self.root / 'work/generated-flatc.js'
+        output.write_text("console.log('must not run compiler output')")
+        policy = json.loads(self.policy.read_text())
+        policy['compiler'] = str(self.seed)
+        policy['compilerOutput'] = str(output)
+        self.policy.write_text(json.dumps(policy))
+        result = self.run_probe("try {require('child_process').spawnSync('node', [" +
+                                json.dumps(str(output)) + "], {stdio:'inherit'});} catch(e) {}")
+        self.assertNotIn('must not run compiler output', result.stdout)
+        self.assertIn('not an admitted compiler input', self.journal.read_text())
+
+    def test_explicit_script_digest_mismatch_is_rejected(self):
+        policy = json.loads(self.policy.read_text())
+        policy['compiler'] = str(self.seed)
+        self.policy.write_text(json.dumps(policy))
+        self.seed.write_text("console.log('replaced seed')")
+        result = self.run_probe("try { require('child_process').spawnSync('node', [" +
+                                json.dumps(str(self.seed)) + "]); } catch(e) {}")
+        self.assertNotIn('replaced seed', result.stdout)
+        self.assertIn('seed/tool digest mismatch', self.journal.read_text())
+
     def test_guard_records_exact_real_git_origin_lookup(self):
         origin = 'git@github.com:FlatLang/Flat.git'
         bootstrap.install_snapshot_origin(self.root / 'work', origin)
@@ -474,7 +682,7 @@ class GuardTests(unittest.TestCase):
                                 json.dumps(str(self.compiler)) + "], {stdio:'inherit'});")
         self.assertNotEqual(result.returncode, 0)
         self.assertNotIn('mutable compiler', result.stdout)
-        self.assertIn('not mapped', self.journal.read_text())
+        self.assertIn('not the immutable seed', self.journal.read_text())
 
     def test_mutated_seed_rejected(self):
         self.seed.write_text("console.log('tampered')")
