@@ -4,6 +4,51 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `generic and array casts reuse signature type grammar and retain ranges`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:structural-cast"), "one")
+        let types = ["Array<Field>", "Array<Array<Field>>", "Field[]", "Array<Field[]>[]"]
+        for (type in types) {
+            let stream = Lexer().lex("(" + type + ")metadata")
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data")
+            let expression = PrimitiveExpressionParser().parse(tokens, snapshot, 30)
+            let cast = (PrimitiveCastSyntax)expression
+            expect(cast.expressionKind()).toBe("cast")
+            expect(cast.typeName).toBe(type)
+            expect(cast.range.startTokenIndex).toBe(30)
+            expect(cast.range.endTokenIndex).toBe(30 + tokens.count)
+            expect(cast.value.range.endTokenIndex).toBe(cast.range.endTokenIndex)
+        }
+    }
+
+    async test `malformed structural casts report source positioned syntax errors`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-cast"), "one")
+        let sources = ["(Array<>)metadata", "(Array<Field)metadata", "(Field[)metadata", "(Array<Field,>)metadata"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data")
+            var Bool rejected = false
+            try {
+                PrimitiveExpressionParser().parse(tokens, snapshot, 40)
+            } catch (Exception error) {
+                rejected = error.message.contains("syntax error at token")
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `parenthesized relational expressions remain expressions not casts`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:cast-disambiguation"), "one")
+        let sources = ["(left < right)", "(left < right) == ready", "(left > right) && ready", "(value).field"]
+        let kinds = ["binary", "binary", "binary", "member-access"]
+        for (index in 0..sources.count) {
+            let stream = Lexer().lex(sources[index])
+            stream.emit("start")
+            let expression = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            expect(expression.expressionKind()).toBe(kinds[index])
+        }
+    }
     async test `trait property retains mutable storage marker`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:trait-storage"), "one")
         let stream = Lexer().lex("trait List { visible var Int count visible Int first }")

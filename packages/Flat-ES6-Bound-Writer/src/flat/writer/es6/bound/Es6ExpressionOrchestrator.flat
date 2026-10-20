@@ -81,6 +81,10 @@ class {
                 value, emit(value.target), emit(value.value)
             )
         }
+        if (expression.class.isOfType(BoundNumericUnboxExpression.class)) {
+            let value = (BoundNumericUnboxExpression)expression
+            return expressions.emitNumericUnbox(value, emit(value.value))
+        }
         if (expression.class.isOfType(BoundConversionExpression.class)) {
             let value = (BoundConversionExpression)expression
             return expressions.emitConversion(value, emit(value.value))

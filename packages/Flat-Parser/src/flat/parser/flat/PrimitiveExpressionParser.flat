@@ -162,19 +162,39 @@ class {
                 index++
                 return PrimitiveDeclarationValueSyntax(range(start, index), name, value)
             }
-            if (index + 1 < tokens.count && tokens[index].type == Token.Type.IDENTIFIER &&
-                tokens[index + 1].value == ")" &&
-                index + 2 < tokens.count && tokens[index + 2].value != "." &&
-                tokens[index + 2].value != ")" && tokens[index + 2].value != "[" && tokens[index + 2].value != "," &&
-                tokens[index + 2].value != "]" && tokens[index + 2].value != "}" &&
-                tokens[index + 2].value != "?" && tokens[index + 2].value != ":" &&
-                !binaryOnlyOperator(tokens[index + 2].value)) {
-                let typeName = tokens[index++].value
-                index++
-                let value = parseUnary()
-                return PrimitiveCastSyntax(
-                    range(start, index), typeName, value
-                )
+            // Look ahead only to this parenthesized type boundary. Type spelling is
+            // validated by the signature grammar, not reconstructed by expressions.
+            var Int typeEnd = index
+            var Int parentheses
+            while (typeEnd < tokens.count) {
+                let token = tokens[typeEnd].value
+                if (token == ")" && parentheses == 0) break
+                if (token == ";" || token == "{" || token == "}") break
+                if (token == "(") parentheses++
+                if (token == ")") parentheses--
+                typeEnd++
+            }
+            if (typeEnd > index && typeEnd + 1 < tokens.count &&
+                tokens[index].type == Token.Type.IDENTIFIER && tokens[typeEnd].value == ")" &&
+                tokens[typeEnd + 1].value != "." && tokens[typeEnd + 1].value != ")" &&
+                tokens[typeEnd + 1].value != "[" && tokens[typeEnd + 1].value != "," &&
+                tokens[typeEnd + 1].value != "]" && tokens[typeEnd + 1].value != "}" &&
+                tokens[typeEnd + 1].value != "?" && tokens[typeEnd + 1].value != ":" &&
+                !binaryOnlyOperator(tokens[typeEnd + 1].value)) {
+                var String typeName
+                try {
+                    // A finite cast-header slice, never a source/project barrier.
+                    let typeTokens = Token[]
+                    for (cursor in index..typeEnd) typeTokens.add(tokens[cursor])
+                    typeName = PrimitiveFunctionParser().parseTypeTokens(typeTokens, snapshot)
+                } catch (Exception error) {
+                    // A parenthesized expression may start with an identifier too.
+                }
+                if (typeName) {
+                    index = typeEnd + 1
+                    let value = parseUnary()
+                    return PrimitiveCastSyntax(range(start, index), typeName, value)
+                }
             }
             var PrimitiveExpressionSyntax expression = parseConditional()
             if (index < tokens.count && tokens[index].value == "=" &&

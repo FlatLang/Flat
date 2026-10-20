@@ -234,6 +234,95 @@ testable class {
         expect(session.artifacts.receive().completed).toBe(true)
     }
 
+    class ThrowAfterEntryExecutor extends Executor {
+        override public submit(async action()) -> Future<ExecutorTaskResult> {
+            action()$
+            throw Exception("controlled submission failure after entry")
+        }
+    }
+
+    async test `source submission failure after entry waits for cleanup at one and two reservations`() {
+        for (capacity in 1..3) {
+            let compiler = GatedSourceCompiler()
+            let session = CompilerSession()
+            let sink = MemoryCompilerArtifactSink()
+            CompilerEngine(executor: ThrowAfterEntryExecutor(), sourceCompiler: compiler,
+                maxActiveSources: capacity).start(MemoryCompilerSourceProvider([
+                    CompilerSource("a", "ok"), CompilerSource("b", "ok")
+                ]), sink, session)
+            expect(compiler.entered).toBe(1)
+            expect(session.completion.completed).toBe(false)
+            compiler.release(0)
+            let summary = session.completion.get()
+            expect(compiler.cleaned).toBe(1)
+            expect(summary.cancelled).toBe(true)
+            expect(summary.packageDiagnostic).toBe("controlled submission failure after entry")
+            expect(summary.artifactCount).toBe(0)
+            expect(session.inFlightSourceCount).toBe(0)
+        }
+    }
+
+    class SubmissionGateLinker extends FlatEs6PackageLinker {
+        visible var Bool entered
+        visible var Bool cleaned
+        visible var Bool cleanupEntered
+        visible Future.CompletableFuture<Bool> cleanupStarted = Future.create<Bool>()
+        public construct(visible Future<Bool> gate, visible Bool fail = false,
+            visible Future<Bool> cleanupGate = null) =>
+            super(maxSources: 64, maxSourceCharacters: 65536, maxTokensPerSource: 8192,
+                maxTypes: 256, maxFragments: 256)
+        override public async linkSources(CompilerSourceProvider provider, String[] identities,
+            DeclarationIdentity arrayDeclaration = null, String mainClass = null,
+            PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]) -> String {
+            entered = true
+            try {
+                gate.get()
+                if (fail) throw Exception("controlled callback failure")
+                return "// linked\n"
+            } finally {
+                cleanupEntered = true
+                cleanupStarted.complete(true)
+                if (cleanupGate) cleanupGate.get()
+                cleaned = true
+            }
+        }
+    }
+
+    async test `package adapter submission throw waits for callback settlement and preserves submission failure`() {
+        for (failureMode in 0..2) {
+            Future.CompletableFuture<Bool> gate = Future.create<Bool>()
+            Future.CompletableFuture<Bool> cleanupGate = Future.create<Bool>()
+            let linker = SubmissionGateLinker(gate, failureMode == 1, cleanupGate)
+            let engine = CompilerEngine(executor: ThrowAfterEntryExecutor(), packageLinker: linker)
+            let sources = CompilerSource[]
+            sources.add(CompilerSource("Value.flat", "class Value {}"))
+            let pending = Future.from<CompilerSession>(async {
+                return engine.compilePackage(MemoryCompilerSourceProvider(sources),
+                    MemoryCompilerArtifactSink(), "library.js")
+            })$
+            try {
+                expect(linker.entered).toBe(true)
+                expect(pending.completed).toBe(false)
+                gate.complete(true)
+                linker.cleanupStarted.get()
+                expect(pending.completed).toBe(false)
+                expect(linker.cleaned).toBe(false)
+            } finally {
+                if (!gate.completed) gate.complete(true)
+                if (!cleanupGate.completed) cleanupGate.complete(true)
+            }
+            let summary = pending.get().completion.get()
+            expect(linker.cleanupEntered).toBe(true)
+            expect(linker.cleaned).toBe(true)
+            expect(summary.cancelled).toBe(true)
+            expect(summary.packageDiagnostic).toBe("controlled submission failure after entry")
+            expect(summary.artifactCount).toBe(0)
+            let terminalAgain = pending.get().completion.get()
+            expect(terminalAgain.diagnosticCount).toBe(summary.diagnosticCount)
+            expect(terminalAgain.packageDiagnostic).toBe(summary.packageDiagnostic)
+        }
+    }
+
     async test `source scheduler queued cancellation waits for active cleanup`() {
         let compiler = GatedSourceCompiler()
         let session = CompilerSession()
@@ -1299,6 +1388,7 @@ testable class {
             "flat/meta/Class.flat",
             "flat/meta/Field.flat",
             "flat/exception/Exception.flat",
+            "flat/exception/NullAccessException.flat",
             "flat/exception/StackTrace.flat",
             "flat/datastruct/list/NoSuchElementException.flat",
             "flat/String.flat",

@@ -34,6 +34,8 @@ class {
     var String terminalDiagnostic
 
     var Future<ExecutorTaskResult> task
+    var Future.CompletableFuture<ExecutorTaskResult> packageCallbackSettlement = Future.create<ExecutorTaskResult>()
+    var Bool packageCallbackEntered
 
     // Source scheduling owns a bounded window, never the package binder/linker.
     visible Int activeSourceCount => activeSources
@@ -67,6 +69,7 @@ class {
     class SourceWork {
         visible String identity
         visible var Future<ExecutorTaskResult> handle
+        visible Future.CompletableFuture<ExecutorTaskResult> callbackSettlement = Future.create<ExecutorTaskResult>()
         visible var Bool submitted
         visible var Bool entered
         visible var Bool settled
@@ -143,10 +146,16 @@ class {
                         if (cancelled && !work.entered) work.handle.cancel()
                         observeSource(work)$
                     } catch (Exception error) {
-                        work.diagnostic = error.message
-                        work.settled = true
-                        submittedSources--
-                        completedSources++
+                        // A submit implementation may enter the callback before throwing.
+                        // Preserve its reservation until callback-local cleanup settles.
+                        if (work.entered) {
+                            work.handle = work.callbackSettlement
+                            observeSource(work)$
+                        } else {
+                            work.settled = true
+                            submittedSources--
+                            completedSources++
+                        }
                         throw error
                     }
                 }
@@ -211,6 +220,7 @@ class {
             if (!cancelled) work.diagnostic = "Failed to compile '#{work.identity}': #{error.message}"
         } finally {
             activeSources--
+            work.callbackSettlement.complete(ExecutorTaskResult(completed: true))
         }
     }
 
@@ -245,6 +255,25 @@ class {
             let changed = sourceChanged
             changed.get()
             sourceChanged = Future.create<Bool>()
+        }
+    }
+
+    protected enterPackageCallback() {
+        packageCallbackEntered = true
+        enter()
+    }
+
+    protected settlePackageCallback() {
+        packageCallbackSettlement.complete(ExecutorTaskResult(completed: true))
+    }
+
+    protected failPackageSubmission(Exception error) {
+        recordFailure(error.message)
+        if (packageCallbackEntered) {
+            cancel()
+            attach(packageCallbackSettlement)
+        } else {
+            finish()
         }
     }
 

@@ -1313,10 +1313,10 @@ class {
                         }
                         let arguments = value.argumentValues().map({ classExpression(_, receiver, fields, locals, callables) })
                         let resolution = OverloadResolver.resolve(value.memberName, candidates, null,
-                            arguments.map({ _.semanticType }), value.range)
+                            arguments.map({ _.semanticType }), value.range, hierarchy: currentHierarchy)
                         if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
                         let checked = CallTypeChecker.check(resolution.selected, null,
-                            arguments.map({ _.semanticType }), value.range)
+                            arguments.map({ _.semanticType }), value.range, hierarchy: currentHierarchy)
                         if (!checked.valid) throw Exception(checked.diagnostic.message)
                         return BoundCallExpression(value.range, checked.semanticType, checked.target,
                             arguments, checked.argumentConversions())

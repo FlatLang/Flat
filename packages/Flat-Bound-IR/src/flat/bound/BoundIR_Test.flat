@@ -4,6 +4,29 @@ import flat/compiler/models
 import flat/semantic/types
 
 testable class {
+    test `numeric unbox preserves resolved virtual projection and conversion evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let number = UserClassSemanticType(fixture.declaration("class", "Number", 70))
+        let projection = CallableSignature(fixture.symbol("method", "realValue", 71),
+            "realValue", CallableKind("instance-method"), SemanticType[], SemanticTypes.doubleType(), number)
+        let source = BoundLiteralExpression(fixture.range(), SemanticTypes.objectType(), "null")
+        let conversion = TypeConversions.classify(source.semanticType, SemanticTypes.doubleType(), explicit: true)
+        let projected = TypeConversions.classify(SemanticTypes.doubleType(), SemanticTypes.doubleType())
+        let unbox = BoundNumericUnboxExpression(fixture.range(), SemanticTypes.doubleType(),
+            source, number, projection, conversion, projected)
+        expect(unbox.expressionKind()).toBe("numeric-unbox")
+        expect(unbox.value).toBe(source)
+        expect(unbox.numberType.declarationIdentity).toBe(number.declarationIdentity)
+        expect(unbox.projection.identity).toBe(projection.identity)
+        expect(unbox.projectionConversion.conversionKind).toBe("identity")
+        var Bool rejected
+        try {
+            BoundNumericUnboxExpression(fixture.range(), SemanticTypes.doubleType(), source,
+                UserClassSemanticType(fixture.declaration("class", "Other", 72)),
+                projection, conversion, projected)
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
     test `foreach continuation stays in nearest loop`() {
         let fixture = BoundIR_TestFixture()
         let condition = BoundLiteralExpression(fixture.range(), SemanticTypes.boolType(), "true")
@@ -326,6 +349,12 @@ testable class {
         let typeMetadata = BoundTypeMetadataExpression(
             fixture.range(), UserClassSemanticType(fixture.declaration("class", "Value", 5))
         )
+        let referencedType = UserClassSemanticType(fixture.declaration("class", "Value", 5))
+        let metadataType = UserClassSemanticType(fixture.declaration("class", "Class", 7))
+        let declaredMetadata = BoundTypeMetadataExpression(fixture.range(), referencedType, metadataType)
+        expect(declaredMetadata.semanticType.value()).toBe(metadataType.value())
+        expect(declaredMetadata.referencedType.value()).toBe(referencedType.value())
+        expect(typeMetadata.semanticType.value()).toBe(SemanticTypes.objectType().value())
         let typeTestValue = BoundReferenceExpression(
             fixture.range(), SemanticTypes.objectType(), "object",
             fixture.symbol("local", "object", 6)

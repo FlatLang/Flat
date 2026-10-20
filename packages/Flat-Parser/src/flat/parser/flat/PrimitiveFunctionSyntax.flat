@@ -20,13 +20,25 @@ data class {
         visible String externalName = null,
         visible Bool abstractMethod = false,
         String[] genericParameterNameValues = String[],
-        visible Bool lazyProperty = false
+        visible Bool lazyProperty = false,
+        visible SourceRange nativeReturnModifierRange = null,
+        visible SourceRange nativeArrayReturnModifierRange = null
     ) {
         if (!range || !name || name.trim().count == 0 || !parameterValues ||
             parameterValues.any({ !_ }) || !returnTypeName ||
             returnTypeName.trim().count == 0 || !statements || statements.any({ !_ }) ||
             (externalName != null && externalName.trim().isEmpty)) {
             throw Exception("Primitive function syntax requires range, signature, and body")
+        }
+        if (nativeArrayReturnModifierRange && !returnTypeName.endsWith("[]")) {
+            throw Exception("Native array return evidence requires an explicit array return type")
+        }
+        if ((nativeReturnModifierRange || nativeArrayReturnModifierRange) && inferredReturnType) {
+            throw Exception("Native return evidence requires an explicit return type")
+        }
+        if ((nativeReturnModifierRange && nativeReturnModifierRange.snapshot != range.snapshot) ||
+            (nativeArrayReturnModifierRange && nativeArrayReturnModifierRange.snapshot != range.snapshot)) {
+            throw Exception("Native return modifier evidence must belong to the function snapshot")
         }
         genericNames = String[]
         if (!genericParameterNameValues || genericParameterNameValues.any((candidate) => !candidate || candidate.trim().isEmpty)) {

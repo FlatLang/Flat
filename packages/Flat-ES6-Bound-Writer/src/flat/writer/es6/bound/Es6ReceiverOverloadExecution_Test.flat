@@ -12,6 +12,99 @@ import flat/semantic/types
 
 /** Executes receiver-owned overload selection through generated ES6. */
 testable class {
+    async test `numeric family Double projection executes once with virtual overrides and IEEE values`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let number = UserClassSemanticType(fixture.declaration("class", "NumericFamily", 70))
+        let projection = CallableSignature(fixture.symbol("method", "projectDouble", 71),
+            "projectDouble", CallableKind("instance-method"), SemanticType[], SemanticTypes.doubleType(), number)
+        let source = BoundLiteralExpression(fixture.range(), SemanticTypes.objectType(), "next()")
+        let expression = BoundNumericUnboxExpression(fixture.range(), SemanticTypes.doubleType(), source,
+            number, projection, TypeConversions.classify(source.semanticType, SemanticTypes.doubleType(), explicit: true),
+            TypeConversions.classify(SemanticTypes.doubleType(), SemanticTypes.doubleType()))
+        let emitted = Es6ExpressionOrchestrator().emit(expression)
+        expect(emitted.emitted).toBe(true)
+        let owner = Es6NameMangler.mangle(number.declarationIdentity.value)
+        let getter = Es6NameMangler.mangle(projection.identity.declaration.value)
+        let code = "let reads=0, calls=0, current; function next(){reads++;return current;}\n" +
+            "class " + owner + " { constructor(payload){this.payload=payload;} " + getter + "(){calls++;return this.payload;} }\n" +
+            "class ByteBox extends " + owner + " {} class IntBox extends " + owner + " {} class DoubleBox extends " + owner + " {}\n" +
+            "class OverrideBox extends " + owner + " { " + getter + "(){calls++;return 42.5;} }\n" +
+            "function cast(){return " + emitted.code + ";}\n" +
+            "const valid=[new ByteBox(7),new IntBox(300),new DoubleBox(12.75),new OverrideBox(-999)," +
+            "new DoubleBox(NaN),new DoubleBox(Infinity),new DoubleBox(-Infinity),new DoubleBox(-0)];\n" +
+            "const expected=[7,300,12.75,42.5,NaN,Infinity,-Infinity,-0];\n" +
+            "valid.forEach((v,i)=>{current=v;const beforeReads=reads,beforeCalls=calls;const result=cast();" +
+            "console.log(Object.is(result,expected[i]),reads-beforeReads,calls-beforeCalls);});\n" +
+            "for(const wrong of [null,{},'7',true,7,{valueOf(){throw new Error('must not coerce');}}]){" +
+            "current=wrong;const beforeReads=reads,beforeCalls=calls;try{cast();throw new Error('accepted wrong object');}" +
+            "catch(e){console.log(e instanceof TypeError,e.message,reads-beforeReads,calls-beforeCalls);}}\n"
+        let root = File(".flat-es6-numeric-family-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, code)
+            let response = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            var String expected = ""
+            for (index in 0..8) expected += "true 1 1\n"
+            for (index in 0..6) expected += "true Invalid numeric unboxing cast 1 0\n"
+            expect(response.stdout.join("")).toBe(expected)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+    async test `mixed declared String equality executes content comparison once in both orders`() {
+        var String interpolation = ""
+        interpolation += '#'
+        interpolation += '{'
+        let sources = [
+            "class StringCharArray { native String data; public construct(native String text) { data = text; } " +
+                "public same(StringCharArray other) -> Bool { external { return " + interpolation + "data} === " + interpolation + "other.data}; } } }",
+            "class String { StringCharArray chars; public construct(native String text) { chars = StringCharArray(text); } " +
+                "public equals(String other) -> Bool { return chars.same(other.chars); } }",
+            "class Caller { public static read(String value) -> Bool { return value == \"same\"; } " +
+                "public static reverse(String value) -> Bool { return \"same\" == value; } " +
+                "public static different(String value) -> Bool { return value != \"same\"; } " +
+                "public static reverseDifferent(String value) -> Bool { return \"same\" != value; } " +
+                "public static operand(String value) -> String { external { process.stdout.write('O'); } return value; } " +
+                "public static once(String value) -> Bool { return operand(value) == \"same\"; } " +
+                "public static reverseOnce(String value) -> Bool { return \"same\" != operand(value); } }"
+        ]
+        let contexts = PrimitiveSourceBindingContext[]
+        for (index in 0..sources.count) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:mixed-string-execute:#{index}"), "one")
+            let stream = Lexer().lex(sources[index])
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            contexts.add(PrimitiveSourceBindingContext("flat", snapshot, [syntax]))
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        var String code = ""
+        for (unit in units) code += Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let stringType = units.firstOrNull({ _.identity.name == "String" })
+        let caller = units.firstOrNull({ _.identity.name == "Caller" })
+        let owner = Es6NameMangler.mangle(caller.identity.value)
+        let stringName = Es6NameMangler.mangle(stringType.identity.value)
+        let equals = Es6NameMangler.mangle(stringType.functionUnits().firstOrNull({ _.name == "equals" }).identity.value)
+        code += "const a = new " + stringName + "('same'); const b = new " + stringName + "('same'); " +
+            "const c = new " + stringName + "('other'); console.log(a !== b, a." + equals + "(b), a." + equals + "(c));\n"
+        String[] methodNames = ["read", "reverse", "different", "reverseDifferent"]
+        for (methodName in methodNames) {
+            let method = Es6NameMangler.mangle(caller.functionUnits().firstOrNull({ _.name == methodName }).identity.value)
+            code += "console.log(" + owner + "." + method + "(a), " + owner + "." + method + "(c));\n"
+        }
+        let once = Es6NameMangler.mangle(caller.functionUnits().firstOrNull({ _.name == "once" }).identity.value)
+        let reverseOnce = Es6NameMangler.mangle(caller.functionUnits().firstOrNull({ _.name == "reverseOnce" }).identity.value)
+        code += "let parameters = 0; const parameter = () => { parameters++; return a; }; console.log(" + owner + "." + once + "(parameter())); " +
+            "console.log(" + owner + "." + reverseOnce + "(parameter())); console.log(parameters);\n"
+        let root = File(".flat-es6-mixed-equality-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, code)
+            let response = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("true true false\ntrue false\ntrue false\nfalse true\nfalse true\nOtrue\nOfalse\n2\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
     async test `declared static field named defaults and reference absence execute`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:semantic-contract-execute"), "one")
         let sources = ["class Limit { visible static Int MAX = 42; }",

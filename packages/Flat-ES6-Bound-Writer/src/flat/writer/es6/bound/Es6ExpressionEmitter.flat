@@ -116,6 +116,25 @@ class {
         return Es6CodeResult(code: receiverCode + "." + member)
     }
 
+    /** Reduced backend subset: resolved numeric-family projection to Double only.
+     * No object coercion or narrowing policy; preserve the virtual getter result,
+     * including NaN, infinities and signed zero. Each source/getter executes once.
+     */
+    public emitNumericUnbox(BoundNumericUnboxExpression expression, Es6CodeResult value) -> Es6CodeResult {
+        if (!expression || !value) throw Exception("ES6 numeric unbox requires expression and value")
+        if (!value.emitted) return value
+        if (expression.semanticType.value() != "primitive:Double" ||
+            expression.projection.returnType.value() != "primitive:Double" ||
+            expression.projectionConversion.conversionKind != "identity") {
+            return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+                "es6.numeric-unbox-unsupported", "ES6 numeric unbox supports only identity Double projection", expression.range))
+        }
+        let owner = Es6NameMangler.mangle(expression.numberType.declarationIdentity.value)
+        let getter = Es6NameMangler.mangle(expression.projection.identity.declaration.value)
+        return Es6CodeResult(code: "((value) => { if (value === null || !(value instanceof " + owner +
+            ")) throw new TypeError('Invalid numeric unboxing cast'); return value." + getter + "(); })(" + value.code + ")")
+    }
+
     public emitConversion(
         BoundConversionExpression expression,
         Es6CodeResult value

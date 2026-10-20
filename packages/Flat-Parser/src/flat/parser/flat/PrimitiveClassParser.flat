@@ -86,6 +86,8 @@ class {
                 var Bool lazyProperty
                 var Bool nativePropertyModifier
                 var Bool nativeArrayProperty
+                var SourceRange nativePropertyRange
+                var SourceRange nativeArrayPropertyRange
                 while (propertyCursor < tokens.count &&
                     (isFunctionModifier(tokens[propertyCursor].value) ||
                         tokens[propertyCursor].value == "visible" || tokens[propertyCursor].value == "lazy")) {
@@ -95,8 +97,16 @@ class {
                     }
                     if (tokens[propertyCursor].value == "visible") visibleProperty = true
                     if (tokens[propertyCursor].value == "static") staticProperty = true
-                    if (tokens[propertyCursor].value == "native") nativePropertyModifier = true
-                    if (tokens[propertyCursor].value == "native_array") nativeArrayProperty = true
+                    if (tokens[propertyCursor].value == "native") {
+                        if (nativePropertyRange) syntax("Duplicate native return modifier", propertyCursor)
+                        nativePropertyModifier = true
+                        nativePropertyRange = range(propertyCursor, propertyCursor + 1)
+                    }
+                    if (tokens[propertyCursor].value == "native_array") {
+                        if (nativeArrayPropertyRange) syntax("Duplicate native_array return modifier", propertyCursor)
+                        nativeArrayProperty = true
+                        nativeArrayPropertyRange = range(propertyCursor, propertyCursor + 1)
+                    }
                     propertyCursor++
                 }
                 let typeStart = propertyCursor
@@ -153,7 +163,9 @@ class {
                         [PrimitiveReturnSyntax(
                             range(expressionStart, expressionEnd), value
                         )],
-                        staticMethod: staticProperty, lazyProperty: lazyProperty
+                        staticMethod: staticProperty, lazyProperty: lazyProperty,
+                        nativeReturnModifierRange: nativePropertyRange,
+                        nativeArrayReturnModifierRange: nativeArrayPropertyRange
                     ))
                     index = end
                     visibleField = false
@@ -669,6 +681,9 @@ class {
         cursor++
         parseTypeNameAt(cursor)
         cursor++
+        while (cursor + 1 < tokens.count && tokens[cursor].value == "[" && tokens[cursor + 1].value == "]") {
+            cursor += 2
+        }
         return cursor
     }
 

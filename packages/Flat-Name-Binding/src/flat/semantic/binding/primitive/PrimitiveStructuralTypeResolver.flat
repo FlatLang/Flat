@@ -133,6 +133,17 @@ class {
     public fallbackResultType(PrimitiveFunctionSyntax method, SemanticType declaredType) -> SemanticType {
         if (declaredType.kind() == "generic-parameter" || declaredType.kind() == "unknown" || declaredType.kind() == "nullable" ||
             declaredType.kind() == "void" || declaredType.kind() == "unit") return declaredType
+        let reference = declaredType.kind() == "string" || declaredType.kind() == "object" ||
+            declaredType.kind() == "array" || declaredType.kind() == "user-class" ||
+            declaredType.kind() == "generic-instance" || declaredType.kind() == "function"
+        if (reference && method.statements().any((statement) =>
+            statement.class.isOfType(PrimitiveReturnSyntax.class) &&
+            ((PrimitiveReturnSyntax)statement).arrowFallback &&
+            ((PrimitiveReturnSyntax)statement).value &&
+            ((PrimitiveReturnSyntax)statement).value.class.isOfType(PrimitiveLiteralSyntax.class) &&
+            ((PrimitiveLiteralSyntax)((PrimitiveReturnSyntax)statement).value).sourceValue == "null")) {
+            return NullableSemanticType(declaredType)
+        }
         if (!originalGenericReturn(method) || (!hasNullReturn(method.statements()) && !genericForwardedReturn(method, declaredType))) return declaredType
         return NullableSemanticType(declaredType)
     }

@@ -15,7 +15,8 @@ import flat/datastruct/list
     List_Test,
     Class_Test,
     String_Test,
-    Long_Test
+    Long_Test,
+    Double_Test
 ]]
 class {
     public static async main(String[] args) {

@@ -35,12 +35,21 @@ class {
         var Bool asyncMethod
         var Bool externalNaming
         var Bool abstractMethod
+        var SourceRange nativeReturnModifierRange
+        var SourceRange nativeArrayReturnModifierRange
         while (index < tokens.count && modifier(tokens[index].value)) {
             let modifier = tokens[index++].value
             if (modifier == "static") staticMethod = true
             else if (modifier == "async") asyncMethod = true
             else if (modifier == "external_name") externalNaming = true
             else if (modifier == "abstract") abstractMethod = true
+            else if (modifier == "native") {
+                if (nativeReturnModifierRange) syntax("Duplicate native return modifier", index - 1)
+                nativeReturnModifierRange = range(index - 1, index)
+            } else if (modifier == "native_array") {
+                if (nativeArrayReturnModifierRange) syntax("Duplicate native_array return modifier", index - 1)
+                nativeArrayReturnModifierRange = range(index - 1, index)
+            }
         }
         let name = requireIdentifier("Expected function name")
         let genericNames = String[]
@@ -58,6 +67,8 @@ class {
         let parameters = parseParameters()
         require(")", "Expected closing parameter parenthesis")
         if (index < tokens.count && tokens[index].value == "=>") {
+            if (nativeReturnModifierRange || nativeArrayReturnModifierRange)
+                syntax("Native return modifiers require an explicit return type", start)
             index++
             if (index < tokens.count && tokens[index].value == "this" &&
                 index + 1 < tokens.count && tokens[index + 1].value == "{") {
@@ -118,6 +129,12 @@ class {
             index++
             returnType = parseTypeName("Expected function return type")
         }
+        if (nativeArrayReturnModifierRange && !returnType.endsWith("[]"))
+            syntax("native_array return modifier requires an array return type",
+                nativeArrayReturnModifierRange.startTokenIndex - tokenIndexOffset)
+        if (nativeReturnModifierRange && returnType == "Unit")
+            syntax("Native return modifier requires an explicit return type",
+                nativeReturnModifierRange.startTokenIndex - tokenIndexOffset)
         if (abstractMethod) {
             if (returnType == "Unit") {
                 syntax("Abstract method requires explicit return type", index)
@@ -125,7 +142,9 @@ class {
             return PrimitiveFunctionSyntax(
                 range(start, index), name, parameters, returnType,
                 PrimitiveStatementSyntax[],
-                staticMethod, false, asyncMethod, externalName, true, genericNames
+                staticMethod, false, asyncMethod, externalName, true, genericNames,
+                nativeReturnModifierRange: nativeReturnModifierRange,
+                nativeArrayReturnModifierRange: nativeArrayReturnModifierRange
             )
         }
         if (index < tokens.count && tokens[index].value == "=>") {
@@ -141,21 +160,27 @@ class {
                 statements.add(fallback)
                 return PrimitiveFunctionSyntax(
                     range(start, index), name, parameters, returnType, statements,
-                    staticMethod, false, asyncMethod, externalName, false, genericNames
+                    staticMethod, false, asyncMethod, externalName, false, genericNames,
+                    nativeReturnModifierRange: nativeReturnModifierRange,
+                    nativeArrayReturnModifierRange: nativeArrayReturnModifierRange
                 )
             }
             index = tokens.count
             return PrimitiveFunctionSyntax(
                 range(start, index), name, parameters, returnType,
                 [expressionBodyStatement(expressionStart)],
-                staticMethod, false, asyncMethod, externalName, false, genericNames
+                staticMethod, false, asyncMethod, externalName, false, genericNames,
+                nativeReturnModifierRange: nativeReturnModifierRange,
+                nativeArrayReturnModifierRange: nativeArrayReturnModifierRange
             )
         }
         require("{", "Expected opening function brace")
         let statements = parseBracedBody()
         return PrimitiveFunctionSyntax(
             range(start, index), name, parameters, returnType, statements,
-            staticMethod, false, asyncMethod, externalName, false, genericNames
+            staticMethod, false, asyncMethod, externalName, false, genericNames,
+            nativeReturnModifierRange: nativeReturnModifierRange,
+            nativeArrayReturnModifierRange: nativeArrayReturnModifierRange
         )
     }
 

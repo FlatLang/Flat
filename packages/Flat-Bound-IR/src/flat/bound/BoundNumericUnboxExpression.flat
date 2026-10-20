@@ -1,0 +1,41 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Checked numeric-family projection. Evaluate value once, reject null/non-Number,
+ * then invoke the resolved instance projection once using virtual dispatch.
+ * Apply projectionConversion to that result; never coerce the source object.
+ */
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible BoundExpression value,
+        visible UserClassSemanticType numberType,
+        visible CallableSignature projection,
+        visible TypeConversion conversion,
+        visible TypeConversion projectionConversion
+    ) {
+        if (!range || !semanticType || !value || !numberType || !projection ||
+            !conversion || !projectionConversion ||
+            !conversion.applicable || conversion.implicit ||
+            conversion.conversionKind != "numeric-unboxing" ||
+            conversion.fromType.value() != value.semanticType.value() ||
+            conversion.toType.value() != semanticType.value() ||
+            projection.callableKind.value != "instance-method" ||
+            !projection.ownerType || projection.ownerType.value() != numberType.value() ||
+            projection.parameterTypes().isNotEmpty ||
+            !projectionConversion.applicable ||
+            projectionConversion.fromType.value() != projection.returnType.value() ||
+            projectionConversion.toType.value() != semanticType.value() ||
+            projection.returnType.kind() != "primitive" ||
+            semanticType.kind() != "primitive" ||
+            projection.returnType.value() == "primitive:Bool" ||
+            semanticType.value() == "primitive:Bool") {
+            throw Exception("Bound numeric unbox requires resolved Number projection and consistent conversion evidence")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => "numeric-unbox"
+}

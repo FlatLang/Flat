@@ -82,6 +82,17 @@ class {
         if (fromType.kind() == "primitive" && toType.kind() == "primitive") {
             return primitive(fromType, toType, explicit)
         }
+        if (fromType.kind() == "generic-instance" && toType.kind() == "user-class" && hierarchy) {
+            // Project only to a proven ancestor declaration. Generic targets
+            // still use substituted invariant arguments, never this projection.
+            let distance = hierarchy.distance(
+                ((GenericInstanceSemanticType)fromType).declarationType,
+                (UserClassSemanticType)toType
+            )
+            if (distance > 0) {
+                return TypeConversion(fromType, toType, "reference-upcast", true, true, false, 10 + distance)
+            }
+        }
         if (fromType.kind() == "user-class" && toType.kind() == "user-class" && hierarchy) {
             let distance = hierarchy.distance(
                 (UserClassSemanticType)fromType,
@@ -104,8 +115,10 @@ class {
         if (isReference(fromType) && toType.kind() == "object") {
             return TypeConversion(fromType, toType, "reference-upcast", true, true, false, 10)
         }
-        if (explicit && fromType.kind() == "object" && toType.kind() == "primitive" &&
-            toType.value() != "primitive:Bool") {
+        if (explicit && toType.kind() == "primitive" &&
+            toType.value() != "primitive:Bool" &&
+            (fromType.kind() == "object" || (fromType.kind() == "user-class" && hierarchy &&
+                hierarchy.isRootClass((UserClassSemanticType)fromType)))) {
             return TypeConversion(
                 fromType, toType, "numeric-unboxing", true, false, false, 30
             )

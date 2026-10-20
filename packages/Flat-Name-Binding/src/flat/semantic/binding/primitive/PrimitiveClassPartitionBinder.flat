@@ -236,6 +236,8 @@ class {
                         for (parameter in parameters) selfArguments.add(parameter)
                         var SemanticType returnType = implementation.inferredReturnType ? SemanticTypes.unknownType() :
                             implementation.returnTypeName == "this" ? (parameters.isEmpty ? owner : GenericInstanceSemanticType(owner, selfArguments)) :
+                            implementation.nativeArrayReturnModifierRange ? memberResolver.resolveNativeArrayStorage(implementation.returnTypeName) :
+                            implementation.nativeReturnModifierRange && implementation.returnTypeName == "String" ? SemanticTypes.stringType() :
                             memberResolver.resolve(implementation.returnTypeName)
                         if (returnType.kind() == "unknown") {
                             var CallableSignature published
@@ -318,6 +320,11 @@ class {
                         type.declarationIdentity, syntax.genericParameterName, 0))
                     contextHierarchy.add(TypeHierarchyDeclaration(type, "class", parents,
                         genericParameters: genericParameters))
+                    // Only the admitted canonical declaration owns universal-root authority.
+                    // Unrelated lexical classes named Object remain ordinary declarations.
+                    if (source.namespaceName == "flat" && syntax.name == "Object") {
+                        contextHierarchy.registerRootDeclaration(type)
+                    }
                 }
             }
             contextHierarchy.seal()
@@ -1010,7 +1017,9 @@ class {
                             // copied into the caller's declaration scope during signature seeding.
                             if (target.genericParameterNames().isNotEmpty) continue
                             var SemanticType resultType = target.inferredReturnType ? SemanticTypes.unknownType() :
-                                signatureType(target.returnTypeName, syntaxes, snapshot, classGeneric, GenericParameterSemanticType[], syntax, target.range)
+                                signatureType(target.returnTypeName, syntaxes, snapshot, classGeneric, GenericParameterSemanticType[], syntax, target.range,
+                                    nativeArrayStorage: target.nativeArrayReturnModifierRange != null,
+                                    nativeScalarStorage: target.nativeReturnModifierRange != null && target.nativeArrayReturnModifierRange == null)
                             if (resultType.kind() == "unknown") {
                                 var SemanticType literalResult
                                 var Bool conflictingLiteral
@@ -1054,7 +1063,9 @@ class {
                     ? inferredMethodReturn
                     : method.returnTypeName == "this"
                     ? owner :
-                    signatureType(method.returnTypeName, syntaxes, snapshot, classGeneric, methodGenerics, syntax, method.range)
+                    signatureType(method.returnTypeName, syntaxes, snapshot, classGeneric, methodGenerics, syntax, method.range,
+                        nativeArrayStorage: method.nativeArrayReturnModifierRange != null,
+                        nativeScalarStorage: method.nativeReturnModifierRange != null && method.nativeArrayReturnModifierRange == null)
                 let returnType = PrimitiveStructuralTypeResolver(interfaces: interfaces).fallbackResultType(
                     method, declaredReturnType)
                 let identity = DeclarationIdentity(

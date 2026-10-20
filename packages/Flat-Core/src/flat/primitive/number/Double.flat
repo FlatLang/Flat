@@ -63,7 +63,7 @@ class extends Number<Double> implements RealNumber {
     public multiplyEqualsReal(Double other) => this.value *= other
     public multiplyEqualsInteger(Long other) -> Long => (Long)(this.value *= other)
 
-    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Byte)other == value
+    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Double)other == value
     public equals(Double other) => this.value == other
     public equalsReal(Double other) => this.value == other
     public equalsInteger(Long other) => this.value == other

@@ -5,6 +5,33 @@ import flat/bound
 import flat/compiler/models
 
 testable class {
+    test `numeric family unbox dispatch preserves resolved Double projection`() {
+        expect(Es6TargetCapabilities.supportsExpression("numeric-unbox")).toBe(true)
+        expect(Es6TargetCapabilities.diagnoseExpression("numeric-unbox")).toBe(null)
+        let fixture = Es6BoundWriter_TestFixture()
+        let number = UserClassSemanticType(fixture.declaration("class", "NumericFamily", 70))
+        let projection = CallableSignature(fixture.symbol("method", "projectDouble", 71),
+            "projectDouble", CallableKind("instance-method"), SemanticType[], SemanticTypes.doubleType(), number)
+        let value = fixture.reference("local", "boxed", 72, SemanticTypes.objectType())
+        let expression = BoundNumericUnboxExpression(fixture.range(), SemanticTypes.doubleType(), value,
+            number, projection, TypeConversions.classify(value.semanticType, SemanticTypes.doubleType(), explicit: true),
+            TypeConversions.classify(SemanticTypes.doubleType(), SemanticTypes.doubleType()))
+        let emitted = Es6ExpressionOrchestrator().emit(expression)
+        expect(emitted.emitted).toBe(true)
+        expect(emitted.code.contains("instanceof " + Es6NameMangler.mangle(number.declarationIdentity.value))).toBe(true)
+        expect(emitted.code.contains("value." + Es6NameMangler.mangle(projection.identity.declaration.value) + "()")).toBe(true)
+        expect(emitted.code.contains("Number(")).toBe(false)
+        expect(emitted.code.contains("isFinite")).toBe(false)
+        let inputFailure = Es6CodeResult(diagnostic: Es6BackendDiagnostic("test.failure", "upstream failure", fixture.range()))
+        expect(Es6ExpressionEmitter().emitNumericUnbox(expression, inputFailure).diagnostic.code).toBe("test.failure")
+        let integral = BoundNumericUnboxExpression(fixture.range(), SemanticTypes.intType(), value,
+            number, projection, TypeConversions.classify(value.semanticType, SemanticTypes.intType(), explicit: true),
+            TypeConversions.classify(SemanticTypes.doubleType(), SemanticTypes.intType(), explicit: true))
+        let rejected = Es6ExpressionOrchestrator().emit(integral)
+        expect(rejected.emitted).toBe(false)
+        expect(rejected.diagnostic.code).toBe("es6.numeric-unbox-unsupported")
+        expect(rejected.diagnostic.range).toBe(integral.range)
+    }
     test `checked reference emission`() {
         let fixture = Es6BoundWriter_TestFixture()
         let parent = UserClassSemanticType(fixture.declaration("class", "Parent", 1))

@@ -7,6 +7,44 @@ import flat/bound
 import flat/lexer/Lexer
 
 testable class {
+    async test `control expression fallback rejects intrinsic numeric unboxing`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:control-unbox-fallback"), "one")
+        let stream = Lexer().lex("let converted = (Double)other;")
+        stream.emit("start")
+        let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let local = LocalBinding("other", SymbolIdentity(owner, "local", 0), SemanticTypes.objectType())
+        var PrimitiveContextBindingException failure
+        try { PrimitiveControlStatementBinder().bind(syntax, snapshot, [local]) }
+        catch (PrimitiveContextBindingException error) { failure = error }
+        if (!failure) throw Exception("Control fallback emitted unchecked numeric unboxing")
+        expect(failure.diagnostic.code).toBe("binding.numeric-unboxing-projection-unsupported")
+        expect(failure.diagnostic.range.snapshot).toBe(snapshot)
+        expect(failure.diagnostic.range.startTokenIndex).toBe(3)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(7)
+    }
+    test `numeric unboxing without projection evidence fails closed through direct and callback binding`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:unbox-fallback"), "one")
+        let range = SourceRange(snapshot, 7, 9, Location(lineNumber: 1, column: 8), Location(lineNumber: 1, column: 10))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let local = LocalBinding("other", SymbolIdentity(owner, "local", 0), SemanticTypes.objectType())
+        let reference = PrimitiveReferenceSyntax(range, "other")
+        let cast = PrimitiveCastSyntax(range, "Double", reference)
+        let binder = PrimitiveExpressionBinder()
+        let direct = binder.bind(cast, locals: [local])
+        let required = binder.bind(reference, requiredType: SemanticTypes.doubleType(),
+            locals: [local], explicitConversion: true)
+        let lambda = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], cast)
+        let callback = binder.bindCallback(lambda, FunctionSemanticType(SemanticType[], SemanticTypes.doubleType()),
+            [local], CallableSignature[])
+        let results = [direct, required, callback]
+        for (result in results) {
+            expect(result.succeeded).toBe(false)
+            expect(result.expression == null).toBe(true)
+            expect(result.diagnostic.code).toBe("binding.numeric-unboxing-projection-unsupported")
+            expect(result.diagnostic.range).toBe(range)
+        }
+    }
     test `primitive dispatch preserves signature and rejection`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:primitive-dispatch"), "one")
         let range = SourceRange(snapshot, 7, 8, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))

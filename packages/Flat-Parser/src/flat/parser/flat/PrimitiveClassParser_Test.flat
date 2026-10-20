@@ -4,6 +4,40 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `native return evidence survives method forms and overlays with precise invalid modifier diagnostics`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-return-forms"), "one")
+        let sources = [
+            "class Bridge { public native_array native read() -> Char[] { } }",
+            "class Bridge { public native_array read() -> Char[] => null }",
+            "class Bridge { public abstract native_array read() -> Char[] }",
+            "class Bridge { visible native_array native Char[] data => null\n }"
+        ]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            let method = syntax.methodValues().first
+            if (!method.nativeArrayReturnModifierRange) throw Exception("Return representation was lost")
+            expect(method.nativeArrayReturnModifierRange.snapshot).toBe(snapshot)
+            let merged = syntax.mergedWith(syntax)
+            expect(merged.methodValues().first.nativeArrayReturnModifierRange).toBe(method.nativeArrayReturnModifierRange)
+        }
+        let invalid = [
+            "class Bridge { native native read() -> String {} }",
+            "class Bridge { native_array native_array read() -> Char[] {} }",
+            "class Bridge { native_array read() -> Int {} }",
+            "class Bridge { native_array read() => null }"
+        ]
+        for (source in invalid) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            var String failure
+            try { PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+            catch (Exception error) { failure = error.message }
+            if (!failure) throw Exception("Invalid native return modifiers were accepted")
+            expect(failure.contains("token")).toBe(true)
+        }
+    }
     async test `retains native scalar field evidence through overlays without leaking modifiers`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-scalar-fields"), "one")
         let stream = Lexer().lex("class Bridge { visible native String text; public static native Object handle; visible String ordinary; visible native_array native Char[] data; }")

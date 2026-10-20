@@ -1,6 +1,78 @@
 package flat/semantic/types
 
 testable class {
+    test `numeric unboxing from declared root requires explicit canonical hierarchy evidence`() {
+        let fixture = TypeSystem_TestFixture()
+        let root = fixture.userType("Universal", 201)
+        let namedObject = fixture.userType("Object", 202)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(namedObject, "class", [root]))
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.seal()
+        let conversion = TypeConversions.classify(root, SemanticTypes.doubleType(), explicit: true, hierarchy: hierarchy)
+        expect(conversion.conversionKind).toBe("numeric-unboxing")
+        expect(conversion.implicit).toBe(false)
+        expect(TypeConversions.classify(root, SemanticTypes.doubleType(), hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(root, SemanticTypes.doubleType(), explicit: true).applicable).toBe(false)
+        expect(TypeConversions.classify(namedObject, SemanticTypes.doubleType(), explicit: true, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(root, SemanticTypes.boolType(), explicit: true, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(root, SemanticTypes.byteType(), explicit: true, hierarchy: hierarchy).conversionKind).toBe("numeric-unboxing")
+    }
+    test `generic instances project only to proven positive declared ancestors`() {
+        let fixture = TypeSystem_TestFixture()
+        let root = fixture.userType("Root", 101)
+        let base = fixture.userType("Base", 102)
+        let child = fixture.userType("Child", 103)
+        let other = fixture.userType("Other", 104)
+        let baseT = GenericParameterSemanticType(base.declarationIdentity, "T", 0)
+        let childT = GenericParameterSemanticType(child.declarationIdentity, "T", 0)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(base, "class", [root], genericParameters: [baseT]))
+        hierarchy.add(TypeHierarchyDeclaration(child, "class", [base], genericParameters: [childT],
+            genericParents: [GenericInstanceSemanticType(base, [ArraySemanticType(childT)])]))
+        hierarchy.add(TypeHierarchyDeclaration(other, "class", UserClassSemanticType[]))
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.seal()
+        let instance = GenericInstanceSemanticType(child, [SemanticTypes.intType()])
+        let parent = GenericInstanceSemanticType(base, [ArraySemanticType(SemanticTypes.intType())])
+        expect(hierarchy.distance(child, root)).toBe(2)
+        expect(hierarchy.genericDistance(instance, parent)).toBe(1)
+        let conversion = TypeConversions.classify(instance, root, hierarchy: hierarchy)
+        expect(conversion.applicable).toBe(true)
+        expect(conversion.implicit).toBe(true)
+        expect(conversion.conversionKind).toBe("reference-upcast")
+        expect(conversion.cost).toBe(12)
+        expect(conversion.fromType.value()).toBe(instance.value())
+        expect(conversion.toType.value()).toBe(root.value())
+        expect(TypeConversions.classify(instance, base, hierarchy: hierarchy).cost).toBe(11)
+        expect(TypeConversions.classify(instance, parent, hierarchy: hierarchy).applicable).toBe(true)
+        expect(TypeConversions.classify(instance,
+            GenericInstanceSemanticType(base, [ArraySemanticType(SemanticTypes.boolType())]),
+            hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(instance,
+            GenericInstanceSemanticType(child, [SemanticTypes.boolType()]), hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(instance, child, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(instance, other, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(instance, fixture.userType("Root", 105), hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(instance, root).applicable).toBe(false)
+        expect(TypeConversions.classify(root, instance, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(child, instance, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(NullableSemanticType(instance), root, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(SemanticTypes.intType(), root, hierarchy: hierarchy).applicable).toBe(false)
+        let near = CallableSignature(fixture.symbolIdentity("choose", "static-method", 110), "choose",
+            CallableKind("static-method"), [base], SemanticTypes.boolType(), root)
+        let far = CallableSignature(fixture.symbolIdentity("choose", "static-method", 111), "choose",
+            CallableKind("static-method"), [root], SemanticTypes.boolType(), root)
+        for (order in 0..2) {
+            let candidates = [near, far]
+            let result = OverloadResolver.resolve("choose", order == 0 ? candidates : candidates.reverse(),
+                null, [instance], fixture.range(), hierarchy: hierarchy)
+            expect(result.resolved).toBe(true)
+            expect(result.selected.identity.value).toBe(near.identity.value)
+        }
+    }
     test `null inhabits unconstrained generic parameters without permitting primitive null`() {
         let fixture = TypeSystem_TestFixture()
         let owner = fixture.userType("List", 31)

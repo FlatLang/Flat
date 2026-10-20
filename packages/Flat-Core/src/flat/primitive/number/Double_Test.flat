@@ -1,0 +1,33 @@
+package flat/primitive/number
+
+testable class {
+    test `Object equality preserves finite Double fractions`() {
+        let Object value = Double(1.25)
+        let Object equal = Double(1.25)
+        let Object unequal = Double(1.5)
+        let Object integral = Int(1)
+        expect(value.equals(equal)).toBe(true)
+        expect(value.equals(unequal)).toBe(false)
+        expect(value.equals(integral)).toBe(false)
+    }
+
+    test `Object equality accepts equal numeric wrappers`() {
+        let Object value = Double(7.0)
+        let Object byteValue = Byte(7)
+        let Object intValue = Int(7)
+        let Object longValue = Long(7)
+        let Object unequal = Long(8)
+        expect(value.equals(byteValue)).toBe(true)
+        expect(value.equals(intValue)).toBe(true)
+        expect(value.equals(longValue)).toBe(true)
+        expect(value.equals(unequal)).toBe(false)
+    }
+
+    test `Object equality rejects nonnumeric and null values`() {
+        let Object value = Double(1.25)
+        let Object text = "1.25"
+        let Object absent = null
+        expect(value.equals(text)).toBe(false)
+        expect(value.equals(absent)).toBe(false)
+    }
+}

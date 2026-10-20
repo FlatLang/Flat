@@ -4,6 +4,7 @@ import flat/compiler/models
 import flat/parser/flat
 import flat/bound
 import flat/semantic/types
+import flat/semantic/binding/BindingDiagnostic
 
 /** Types immutable primitive syntax into reduced Bound expressions. */
 class {
@@ -140,6 +141,11 @@ class {
         try {
             return PrimitiveExpressionBindingResult(expression: bindSyntax(syntax, locals, callables, context))
         } catch (Exception error) {
+            if (error.class.isOfType(PrimitiveContextBindingException.class)) {
+                let diagnostic = ((PrimitiveContextBindingException)error).diagnostic
+                return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                    diagnostic.code, diagnostic.name, diagnostic.range))
+            }
             return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
                 "semantic.primitive-expression", error.message, syntax.range
             ))
@@ -200,6 +206,11 @@ class {
                     expression.range
                 ))
             }
+            if (conversion.conversionKind == "numeric-unboxing") {
+                return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                    "binding.numeric-unboxing-projection-unsupported",
+                    "Numeric unboxing requires resolved Number projection evidence", expression.range))
+            }
             if (conversion.conversionKind == "identity") {
                 return PrimitiveExpressionBindingResult(expression: expression)
             }
@@ -207,6 +218,11 @@ class {
                 expression.range, requiredType, expression, conversion
             ))
         } catch (Exception error) {
+            if (error.class.isOfType(PrimitiveContextBindingException.class)) {
+                let diagnostic = ((PrimitiveContextBindingException)error).diagnostic
+                return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                    diagnostic.code, diagnostic.name, diagnostic.range))
+            }
             return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
                 "semantic.primitive-expression",
                 error.message ?: "Invalid primitive expression",
@@ -568,6 +584,12 @@ class {
             let conversion = TypeConversions.classify(
                 operand.semanticType, target, explicit: true
             )
+            if (conversion.conversionKind == "numeric-unboxing") {
+                throw PrimitiveContextBindingException(BindingDiagnostic(
+                    "binding.numeric-unboxing-projection-unsupported",
+                    "Numeric unboxing requires resolved Number projection evidence",
+                    SyntaxIslandIdentity(value.range.snapshot, "numeric-unboxing", value.range.startTokenIndex), value.range))
+            }
             if (!conversion.applicable) throw Exception("Explicit cast type mismatch")
             return BoundConversionExpression(value.range, target, operand, conversion)
         }

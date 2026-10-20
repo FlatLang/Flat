@@ -3,6 +3,34 @@ package flat/meta
 import flat/exception/NullAccessException
 
 testable class {
+    test `contract traversal preserves direct inherited and recursive matches`() {
+        let baseContract = Class<String>("test/BaseContract", true, Object.class, Class[], Field[])
+        let derivedContract = Class<Object>("test/DerivedContract", true, Object.class, [baseContract], Field[])
+        let direct = Class<String>("test/Direct", false, Object.class, [derivedContract], Field[])
+        let child = Class<Object>("test/ContractChild", false, direct, Class[], Field[])
+        let unrelated = Class<String>("test/OtherContract", true, Object.class, Class[], Field[])
+
+        expect(direct.isOfTypeInterface(derivedContract)).toBe(true)
+        expect(direct.isOfTypeInterface(baseContract)).toBe(true)
+        expect(child.isOfTypeInterface(derivedContract)).toBe(true)
+        expect(child.isOfTypeInterface(baseContract)).toBe(true)
+        expect(derivedContract.isOfTypeInterface(baseContract)).toBe(true)
+        expect(baseContract.isOfTypeInterface(baseContract)).toBe(false)
+        expect(child.isOfTypeInterface(unrelated)).toBe(false)
+        expect(Object.class.isOfTypeInterface(unrelated)).toBe(false)
+    }
+    test `class ancestry preserves self and heterogeneous parent identity`() {
+        let ancestor = Class<String>("test/Ancestor", false, Object.class, Class[], Field[])
+        let child = Class<Object>("test/Child", false, ancestor, Class[], Field[])
+        let unrelated = Class<String>("test/Unrelated", false, Object.class, Class[], Field[])
+
+        expect(child.isOfTypeClass(child)).toBe(true)
+        expect(child.isOfTypeClass(ancestor)).toBe(true)
+        expect(child.isOfTypeClass(Object.class)).toBe(true)
+        expect(child.isOfTypeClass(unrelated)).toBe(false)
+        expect(ancestor.isOfTypeClass(child)).toBe(false)
+        expect(Object.class.isOfTypeClass(unrelated)).toBe(false)
+    }
     test `field lookup rejects missing required metadata`() {
         let type = Class("test/MissingMetadata", false, Object.class, Class[])
         var Bool rejected = false

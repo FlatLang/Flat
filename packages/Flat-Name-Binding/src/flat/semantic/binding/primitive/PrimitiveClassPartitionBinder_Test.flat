@@ -10,6 +10,387 @@ import flat/io/File
 import flat/io/FileReader
 
 testable class {
+    async test `native returns preserve published body and parameter representations and canonical String construction`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-return-binding"), "one")
+        let sources = [
+            "class Array<T> { construct() {} }",
+            "class String { visible native String data; construct(native String text) { data = text; } construct(native_array Char[] chars) {} public native text() -> String { return data; } }",
+            "class Bridge { visible native_array Char[] data; native_array read(Char[] ordinary) -> Char[] { return data; } native_array forward(Char[] ordinary) -> Char[] { return read(ordinary); } inferred(Char[] ordinary) => read(ordinary)\n wrapArray(Char[] ordinary) -> String { return String(read(ordinary)); } ordinary(native_array Char[] nativeInput, Char[] ordinaryInput) -> Char[] { return ordinaryInput; } wrap(native String text) -> String { return String(text); } }"
+        ]
+        let syntaxes = PrimitiveClassSyntax[]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
+        }
+        let program = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, syntaxes)])
+        let bridge = program.typeUnits().firstOrNull({ _.identity.name == "Bridge" })
+        let nativeRead = bridge.functionUnits().firstOrNull({ _.name == "read" })
+        let forward = bridge.functionUnits().firstOrNull({ _.name == "forward" })
+        if (forward.returnType.kind() != "array") throw Exception("Published native return representation was lost")
+        let inferred = bridge.functionUnits().firstOrNull({ _.name == "inferred" })
+        if (inferred.returnType.kind() != "array") throw Exception("Inferred call erased native return representation")
+        let arrayWrapper = bridge.functionUnits().firstOrNull({ _.name == "wrapArray" })
+        let arrayWrapperStatements = arrayWrapper.statements()
+        let arrayReturnObject = (Object)arrayWrapperStatements.first
+        let arrayReturn = (BoundReturnStatement)arrayReturnObject
+        let arrayCallObject = (Object)arrayReturn.value
+        let arrayCall = (BoundCallExpression)arrayCallObject
+        if (arrayCall.target.parameterTypes().first.kind() != "array") throw Exception("Native array String constructor not selected")
+        let ordinary = bridge.functionUnits().firstOrNull({ _.name == "ordinary" })
+        if (nativeRead.returnType.kind() != "array") throw Exception("Native return was not a host array")
+        if (nativeRead.parameterValues().first.semanticType.kind() != "generic-instance") throw Exception("Return modifier leaked to parameter")
+        if (ordinary.returnType.kind() != "generic-instance") throw Exception("Ordinary array return lost canonical representation")
+        if (ordinary.parameterValues().first.semanticType.kind() != "array") throw Exception("Native parameter lost representation")
+        let text = program.typeUnits().firstOrNull({ _.identity.name == "String" }).functionUnits().firstOrNull({ _.name == "text" })
+        if (text.returnType.kind() != "string") throw Exception("Native scalar String return lost representation")
+        let wrappedTextMethod = bridge.functionUnits().firstOrNull({ _.name == "wrap" })
+        let wrappedTextStatements = wrappedTextMethod.statements()
+        let statementObject = (Object)wrappedTextStatements.first
+        let returned = (BoundReturnStatement)statementObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+        if (call.target.callableKind.value != "constructor" || call.target.parameterTypes().first.kind() != "string") throw Exception("Canonical String native constructor not selected")
+    }
+
+    async test `partition numeric unboxing root authority does not follow Object basename`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-impostor"), "one")
+        let stream = Lexer().lex("class Object { construct() {} public convert(Object other) -> Double { return (Double)other; } }")
+        stream.emit("start")
+        let impostor = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let otherSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-canonical"), "one")
+        let rootStream = Lexer().lex("class Object { construct() {} }")
+        rootStream.emit("start")
+        let canonical = PrimitiveClassParser().parse(rootStream.consumeAll<Token>("data"), otherSnapshot)
+        let contexts = [PrimitiveSourceBindingContext("impostor", snapshot, [impostor]),
+            PrimitiveSourceBindingContext("flat", otherSnapshot, [canonical])]
+        for (mode in 0..3) {
+            let inputs = PrimitiveSourceBindingContext[]
+            if (mode == 0) inputs.add(contexts.first)
+            else inputs.addAll(mode == 1 ? contexts : contexts.reverse())
+            var String failure
+            try { PrimitiveClassPartitionBinder().bindContexts(inputs) }
+            catch (Exception error) { failure = error.message }
+            if (!failure) throw Exception("Impostor Object acquired numeric unboxing authority")
+            expect(failure.contains("Invalid reduced cast")).toBe(true)
+        }
+    }
+    async test `numeric family cast binds canonical Number virtual projection only for Double target`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:numeric-family"), "compiler-input")
+        let numberStream = Lexer().lex("class Number { construct() {} visible Double realValue => 0.0\n } ")
+        numberStream.emit("start")
+        let number = PrimitiveClassParser().parse(numberStream.consumeAll<Token>("data"), snapshot)
+        let numberContext = PrimitiveSourceBindingContext("flat/primitive/number", snapshot, [number])
+        let targets = ["Double", "Int"]
+        for (target in targets) {
+            let sourceSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:numeric-cast-#target"), "compiler-input")
+            let stream = Lexer().lex("class Object { construct() {} public convert(Object other) -> #target { return (#target)other; } }")
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), sourceSnapshot)
+            let context = PrimitiveSourceBindingContext("flat", sourceSnapshot, [syntax])
+            if (target == "Double") {
+                let program = PrimitiveClassPartitionBinder().bindContexts([context, numberContext])
+                let unit = program.typeUnits().firstOrNull({ _.identity.name == "Object" })
+                let method = unit.functionUnits().firstOrNull({ _.name == "convert" })
+                let statement = method.statements().first
+                let returned = (BoundReturnStatement)statement
+                let valueObject = (Object)returned.value
+                let unbox = (BoundNumericUnboxExpression)valueObject
+                expect(unbox.expressionKind()).toBe("numeric-unbox")
+                expect(unbox.projection.name).toBe("realValue")
+                expect(unbox.numberType.declarationIdentity.value).toBe(unbox.projection.ownerType.declarationIdentity.value)
+                expect(unbox.projectionConversion.conversionKind).toBe("identity")
+                expect(unbox.range.snapshot).toBe(sourceSnapshot)
+            } else {
+                var PrimitiveContextBindingException failure
+                try { PrimitiveClassPartitionBinder().bindContexts([context, numberContext]) }
+                catch (PrimitiveContextBindingException error) { failure = error }
+                if (!failure) throw Exception("Unsupported integral unboxing was accepted")
+                expect(failure.diagnostic.code).toBe("binding.numeric-unboxing-target-unsupported")
+                expect(failure.diagnostic.range.snapshot).toBe(sourceSnapshot)
+            }
+        }
+    }
+    async test `mixed canonical text equality selects declared equals in both orders`() {
+        let expressions = ["value == \"true\"", "\"true\" == value", "value != \"true\"", "\"true\" != value"]
+        for (index in 0..expressions.count) {
+            let sources = ["class String { public construct(native String text) {} public equals(String other) -> Bool { return true; } }",
+                "class Caller { public static read(String value) -> Bool { return " + expressions[index] + "; } }"]
+            let contexts = PrimitiveSourceBindingContext[]
+            for (sourceIndex in 0..sources.count) {
+                let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:mixed-equality:#{index}:#{sourceIndex}"), "one")
+                let stream = Lexer().lex(sources[sourceIndex])
+                stream.emit("start")
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                contexts.add(PrimitiveSourceBindingContext("flat", snapshot, [syntax]))
+            }
+            let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+            let owner = units.firstOrNull({ _.identity.name == "String" })
+            let method = units.firstOrNull({ _.identity.name == "Caller" }).functionUnits().firstOrNull({ _.name == "read" })
+            let statement = method.statements().first
+            let returned = (BoundReturnStatement)statement
+            var BoundExpression result = returned.value
+            if (index >= 2) {
+                let negation = (BoundUnaryExpression)result
+                expect(negation.operator).toBe("!")
+                result = negation.operand
+            }
+            let call = (BoundCallExpression)result
+            expect(call.target.name).toBe("equals")
+            expect(call.target.ownerType.declarationIdentity.value).toBe(owner.identity.value)
+            expect(call.target.parameterTypes().first.value()).toBe(owner.semanticType.value())
+            let parameter = (BoundReferenceExpression)call.receiver
+            expect(parameter.symbolIdentity.value).toBe(method.parameterValues().first.identity.value)
+            let argument = call.argumentValues().first
+            let adapted = (BoundCallExpression)argument
+            expect(adapted.target.callableKind.value).toBe("constructor")
+            expect(adapted.target.parameterTypes().first.value()).toBe(SemanticTypes.stringType().value())
+            expect(adapted.argumentValues().count).toBe(1)
+        }
+    }
+
+    async test `mixed text equality rejects missing canonical evidence and unsafe operands`() {
+        let declarations = [
+            "class String { public construct(native String text) {} public equals(String other) -> Bool { return true; } }",
+            "class String { public equals(String other) -> Bool { return true; } }",
+            "class String { public construct(native String text) {} }"
+        ]
+        for (index in 0..5) {
+            let expression = index == 3 ? "value == 1" : "value == \"true\""
+            let parameterType = index == 4 ? "String value = null" : "String value"
+            let sources = [declarations[index == 1 ? 1 : index == 2 ? 2 : 0],
+                "class Caller { read(" + parameterType + ") -> Bool { return " + expression + "; } }"]
+            let contexts = PrimitiveSourceBindingContext[]
+            for (sourceIndex in 0..sources.count) {
+                let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:mixed-equality-negative:#{index}:#{sourceIndex}"), "one")
+                let stream = Lexer().lex(sources[sourceIndex])
+                stream.emit("start")
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                contexts.add(PrimitiveSourceBindingContext(index == 0 ? "app" : "flat", snapshot, [syntax]))
+            }
+            var Bool rejected = false
+            try { PrimitiveClassPartitionBinder().bindContexts(contexts) }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+        }
+    }
+    async test `generic owner lexical static lazy getter is a collection receiver before type lookup`() {
+        let sources = [
+            "class Entry { construct(visible Int code) {} } class Array<E> { filter(func(E)->Bool predicate) -> E { return null; } } class Owner<T> { visible static lazy Entry[] VALUES => null\n read(Int wanted) -> Entry { return VALUES.filter({ _.code == wanted }); } shadow(Entry[] VALUES) -> Entry[] { return VALUES; } }",
+            "class Entry { construct(visible Int code) {} } class Array<E> { filter(func(E)->Bool predicate) -> E { return null; } } class Owner<T> { visible static lazy Entry[] VALUES => null\n read(Int wanted) -> Entry { return MISSING.filter({ _.code == wanted }); } }"
+        ]
+        for (index in 0..sources.count) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:lexical-static:#{index}"), "one")
+            let stream = Lexer().lex(sources[index])
+            stream.emit("start")
+            let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+            let classes = PrimitiveClassSyntax[]
+            for (partition in partitions) classes.add(PrimitiveClassParser().parse(
+                partition.tokenValues(), snapshot, partition.startTokenIndex))
+            let context = PrimitiveSourceBindingContext("app", snapshot, classes)
+            if (index == 0) {
+                let owner = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().firstOrNull({ _.identity.name == "Owner" })
+                let read = owner.functionUnits().firstOrNull({ _.name == "read" })
+                let readStatement = read.statements().first
+                let statement = (BoundReturnStatement)readStatement
+                let filterValue = statement.value
+                let filter = (BoundCallExpression)filterValue
+                let getterValue = filter.receiver
+                let getter = (BoundCallExpression)getterValue
+                let callbackValue = filter.argumentValues().first
+                let callback = (BoundLambdaExpression)callbackValue
+                expect(callback.captureValues().first.name).toBe("wanted")
+                expect(getter.target.identity.declaration.name).toBe("VALUES")
+                expect(getter.target.ownerType.declarationIdentity.value).toBe(owner.identity.value)
+                expect(getter.target.callableKind.value).toBe("static-method")
+                let shadow = owner.functionUnits().firstOrNull({ _.name == "shadow" })
+                let shadowStatement = shadow.statements().first
+                let returned = (BoundReturnStatement)shadowStatement
+                expect(returned.value.expressionKind()).toBe("reference")
+            } else {
+                var Bool rejected = false
+                try { PrimitiveClassPartitionBinder().bindContexts([context]) }
+                catch (Exception error) { rejected = error.message.contains("MISSING") }
+                expect(rejected).toBe(true)
+            }
+        }
+    }
+    async test `source scoped implicit root metadata call retains hierarchy conversions`() {
+        let sources = [
+            "class Object { public static referenceEquals(Object one, Object two) -> Bool { return true; } }",
+            "class Class<Type> { read(Class other) -> Bool { var current = this; while (current) { if (Object.referenceEquals(current, other)) { return true; } return false; } return false; } }",
+            "class Owner { read() -> Bool { return Object.referenceEquals(Class.class, Class<Int>()); } }"
+        ]
+        for (order in 0..2) {
+            let contexts = PrimitiveSourceBindingContext[]
+            for (index in 0..sources.count) {
+                let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:implicit-root:#{index}"), "one")
+                let stream = Lexer().lex(sources[index])
+                stream.emit("start")
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                contexts.add(PrimitiveSourceBindingContext("app", snapshot, [syntax]))
+            }
+            let units = PrimitiveClassPartitionBinder().bindContexts(order == 0 ? contexts : contexts.reverse()).typeUnits()
+            let root = units.firstOrNull({ _.identity.name == "Object" })
+            let metadata = units.firstOrNull({ _.identity.name == "Class" })
+            expect(metadata.parentType.value()).toBe(root.semanticType.value())
+            expect(units.count).toBe(3)
+        }
+    }
+
+    async test `declared metadata value participates in root Object calls without unrelated conversions`() {
+        let sources = [
+            "class Object { public static referenceEquals(Object one, Object two) -> Bool { return true; } } class Class {} class Owner { read() -> Bool { return Object.referenceEquals(Class.class, Class()); } }",
+            "class Object { public static referenceEquals(Other one, Other two) -> Bool { return true; } } class Class extends Object {} class Other {} class Owner { read(Other value) -> Bool { return Object.referenceEquals(Object.class, value); } }",
+            "class Object {} class Owner { read() { let value = Object.class; } }"
+        ]
+        for (index in 0..sources.count) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:metadata-root:#{index}"), "one")
+            let stream = Lexer().lex(sources[index])
+            stream.emit("start")
+            let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+            let classes = PrimitiveClassSyntax[]
+            for (partition in partitions) classes.add(PrimitiveClassParser().parse(
+                partition.tokenValues(), snapshot, partition.startTokenIndex))
+            if (index == 0) {
+                let units = PrimitiveClassPartitionBinder().bind(classes, snapshot).typeUnits()
+                expect(units.count).toBe(3)
+            } else {
+                var Bool rejected = false
+                try {
+                    PrimitiveClassPartitionBinder().bind(classes, snapshot)
+                } catch (Exception error) {
+                    rejected = index == 1 || error.message.contains("Class")
+                }
+                expect(rejected).toBe(true)
+            }
+        }
+    }
+    async test `static Object metadata references declared owner identity without scalar aliasing`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:object-metadata"), "one")
+        let stream = Lexer().lex("class Object {} class Class {} class Owner { read() { let metadata = Object.class; } }")
+        stream.emit("start")
+        let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+        let classes = PrimitiveClassSyntax[]
+        for (partition in partitions) classes.add(PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex))
+        let units = PrimitiveClassPartitionBinder().bind(classes, snapshot).typeUnits()
+        let method = units.last.functionUnits().firstOrNull({ _.name == "read" })
+        let statement = method.statements().first
+        let local = (BoundLocalDeclarationStatement)statement
+        let metadata = (BoundTypeMetadataExpression)local.initializer
+        expect(metadata.expressionKind()).toBe("type-metadata")
+        let objectUnit = units.firstOrNull({ _.identity.name == "Object" })
+        let classUnit = units.firstOrNull({ _.identity.name == "Class" })
+        expect(metadata.referencedType.declarationIdentity.value).toBe(objectUnit.identity.value)
+        expect(metadata.referencedType.value()).toBe(objectUnit.semanticType.value())
+        expect(metadata.semanticType.value()).toBe(classUnit.semanticType.value())
+    }
+    async test `explicit null fallback publishes nullable reference contract without weakening other returns`() {
+        let sources = [
+            "class Field { construct(visible Int code) {} } class Owner { construct(visible Field value = null) {} lookup() -> Field => null { return value; } use() { let selected = lookup(); } }",
+            "class Field { construct(visible Int code) {} } class Owner { construct(visible Field value = null) {} lookup() -> Field => null { return value; } use() -> Int { return lookup().code; } }",
+            "class Field {} class Owner { construct(visible Field value = null) {} lookup() -> Field { return value; } }",
+            "class Field {} class Owner { lookup(Field value) -> Field => value { return value; } }"
+        ]
+        for (index in 0..sources.count) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:null-fallback:#{index}"), "one")
+            let stream = Lexer().lex(sources[index])
+            stream.emit("start")
+            let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+            let classes = PrimitiveClassSyntax[]
+            for (partition in partitions) classes.add(PrimitiveClassParser().parse(
+                partition.tokenValues(), snapshot, partition.startTokenIndex))
+            if (index == 0 || index == 3) {
+                let units = PrimitiveClassPartitionBinder().bind(classes, snapshot).typeUnits()
+                let method = units.last.functionUnits().firstOrNull({ _.name == "lookup" })
+                expect(method.returnType.kind()).toBe(index == 0 ? "nullable" : "user-class")
+                if (index == 0) {
+                    let use = units.last.functionUnits().firstOrNull({ _.name == "use" })
+                    let statement = use.statements().first
+                    let local = (BoundLocalDeclarationStatement)statement
+                    expect(local.initializer.semanticType.kind()).toBe("nullable")
+                }
+            } else {
+                var Bool rejected = false
+                try {
+                    PrimitiveClassPartitionBinder().bind(classes, snapshot)
+                } catch (Exception error) {
+                    rejected = true
+                }
+                expect(rejected).toBe(true)
+            }
+        }
+    }
+
+    async test `explicit null fallback does not make primitive or unit contracts nullable`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:value-null-fallback"), "one")
+        let stream = Lexer().lex("read() -> Int => null { return 1; }")
+        stream.emit("start")
+        let parsed = PrimitiveFunctionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = parsed.functionValues().first
+        let resolver = PrimitiveStructuralTypeResolver()
+        let integerResult = resolver.fallbackResultType(method, SemanticTypes.intType())
+        let booleanResult = resolver.fallbackResultType(method, SemanticTypes.boolType())
+        let unitResult = resolver.fallbackResultType(method, SemanticTypes.unitType())
+        expect(integerResult.kind()).toBe("primitive")
+        expect(booleanResult.kind()).toBe("primitive")
+        expect(unitResult.kind()).toBe("unit")
+    }
+    async test `safe generic property fallback retains nullable receiver and result`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:safe-metadata-property"), "one")
+        let source = "class Field {} class Array<E> { visible E first => null } " +
+            "class Owner { construct(visible Field[] interfaces = null) {} " +
+            "read() { let selected = interfaces?.first; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+        let classes = PrimitiveClassSyntax[]
+        for (partition in partitions) classes.add(PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex))
+        let units = PrimitiveClassPartitionBinder().bind(classes, snapshot).typeUnits()
+        let method = units.last.functionUnits().firstOrNull({ _.name == "read" })
+        let statement = method.statements().first
+        let local = (BoundLocalDeclarationStatement)statement
+        let call = (BoundCallExpression)local.initializer
+        expect(call.safeAccess).toBe(true)
+        expect(call.semanticType.kind()).toBe("nullable")
+        expect(call.receiver.semanticType.kind()).toBe("nullable")
+    }
+    async test `structural array casts preserve explicit nullable narrowing and reject incompatible elements`() {
+        let sources = [
+            "class Field {} class Array<E> {} class Owner { construct(visible Field[] metadata = null) {} read() { let available = (Array<Field>)metadata; } }",
+            "class Field {} class Array<E> {} class Owner { read(Array<Field> metadata) { let available = (Array<Field>)metadata; } }",
+            "class Field {} class Array<E> {} class Owner { read(Array<Int> metadata) { let available = (Array<Field>)metadata; } }"
+        ]
+        for (index in 0..sources.count) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:structural-cast-bind:#{index}"), "one")
+            let stream = Lexer().lex(sources[index])
+            stream.emit("start")
+            let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+            let classes = PrimitiveClassSyntax[]
+            for (partition in partitions) classes.add(PrimitiveClassParser().parse(
+                partition.tokenValues(), snapshot, partition.startTokenIndex))
+            if (index < 2) {
+                let units = PrimitiveClassPartitionBinder().bind(classes, snapshot).typeUnits()
+                let method = units.last.functionUnits().firstOrNull({ _.name == "read" })
+                let statement = method.statements().first
+                let local = (BoundLocalDeclarationStatement)statement
+                let initializer = local.initializer
+                let cast = (BoundConversionExpression)initializer
+                expect(cast.semanticType.kind()).toBe("generic-instance")
+                expect(cast.value.semanticType.kind()).toBe(index == 0 ? "nullable" : "generic-instance")
+            } else {
+                var Bool rejected = false
+                try {
+                    PrimitiveClassPartitionBinder().bind(classes, snapshot)
+                } catch (Exception error) {
+                    rejected = true
+                }
+                expect(rejected).toBe(true)
+            }
+        }
+    }
     async test `publishes inferred member result before reverse-ordered consumer`() {
         let consumerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:inferred-consumer"), "one")
         let ownerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:inferred-owner"), "one")

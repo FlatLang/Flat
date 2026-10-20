@@ -22,7 +22,7 @@ class<Type> {
         visible Function[] functions = null
     ) {}
 
-    public getField(String name, Bool checkAncestors = false) -> Field {
+    public getField(String name, Bool checkAncestors = false) -> Field => null {
         let metadata = fields
         if (metadata == null) {
             throw NullAccessException()
@@ -40,7 +40,11 @@ class<Type> {
             || Object.referenceEquals(other, Object.class)
 
     public isOfTypeClass(Class other) => false {
-        var current = this
+        if (Object.referenceEquals(this, other)) {
+            return true
+        }
+
+        var current = extension
 
         while (current) {
             if (Object.referenceEquals(current, other)) {
@@ -52,7 +56,11 @@ class<Type> {
     }
 
     public isOfTypeInterface(Class other) => false {
-        var current = this
+        if (interfaces.any({ _x == other || _x.isOfTypeInterface(other)})) {
+            return true
+        }
+
+        var current = extension
 
         while (current) {
             if (current.interfaces.any({ _x == other || _x.isOfTypeInterface(other)})) {

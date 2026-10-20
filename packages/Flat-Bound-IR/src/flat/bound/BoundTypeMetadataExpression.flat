@@ -7,12 +7,16 @@ import flat/semantic/types
 data class extends BoundExpression {
     public construct(
         SourceRange range,
-        visible UserClassSemanticType referencedType
+        visible UserClassSemanticType referencedType,
+        SemanticType metadataValueType = null
     ) {
         if (!range || !referencedType) {
             throw Exception("Bound type metadata requires source range and class type")
         }
-        super(range, SemanticTypes.objectType())
+        // Referenced declaration identity drives metadata selection; the value's
+        // semantic type is the resolved metadata class when available. Omission
+        // retains the foundational Object contract for existing IR producers.
+        super(range, metadataValueType ?: SemanticTypes.objectType())
     }
 
     override public expressionKind() => "type-metadata"

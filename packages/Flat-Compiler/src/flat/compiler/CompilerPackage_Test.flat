@@ -29,8 +29,35 @@ testable class {
             var String reference = ""
             reference += '#'
             reference += "{Char.repeat('a', 3)}"
+            // Exercise the real public metadata API, including the checked null guard.
+            // Setup mirrors Flat-Core's Class tests; no replacement Core types are supplied.
+            var String interpolation = ""
+            interpolation += '#'
+            interpolation += '{'
+            let metadata = "let localField = Field(\"value\"); let parentField = Field(\"value\"); " +
+                "let interfaceField = Field(\"value\"); " +
+                "let parent = Class(\"test/Parent\", false, Object.class, Class[], [parentField]); " +
+                "let contract = Class(\"test/Contract\", true, Object.class, Class[], [interfaceField]); " +
+                "let local = Class(\"test/Local\", false, parent, [contract], [localField]); " +
+                "let inherited = Class(\"test/Inherited\", false, parent, [contract], Field[]); " +
+                "let emptyParent = Class(\"test/EmptyParent\", false, Object.class, Class[], Field[]); " +
+                "let implemented = Class(\"test/Implemented\", false, emptyParent, [contract], Field[]); " +
+                "let localMatch = Object.referenceEquals(local.getField(\"value\", true), localField); " +
+                "let parentMatch = Object.referenceEquals(inherited.getField(\"value\", true), parentField); " +
+                "let interfaceMatch = Object.referenceEquals(implemented.getField(\"value\", true), interfaceField); " +
+                "let localOnly = inherited.getField(\"value\") == null; " +
+                "let missingLocal = local.getField(\"missing\") == null; " +
+                "let missingAncestor = implemented.getField(\"missing\", true) == null; " +
+                "let missingMetadata = Class(\"test/MissingMetadata\", false, Object.class, Class[]); " +
+                "var Bool rejected = false; try { missingMetadata.getField(\"missing\", true); } " +
+                "catch (NullAccessException error) { rejected = true; } " +
+                "external js { console.log(" + interpolation + "localMatch}, " + interpolation + "parentMatch}, " +
+                interpolation + "interfaceMatch}, " + interpolation + "localOnly}, " + interpolation + "missingLocal}, " +
+                interpolation + "missingAncestor}, " + interpolation + "rejected}); } "
             Es6ArtifactCommitter().commit(File(sources, "Main.flat"),
-                "package app\nimport flat/primitive/number/Char\nclass Main { public static main() { external js { console.log(" + reference + "); } } }")
+                "package app\nimport flat/primitive/number/Char\nimport flat/meta/Class\nimport flat/meta/Field\n" +
+                "import flat/exception/NullAccessException\nclass Main { public static main() { " + metadata +
+                "external js { console.log(" + reference + "); } } }")
             // Explicit finite acceptance budgets include the real core partition;
             // production CLI defaults are neither bypassed nor raised globally.
             let installed = System.execute([
@@ -45,22 +72,25 @@ testable class {
             expect(output.isFile).toBe(true)
             let executed = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
             if (executed.exitCode != 0) throw Exception(executed.stderr.join(""))
-            expect(executed.stdout.join("")).toBe("aaa\n")
+            expect(executed.stdout.join("")).toBe("true true true true true true true\naaa\n")
         } finally {
             Es6ArtifactFiles.remove(root)
         }
     }
 
     async test `safe nullable callback skips null receiver arguments and evaluates live receiver once`() {
+        var String interpolation = ""
+        interpolation += '#'
+        interpolation += '{'
         let source = "package app\nclass Item { construct(visible Int code) {} " +
-            "apply(Int marker, func(Item)->Bool predicate) -> Bool { return predicate(this); } } " +
+            "apply(Int marker, func(Item)->Bool predicate) -> Bool { external js { process.stdout.write('P'); } return predicate(this); } } " +
             "class Owner { construct(visible Item value = null) {} " +
             "get() => value { external js { process.stdout.write('R'); } } " +
             "effect() -> Int { external js { process.stdout.write('A'); } return 1; } " +
             "run(Int wanted) { let result = get()?.apply(effect(), { _.code == wanted }); " +
-            "external js { console.log(" + "#" + "{result} === flat_null ? 'null' : " + "#" + "{result}); } } } " +
+            "external js { console.log(" + interpolation + "result} === null ? 'null' : " + interpolation + "result}); } } } " +
             "class Main { public static main() { let empty = Owner(); empty.run(7); " +
-            "let live = Owner(Item(7)); live.run(7); } }"
+            "let live = Owner(Item(7)); live.run(7); live.run(8); } }"
         let sink = MemoryCompilerArtifactSink()
         let session = Compiler().compilePackage(MemoryCompilerSourceProvider([
             CompilerSource("app/Main.flat", source)]), sink, "safe-callback.js", mainClass: "app/Main")
@@ -75,11 +105,14 @@ testable class {
             Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
             let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
             if (response.exitCode != 0) throw Exception(response.stderr.join(""))
-            expect(response.stdout.join("")).toBe("Rnull\nRAtrue\n")
+            expect(response.stdout.join("")).toBe("Rnull\nRAPtrue\nRAPfalse\n")
         } finally { Es6ArtifactFiles.remove(root) }
     }
 
     async test `conditional reference returns evaluate each condition and selected branch once`() {
+        var String interpolation = ""
+        interpolation += '#'
+        interpolation += '{'
         let source = "package app\nclass Value { construct() {} } class Main { " +
             "static condition(Bool value) -> Bool { external js { process.stdout.write('C'); } return value; } " +
             "static selected(Value value) -> Value { external js { process.stdout.write('V'); } return value; } " +
@@ -88,8 +121,8 @@ testable class {
             "static nested(Bool flag, Value value) -> Value { return condition(flag) ? (condition(false) ? null : selected(value)) : null; } " +
             "public static main() { let value = Value(); let a = choose(true, value); let b = choose(false, value); " +
             "let c = reversed(true, value); let d = reversed(false, value); let e = nested(true, value); " +
-            "external js { console.log(); console.log(" + "#" + "{a} === flat_null, " + "#" + "{b} === " + "#" + "{value}, " +
-            "#" + "{c} === " + "#" + "{value}, " + "#" + "{d} === flat_null, " + "#" + "{e} === " + "#" + "{value}); } } }"
+            "external js { console.log(); console.log(" + interpolation + "a} === null, " + interpolation + "b} === " + interpolation + "value}, " +
+            interpolation + "c} === " + interpolation + "value}, " + interpolation + "d} === null, " + interpolation + "e} === " + interpolation + "value}); } } }"
         let sink = MemoryCompilerArtifactSink()
         let session = Compiler().compilePackage(MemoryCompilerSourceProvider([
             CompilerSource("app/Main.flat", source)]), sink, "conditional-returns.js", mainClass: "app/Main")
@@ -182,6 +215,7 @@ testable class {
             "flat/Object.flat", "flat/Object.js.flat", "flat/Math.flat", "flat/Math.js.flat",
             "flat/meta/Function.flat", "flat/meta/Class.flat", "flat/meta/Field.flat",
             "flat/exception/Exception.flat", "flat/exception/StackTrace.flat",
+            "flat/exception/NullAccessException.flat",
             "flat/datastruct/list/NoSuchElementException.flat",
             "flat/String.flat", "flat/String.js.flat", "flat/primitive/Primitive.flat",
             "flat/primitive/number/Number.flat", "flat/primitive/number/Integer.flat",

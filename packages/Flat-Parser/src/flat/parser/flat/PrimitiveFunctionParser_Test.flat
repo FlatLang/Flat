@@ -3,6 +3,27 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `native return modifier evidence is independent of native parameters`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-return"), "one")
+        let parsed = PrimitiveFunctionParser().parse([
+            token("native_array", Token.Type.IDENTIFIER, 1), token("native", Token.Type.IDENTIFIER, 14),
+            token("read", Token.Type.IDENTIFIER, 21), token("(", Token.Type.SYMBOL, 25),
+            token("Char", Token.Type.IDENTIFIER, 26), token("[", Token.Type.SYMBOL, 30),
+            token("]", Token.Type.SYMBOL, 31), token("data", Token.Type.IDENTIFIER, 33),
+            token(")", Token.Type.SYMBOL, 37), token("->", Token.Type.SYMBOL, 39),
+            token("Char", Token.Type.IDENTIFIER, 42), token("[", Token.Type.SYMBOL, 46),
+            token("]", Token.Type.SYMBOL, 47), token("{", Token.Type.SYMBOL, 49),
+            token("}", Token.Type.SYMBOL, 50)
+        ], snapshot, 20).functionValues().first
+        expect(parsed.nativeArrayReturnModifierRange.startTokenIndex).toBe(20)
+        expect(parsed.nativeArrayReturnModifierRange.endTokenIndex).toBe(21)
+        expect(parsed.nativeReturnModifierRange.startTokenIndex).toBe(21)
+        expect(parsed.nativeReturnModifierRange.snapshot).toBe(snapshot)
+        expect(parsed.parameterValues().first.nativeArrayStorage).toBe(false)
+        let ordinary = PrimitiveFunctionSyntax(parsed.range, "ordinary", parsed.parameterValues(), "Char[]", PrimitiveStatementSyntax[])
+        expect(ordinary.nativeReturnModifierRange == null).toBe(true)
+        expect(ordinary.nativeArrayReturnModifierRange == null).toBe(true)
+    }
     test `preserves native scalar method parameter range and positional syntax compatibility`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-scalar-method"), "one")
         let parsed = PrimitiveFunctionParser().parse([

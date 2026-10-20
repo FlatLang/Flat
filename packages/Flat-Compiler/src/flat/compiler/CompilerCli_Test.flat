@@ -3,6 +3,8 @@ package flat/compiler
 import flat/io
 import flat/system
 import flat/time/Time
+import flat/future
+import flat/semantic/binding/primitive/PrimitiveDefaultImport
 import flat/compiler/models
 import flat/lexer
 import flat/parser/flat
@@ -27,6 +29,228 @@ testable class {
             }
         }
         return values
+    }
+
+    test `CLI artifact byte capacity rejects malformed and overflow values`() {
+        String[] invalid = ["", "0", "-1", "+1", "1x", "1.5", " 1", "2147483648", "99999999999999999999"]
+        var Int rejected
+        for (value in invalid) {
+            try { CompilerCli.parseArtifactByteCapacity(value) }
+            catch (Exception error) { rejected++ }
+        }
+        expect(rejected).toBe(invalid.count)
+        expect(CompilerCli.parseArtifactByteCapacity("67108864")).toBe(67108864)
+        expect(CompilerCli.parseArtifactByteCapacity("2147483647")).toBe(2147483647)
+    }
+
+    async test `CLI byte cap rejection preserves existing output and removes staging`() {
+        let root = File(".flat-cli-byte-cap-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let input = File(root, "Value.flat")
+        let output = File(root, "library.js")
+        Es6ArtifactFiles.write(input, "class Value {}")
+        Es6ArtifactFiles.write(output, "previous output")
+        String[] arguments = ["flatc", input.normalizedLocation, "-target", "es6", "-library",
+            "-o", output.normalizedLocation, "--max-artifact-bytes", "1"]
+        try {
+            expect(CompilerCli.run(arguments)).toBe(1)
+            expect(Es6ArtifactFiles.read(output)).toBe("previous output")
+            expect(root.getChildFiles(includeHidden: true, includeDirectories: true).count).toBe(2)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `CLI compilation error settles before owned staging cleanup`() {
+        let root = File(".flat-cli-compilation-cleanup-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let input = File(root, "Broken.flat")
+        let output = File(root, "library.js")
+        Es6ArtifactFiles.write(input, "class Broken { static read() -> Int { return missing; } }")
+        Es6ArtifactFiles.write(output, "previous")
+        String[] arguments = ["flatc", input.normalizedLocation, "-target", "es6", "-library",
+            "-o", output.normalizedLocation]
+        try {
+            expect(CompilerCli.run(arguments)).toBe(1)
+            expect(Es6ArtifactFiles.read(output)).toBe("previous")
+            expect(root.getChildFiles(includeHidden: true, includeDirectories: true).count).toBe(2)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    class CleanupSpool extends SpooledCompilerArtifactSink {
+        visible var Bool attempted
+        public construct(File root) => super(root, 1, 67108864)
+        override public dispose() {
+            attempted = true
+            super.dispose()
+            throw Exception("controlled spool cleanup failure")
+        }
+    }
+
+    class CleanupDestination extends FilesystemCompilerArtifactSink {
+        visible var Bool attempted
+        public construct(File root) => super(root, 1)
+        override public retryCleanup() { attempted = true }
+    }
+
+    class CleanupGateLinker extends FlatEs6PackageLinker {
+        visible var Bool entered
+        visible var Bool cleaned
+        public construct(visible Future<Bool> gate) => super(maxSources: 64,
+            maxSourceCharacters: 65536, maxTokensPerSource: 8192, maxTypes: 256, maxFragments: 256)
+        override public async linkSources(CompilerSourceProvider provider, String[] identities,
+            DeclarationIdentity arrayDeclaration = null, String mainClass = null,
+            PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]) -> String {
+            entered = true
+            try {
+                gate.get()
+                return "cancelled code"
+            } finally { cleaned = true }
+        }
+    }
+
+    async test `CLI owner waits for cancelled package worker before disposing staging`() {
+        let root = File(".flat-cli-cancel-cleanup-#{Time.currentTimeMillis}")
+        let spool = CleanupSpool(root)
+        let destination = CleanupDestination(root)
+        Future.CompletableFuture<Bool> gate = Future.create<Bool>()
+        let linker = CleanupGateLinker(gate)
+        let session = CompilerSession()
+        let sources = CompilerSource[]
+        sources.add(CompilerSource("Value.flat", "class Value {}"))
+        try {
+            CompilerEngine(packageLinker: linker).startPackage(
+                MemoryCompilerSourceProvider(sources), spool, "library.js", session)
+            expect(linker.entered).toBe(true)
+            session.cancel()
+            let finalized = Future.from<Bool>(async {
+                let summary = session.completion.get()
+                expect(summary.cancelled).toBe(true)
+                expect(summary.artifactCount).toBe(0)
+                try { CompilerCli.publishArtifacts(spool, destination, Exception("cancelled")) }
+                catch (Exception error) { expect(error.message).toBe("cancelled") }
+                return true
+            })$
+            expect(session.completion.completed).toBe(false)
+            expect(spool.attempted).toBe(false)
+            gate.complete(true)
+            expect(finalized.get()).toBe(true)
+            expect(linker.cleaned).toBe(true)
+            expect(spool.attempted).toBe(true)
+            expect(destination.attempted).toBe(true)
+            expect(File(root, "library.js").isFile).toBe(false)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    test `CLI publication attempts both cleanups after successful publication`() {
+        let root = File(".flat-cli-cleanup-#{Time.currentTimeMillis}")
+        let spool = CleanupSpool(root)
+        let destination = CleanupDestination(root)
+        var String message
+        try {
+            spool.write(CompilerArtifact("library.js", "published"))
+            try { CompilerCli.publishArtifacts(spool, destination) }
+            catch (Exception error) { message = error.message }
+            expect(message).toBe("Output published; cleanup failed: controlled spool cleanup failure")
+            expect(spool.attempted).toBe(true)
+            expect(destination.attempted).toBe(true)
+            expect(Es6ArtifactFiles.read(File(root, "library.js"))).toBe("published")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    class PublishedCleanupSpool extends SpooledCompilerArtifactSink {
+        public construct(File root) => super(root, 1, 67108864)
+        override public commitTo(FilesystemCompilerArtifactSink destination) {
+            super.commitTo(destination)
+            throw Exception("controlled post-publication cleanup failure")
+        }
+    }
+
+    test `CLI reports published output when commitTo fails after publication`() {
+        let root = File(".flat-cli-published-cleanup-#{Time.currentTimeMillis}")
+        let spool = PublishedCleanupSpool(root)
+        let destination = CleanupDestination(root)
+        var String message
+        try {
+            Es6ArtifactFiles.write(File(root, "library.js"), "previous")
+            spool.write(CompilerArtifact("library.js", "published"))
+            try { CompilerCli.publishArtifacts(spool, destination) }
+            catch (Exception error) { message = error.message }
+            expect(message).toBe("Output published; cleanup failed: controlled post-publication cleanup failure")
+            expect(Es6ArtifactFiles.read(File(root, "library.js"))).toBe("published")
+            expect(destination.attempted).toBe(true)
+            expect(root.getChildFiles(includeHidden: true, includeDirectories: true).count).toBe(1)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    test `CLI preserves primary failure while both cleanup operations are attempted`() {
+        let root = File(".flat-cli-primary-#{Time.currentTimeMillis}")
+        let spool = CleanupSpool(root)
+        let destination = CleanupDestination(root)
+        var String message
+        try {
+            Es6ArtifactFiles.write(File(root, "library.js"), "previous")
+            spool.write(CompilerArtifact("library.js", "unpublished"))
+            try { CompilerCli.publishArtifacts(spool, destination, Exception("primary compilation failure")) }
+            catch (Exception error) { message = error.message }
+            expect(message).toBe("primary compilation failure")
+            expect(spool.attempted).toBe(true)
+            expect(destination.attempted).toBe(true)
+            expect(Es6ArtifactFiles.read(File(root, "library.js"))).toBe("previous")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    class RejectingDestination extends FilesystemCompilerArtifactSink {
+        visible var Bool attempted
+        public construct(File root) => super(root, 1)
+        override public write(CompilerArtifact artifact) { throw Exception("controlled publication failure") }
+        override public retryCleanup() { attempted = true }
+    }
+
+    test `CLI publication failure preserves output and finalizes both owners`() {
+        let root = File(".flat-cli-publication-#{Time.currentTimeMillis}")
+        let spool = CleanupSpool(root)
+        let destination = RejectingDestination(root)
+        var String message
+        try {
+            Es6ArtifactFiles.write(File(root, "library.js"), "previous")
+            spool.write(CompilerArtifact("library.js", "unpublished"))
+            try { CompilerCli.publishArtifacts(spool, destination) }
+            catch (Exception error) { message = error.message }
+            expect(message).toBe("controlled publication failure")
+            expect(spool.attempted).toBe(true)
+            expect(destination.attempted).toBe(true)
+            expect(Es6ArtifactFiles.read(File(root, "library.js"))).toBe("previous")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    test `CLI empty spool never reports output published`() {
+        let root = File(".flat-cli-empty-#{Time.currentTimeMillis}")
+        let spool = SpooledCompilerArtifactSink(root, 1, 67108864)
+        let destination = CleanupDestination(root)
+        var String message
+        try {
+            try { CompilerCli.publishArtifacts(spool, destination) }
+            catch (Exception error) { message = error.message }
+            expect(message).toBe("Package publication requires one staged artifact")
+            expect(destination.artifacts().count).toBe(0)
+            expect(destination.attempted).toBe(true)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    test `CLI publication accepts exact conservative byte budget`() {
+        let root = File(".flat-cli-budget-#{Time.currentTimeMillis}")
+        let spool = SpooledCompilerArtifactSink(root, 1, 44)
+        let destination = FilesystemCompilerArtifactSink(root, 1)
+        try {
+            spool.write(CompilerArtifact("a.js", "payload"))
+            CompilerCli.publishArtifacts(spool, destination)
+            expect(Es6ArtifactFiles.read(File(root, "a.js"))).toBe("payload")
+            expect(root.getChildFiles(includeHidden: true, includeDirectories: true).count).toBe(1)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `CLI rejects missing artifact capacity before publishing`() {
+        String[] arguments = ["flatc", "--max-artifact-bytes"]
+        expect(CompilerCli.run(arguments)).toBe(1)
     }
 
     async test `CLI compiles unchanged production sources into an executable inspected library`() {
@@ -116,6 +340,22 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `CLI accepts a configured default import and publishes an executable library`() {
+        let root = File(".flat-compiler-cli-supported-default-test-#{Time.currentTimeMillis}")
+        let output = File(root, "library.js")
+        try {
+            expect(CompilerCli.run([
+                "flatc", "../Flat-Core/src/flat/exception/StackTrace.flat", "-target", "es6",
+                "-library", "-default-import", "flat/Object", "-o", output.normalizedLocation
+            ])).toBe(0)
+            expect(output.isFile).toBe(true)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+        } finally {
+            if (root.exists) Es6ArtifactFiles.remove(root)
+        }
+    }
+
     async test `CLI rejects missing main unsupported target runtime and ambiguous short target`() {
         let root = File(".flat-compiler-cli-options-test-#{Time.currentTimeMillis}")
         let output = File(root, "program.js")
@@ -124,7 +364,7 @@ testable class {
         expect(CompilerCli.run(["flatc", source, "-target", "java", "-library", "-o", output.normalizedLocation])).toBe(1)
         expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library", "-target-runtime", "browser", "-o", output.normalizedLocation])).toBe(1)
         expect(CompilerCli.run(["flatc", source, "-t", "es6", "-library", "-o", output.normalizedLocation])).toBe(1)
-        expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library", "-default-import", "flat/Object", "-o", output.normalizedLocation])).toBe(1)
+        expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library", "--unknown-option", "-o", output.normalizedLocation])).toBe(1)
         expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library", "-threads", "2", "-o", output.normalizedLocation])).toBe(1)
         expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library"])).toBe(1)
         expect(output.exists).toBe(false)

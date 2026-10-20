@@ -123,13 +123,17 @@ class {
         session.begin(ordered.count)
         try {
             let submitted = executor.submit({
-                runPackage(sources, ordered, sink, selectedArtifactIdentity, selectedMainClass,
-                    session, snapshot, selectedDefaults)
+                session.enterPackageCallback()
+                try {
+                    runPackage(sources, ordered, sink, selectedArtifactIdentity, selectedMainClass,
+                        session, snapshot, selectedDefaults)
+                } finally {
+                    session.settlePackageCallback()
+                }
             })$
             session.attach(submitted)
         } catch (Exception error) {
-            session.recordFailure(error.message)
-            session.finish()
+            session.failPackageSubmission(error)
         }
         return session
     }
