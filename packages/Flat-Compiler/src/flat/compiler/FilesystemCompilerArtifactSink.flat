@@ -2,7 +2,6 @@ package flat/compiler
 
 import flat/io
 import flat/writer/es6/bound
-import flat/writer/es6/bound/Es6ArtifactCommitter.ArtifactCommitReceipt
 
 /**
  * Atomic artifact publication with lexical root-relative identities, not a
@@ -15,8 +14,8 @@ import flat/writer/es6/bound/Es6ArtifactCommitter.ArtifactCommitReceipt
 class extends CompilerArtifactSink {
     class PendingArtifactCleanup {
         visible String identity
-        visible ArtifactCommitReceipt receipt
-        public construct(String identity, ArtifactCommitReceipt receipt) {
+        visible CompilerArtifactLifecycleStorage receipt
+        public construct(String identity, CompilerArtifactLifecycleStorage receipt) {
             this.identity = identity
             this.receipt = receipt
         }
@@ -25,8 +24,10 @@ class extends CompilerArtifactSink {
     var PendingArtifactCleanup[] pendingCleanup = PendingArtifactCleanup[]
     visible Int pendingCleanupCount => pendingCleanup.count
 
-    public construct(visible File root, visible Int cleanupCapacity = 64) {
+    public construct(visible File root, visible Int cleanupCapacity = 64,
+        visible String revision = "", visible CompilerArtifactLifecycleObserver observer = null) {
         if (!root || cleanupCapacity <= 0) throw Exception("Filesystem artifact sink requires root and positive cleanup capacity")
+        if (observer && (!revision || revision.count == 0)) throw Exception("Artifact observer requires revision")
         Es6ArtifactFiles.ensureDirectory(root)
     }
     override public write(CompilerArtifact artifact) {
@@ -38,15 +39,40 @@ class extends CompilerArtifactSink {
         // before any rename; no unrelated receipt is retried on this path.
         if (pendingCleanup.count >= cleanupCapacity) throw Exception("Filesystem artifact cleanup capacity exceeded")
         let identity = artifact.identity.concat("")
-        let receipt = Es6ArtifactCommitter().publish(File(root, identity), artifact.code)
-        if (receipt.cleanupPending) pendingCleanup.add(PendingArtifactCleanup(identity, receipt))
+        let destination = File(root, identity)
+        let binding = observer ? CompilerArtifactLifecycleBinding(revision, identity, destination.normalizedLocation) : null
+        let staging = Es6ArtifactFiles.createCommitDirectory(destination)
+        let temporary = File(staging, "artifact")
+        let receipt = CompilerArtifactLifecycleStorage(staging, binding, observer, temporary)
+        receipt.observeCreated()
+        // Reservation survives failed writes/renames as well as successful publication.
+        let pending = PendingArtifactCleanup(identity, receipt)
+        pendingCleanup.add(pending)
+        try {
+            Es6ArtifactFiles.write(temporary, artifact.code)
+            receipt.observeCreated()
+            Es6ArtifactFiles.replace(temporary, destination)
+        } catch (Exception error) {
+            receipt.observeCreated()
+            try {
+                receipt.remove()
+                pendingCleanup.remove(pending)
+            } catch (Exception cleanupError) {}
+            throw error
+        }
+        receipt.observeRemoved()
+        receipt.publicationObserved()
+        try {
+            receipt.remove()
+            pendingCleanup.remove(pending)
+        } catch (Exception cleanupError) {}
         values.add(artifact)
         values = values.sort({ _a.identity.compareTo(_b.identity) })
     }
 
     public cleanupError(String identity) -> Exception => null {
         for (pending in pendingCleanup) {
-            if (pending.identity == identity) return pending.receipt.cleanupError
+            if (pending.identity == identity) return pending.receipt.failure
         }
     }
 
@@ -54,7 +80,7 @@ class extends CompilerArtifactSink {
     public retryCleanup(String identity) {
         for (pending in pendingCleanup.copy()) {
             if (pending.identity == identity) {
-                pending.receipt.retryCleanup()
+                pending.receipt.remove()
                 pendingCleanup.remove(pending)
             }
         }
@@ -65,7 +91,7 @@ class extends CompilerArtifactSink {
         var Exception failure
         for (pending in pendingCleanup.copy()) {
             try {
-                pending.receipt.retryCleanup()
+                pending.receipt.remove()
                 pendingCleanup.remove(pending)
             } catch (Exception error) {
                 if (!failure) failure = error

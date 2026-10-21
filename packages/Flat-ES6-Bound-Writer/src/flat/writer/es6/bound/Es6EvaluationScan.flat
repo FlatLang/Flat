@@ -1,0 +1,22 @@
+package flat/writer/es6/bound
+
+import flat/bound
+
+/** Read-only expression scan. A real lambda is a separate execution owner. */
+class extends BoundTreeLoweringPass {
+    visible var Bool found = false
+    override public name() => "es6-evaluation-scan"
+    override public inputInvariant() => "canonical-expressions"
+    override public outputInvariant() => "canonical-expressions"
+
+    override public lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (!expression) return null
+        if (!Es6TargetCapabilities.supportsExpression(expression.expressionKind())) return expression
+        if (expression.class.isOfType(BoundEvaluationExpression.class)) {
+            found = true
+            return expression
+        }
+        if (expression.class.isOfType(BoundLambdaExpression.class)) return expression
+        return super.lowerExpression(expression)
+    }
+}

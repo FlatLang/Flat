@@ -3,7 +3,7 @@ package flat/writer/es6/bound
 /** Backend capability contract; unsupported semantics become stable diagnostics. */
 class {
     public static supportsStatement(String kind) -> Bool {
-        return kind == "expression" || kind == "external" || kind == "local-declaration" ||
+        return kind == "loop-latch" || kind == "break" || kind == "expression" || kind == "external" || kind == "local-declaration" ||
             kind == "assignment" || kind == "member-assignment" || kind == "return" || kind == "continue" || kind == "if" ||
             kind == "switch" || kind == "foreach" ||
             kind == "while" || kind == "throw" || kind == "try" ||
@@ -11,7 +11,7 @@ class {
     }
 
     public static supportsExpression(String kind) -> Bool {
-        return kind == "literal" || kind == "interpolated-string" || kind == "reference" || kind == "member-access" ||
+        return kind == "evaluation" || kind == "literal" || kind == "interpolated-string" || kind == "reference" || kind == "member-access" ||
             kind == "unary" || kind == "binary" || kind == "conditional" ||
             kind == "class-name" || kind == "type-metadata" || kind == "type-test" ||
             kind == "conversion" || kind == "numeric-unbox" || kind == "assignment-value" ||

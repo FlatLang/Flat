@@ -1,0 +1,185 @@
+package flat/compiler
+
+import flat/project/AirshipCompilerArguments
+import flat/system
+
+/**
+ * Explicit production acceptance entrypoint, not a compiler fallback or a test
+ * replacement. Compile this class as an executable using the ordinary compiler
+ * launcher during coordinated validation. Usage:
+ *   <forward|reverse|cancel-after-read|cancel-after-stage> <capacity> <flatc argv...>
+ * argv excludes the flatc executable token. Inputs are passed unchanged to CLI.
+ * The caller must provide a cold isolated destination; a warm hit is rejected
+ * because it cannot prove controlled reads or cancellation of actual work.
+ * Records contain actual observations; the acceptance harness still owns output
+ * hashes, subprocess reaping, disk cleanup, tool provenance and receipt storage.
+ */
+class CompilerProductionDriver {
+    public static async main(String[] args) {
+        if (args.count < 3) throw Exception("Production driver requires scenario, capacity and compiler arguments")
+        let mode = args[0]
+        let capacity = AirshipCompilerArguments.parsePositiveCapacity(args[1])
+        let invocation = ["flatc"]
+        invocation.addAll(args.skip(2))
+        invocation.addAll(["-threads", args[1]])
+        let observer = ProductionObservation(mode, capacity, invocation.skip(1))
+        let schedule = mode == "reverse" ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
+        let code = CompilerCli.run(invocation, observer, schedule)
+        observer.report(code)
+        System.exit(code)
+    }
+
+    class ArtifactObservation extends CompilerArtifactLifecycleObserver {
+        var String schema
+        public construct(String schema = "flat.compiler.artifact-lifecycle.v1") { this.schema = schema }
+        var Int sequence
+        visible Int deliveryFailures
+
+        emit(CompilerArtifactLifecycleBinding binding, String transition, String path = null,
+            Bool removed = false, Exception failure = null) {
+            try {
+                sequence++
+                let encodedPath = path != null ? CompilerEvidence.quote(path) : "null"
+                let encodedFailure = failure != null ? CompilerEvidence.quote(failure.message) : "null"
+                Console.log("{\"schema\":#{CompilerEvidence.quote(schema)},\"revision\":#{CompilerEvidence.quote(binding.revision)}," +
+                    "\"identity\":#{CompilerEvidence.quote(binding.identity)},\"destination\":#{CompilerEvidence.quote(binding.destination)}," +
+                    "\"sequence\":#sequence,\"transition\":#{CompilerEvidence.quote(transition)},\"path\":#encodedPath," +
+                    "\"removed\":#removed,\"failure\":#encodedFailure}")
+            } catch (Exception error) { deliveryFailures++ }
+        }
+        override public temporaryCreated(CompilerArtifactLifecycleBinding binding, String path) {
+            emit(binding, "temporary-created", path)
+        }
+        override public temporaryRemoved(CompilerArtifactLifecycleBinding binding, String path) {
+            emit(binding, "temporary-removed", path, removed: true)
+        }
+        override public published(CompilerArtifactLifecycleBinding binding) {
+            emit(binding, "published")
+        }
+        override public finalized(CompilerArtifactLifecycleBinding binding, String path, Bool removed, Exception failure) {
+            emit(binding, "finalized", path, removed, failure)
+        }
+    }
+
+    class ProductionObservation extends CompilerInvocationObserver {
+        var ArtifactObservation artifactObserver = ArtifactObservation()
+        var ArtifactObservation manifestObserver = ArtifactObservation("flat.compiler.manifest-lifecycle.v1")
+        override public artifactLifecycleObserver() -> CompilerArtifactLifecycleObserver => artifactObserver
+        override public manifestLifecycleObserver() -> CompilerArtifactLifecycleObserver => manifestObserver
+        var String mode
+        var Int capacity
+        var String revision
+        var String destination
+        var String persistent
+        var String optionsFingerprint
+        var CompilerSession session
+        var Bool cancellationRequested
+        var Int admittedCount
+        var Int settledCount
+        var Int peakActive
+        var Int peakRetained
+        var Int currentActive
+        var Int currentRetained
+        var Int sequence
+        var Bool readsDrained
+        native var Object eventDigest
+
+        public construct(String mode, Int capacity, String[] arguments) {
+            if (mode != "forward" && mode != "reverse" && mode != "cancel-after-read" && mode != "cancel-after-stage") {
+                throw Exception("Unknown production observation scenario")
+            }
+            this.mode = mode
+            this.capacity = capacity
+            native_array native var Char[] fingerprint
+            external js {
+                #{eventDigest} = require('crypto').createHash('sha256');
+                #{fingerprint} = 'sha256:' + require('crypto').createHash('sha256')
+                    .update(JSON.stringify(#{arguments.map((argument) => argument.chars.data).data})).digest('hex');
+            }
+            optionsFingerprint = String(fingerprint)
+        }
+
+        override public invocationAdmitted(String revision, String destination, String persistentEvidence) {
+            if (this.revision) throw Exception("Production observer is single-use")
+            var Bool reused
+            external js { #{reused} = JSON.parse(#{persistentEvidence.chars.data}).reused === true; }
+            if (reused) throw Exception("Controlled production observation requires a cold compilation")
+            this.revision = revision
+            this.destination = destination
+            persistent = persistentEvidence.trim()
+        }
+        record(String transition, String identity) {
+            sequence++
+            Console.log("{\"schema\":\"flat.compiler.source-read-event.v1\",\"revision\":#{CompilerEvidence.quote(revision)}," +
+                "\"destination\":#{CompilerEvidence.quote(destination)},\"sequence\":#sequence," +
+                "\"transition\":#{CompilerEvidence.quote(transition)},\"source\":#{CompilerEvidence.quote(identity)}," +
+                "\"admitted\":#admittedCount,\"settled\":#settledCount,\"active\":#currentActive," +
+                "\"retained\":#currentRetained,\"capacity\":#capacity}")
+            external js {
+                #{eventDigest}.update(JSON.stringify([#{transition.chars.data}, #{identity.chars.data}]) + '\n');
+            }
+        }
+        override public admitted(String identity, Int admitted, Int retained, Int peakRetained) {
+            admittedCount = admitted
+            currentRetained = retained
+            this.peakRetained = peakRetained
+            record("admitted", identity)
+        }
+        override public started(String identity, Int active, Int peakActive) {
+            currentActive = active
+            this.peakActive = peakActive
+            record("started", identity)
+        }
+        override public settled(String identity, Int settled, Int active) {
+            settledCount = settled
+            currentActive = active
+            record("settled", identity)
+        }
+        override public consumed(String identity, Int retained) {
+            currentRetained = retained
+            record("consumed", identity)
+        }
+        override public drained(Int admitted, Int settled, Int peakActive, Int peakRetained) {
+            admittedCount = admitted
+            settledCount = settled
+            this.peakActive = peakActive
+            this.peakRetained = peakRetained
+            currentRetained = 0
+            readsDrained = true
+        }
+        override public sourceReadCompleted(CompilerSession session, String identity) {
+            this.session = session
+            if (mode == "cancel-after-read" && !cancellationRequested) {
+                record("cancel-readiness-after-read", identity)
+                session.cancel()
+                cancellationRequested = session.cancelled
+            }
+        }
+        override public artifactAccepted(CompilerSession session, String identity) {
+            this.session = session
+            if (mode == "cancel-after-stage" && !cancellationRequested) {
+                record("cancel-readiness-after-stage", identity)
+                session.cancel()
+                cancellationRequested = session.cancelled
+            }
+        }
+        public async report(Int exitCode) {
+            if (!revision || !session || !readsDrained) throw Exception("Production observation did not enter and drain actual source work")
+            if (artifactObserver.deliveryFailures != 0) throw Exception("Artifact lifecycle evidence delivery failed")
+            if (manifestObserver.deliveryFailures != 0) throw Exception("Manifest lifecycle evidence delivery failed")
+            let summary = session.completion.get()
+            native_array native var Char[] digest
+            external js { #{digest} = 'sha256:' + #{eventDigest}.digest('hex'); }
+            let events = String(digest)
+            Console.log("{\"schema\":\"flat.compiler.source-reads.v1\",\"scenario\":#{CompilerEvidence.quote(mode)}," +
+                "\"revision\":#{CompilerEvidence.quote(revision)},\"destination\":#{CompilerEvidence.quote(destination)}," +
+                "\"optionsFingerprint\":#{CompilerEvidence.quote(optionsFingerprint)},\"input\":#persistent," +
+                "\"capacity\":#capacity,\"admitted\":#admittedCount,\"settled\":#settledCount," +
+                "\"activeAfter\":#currentActive,\"retainedAfter\":#currentRetained,\"peakActive\":#peakActive,\"peakRetained\":#peakRetained," +
+                "\"eventDigest\":#{CompilerEvidence.quote(events)},\"cancellationRequested\":#cancellationRequested," +
+                "\"artifactDeliveryFailures\":#{artifactObserver.deliveryFailures}," +
+                "\"manifestDeliveryFailures\":#{manifestObserver.deliveryFailures}," +
+                "\"exitCode\":#exitCode,\"session\":#{CompilerEvidence.render(summary, mode).trim()}}")
+        }
+    }
+}

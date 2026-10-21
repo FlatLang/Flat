@@ -1,0 +1,27 @@
+package bootstrap/ternary
+
+import flat/exception/Exception
+
+class TernaryArrayOwnershipRegression {
+    public static main(String[] args) {
+        let original = [11, 12]
+        let selected = choose(true, original)
+        let fallback = choose(false, original)
+
+        if (!Object.referenceEquals(selected, original)) {
+            throw Exception("Ternary must preserve the selected existing array")
+        }
+        if (fallback.count != 2 || fallback[0] != 21 || fallback[1] != 22) {
+            throw Exception("Ternary must type and execute its lowered initializer branch")
+        }
+
+        let repeated = choose(false, original)
+        if (Object.referenceEquals(fallback, repeated)) {
+            throw Exception("Lowered initializer must allocate a fresh array per call")
+        }
+    }
+
+    static choose(Bool useOriginal, Int[] original) -> Int[] {
+        return useOriginal ? original : [21, 22]
+    }
+}

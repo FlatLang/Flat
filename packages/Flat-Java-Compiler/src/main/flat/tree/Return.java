@@ -248,10 +248,14 @@ public class Return extends IValue {
                 && !Literal.isNullLiteral(node)) {
                 return SyntaxUtils.unboxPrimitive(node);
             }
-            if (node.getReturnedNode().isPrimitive() && !getParentMethod().isPrimitive()
-                && !Literal.isNullLiteral(node)) {
-                return SyntaxUtils.autoboxPrimitive(node, node.getReturnedNode().getType());
-            }
+        }
+
+        // A function-typed method must not unbox its returned closure. It still
+        // needs boxing when a concrete primitive crosses a reference/generic
+        // return boundary (for example, a Future.from<TType> callback).
+        if (node.getReturnedNode().isPrimitive() && !getParentMethod().isPrimitive()
+            && !Literal.isNullLiteral(node)) {
+            return SyntaxUtils.autoboxPrimitive(node, node.getReturnedNode().getType());
         }
 
         return node;

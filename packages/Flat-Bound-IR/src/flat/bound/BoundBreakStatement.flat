@@ -1,0 +1,15 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Structured break validated against an enclosing loop or switch by binding.
+ * Targets the nearest such owner in the current function, after normal cleanup
+ * unwinding. It is not a loop continue and never enters the exited loop's latch.
+ */
+data class extends BoundStatement {
+    public construct(SourceRange range) {
+        if (!range) throw Exception("Bound break requires range")
+        super(range)
+    }
+    override public unitKind() => "break"
+}

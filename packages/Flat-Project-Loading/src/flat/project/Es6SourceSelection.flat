@@ -8,7 +8,7 @@ class Es6SourceSelection {
         let first = location.indexOf(".", start: slash + 1, defaultReturnValue: -1)
         let last = location.lastIndexOf(".")
         if (first == last) return true
-        let suffix = location.substring(first + 1, last).toLowerCase()
+        let suffix = location.substring(first + 1, last)
         return suffix == "js" || suffix == "es6"
     }
 

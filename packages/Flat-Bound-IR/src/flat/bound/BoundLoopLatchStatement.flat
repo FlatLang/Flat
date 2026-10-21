@@ -1,0 +1,41 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Canonical pre-test loop with a loop-owned post-body latch.
+ * Evaluate condition before each iteration. A false condition exits without
+ * executing body or advance. Body runs with this node as its nearest loop owner.
+ * On normal body completion or continue targeting this loop, unwind body cleanup
+ * (including finally) first. Run advance exactly once only if normal completion
+ * or that continue survives cleanup. Then evaluate condition again.
+ * Break, return, throw and cancellation never enter advance; cleanup may replace
+ * a pending exit and the surviving completion determines whether advance runs.
+ * Nested loops own their continues; switches do not intercept loop continues.
+ * Evaluation-expression setup shares these owners; lambda bodies do not.
+ * Advance is not cleanup and must never be emitted as an unconditional finally.
+ * Abrupt completion/suspension during advance propagates normally: it must not
+ * replay advance or run it a second time. A continue in advance proceeds directly
+ * to condition; a break in advance exits this loop.
+ * loopIdentity is semantic provenance, never an inferred target spelling.
+ */
+data class extends BoundStatement {
+    var BoundStatement[] bodyStatements
+    var BoundStatement[] advanceStatements
+
+    public construct(SourceRange range, visible BoundExpression condition,
+        BoundStatement[] body, BoundStatement[] advance,
+        visible SyntaxIslandIdentity loopIdentity) {
+        if (!range || !condition || condition.semanticType.value() != "primitive:Bool" ||
+            !body || body.any({ !_ }) || !advance || advance.any({ !_ }) ||
+            !loopIdentity || loopIdentity.snapshot != range.snapshot) {
+            throw Exception("Bound loop latch requires Bool condition, ordered body/advance, and source identity")
+        }
+        super(range)
+        bodyStatements = BoundStatement[]:addAll(body)
+        advanceStatements = BoundStatement[]:addAll(advance)
+    }
+
+    public bodyValues() -> BoundStatement[] => BoundStatement[]:addAll(bodyStatements)
+    public advanceValues() -> BoundStatement[] => BoundStatement[]:addAll(advanceStatements)
+    override public unitKind() => "loop-latch"
+}

@@ -1,0 +1,339 @@
+package flat/bound
+
+import flat/semantic/types
+
+/** Function-local immutable bound-tree rewrite. Traversal never changes evaluation
+ * order or control ownership. Specializations own only their rich-form rewrite.
+ * Lists are copied only at their existing function/branch/expression boundary.
+ */
+abstract class extends BoundFunctionLoweringPass {
+    override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
+        let parent = input.parentConstructorCall
+        let delegation = input.constructorDelegation
+        return BoundFunctionUnit(input.identity, input.name, input.returnType,
+            lowerStatements(input.statements()), input.range,
+            lowerParameters(input.parameterValues()), input.staticFunction, input.mainFunction,
+            input.constructorFunction, input.dispatchIdentity,
+            parent ? BoundParentConstructorCall(parent.target, lowerExpressions(parent.argumentValues()),
+                parent.argumentConversions(), parent.range) : null,
+            delegation ? BoundConstructorDelegation(delegation.target,
+                lowerExpressions(delegation.argumentValues()), delegation.argumentConversions(), delegation.range) : null,
+            input.asyncFunction, input.externalName, input.abstractFunction, input.lazyProperty)
+    }
+
+    public lowerParameters(BoundFunctionParameter[] parameters) -> BoundFunctionParameter[] {
+        return parameters.map((parameter) => BoundFunctionParameter(parameter.name, parameter.identity,
+            parameter.semanticType, lowerExpression(parameter.defaultValue)))
+    }
+
+    public lowerExpressions(BoundExpression[] expressions) -> BoundExpression[] {
+        return expressions.map({ lowerExpression(_) })
+    }
+
+    public lowerStatements(BoundStatement[] statements) -> BoundStatement[] {
+        let output = BoundStatement[]
+        for (statement in statements) lowerStatement(statement, output)
+        return output
+    }
+
+    public lowerStatement(BoundStatement statement, BoundStatement[] output) {
+        if (statement.class.isOfType(BoundIfStatement.class)) {
+            Object castSource1 = statement
+            BoundIfStatement value = (BoundIfStatement)castSource1
+            output.add(BoundIfStatement(value.range, lowerExpression(value.condition),
+                lowerStatements(value.thenValues()), lowerStatements(value.elseValues())))
+        } else if (statement.class.isOfType(BoundLoopLatchStatement.class)) {
+            Object castSource2 = statement
+            BoundLoopLatchStatement value = (BoundLoopLatchStatement)castSource2
+            output.add(BoundLoopLatchStatement(value.range, lowerExpression(value.condition),
+                lowerStatements(value.bodyValues()), lowerStatements(value.advanceValues()), value.loopIdentity))
+        } else if (statement.class.isOfType(BoundWhileStatement.class)) {
+            Object castSource3 = statement
+            BoundWhileStatement value = (BoundWhileStatement)castSource3
+            output.add(BoundWhileStatement(value.range, lowerExpression(value.condition),
+                lowerStatements(value.bodyValues())))
+        } else if (statement.class.isOfType(BoundForEachStatement.class)) {
+            Object castSource4 = statement
+            BoundForEachStatement value = (BoundForEachStatement)castSource4
+            output.add(BoundForEachStatement(value.range, lowerStatements(value.initialization()),
+                lowerExpression(value.condition), lowerStatements(value.body()),
+                lowerStatements(value.advance()), value.loopLabel, value.exitLabel))
+        } else if (statement.class.isOfType(BoundSwitchStatement.class)) {
+            Object castSource5 = statement
+            BoundSwitchStatement value = (BoundSwitchStatement)castSource5
+            let cases = BoundSwitchCase[]
+            for (entry in value.caseValues()) {
+                cases.add(BoundSwitchCase(entry.range, lowerExpression(entry.label),
+                    lowerStatements(entry.statementValues()), entry.defaultCase, entry.fallsThrough))
+            }
+            output.add(BoundSwitchStatement(value.range, lowerExpression(value.value), cases))
+        } else if (statement.class.isOfType(BoundTryStatement.class)) {
+            Object castSource6 = statement
+            BoundTryStatement value = (BoundTryStatement)castSource6
+            let catches = BoundCatchClause[]
+            for (entry in value.catchValues()) {
+                catches.add(BoundCatchClause(entry.range, entry.local,
+                    lowerStatements(entry.statements()), entry.acceptsSoftExceptions))
+            }
+            output.add(BoundTryStatement(value.range, lowerStatements(value.tryValues()), catches,
+                lowerStatements(value.finallyValues())))
+        } else if (statement.class.isOfType(BoundConstructorInitializationStatement.class)) {
+            Object castSource7 = statement
+            BoundConstructorInitializationStatement value = (BoundConstructorInitializationStatement)castSource7
+            output.add(BoundConstructorInitializationStatement(value.range, lowerStatements(value.initializers())))
+        } else if (statement.class.isOfType(BoundStaticInitializationStatement.class)) {
+            Object castSource8 = statement
+            BoundStaticInitializationStatement value = (BoundStaticInitializationStatement)castSource8
+            output.add(BoundStaticInitializationStatement(value.range, value.stableOwnerValue,
+                lowerStatements(value.initialization())))
+        } else if (statement.class.isOfType(BoundExternalStatement.class)) {
+            Object castSource9 = statement
+            BoundExternalStatement value = (BoundExternalStatement)castSource9
+            output.add(BoundExternalStatement(value.range, value.target, value.segmentValues().map((segment) =>
+                BoundExternalCodeSegment(segment.range, segment.text, lowerExpression(segment.value), segment.rendering)
+            ), value.nameBindingValues()))
+        } else if (statement.class.isOfType(BoundExpressionStatement.class)) {
+            Object castSource10 = statement
+            BoundExpressionStatement value = (BoundExpressionStatement)castSource10
+            output.add(BoundExpressionStatement(value.range, lowerExpression(value.expression)))
+        } else if (statement.class.isOfType(BoundLocalDeclarationStatement.class)) {
+            Object castSource11 = statement
+            BoundLocalDeclarationStatement value = (BoundLocalDeclarationStatement)castSource11
+            output.add(BoundLocalDeclarationStatement(value.range, value.local,
+                lowerExpression(value.initializer), value.conversion))
+        } else if (statement.class.isOfType(BoundAssignmentStatement.class)) {
+            Object castSource12 = statement
+            BoundAssignmentStatement value = (BoundAssignmentStatement)castSource12
+            output.add(BoundAssignmentStatement(value.range, value.target,
+                lowerExpression(value.value), value.conversion))
+        } else if (statement.class.isOfType(BoundMemberAssignmentStatement.class)) {
+            Object castSource13 = statement
+            BoundMemberAssignmentStatement value = (BoundMemberAssignmentStatement)castSource13
+            Object targetObject = lowerExpression(value.target)
+            BoundMemberAccessExpression target = (BoundMemberAccessExpression)targetObject
+            output.add(BoundMemberAssignmentStatement(value.range,
+                target,
+                lowerExpression(value.value), value.conversion, value.compoundOperator))
+        } else if (statement.class.isOfType(BoundArrayAssignmentStatement.class)) {
+            Object castSource14 = statement
+            BoundArrayAssignmentStatement value = (BoundArrayAssignmentStatement)castSource14
+            Object targetObject = lowerExpression(value.target)
+            BoundArrayAccessExpression target = (BoundArrayAccessExpression)targetObject
+            output.add(BoundArrayAssignmentStatement(value.range,
+                target,
+                lowerExpression(value.value), value.conversion))
+        } else if (statement.class.isOfType(BoundNativeArrayClearStatement.class)) {
+            Object castSource15 = statement
+            BoundNativeArrayClearStatement value = (BoundNativeArrayClearStatement)castSource15
+            Object targetObject = lowerExpression(value.target)
+            BoundArrayAccessExpression target = (BoundArrayAccessExpression)targetObject
+            output.add(BoundNativeArrayClearStatement(value.range, target))
+        } else if (statement.class.isOfType(BoundReturnStatement.class)) {
+            Object castSource16 = statement
+            BoundReturnStatement value = (BoundReturnStatement)castSource16
+            output.add(BoundReturnStatement(value.range, value.requiredType,
+                lowerExpression(value.value), value.conversion))
+        } else if (statement.class.isOfType(BoundThrowStatement.class)) {
+            Object castSource17 = statement
+            BoundThrowStatement value = (BoundThrowStatement)castSource17
+            output.add(BoundThrowStatement(value.range, lowerExpression(value.value)))
+        } else if (statement.class.isOfType(BoundConditionalBranchStatement.class)) {
+            Object castSource18 = statement
+            BoundConditionalBranchStatement value = (BoundConditionalBranchStatement)castSource18
+            output.add(BoundConditionalBranchStatement(value.range, lowerExpression(value.condition), value.falseLabel))
+        } else if (statement.class.isOfType(BoundBreakStatement.class) ||
+            statement.class.isOfType(BoundContinueStatement.class) ||
+            statement.class.isOfType(BoundBranchStatement.class) ||
+            statement.class.isOfType(BoundLabelStatement.class)) {
+            output.add(statement)
+        } else throw Exception("Unsupported bound statement in recursive lowering: #{statement.unitKind()}")
+    }
+
+    public lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (!expression) return null
+        if (expression.class.isOfType(BoundEvaluationExpression.class)) {
+            Object castSource19 = expression
+            BoundEvaluationExpression value = (BoundEvaluationExpression)castSource19
+            return BoundEvaluationExpression(value.range, value.semanticType,
+                lowerStatements(value.setup()), lowerExpression(value.value))
+        }
+        if (expression.class.isOfType(BoundBinaryExpression.class)) {
+            Object castSource20 = expression
+            BoundBinaryExpression value = (BoundBinaryExpression)castSource20
+            return BoundBinaryExpression(value.range, value.semanticType, value.operator,
+                lowerExpression(value.left), lowerExpression(value.right))
+        }
+        if (expression.class.isOfType(BoundUnaryExpression.class)) {
+            Object castSource21 = expression
+            BoundUnaryExpression value = (BoundUnaryExpression)castSource21
+            return BoundUnaryExpression(value.range, value.semanticType, value.operator, lowerExpression(value.operand))
+        }
+        if (expression.class.isOfType(BoundConditionalExpression.class)) {
+            Object castSource22 = expression
+            BoundConditionalExpression value = (BoundConditionalExpression)castSource22
+            return BoundConditionalExpression(value.range, value.semanticType, lowerExpression(value.condition),
+                lowerExpression(value.whenTrue), lowerExpression(value.whenFalse))
+        }
+        if (expression.class.isOfType(BoundCallExpression.class)) {
+            Object castSource23 = expression
+            BoundCallExpression value = (BoundCallExpression)castSource23
+            return BoundCallExpression(value.range, value.semanticType, value.target,
+                lowerExpression(value.receiver), lowerExpressions(value.argumentValues()), value.argumentConversions(),
+                value.safeAccess, value.receiverConversion, value.suppressAwait)
+        }
+        if (expression.class.isOfType(BoundNativeCallExpression.class)) {
+            Object castSource24 = expression
+            BoundNativeCallExpression value = (BoundNativeCallExpression)castSource24
+            return BoundNativeCallExpression(value.range, value.semanticType, value.nativeName,
+                lowerExpressions(value.argumentValues()))
+        }
+        if (expression.class.isOfType(BoundIntrinsicMemberCallExpression.class)) {
+            Object castSource25 = expression
+            BoundIntrinsicMemberCallExpression value = (BoundIntrinsicMemberCallExpression)castSource25
+            return BoundIntrinsicMemberCallExpression(value.range, value.semanticType,
+                lowerExpression(value.receiver), value.memberName, lowerExpressions(value.argumentValues()))
+        }
+        if (expression.class.isOfType(BoundFunctionInvocationExpression.class)) {
+            Object castSource26 = expression
+            BoundFunctionInvocationExpression value = (BoundFunctionInvocationExpression)castSource26
+            Object castSource27 = value.functionValue.semanticType
+            FunctionSemanticType resolvedType = (FunctionSemanticType)castSource27
+            return BoundFunctionInvocationExpression(value.range, lowerExpression(value.functionValue), resolvedType,
+                lowerExpressions(value.argumentValues()), value.suppressAwait)
+        }
+        if (expression.class.isOfType(BoundLambdaExpression.class)) {
+            Object castSource28 = expression
+            BoundLambdaExpression value = (BoundLambdaExpression)castSource28
+            Object castSource29 = value.semanticType
+            FunctionSemanticType resolvedType = (FunctionSemanticType)castSource29
+            return BoundLambdaExpression(value.range, resolvedType, lowerParameters(value.parameterValues()),
+                value.captureValues(), lowerExpression(value.body), lowerStatements(value.statementValues()),
+                value.declarationContract, value.resultBoxingConstructor)
+        }
+        if (expression.class.isOfType(BoundMemberAccessExpression.class)) {
+            Object castSource30 = expression
+            BoundMemberAccessExpression value = (BoundMemberAccessExpression)castSource30
+            return BoundMemberAccessExpression(value.range, value.semanticType, lowerExpression(value.receiver),
+                value.memberName, value.memberIdentity, value.safeAccess)
+        }
+        if (expression.class.isOfType(BoundArrayAccessExpression.class)) {
+            Object castSource31 = expression
+            BoundArrayAccessExpression value = (BoundArrayAccessExpression)castSource31
+            return BoundArrayAccessExpression(value.range, value.semanticType, lowerExpression(value.receiver),
+                lowerExpression(value.index), value.nativeStorageDeclaration)
+        }
+        if (expression.class.isOfType(BoundArrayLengthExpression.class)) {
+            Object castSource32 = expression
+            BoundArrayLengthExpression value = (BoundArrayLengthExpression)castSource32
+            return BoundArrayLengthExpression(value.range, lowerExpression(value.receiver))
+        }
+        if (expression.class.isOfType(BoundNativeArrayDataExpression.class)) {
+            Object castSource33 = expression
+            BoundNativeArrayDataExpression value = (BoundNativeArrayDataExpression)castSource33
+            return BoundNativeArrayDataExpression(value.range, lowerExpression(value.receiver))
+        }
+        if (expression.class.isOfType(BoundArrayExpression.class)) {
+            Object castSource34 = expression
+            BoundArrayExpression value = (BoundArrayExpression)castSource34
+            Object castSource35 = value.semanticType
+            ArraySemanticType resolvedType = (ArraySemanticType)castSource35
+            if (value.allocationSize) return BoundArrayExpression(value.range, resolvedType, lowerExpression(value.allocationSize))
+            return BoundArrayExpression(value.range, resolvedType, lowerExpressions(value.elementValues()))
+        }
+        if (expression.class.isOfType(BoundConversionExpression.class)) {
+            Object castSource36 = expression
+            BoundConversionExpression value = (BoundConversionExpression)castSource36
+            return BoundConversionExpression(value.range, value.semanticType, lowerExpression(value.value), value.conversion)
+        }
+        if (expression.class.isOfType(BoundNumericUnboxExpression.class)) {
+            Object castSource37 = expression
+            BoundNumericUnboxExpression value = (BoundNumericUnboxExpression)castSource37
+            return BoundNumericUnboxExpression(value.range, value.semanticType, lowerExpression(value.value),
+                value.numberType, value.projection, value.conversion, value.projectionConversion)
+        }
+        if (expression.class.isOfType(BoundAssignmentValueExpression.class)) {
+            Object castSource38 = expression
+            BoundAssignmentValueExpression value = (BoundAssignmentValueExpression)castSource38
+            return BoundAssignmentValueExpression(value.range, value.semanticType, value.target,
+                lowerExpression(value.value), value.storageConversion)
+        }
+        if (expression.class.isOfType(BoundDeclarationValueExpression.class)) {
+            Object castSource39 = expression
+            BoundDeclarationValueExpression value = (BoundDeclarationValueExpression)castSource39
+            return BoundDeclarationValueExpression(value.range, value.semanticType, value.local,
+                lowerExpression(value.value), value.storageConversion)
+        }
+        if (expression.class.isOfType(BoundMemberAssignmentValueExpression.class)) {
+            Object castSource40 = expression
+            BoundMemberAssignmentValueExpression value = (BoundMemberAssignmentValueExpression)castSource40
+            Object targetObject = lowerExpression(value.target)
+            BoundMemberAccessExpression target = (BoundMemberAccessExpression)targetObject
+            return BoundMemberAssignmentValueExpression(value.range, value.semanticType,
+                target, value.operator,
+                lowerExpression(value.value), value.storageConversion)
+        }
+        if (expression.class.isOfType(BoundPostfixUpdateExpression.class)) {
+            Object castSource41 = expression
+            BoundPostfixUpdateExpression value = (BoundPostfixUpdateExpression)castSource41
+            return BoundPostfixUpdateExpression(value.range, value.semanticType, lowerExpression(value.target), value.updateOperator)
+        }
+        if (expression.class.isOfType(BoundClassNameExpression.class)) {
+            Object castSource42 = expression
+            BoundClassNameExpression value = (BoundClassNameExpression)castSource42
+            return BoundClassNameExpression(value.range, lowerExpression(value.receiver))
+        }
+        if (expression.class.isOfType(BoundTypeTestExpression.class)) {
+            Object castSource43 = expression
+            BoundTypeTestExpression value = (BoundTypeTestExpression)castSource43
+            return BoundTypeTestExpression(value.range, lowerExpression(value.value), value.typeMetadata)
+        }
+        if (expression.class.isOfType(BoundInterpolatedStringExpression.class)) {
+            Object castSource44 = expression
+            BoundInterpolatedStringExpression value = (BoundInterpolatedStringExpression)castSource44
+            return BoundInterpolatedStringExpression(value.range, value.segmentValues().map((segment) =>
+                BoundInterpolatedStringSegment(segment.range, segment.literalSourceValue, lowerExpression(segment.expression))
+            ))
+        }
+        // Other passes' rich forms retain their own wrapper, but never hide children.
+        if (expression.class.isOfType(BoundRichCallExpression.class)) {
+            Object castSource45 = expression
+            BoundRichCallExpression value = (BoundRichCallExpression)castSource45
+            Object callObject = lowerExpression(value.canonicalCall)
+            BoundCallExpression canonicalCall = (BoundCallExpression)callObject
+            return BoundRichCallExpression(value.range, value.semanticType, value.featureKind, canonicalCall)
+        }
+        if (expression.class.isOfType(BoundRichCollectionExpression.class)) {
+            Object castSource46 = expression
+            BoundRichCollectionExpression value = (BoundRichCollectionExpression)castSource46
+            return BoundRichCollectionExpression(value.range, value.semanticType, value.featureKind,
+                lowerExpression(value.canonicalExpression))
+        }
+        if (expression.class.isOfType(BoundExternalExpression.class)) {
+            Object castSource47 = expression
+            BoundExternalExpression value = (BoundExternalExpression)castSource47
+            Object callObject = lowerExpression(value.nativeCall)
+            BoundNativeCallExpression nativeCall = (BoundNativeCallExpression)callObject
+            return BoundExternalExpression(value.range, value.semanticType, value.featureKind, nativeCall)
+        }
+        if (expression.class.isOfType(BoundDeferredExpression.class)) {
+            Object castSource48 = expression
+            BoundDeferredExpression value = (BoundDeferredExpression)castSource48
+            return BoundDeferredExpression(value.range, value.semanticType, value.featureKind,
+                lowerStatements(value.setup()), lowerExpression(value.canonicalExpression))
+        }
+        if (expression.class.isOfType(BoundNamedCallExpression.class)) {
+            Object castSource49 = expression
+            BoundNamedCallExpression value = (BoundNamedCallExpression)castSource49
+            return BoundNamedCallExpression(value.range, value.semanticType, value.target,
+                value.callParameters().map((parameter) => BoundCallParameter(parameter.name, parameter.semanticType,
+                    lowerExpression(parameter.defaultValue), parameter.defaultConversion)),
+                value.suppliedArguments().map((argument) => BoundNamedArgument(argument.name,
+                    lowerExpression(argument.value), argument.conversion)))
+        }
+        if (expression.class.isOfType(BoundLiteralExpression.class) ||
+            expression.class.isOfType(BoundReferenceExpression.class) ||
+            expression.class.isOfType(BoundFunctionValue.class) ||
+            expression.class.isOfType(BoundTypeMetadataExpression.class)) return expression
+        throw Exception("Unsupported bound expression in recursive lowering: #{expression.expressionKind()}")
+    }
+}

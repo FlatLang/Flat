@@ -41,6 +41,11 @@
       "bin": "flatc",
       "dependencies": {}
     },
+    "production-driver": {
+      "mainClass": "flat/compiler/CompilerProductionDriver",
+      "bin": "flatc-production-driver",
+      "dependencies": {}
+    },
     "test": {
       "mainClass": "flat/compiler/Compiler_TestSuite",
       "source": "src/**/*_Test*.flat",

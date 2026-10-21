@@ -1,0 +1,32 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Executes setup in order at this exact operand evaluation site, then evaluates
+ * value once. No function, scope, catch, cancellation, or control-owner boundary
+ * is introduced. Abrupt completion of setup skips value and propagates to the
+ * enclosing owner (including return/break/continue/throw). Setup declarations
+ * retain their original semantic identities and lexical visibility.
+ *
+ * A short-circuit operand executes this node only when selected. A loop condition
+ * executes it on every condition evaluation. Receiver and argument ordering is
+ * unchanged. Backends must lower this as expression-local control flow, never as
+ * an IIFE, eager prelude, replay, or independently scheduled work item.
+ */
+data class extends BoundExpression {
+    var BoundStatement[] initialization
+
+    public construct(SourceRange range, SemanticType semanticType,
+        BoundStatement[] setup, visible BoundExpression value) {
+        if (!range || !semanticType || !setup || setup.any({ !_ }) || !value ||
+            value.semanticType.value() != semanticType.value()) {
+            throw Exception("Bound evaluation requires ordered setup and a matching value")
+        }
+        super(range, semanticType)
+        initialization = BoundStatement[]:addAll(setup)
+    }
+
+    public setup() -> BoundStatement[] => BoundStatement[]:addAll(initialization)
+    override public expressionKind() => "evaluation"
+}

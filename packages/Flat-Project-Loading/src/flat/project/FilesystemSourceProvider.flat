@@ -3,36 +3,56 @@ package flat/project
 import flat/compiler/models
 import flat/io
 
-/** Bounded, target-neutral filesystem source identities; snapshots are read on demand. */
+/**
+ * Bounded, target-neutral source identity inventory; text is read only on demand.
+ * Each instance owns one configured-root discovery barrier, not a project barrier.
+ * IO bounds each directory listing by the remaining aggregate entry budget and
+ * each source read by maxSourceBytes. ES6 is supported; Java/C fail explicitly.
+ * Cancellation is cooperative between synchronous IO calls, never mid-call.
+ */
 class extends SourceProvider {
     var File[] sourceFiles = File[]
     var String[] visited = String[]
+    var Int entryCount
 
     public construct(visible String root, visible String revisionPrefix = "filesystem",
         visible Int maxSources = 4096, visible Int maxDirectories = 16384,
-        visible Int maxDepth = 128) {
-        if (maxSources <= 0 || maxDirectories <= 0 || maxDepth <= 0) {
+        visible Int maxDepth = 128, visible Int maxEntries = 65536,
+        visible Int maxSourceBytes = 16777216, cancelled() -> Bool = { false }) {
+        if (maxSources <= 0 || maxDirectories <= 0 || maxDepth <= 0 || maxEntries <= 0 || maxSourceBytes <= 0) {
             throw Exception("Filesystem source capacities must be positive")
         }
+        checkCancellation(cancelled)
         let directory = File(root)
         if (!directory.isDirectory) throw Exception("Filesystem source root must be a directory")
-        collect(directory, 0)
+        collect(directory, 0, cancelled)
+        checkCancellation(cancelled)
         sourceFiles = sourceFiles.sort({ _a.normalizedLocation.compareTo(_b.normalizedLocation) })
         visited.clear()
     }
 
-    collect(File directory, Int depth) {
+    collect(File directory, Int depth, cancelled() -> Bool) {
+        checkCancellation(cancelled)
         let identity = directory.getCanonicalFileSync().normalizedLocation
         if (visited.contains(identity)) return
         if (visited.count >= maxDirectories || depth >= maxDepth) {
             throw Exception("Filesystem source discovery exceeds directory/depth capacity")
         }
         visited.add(identity)
-        // IO lists one directory at a time. Never recursively materialize a root.
-        let children = directory.getChildFiles(includeDirectories: true)
-            .sort({ _a.normalizedLocation.compareTo(_b.normalizedLocation) })
+        // Charge all entries before filtering, including hidden/non-source entries.
+        // IO observes at most one extra entry to detect overflow, never a subtree.
+        let listing = directory.getChildFilesBounded(maxEntries - entryCount)
+        checkCancellation(cancelled)
+        if (listing.count > maxEntries - entryCount) {
+            throw Exception("Filesystem source discovery exceeds entry capacity")
+        }
+        entryCount += listing.count
+        let children = listing.sort({ _a.normalizedLocation.compareTo(_b.normalizedLocation) })
         for (file in children) {
-            if (file.isDirectory) collect(file, depth + 1)
+            checkCancellation(cancelled)
+            // Preserve source selection: hidden entries consume budget, not sources.
+            if (file.isHidden) continue
+            if (file.isDirectory) collect(file, depth + 1, cancelled)
             else if (file.isFile && file.extensionName == "flat") {
                 let canonical = file.getCanonicalFileSync()
                 if (!sourceFiles.any({ _.normalizedLocation == canonical.normalizedLocation })) {
@@ -47,17 +67,29 @@ class extends SourceProvider {
         return sourceFiles.map({ SourceIdentity("file:#{_.normalizedLocation}") })
     }
 
-    override public load(SourceIdentity identity) -> LoadedSource => null {
+    override public load(SourceIdentity identity) -> LoadedSource => loadCancellable(identity)
+
+    /** Cancellation is caller-owned and checked before opening and after closing IO. */
+    public loadCancellable(SourceIdentity identity, cancelled() -> Bool = { false }) -> LoadedSource {
+        checkCancellation(cancelled)
+        if (!identity) return null
         let prefix = "file:"
         if (!identity.value.startsWith(prefix)) return null
         let location = identity.value.substring(prefix.count)
         let file = sourceFiles.firstWhere({ _.normalizedLocation == location })
         if (!file) return null
+        checkCancellation(cancelled)
         let reader = FileReader(file)
         var String contents
-        try { contents = reader.readAllContents() } finally { reader.close() }
+        try { contents = reader.readAllContentsBounded(maxSourceBytes) } finally { reader.close() }
+        checkCancellation(cancelled)
         // Revision is a change hint, not a cryptographic artifact/tool identity.
         let revision = "#revisionPrefix:#{contents.count}:#{contents.hashCodeLong}"
         return LoadedSource(SourceSnapshotIdentity(identity, revision), contents)
+    }
+
+    checkCancellation(cancelled() -> Bool) {
+        let Bool cancellationRequested = cancelled()
+        if (cancellationRequested) throw Exception("Filesystem source operation cancelled")
     }
 }

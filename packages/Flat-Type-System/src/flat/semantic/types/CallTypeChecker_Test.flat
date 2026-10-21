@@ -1,6 +1,88 @@
 package flat/semantic/types
 
 testable class {
+    test `canonical Double toFixed receiver requires explicit primitive declaration evidence`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Double", 70)
+        let root = fixture.userType("Number", 71)
+        let impostor = fixture.userType("Double", 72)
+        let target = fixture.signature("toFixed", "instance-method",
+            [SemanticTypes.intType()], SemanticTypes.stringType(), owner)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(owner, "class", [root]))
+        hierarchy.add(TypeHierarchyDeclaration(impostor, "class", UserClassSemanticType[]))
+        hierarchy.registerPrimitiveDeclaration(SemanticTypes.doubleType(), owner)
+        hierarchy.seal()
+        let checked = CallTypeChecker.check(target, SemanticTypes.doubleType(),
+            [SemanticTypes.intType()], fixture.range(), hierarchy)
+        expect(checked.valid).toBe(true)
+        expect(checked.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        expect(checked.target.identity.value).toBe(target.identity.value)
+        expect(CallTypeChecker.check(target, SemanticTypes.doubleType(),
+            [SemanticTypes.intType()], fixture.range()).valid).toBe(false)
+        expect(CallTypeChecker.check(target, SemanticTypes.floatType(),
+            [SemanticTypes.intType()], fixture.range(), hierarchy).valid).toBe(false)
+        expect(CallTypeChecker.check(target, NullableSemanticType(SemanticTypes.doubleType()),
+            [SemanticTypes.intType()], fixture.range(), hierarchy).valid).toBe(false)
+        expect(CallTypeChecker.check(target, SemanticTypes.doubleType(),
+            [SemanticTypes.stringType()], fixture.range(), hierarchy).diagnostic.code).toBe("type.call-argument")
+        expect(TypeConversions.classify(SemanticTypes.doubleType(), owner,
+            hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classifyReceiver(SemanticTypes.doubleType(), impostor,
+            hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classifyReceiver(SemanticTypes.doubleType(), root,
+            hierarchy).applicable).toBe(true)
+        let resolved = OverloadResolver.resolve("toFixed", [target], SemanticTypes.doubleType(),
+            [SemanticTypes.intType()], fixture.range(), hierarchy)
+        expect(resolved.resolved).toBe(true)
+        expect(resolved.selected.identity.value).toBe(target.identity.value)
+        var Bool frozen
+        try {
+            hierarchy.registerPrimitiveDeclaration(SemanticTypes.floatType(), impostor)
+        } catch (Exception error) { frozen = true }
+        expect(frozen).toBe(true)
+    }
+
+    test `generic call constraints retain the owning inheritance component`() {
+        let fixture = TypeSystem_TestFixture()
+        let base = fixture.userType("Base", 80)
+        let child = fixture.userType("Child", 81)
+        let unrelated = fixture.userType("Other", 82)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(base, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(child, "class", [base]))
+        hierarchy.add(TypeHierarchyDeclaration(unrelated, "class", UserClassSemanticType[]))
+        hierarchy.seal()
+        let identity = fixture.symbolIdentity("bounded", "function", 83)
+        let parameter = GenericParameterSemanticType(identity.declaration, "T", 0, base)
+        let target = CallableSignature(identity, "bounded", CallableKind("function"),
+            [parameter], parameter, genericParameterValues: [parameter])
+        let checked = CallTypeChecker.check(target, null, [child], fixture.range(), hierarchy)
+        expect(checked.valid).toBe(true)
+        expect(checked.semanticType.value()).toBe(child.value())
+        expect(CallTypeChecker.check(target, null, [unrelated], fixture.range(), hierarchy)
+            .diagnostic.code).toBe("type.generic-constraint")
+        expect(CallTypeChecker.check(target, null, [child], fixture.range()).valid).toBe(false)
+        expect(target.returnType.value()).toBe(parameter.value())
+    }
+
+    test `nullable argument widening preserves null without implicit unwrap`() {
+        let fixture = TypeSystem_TestFixture()
+        let target = fixture.signature("accept", "function",
+            [NullableSemanticType(SemanticTypes.longType())], SemanticTypes.boolType())
+        let source = NullableSemanticType(SemanticTypes.intType())
+        let checked = CallTypeChecker.check(target, null, [source], fixture.range())
+        expect(checked.valid).toBe(true)
+        expect(checked.argumentConversions().first.conversionKind).toBe("nullable-lift")
+        expect(TypeConversions.classify(source, SemanticTypes.longType()).applicable).toBe(false)
+        expect(TypeConversions.classify(NullableSemanticType(SemanticTypes.longType()),
+            NullableSemanticType(SemanticTypes.intType())).applicable).toBe(false)
+        expect(TypeConversions.classify(source,
+            NullableSemanticType(SemanticTypes.stringType())).applicable).toBe(false)
+        expect(TypeConversions.classify(SemanticTypes.nullType(),
+            NullableSemanticType(SemanticTypes.longType())).applicable).toBe(true)
+    }
     test `generic root receiver call requires registered hierarchy`() {
         let fixture = TypeSystem_TestFixture()
         let root = fixture.userType("Root", 1)

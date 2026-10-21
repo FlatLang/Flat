@@ -37,6 +37,15 @@ testable class {
         expect(chars.toString()).toBe("ab")
     }
 
+    test `character array construction preserves boxed characters and empty input`() {
+        let values = ['a', '\0', 'ä', 'b']
+        let chars = StringCharArray(values)
+        expect(chars.count).toBe(4)
+        expect(chars.toString()).toBe("a\0äb")
+        expect(chars.toCharArray()).toBe(values)
+        expect(StringCharArray(Char[]).toString()).toBe("")
+    }
+
     test `empty native character storage remains an initialized wrapper`() {
         let chars = StringCharArray(0)
         expect(chars.count).toBe(0)

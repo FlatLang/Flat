@@ -2,6 +2,10 @@ package flat/eventstream
 
 class<In, Out> {
     async execute() -> Out {
+        // In and Out are already generic payloads. Preserve them verbatim;
+        // only the producer knows the concrete primitive/reference type and
+        // must box it before resolution. Runtime typeof cannot distinguish
+        // Int from Long/Float or preserve nullable/reference contracts.
         external {
             #{mappingFuture} = #{mapFuncs.first}(#{input});
         }

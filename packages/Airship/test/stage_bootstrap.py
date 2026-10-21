@@ -348,6 +348,8 @@ def run_command(command, cwd, env, log, journal, timeout=600, budget=None,
                                            child_reaped=reaped, process_group_absent=group_absent)
     if log.stat().st_size > 100 * 1024 * 1024:
         raise ValueError(f"Command exceeded log capacity: {log}")
+    if journal.exists() and journal.stat().st_size > 16 * 1024 * 1024:
+        raise ValueError(f'Command exceeded admission journal capacity: {journal}')
     for record in admission_records(journal):
         if record['decision'] == 'reject':
             raise ValueError(f"Rejected subprocess (even if caught): {journal}")
@@ -508,8 +510,27 @@ def stage_command(node, runner, workspace, number, package, operation, source=No
 
 def stage(number, repo, output, sources, seeds, previous=None, budget=None, command_seconds=600,
           origin=None):
+    """Retain a failed setup receipt too; never overwrite an existing stage."""
+    if number not in (0, 1, 2) or (number > 0 and previous is None):
+        raise ValueError('Invalid stage or missing previous-stage tools')
     directory = output / f"stage{number}"
     fresh_directory(directory)
+    manifest_file = directory / 'manifest.json'
+    write_json(manifest_file, {'schema': 2, 'stage': number, 'status': 'setting-up',
+                               'commands': [], 'runtime': 'java' if number == 0 else 'flat'})
+    try:
+        return _stage(number, repo, output, sources, seeds, previous, budget,
+                      command_seconds, origin)
+    except BaseException as error:
+        manifest = json.loads(manifest_file.read_text())
+        manifest.update(status='failed', error=str(error))
+        write_json(manifest_file, manifest)
+        raise
+
+
+def _stage(number, repo, output, sources, seeds, previous=None, budget=None, command_seconds=600,
+           origin=None):
+    directory = output / f"stage{number}"
     workspace = directory / "workspace"
     snapshot(repo, workspace, sources, budget=budget)
     origin_metadata = install_snapshot_origin(workspace, origin)
@@ -527,13 +548,15 @@ def stage(number, repo, output, sources, seeds, previous=None, budget=None, comm
         compiler_hash = None
         jar = copy_seed(seeds["java_compiler"][0],
                         workspace / "packages/Flat/target/flatc.jar", seeds["java_compiler"][1])
-        copy_seed(seeds["java_backend"][0], workspace / "packages/Flat-ES6/target/flat-es6.jar",
-                  seeds["java_backend"][1])
+        backend_jar = copy_seed(seeds["java_backend"][0],
+                                workspace / "packages/Flat-ES6/target/flat-es6.jar",
+                                seeds["java_backend"][1]).resolve(strict=True)
     else:
         airship = copy_seed(previous["airship"], seed_dir / "airship.js", previous["airship_hash"])
         compiler_seed = copy_seed(previous["compiler"], seed_dir / "flatc.js", previous["compiler_hash"])
         compiler_hash = previous["compiler_hash"]
         jar = None
+        backend_jar = None
     # Existing Airship versions may use FLAT_HOME links instead of workspace
     # resolution. Both point at this stage's source copy, never the live checkout.
     for package in sorted((workspace / "packages").iterdir()):
@@ -549,6 +572,8 @@ def stage(number, repo, output, sources, seeds, previous=None, budget=None, comm
         "java": str(seeds["java"][0]) if number == 0 else None,
         "javaSha256": seeds["java"][1] if number == 0 else None,
         "javaJar": str(jar) if jar else None, "javaJarSha256": seeds["java_compiler"][1] if jar else None,
+        "javaBackendJar": str(backend_jar) if backend_jar else None,
+        "javaBackendJarSha256": seeds["java_backend"][1] if backend_jar else None,
         "compiler": str(mapped_compiler), "seed": str(compiler_seed) if compiler_seed else None,
         "seedSha256": compiler_hash, "airship": str(airship), "airshipSha256": digest(airship),
         "compilerOutput": str(workspace / PRODUCTS[0]),
@@ -568,7 +593,10 @@ def stage(number, repo, output, sources, seeds, previous=None, budget=None, comm
     manifest = {"schema": 2, "stage": number, "status": "running", "sources": sources,
                 "runtime": "java" if number == 0 else "flat",
                 "compiler_selection": "reviewed-java-seed" if number == 0 else "explicit-generated-script",
-                "policy": policy, "commands": [], 'source_origin': origin,
+                'policy': policy, 'commands': [], 'source_origin': origin,
+                'tool_sha256': {name: expected for name, (_, expected) in seeds.items()
+                                if number == 0 or name in ('node', 'git')},
+                'guard_sha256': digest(guard), 'policy_sha256': digest(policy_file),
                 'source_origin_metadata': origin_metadata}
     manifest_file = directory / "manifest.json"
     write_json(manifest_file, manifest)
@@ -670,6 +698,23 @@ def stage(number, repo, output, sources, seeds, previous=None, budget=None, comm
         manifest.update(status="failed", error=str(error))
         raise
     finally:
+        # Bounded by the fixed stage command count. Keep evidence for failures,
+        # not only successful commands, without collecting log contents in RAM.
+        retained = [logs / f'{index:02d}{suffix}.log'
+                    for index in range(1, len(manifest['commands']) + 1)
+                    for suffix in ('', '-resolution')]
+        manifest['retained_files'] = {
+            path.relative_to(directory).as_posix(): digest(path)
+            for path in retained if path.is_file() and not path.is_symlink()}
+        if journal.is_file():
+            manifest['admissions_sha256'] = digest(journal)
+        for index, command in enumerate(manifest['commands'], 1):
+            log = logs / f'{index:02d}.log'
+            if log.is_file():
+                command['log_sha256'] = digest(log)
+            resolution = logs / f'{index:02d}-resolution.log'
+            if resolution.is_file():
+                command['resolution_log_sha256'] = digest(resolution)
         write_json(manifest_file, manifest)
 
 
@@ -718,8 +763,10 @@ def main():
     if not sources:
         parser.error("No package sources found")
     fresh_directory(output)
-    write_json(output / "seeds.json", entries)
-    write_json(output / 'review.json', review)
+    # Preserve the reviewed bytes, not a JSON reserialization whose digest no
+    # longer matches the independently provisioned trust root.
+    copy_seed(args.seeds, output / 'seeds.json', review['seeds_sha256'])
+    copy_seed(args.review, output / 'review.json', args.review_sha256)
     source_manifest = output / "sources.json"
     write_json(source_manifest, sources)
     source_manifest.chmod(0o444)

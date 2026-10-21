@@ -2,71 +2,21 @@ package flat/bound
 
 import flat/semantic/types
 
-/** Lowers constructor/property/default/named/operator rich forms to canonical calls/statements. */
-class extends BoundFunctionLoweringPass {
+/** Lowers selected core forms at every bound-tree evaluation site. */
+class extends BoundTreeLoweringPass {
     override public name() => "core-language-forms"
     override public inputInvariant() => "typed-rich-core-forms"
     override public outputInvariant() => "canonical-calls-and-statements"
 
-    override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
-        let output = BoundStatement[]
-        for (statement in input.statements()) lowerStatement(statement, output)
-        return BoundFunctionUnit(
-            input.identity,
-            input.name,
-            input.returnType,
-            output,
-            input.range,
-            input.parameterValues(),
-            input.staticFunction,
-            input.mainFunction,
-            input.constructorFunction,
-            input.dispatchIdentity,
-            input.parentConstructorCall, input.constructorDelegation,
-            input.asyncFunction,
-            input.externalName,
-            input.abstractFunction,
-            input.lazyProperty
-        )
-    }
-
-    lowerStatement(BoundStatement statement, BoundStatement[] output) {
+    override public lowerStatement(BoundStatement statement, BoundStatement[] output) {
         if (statement.class.isOfType(BoundConstructorInitializationStatement.class)) {
-            let initialization = (BoundConstructorInitializationStatement)statement
-            for (child in initialization.initializers()) lowerStatement(child, output)
-        } else if (statement.class.isOfType(BoundExpressionStatement.class)) {
-            let value = (BoundExpressionStatement)statement
-            output.add(BoundExpressionStatement(value.range, lowerExpression(value.expression)))
-        } else if (statement.class.isOfType(BoundAssignmentStatement.class)) {
-            let value = (BoundAssignmentStatement)statement
-            output.add(BoundAssignmentStatement(
-                value.range,
-                value.target,
-                lowerExpression(value.value),
-                value.conversion
-            ))
-        } else if (statement.class.isOfType(BoundReturnStatement.class)) {
-            let value = (BoundReturnStatement)statement
-            output.add(BoundReturnStatement(
-                value.range,
-                value.requiredType,
-                lowerExpression(value.value),
-                value.conversion
-            ))
-        } else {
-            output.add(statement)
-        }
+            let value = (BoundConstructorInitializationStatement)statement
+            output.addAll(lowerStatements(value.initializers()))
+        } else super.lowerStatement(statement, output)
     }
 
-    lowerExpression(BoundExpression expression) -> BoundExpression {
+    override public lowerExpression(BoundExpression expression) -> BoundExpression {
         if (!expression) return null
-        if (expression.class.isOfType(BoundDeclarationValueExpression.class)) {
-            let value = (BoundDeclarationValueExpression)expression
-            return BoundDeclarationValueExpression(
-                value.range, value.semanticType, value.local,
-                lowerExpression(value.value), value.storageConversion
-            )
-        }
         if (expression.class.isOfType(BoundRichCallExpression.class)) {
             return lowerExpression(((BoundRichCallExpression)expression).canonicalCall)
         }
@@ -82,38 +32,10 @@ class extends BoundFunctionLoweringPass {
                 } else if (parameter.defaultValue) {
                     values.add(lowerExpression(parameter.defaultValue))
                     conversions.add(parameter.defaultConversion)
-                } else {
-                    throw Exception("Named call parameter '#{parameter.name}' has no argument or default")
-                }
+                } else throw Exception("Named call parameter '#{parameter.name}' has no argument or default")
             }
-            return BoundCallExpression(
-                named.range,
-                named.semanticType,
-                named.target,
-                values,
-                conversions
-            )
+            return BoundCallExpression(named.range, named.semanticType, named.target, values, conversions)
         }
-        if (expression.class.isOfType(BoundCallExpression.class)) {
-            let call = (BoundCallExpression)expression
-            return BoundCallExpression(
-                call.range,
-                call.semanticType,
-                call.target,
-                call.receiver,
-                call.argumentValues().map({ lowerExpression(_) }),
-                call.argumentConversions(), call.safeAccess, call.receiverConversion, call.suppressAwait
-            )
-        }
-        if (expression.class.isOfType(BoundConversionExpression.class)) {
-            let conversion = (BoundConversionExpression)expression
-            return BoundConversionExpression(
-                conversion.range,
-                conversion.semanticType,
-                lowerExpression(conversion.value),
-                conversion.conversion
-            )
-        }
-        return expression
+        return super.lowerExpression(expression)
     }
 }

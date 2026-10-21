@@ -1,6 +1,56 @@
 package flat/io
 
 class FileReader {
+    public readAllContentsBounded(Int maxBytes) -> String {
+        if (maxBytes < 0) {
+            throw Exception("File byte limit must not be negative")
+        }
+
+        native_array native var Char[] contents
+        native_array native var Char[] errorMessage
+
+        external {
+            const fs = #{File.FileGlobal.fs};
+            let fd;
+            try {
+                try {
+                    fd = fs.openSync(#{file.location.chars.data}, 'r');
+                    const chunks = [];
+                    let total = 0;
+                    let ended = false;
+                    while (total < #{maxBytes} && !ended) {
+                        const chunk = Buffer.alloc(Math.min(65536, #{maxBytes} - total));
+                        let filled = 0;
+                        while (filled < chunk.length) {
+                            const count = fs.readSync(fd, chunk, filled, chunk.length - filled, null);
+                            if (count === 0) {
+                                ended = true;
+                                break;
+                            }
+                            filled += count;
+                        }
+                        if (filled > 0) {
+                            chunks.push(chunk.subarray(0, filled));
+                            total += filled;
+                        }
+                    }
+                    if (!ended && fs.readSync(fd, Buffer.alloc(1), 0, 1, null) !== 0) {
+                        throw new Error('File byte limit exceeded');
+                    }
+                    #{contents} = Buffer.concat(chunks, total).toString('utf8');
+                } finally {
+                    if (fd !== undefined) fs.closeSync(fd);
+                }
+            } catch (err) {
+                #{errorMessage} = String(err.message || err);
+            }
+        }
+
+        if (errorMessage) {
+            throw Exception(String(errorMessage))
+        }
+        return String(contents)
+    }
     public readAllContents() -> String {
         var Int size
 

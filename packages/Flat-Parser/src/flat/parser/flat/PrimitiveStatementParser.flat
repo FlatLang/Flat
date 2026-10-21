@@ -25,13 +25,42 @@ class {
         let statements = PrimitiveStatementSyntax[]
         var Int start
         var Int index
-        while (index <= tokens.count) {
-            if (index == tokens.count || tokens[index].value == ";") {
-                if (index > start) statements.add(parseStatement(start, index))
-                start = index + 1
+        // Statement-local retention only: one opener index per nesting level.
+        // Literal/interpolation/code tokens are opaque; never scan their contents
+        // for delimiters. Trivia has already been removed above.
+        let delimiters = Int[]
+        while (index < tokens.count) {
+            let token = tokens[index]
+            let value = token.value
+            if (token.type == Token.Type.SYMBOL) {
+                if (value == "(" || value == "[" || value == "{") {
+                    delimiters.add(index)
+                } else if (value == ")" || value == "]" || value == "}") {
+                    if (delimiters.isEmpty) {
+                        syntax("Unexpected closing statement delimiter '#value'", index, index + 1)
+                    }
+                    let opener = tokens[delimiters.last].value
+                    let expected = opener == "(" ? ")" : opener == "[" ? "]" : "}"
+                    if (value != expected) {
+                        syntax("Expected '#expected' but received '#value'", index, index + 1)
+                    }
+                    delimiters.removeLast()
+                } else if (value == ";" && delimiters.isEmpty) {
+                    if (index > start) statements.add(parseStatement(start, index))
+                    start = index + 1
+                }
             }
             index++
         }
+        if (!delimiters.isEmpty) {
+            let openIndex = delimiters.last
+            let opener = tokens[openIndex].value
+            let expected = opener == "(" ? ")" : opener == "[" ? "]" : "}"
+            let sourceOpenIndex = openIndex + tokenIndexOffset
+            syntax("Expected '#expected' to close statement delimiter at token #sourceOpenIndex",
+                index, index)
+        }
+        if (index > start) statements.add(parseStatement(start, index))
         return PrimitiveStatementSyntaxResult(statements)
     }
 
@@ -232,7 +261,9 @@ class {
     }
 
     syntax(String message, Int start, Int end) {
-        throw Exception("Primitive statement syntax error at " + start.toString() +
-            ".." + end.toString() + ": " + message)
+        let sourceStart = start + tokenIndexOffset
+        let sourceEnd = end + tokenIndexOffset
+        throw Exception("Primitive statement syntax error at " + sourceStart.toString() +
+            ".." + sourceEnd.toString() + ": " + message)
     }
 }

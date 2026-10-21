@@ -3,6 +3,110 @@ package flat/eventstream
 import flat/future
 
 testable class {
+    // Concrete callback results must cross a typed complete(T) boundary before
+    // becoming generic payloads. The seed's Future.from invokes callbacks in JS
+    // and stores arithmetic/boolean returns unboxed; identity/reference returns
+    // happen to work but are not a sound primitive-producer convention.
+    // Calls to these factories require `$`: otherwise the seed implicitly adds
+    // Future.get() to a non-Future method returning Future<T>, awaiting inside
+    // the synchronous mapper instead of transferring its owned future.
+    intFuture(async compute() -> Int) -> Future<Int> {
+        let future = Future.create<Int>()
+        completeIntFuture(future, compute)$
+        return future
+    }
+
+    async completeIntFuture(Future.CompletableFuture<Int> future, async compute() -> Int) {
+        try {
+            Int value = compute()
+            if (!future.cancelled) future.complete(value)
+        } catch (Exception error) {
+            if (!future.cancelled) future.error(error)
+        }
+    }
+
+    boolFuture(async compute() -> Bool) -> Future<Bool> {
+        let future = Future.create<Bool>()
+        completeBoolFuture(future, compute)$
+        return future
+    }
+
+    async completeBoolFuture(Future.CompletableFuture<Bool> future, async compute() -> Bool) {
+        try {
+            Bool value = compute()
+            if (!future.cancelled) future.complete(value)
+        } catch (Exception error) {
+            if (!future.cancelled) future.error(error)
+        }
+    }
+
+    async test `primitive mapper payloads retain Int and Bool types across generic futures`() {
+        let numbers = BoundedFlow<Int>(capacity: 1)
+        let mapped = ConcurrentMap.unordered<Int, Int>(numbers,
+            (Int value) => intFuture({ value * 10 + 3 })$, maxParallel: 1, outputCapacity: 1)
+        numbers.send(7)
+        numbers.close()
+        ConcurrentMapResult<Int> number = mapped.output.receive().value
+        expect(number.succeeded).toBe(true)
+        expectIntResult(number, 73)
+        // Generic equality and a concrete read must agree: neither side may be
+        // a raw JS number masquerading as the generic Int payload.
+        Int concreteNumber = number.value
+        expect(concreteNumber).toBe(73)
+        expect(mapped.output.receive().completed).toBe(true)
+        mapped.completion.get()
+
+        let flags = BoundedFlow<Bool>(capacity: 2)
+        let inverted = ConcurrentMap.ordered<Bool, Bool>(flags,
+            (Bool value) => boolFuture({ !value })$, maxParallel: 2,
+            maxReorder: 1, outputCapacity: 2)
+        flags.send(true)
+        flags.send(false)
+        flags.close()
+        ConcurrentMapResult<Bool> first = inverted.output.receive().value
+        ConcurrentMapResult<Bool> second = inverted.output.receive().value
+        expect(first.succeeded).toBe(true)
+        expect(second.succeeded).toBe(true)
+        expectBoolResult(first, false)
+        expectBoolResult(second, true)
+        expect(inverted.output.receive().completed).toBe(true)
+        inverted.completion.get()
+        Bool pressured = inverted.outputBackpressure.get()
+        Bool completed = inverted.completion.get()
+        expect(pressured).toBe(false)
+        expect(completed).toBe(true)
+    }
+
+    expectBoolResult(ConcurrentMapResult<Bool> result, Bool expected) {
+        expect(result.value).toBe(expected)
+        Bool concrete = result.value
+        expect(concrete).toBe(expected)
+    }
+
+    async test `reference and null mapper payloads preserve identity without primitive normalization`() {
+        let source = BoundedFlow<Int>(capacity: 2)
+        let reference = ConcurrentMap_TestValue()
+        reference.value = 91
+        let operation = ConcurrentMap.ordered<Int, ConcurrentMap_TestValue>(source,
+            (Int value) => {
+                let future = Future.create<ConcurrentMap_TestValue>()
+                if (value == 0) future.complete(reference)
+                else future.complete(null)
+                return future
+            }, maxParallel: 2, maxReorder: 1, outputCapacity: 2)
+        source.send(0)
+        source.send(1)
+        source.close()
+        ConcurrentMapResult<ConcurrentMap_TestValue> first = operation.output.receive().value
+        ConcurrentMapResult<ConcurrentMap_TestValue> second = operation.output.receive().value
+        expect(first.succeeded).toBe(true)
+        expect(second.succeeded).toBe(true)
+        expect(Object.referenceEquals(first.value, reference)).toBe(true)
+        expect(second.value).toBe(null)
+        expect(operation.output.receive().completed).toBe(true)
+        operation.completion.get()
+    }
+
     async test `unordered concurrent map emits completion order with bounded work`() {
         let input = BoundedFlow<Int>(capacity: 2)
         let firstGate = Future.create<Bool>()
@@ -10,7 +114,7 @@ testable class {
         var active = 0
         var peak = 0
 
-        let operation = ConcurrentMap.unordered<Int, Int>(input, (Int value) => Future.from<Int>(async {
+        let operation = ConcurrentMap.unordered<Int, Int>(input, (Int value) => intFuture(async {
             active++
             peak = Math.max(peak, active)
 
@@ -19,7 +123,7 @@ testable class {
 
             active--
             return value * 10
-        }), maxParallel: 2, outputCapacity: 2)
+        })$, maxParallel: 2, outputCapacity: 2)
 
         input.send(1)
         input.send(2)
@@ -45,13 +149,13 @@ testable class {
         let secondGate = Future.create<Bool>()
         let thirdGate = Future.create<Bool>()
 
-        let operation = ConcurrentMap.ordered<Int, Int>(input, (Int value) => Future.from<Int>(async {
+        let operation = ConcurrentMap.ordered<Int, Int>(input, (Int value) => intFuture(async {
             if (value == 1) firstGate.get()
             else if (value == 2) secondGate.get()
             else thirdGate.get()
 
             return value * 10
-        }), maxParallel: 3, maxReorder: 2, outputCapacity: 3)
+        })$, maxParallel: 3, maxReorder: 2, outputCapacity: 3)
 
         input.send(1)
         input.send(2)
@@ -82,7 +186,7 @@ testable class {
         let thirdGate = Future.create<Bool>()
         var thirdStarted = false
 
-        let operation = ConcurrentMap.ordered<Int, Int>(input, (Int value) => Future.from<Int>(async {
+        let operation = ConcurrentMap.ordered<Int, Int>(input, (Int value) => intFuture(async {
             if (value == 1) firstGate.get()
             else if (value == 2) secondGate.get()
             else {
@@ -91,7 +195,7 @@ testable class {
             }
 
             return value
-        }), maxParallel: 3, maxReorder: 1, outputCapacity: 3)
+        })$, maxParallel: 3, maxReorder: 1, outputCapacity: 3)
 
         input.send(1)
         input.send(2)
@@ -128,10 +232,10 @@ testable class {
         let remaining = gates.copy()
         let operation = ConcurrentMap.ordered<Int, Int>(
             input,
-            (Int value) => Future.from<Int>(async {
+            (Int value) => intFuture(async {
                 gates[value].get()
                 return value
-            }),
+            })$,
             maxParallel: 5,
             maxReorder: 4,
             outputCapacity: 5
@@ -182,11 +286,11 @@ testable class {
         let firstGate = Future.create<Bool>()
         let secondGate = Future.create<Bool>()
 
-        let operation = ConcurrentMap.unordered<Int, Int>(input, (Int value) => Future.from<Int>(async {
+        let operation = ConcurrentMap.unordered<Int, Int>(input, (Int value) => intFuture(async {
             if (value == 1) firstGate.get()
             else secondGate.get()
             return value
-        }), maxParallel: 2, outputCapacity: 1, maxPendingOutputSends: 2)
+        })$, maxParallel: 2, outputCapacity: 1, maxPendingOutputSends: 2)
 
         input.send(1)
         input.send(2)
@@ -235,19 +339,19 @@ testable class {
     }
 
     failFirst(String value) -> Future<String> {
-        return Future.from<String>(async {
-            if (value == "one") throw Exception("broken")
-            return "#value!"
-        })
+        let future = Future.create<String>()
+        if (value == "one") future.error(Exception("broken"))
+        else future.complete("#value!")
+        return future
     }
 
     async test `concurrent map propagates upstream failure after active work drains`() {
         let input = BoundedFlow<Int>(capacity: 1)
         let gate = Future.create<Bool>()
-        let operation = ConcurrentMap.unordered<Int, Int>(input, (Int value) => Future.from<Int>(async {
+        let operation = ConcurrentMap.unordered<Int, Int>(input, (Int value) => intFuture(async {
             gate.get()
             return value
-        }), maxParallel: 1, outputCapacity: 1)
+        })$, maxParallel: 1, outputCapacity: 1)
 
         input.send(1)
         input.fail(Exception("upstream"))
@@ -266,7 +370,7 @@ testable class {
 
     async test `cancelling concurrent map releases pending input and closes output`() {
         let input = BoundedFlow<Int>(capacity: 0)
-        let operation = ConcurrentMap.unordered<Int, Int>(input, (Int value) => Future.from<Int>({ value }), maxParallel: 1, outputCapacity: 1)
+        let operation = ConcurrentMap.unordered<Int, Int>(input, (Int value) => intFuture({ value })$, maxParallel: 1, outputCapacity: 1)
 
         expect(input.pendingReceiveCount).toBe(1)
 
@@ -333,11 +437,13 @@ testable class {
         let input = BoundedFlow<Int>(capacity: 1)
         let operation = ConcurrentMap.unordered<Int, ConcurrentMap_TestValue>(
             input,
-            (Int value) => Future.from<ConcurrentMap_TestValue>({
+            (Int value) => {
+                let future = Future.create<ConcurrentMap_TestValue>()
                 let mapped = ConcurrentMap_TestValue()
                 mapped.value = value * 10
-                return mapped
-            }),
+                future.complete(mapped)
+                return future
+            },
             maxParallel: 1,
             outputCapacity: 1
         )
@@ -362,7 +468,7 @@ testable class {
         let input = BoundedFlow<Int>(capacity: 3)
         let operation = ConcurrentMap.unordered<Int, Int>(
             input,
-            (Int value) => Future.from<Int>({ value }),
+            (Int value) => intFuture({ value })$,
             maxParallel: 1,
             outputCapacity: 3
         )
@@ -392,7 +498,7 @@ testable class {
     async test `repeated start keeps exactly one input receiver`() {
         let input = BoundedFlow<Int>(capacity: 0)
         let operation = ConcurrentMap.unordered<Int, Int>(
-            input, (Int value) => Future.from<Int>({ value }),
+            input, (Int value) => intFuture({ value })$,
             maxParallel: 1, outputCapacity: 1
         )
 
@@ -401,7 +507,7 @@ testable class {
         expect(input.pendingReceiveCount).toBe(1)
         input.send(7)
         input.close()
-        expect(operation.output.receive().value.value).toBe(7)
+        expectIntResult(operation.output.receive().value, 7)
         expect(operation.output.receive().completed).toBe(true)
         operation.completion.get()
         expect(operation.activeTaskCount).toBe(0)
@@ -409,21 +515,42 @@ testable class {
         expect(operation.outputBackpressure.get()).toBe(false)
     }
 
-    async test `ordered output is identical at serial and reversed parallel schedules`() {
-        expectOrderedSchedule(1)
-        expectOrderedSchedule(3)
+    async test `ordered output is identical at serial and forward and reversed parallel schedules`() {
+        expectOrderedSchedule(1, false)
+        expectOrderedSchedule(1, true)
+        expectOrderedSchedule(3, false)
+        expectOrderedSchedule(3, true)
     }
 
-    async expectOrderedSchedule(Int parallelism) {
+    async expectOrderedSchedule(Int parallelism, Bool reverse) {
         let input = BoundedFlow<Int>(capacity: 6)
-        let gates = Future.CompletableFuture<Bool>[]
-        for (index in 0..6) gates.add(Future.create<Bool>())
+        // Six immutable identities form a bounded fixture, not a production barrier.
+        let gates = Array<Future.CompletableFuture<Bool>>()
+        let entered = Array<Future.CompletableFuture<Bool>>()
+        let settled = Array<Future.CompletableFuture<Bool>>()
+        let settlementOrder = Int[]
+        for (index in 0..6) {
+            gates.add(Future.create<Bool>())
+            entered.add(Future.create<Bool>())
+            settled.add(Future.create<Bool>())
+        }
+        var Int active
+        var Int peak
         let operation = ConcurrentMap.ordered<Int, Int>(
             input,
-            (Int value) => Future.from<Int>(async {
-                gates[value].get()
-                return value * 10
-            }),
+            (Int value) => intFuture(async {
+                active++
+                peak = Math.max(peak, active)
+                entered[value].complete(true)
+                try {
+                    gates[value].get()
+                    return value * 10
+                } finally {
+                    active--
+                    settlementOrder.add(value)
+                    settled[value].complete(true)
+                }
+            })$,
             maxParallel: parallelism, maxReorder: parallelism - 1,
             outputCapacity: 6
         )
@@ -432,34 +559,51 @@ testable class {
 
         var Int base
         while (base < 6) {
-            var offset = parallelism
-            while (offset > 0) {
-                offset--
-                gates[base + offset].complete(true)
+            for (index in base..base + parallelism) entered[index].get()
+            expect(active).toBe(parallelism)
+            if (base + parallelism < 6) expect(entered[base + parallelism].completed).toBe(false)
+            for (offset in 0..parallelism) {
+                let index = base + (reverse ? parallelism - 1 - offset : offset)
+                gates[index].complete(true)
+                settled[index].get()
+                expect(settlementOrder[base + offset]).toBe(index)
             }
             for (index in base..base + parallelism) {
                 let received = operation.output.receive()
                 expect(received.value.sourceIndex).toBe(index)
-                expect(received.value.value).toBe(index * 10)
+                expectIntResult(received.value, index * 10)
                 expect(received.value.succeeded).toBe(true)
             }
             base += parallelism
         }
         expect(operation.output.receive().completed).toBe(true)
         operation.completion.get()
+        expect(peak).toBe(parallelism)
+        expect(active).toBe(0)
+        expect(settlementOrder.count).toBe(6)
         expect(operation.peakInFlightCount).toBe(parallelism)
         expect(operation.peakReorderCount <= parallelism - 1).toBe(true)
         expect(operation.inFlightCount).toBe(0)
         expect(operation.activeTaskCount).toBe(0)
         expect(operation.reorderCount).toBe(0)
         expect(input.pendingReceiveCount).toBe(0)
+        expect(operation.output.pendingSendCount).toBe(0)
+        expect(operation.output.pendingReceiveCount).toBe(0)
         expect(operation.outputBackpressure.get()).toBe(false)
+        let schedule = reverse ? "reverse" : "forward"
+        var String order = "["
+        for (value in settlementOrder) {
+            if (order != "[") order += ","
+            order += "#value"
+        }
+        order += "]"
+        Console.log("{\"schema\":\"flat.eventstream.lifecycle.v1\",\"scenario\":\"ordered-#schedule\",\"concurrency\":#parallelism,\"settlementOrder\":#order,\"settledCount\":#{settlementOrder.count},\"peakActive\":#peak,\"activeAfter\":#active,\"peakInFlight\":#{operation.peakInFlightCount},\"peakReorder\":#{operation.peakReorderCount},\"inFlightAfter\":#{operation.inFlightCount},\"activeTasksAfter\":#{operation.activeTaskCount},\"reorderAfter\":#{operation.reorderCount},\"pendingInputReceivesAfter\":#{input.pendingReceiveCount},\"pendingOutputSendsAfter\":#{operation.output.pendingSendCount},\"pendingOutputReceivesAfter\":#{operation.output.pendingReceiveCount},\"unobserved\":[\"allocation_bytes\",\"throughput\"]}")
     }
 
     async test `cancellation releases ordered output pressure and internal ownership`() {
         let input = BoundedFlow<Int>(capacity: 3)
         let operation = ConcurrentMap.ordered<Int, Int>(
-            input, (Int value) => Future.from<Int>({ value }),
+            input, (Int value) => intFuture({ value })$,
             maxParallel: 3, maxReorder: 2, outputCapacity: 0
         )
         input.send(1)
@@ -488,7 +632,7 @@ testable class {
     async test `cancellation without saturation settles backpressure observation`() {
         let input = BoundedFlow<Int>(capacity: 0)
         let operation = ConcurrentMap.unordered<Int, Int>(
-            input, (Int value) => Future.from<Int>({ value }),
+            input, (Int value) => intFuture({ value })$,
             maxParallel: 1, outputCapacity: 1
         )
         operation.cancel()
@@ -502,7 +646,7 @@ testable class {
         let input = BoundedFlow<Int>(capacity: 0)
         let existing = input.receive()$
         let operation = ConcurrentMap.unordered<Int, Int>(
-            input, (Int value) => Future.from<Int>({ value }),
+            input, (Int value) => intFuture({ value })$,
             maxParallel: 1, outputCapacity: 1
         )
         operation.completion.get()
@@ -526,7 +670,7 @@ testable class {
 
     async expectMappingCancellation(Int parallelism) {
         let input = BoundedFlow<Int>(capacity: parallelism)
-        let gates = Future.CompletableFuture<Int>[]
+        let gates = Array<Future.CompletableFuture<Int>>()
         var Int cleaned
         for (index in 0..parallelism) {
             let gate = Future.create<Int>()
@@ -556,18 +700,189 @@ testable class {
         input.close()
     }
 
+    async test `unordered failure and unrelated output progress while first mapper is held`() {
+        let input = BoundedFlow<Int>(capacity: 3)
+        let gates = Array<Future.CompletableFuture<Bool>>()
+        let entered = Array<Future.CompletableFuture<Bool>>()
+        let settled = Array<Future.CompletableFuture<Bool>>()
+        let settlementOrder = Int[]
+        for (index in 0..3) {
+            gates.add(Future.create<Bool>())
+            entered.add(Future.create<Bool>())
+            settled.add(Future.create<Bool>())
+        }
+        let operation = ConcurrentMap.unordered<Int, Int>(input,
+            (Int value) => intFuture(async {
+                entered[value].complete(true)
+                try {
+                    gates[value].get()
+                    if (value == 1) throw Exception("controlled failure")
+                    return value
+                } finally {
+                    settlementOrder.add(value)
+                    settled[value].complete(true)
+                }
+            })$, maxParallel: 3, outputCapacity: 0)
+        for (index in 0..3) input.send(index)
+        input.close()
+        for (gate in entered) gate.get()
+        gates[1].complete(true)
+        settled[1].get()
+        ConcurrentMapResult<Int> failed = operation.output.receive().value
+        expect(failed.sourceIndex).toBe(1)
+        expect(failed.failed).toBe(true)
+        expect(failed.error.message).toBe("controlled failure")
+        var Int failedResults
+        if (failed.failed) failedResults++
+        gates[2].complete(true)
+        settled[2].get()
+        ConcurrentMapResult<Int> unrelated = operation.output.receive().value
+        expect(unrelated.sourceIndex).toBe(2)
+        expect(unrelated.succeeded).toBe(true)
+        expectIntResult(unrelated, 2)
+        var Int unrelatedOutputsBeforeFirstSettlement
+        if (unrelated.succeeded && !settled[0].completed) unrelatedOutputsBeforeFirstSettlement++
+        expect(unrelatedOutputsBeforeFirstSettlement).toBe(1)
+        expect(settled[0].completed).toBe(false)
+        expect(operation.completion.completed).toBe(false)
+        gates[0].complete(true)
+        settled[0].get()
+        expectIntResult(operation.output.receive().value, 0)
+        expect(operation.output.receive().completed).toBe(true)
+        operation.completion.get()
+        expect(operation.peakInFlightCount).toBe(3)
+        expect(operation.inFlightCount).toBe(0)
+        expect(operation.activeTaskCount).toBe(0)
+        expect(operation.output.pendingSendCount).toBe(0)
+        expect(input.pendingReceiveCount).toBe(0)
+        expect(settlementOrder).toBe([1, 2, 0])
+        var String order = "["
+        for (value in settlementOrder) {
+            if (order != "[") order += ","
+            order += "#value"
+        }
+        order += "]"
+        Console.log("{\"schema\":\"flat.eventstream.lifecycle.v1\",\"scenario\":\"unordered-failure-isolation\",\"concurrency\":3,\"settlementOrder\":#order,\"settledCount\":#{settlementOrder.count},\"unrelatedOutputsBeforeFirstSettlement\":#unrelatedOutputsBeforeFirstSettlement,\"failedResults\":#failedResults,\"peakInFlight\":#{operation.peakInFlightCount},\"inFlightAfter\":#{operation.inFlightCount},\"activeTasksAfter\":#{operation.activeTaskCount},\"pendingOutputSendsAfter\":#{operation.output.pendingSendCount},\"unobserved\":[\"allocation_bytes\",\"throughput\"]}")
+    }
+
+    // Resolve the nested channel/map generic at a typed boundary for the Java seed.
+    expectIntResult(ConcurrentMapResult<Int> result, Int expected) {
+        expect(result.value).toBe(expected)
+    }
+
+    async test `upstream failure waits for every mapper finally at one and three`() {
+        expectFailureDrain(1)
+        expectFailureDrain(3)
+    }
+
+    async expectFailureDrain(Int parallelism) {
+        let input = BoundedFlow<Int>(capacity: parallelism)
+        let entered = Array<Future.CompletableFuture<Bool>>()
+        let cleanupEntered = Array<Future.CompletableFuture<Bool>>()
+        let cleanupRelease = Array<Future.CompletableFuture<Bool>>()
+        let settled = Array<Future.CompletableFuture<Bool>>()
+        let release = Future.create<Bool>()
+        var Int settledCount
+        var Int cleanupWaitSamples
+        for (index in 0..parallelism) {
+            entered.add(Future.create<Bool>())
+            cleanupEntered.add(Future.create<Bool>())
+            cleanupRelease.add(Future.create<Bool>())
+            settled.add(Future.create<Bool>())
+        }
+        let operation = ConcurrentMap.unordered<Int, Int>(input,
+            (Int value) => intFuture(async {
+                entered[value].complete(true)
+                try {
+                    release.get()
+                    return value
+                } finally {
+                    cleanupEntered[value].complete(true)
+                    cleanupRelease[value].get()
+                    settledCount++
+                    settled[value].complete(true)
+                }
+            })$, maxParallel: parallelism, outputCapacity: parallelism)
+        for (index in 0..parallelism) input.send(index)
+        for (gate in entered) gate.get()
+        input.fail(Exception("controlled upstream failure"))
+        release.complete(true)
+        for (gate in cleanupEntered) gate.get()
+        expect(operation.activeTaskCount).toBe(parallelism)
+        expect(operation.completion.completed).toBe(false)
+        var index = parallelism
+        while (index > 0) {
+            index--
+            expect(operation.completion.completed).toBe(false)
+            cleanupWaitSamples++
+            cleanupRelease[index].complete(true)
+            settled[index].get()
+        }
+        operation.completion.get()
+        let terminal = operation.output.receive()
+        expect(terminal.failed).toBe(true)
+        expect(terminal.error.message).toBe("controlled upstream failure")
+        expect(settledCount).toBe(parallelism)
+        expect(operation.finished).toBe(true)
+        expect(operation.cancelled).toBe(false)
+        expect(operation.inFlightCount).toBe(0)
+        expect(operation.activeTaskCount).toBe(0)
+        expect(input.pendingReceiveCount).toBe(0)
+        expect(operation.output.pendingSendCount).toBe(0)
+        Console.log("{\"schema\":\"flat.eventstream.lifecycle.v1\",\"scenario\":\"upstream-failure-drain\",\"concurrency\":#parallelism,\"settledCount\":#settledCount,\"cleanupWaitSamples\":#cleanupWaitSamples,\"peakInFlight\":#{operation.peakInFlightCount},\"inFlightAfter\":#{operation.inFlightCount},\"activeTasksAfter\":#{operation.activeTaskCount},\"pendingOutputSendsAfter\":#{operation.output.pendingSendCount},\"pendingInputReceivesAfter\":#{input.pendingReceiveCount},\"unobserved\":[\"allocation_bytes\",\"throughput\"]}")
+    }
+
+    async test `output pressure cancellation drains owned futures at one and three`() {
+        expectPressureCancellation(1)
+        expectPressureCancellation(3)
+    }
+
+    async expectPressureCancellation(Int parallelism) {
+        let input = BoundedFlow<Int>(capacity: parallelism)
+        let gates = Array<Future.CompletableFuture<Int>>()
+        for (index in 0..parallelism) gates.add(Future.create<Int>())
+        let operation = ConcurrentMap.unordered<Int, Int>(input,
+            (Int value) => gates[value], maxParallel: parallelism, outputCapacity: 0)
+        for (index in 0..parallelism) input.send(index)
+        expect(operation.activeTaskCount).toBe(parallelism)
+        gates.last.complete(42)
+        expect(operation.outputBackpressure.get()).toBe(true)
+        let pendingAtPressure = operation.output.pendingSendCount
+        let inFlightAtPressure = operation.inFlightCount
+        expect(pendingAtPressure).toBe(1)
+        expect(inFlightAtPressure).toBe(parallelism)
+        expect(operation.completion.completed).toBe(false)
+        operation.cancel()
+        operation.cancel()
+        operation.completion.get()
+        expect(operation.finished).toBe(true)
+        expect(operation.cancelled).toBe(true)
+        for (index in 0..parallelism - 1) expect(gates[index].cancelled).toBe(true)
+        expect(operation.peakInFlightCount).toBe(parallelism)
+        expect(operation.inFlightCount).toBe(0)
+        expect(operation.activeTaskCount).toBe(0)
+        expect(operation.blockedOutputSendCount).toBe(0)
+        expect(operation.output.pendingSendCount).toBe(0)
+        expect(operation.output.pendingReceiveCount).toBe(0)
+        expect(input.pendingReceiveCount).toBe(0)
+        expect(operation.output.receive().completed).toBe(true)
+        expect(input.closed).toBe(false)
+        input.close()
+        Console.log("{\"schema\":\"flat.eventstream.lifecycle.v1\",\"scenario\":\"output-pressure-cancellation\",\"concurrency\":#parallelism,\"pendingOutputSendsAtPressure\":#pendingAtPressure,\"inFlightAtPressure\":#inFlightAtPressure,\"peakInFlight\":#{operation.peakInFlightCount},\"inFlightAfter\":#{operation.inFlightCount},\"activeTasksAfter\":#{operation.activeTaskCount},\"pendingOutputSendsAfter\":#{operation.output.pendingSendCount},\"pendingOutputReceivesAfter\":#{operation.output.pendingReceiveCount},\"pendingInputReceivesAfter\":#{input.pendingReceiveCount},\"cancelled\":#{operation.cancelled},\"unobserved\":[\"callback_finally_cleanup\",\"allocation_bytes\",\"throughput\"]}")
+    }
+
     test `concurrent map validates every finite bound`() {
         let input = BoundedFlow<Int>(capacity: 1)
 
-        expect({ ConcurrentMap.unordered<Int, Int>(input, (Int value) => Future.from<Int>({ value }), maxParallel: 0, outputCapacity: 1) })
+        expect({ ConcurrentMap.unordered<Int, Int>(input, (Int value) => intFuture({ value })$, maxParallel: 0, outputCapacity: 1) })
             .toThrowWithMessage(Exception.class, "Concurrent map parallelism must be positive")
-        expect({ ConcurrentMap.unordered<Int, Int>(input, (Int value) => Future.from<Int>({ value }), maxParallel: 1, outputCapacity: -1) })
+        expect({ ConcurrentMap.unordered<Int, Int>(input, (Int value) => intFuture({ value })$, maxParallel: 1, outputCapacity: -1) })
             .toThrowWithMessage(Exception.class, "Concurrent map output capacity cannot be negative")
-        expect({ ConcurrentMap.ordered<Int, Int>(input, (Int value) => Future.from<Int>({ value }), maxParallel: 1, maxReorder: -1, outputCapacity: 1) })
+        expect({ ConcurrentMap.ordered<Int, Int>(input, (Int value) => intFuture({ value })$, maxParallel: 1, maxReorder: -1, outputCapacity: 1) })
             .toThrowWithMessage(Exception.class, "Concurrent map reorder capacity cannot be negative")
-        expect({ ConcurrentMap.unordered<Int, Int>(input, (Int value) => Future.from<Int>({ value }), maxParallel: 1, outputCapacity: 1, maxPendingOutputSends: -1) })
+        expect({ ConcurrentMap.unordered<Int, Int>(input, (Int value) => intFuture({ value })$, maxParallel: 1, outputCapacity: 1, maxPendingOutputSends: -1) })
             .toThrowWithMessage(Exception.class, "Concurrent map pending output capacity cannot be negative")
-        expect({ ConcurrentMap.unordered<Int, Int>(input, (Int value) => Future.from<Int>({ value }), maxParallel: 2, outputCapacity: 1, maxPendingOutputSends: 1) })
+        expect({ ConcurrentMap.unordered<Int, Int>(input, (Int value) => intFuture({ value })$, maxParallel: 2, outputCapacity: 1, maxPendingOutputSends: 1) })
             .toThrowWithMessage(Exception.class, "Concurrent map pending output capacity cannot preserve accepted results")
     }
 }

@@ -126,7 +126,14 @@ class {
         validateCompilerSelection()
         validateCompilerOutput(source)
         let arguments = getFlatcExecutableArguments(installationTarget, source)
-        return getFlatcExecutableCommand(dependencies).plus(arguments)
+        let command = getFlatcExecutableCommand(dependencies)
+        if (cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() == "flat" && source.outFile) {
+            let output = File("#{getOutputDirectory(source).normalizedLocation}/#{source.outFile}")
+            if (File(command[1]).normalizedLocation == output.normalizedLocation) {
+                throw ExecutionFailureException("Selected Flat compiler input cannot be the output being built; select an independent --flatc-script")
+            }
+        }
+        return command.plus(arguments)
     }
 
     async getFlatCompilerDependency() -> Dependency {
@@ -452,17 +459,26 @@ class {
     }
 
     public async executeCompilerCommand(PackageSource source, String[] cmd) {
+        let flatRuntime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() == "flat"
+        if (flatRuntime) {
+            // The generated compiler owns locking, verified incremental reuse and
+            // atomic publication. Airship must not invalidate its committed output.
+            validateCompilerOutput(source)
+            let output = source.outFile
+                ? File("#{getOutputDirectory(source).normalizedLocation}/#{source.outFile}") : null
+            if (output?.exists && !output.isFile) {
+                throw FlatInstallationFailureException("Compiler output is not a file: #{output.normalizedLocation}")
+            }
+            let status = AirshipProcess.execute(cmd, silent: cliArgs.quietArg.enabled)
+            validateCompilerResult(status, output)
+            return
+        }
         let output = prepareCompilerOutput(source)
         try {
-            // Flat CLI owns glob interpretation; Java retains its documented
-            // shell-compatible argument construction until its adapter changes.
-            let flatRuntime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() == "flat"
-            let response = flatRuntime
-                ? System.executeExact(cmd, silent: cliArgs.quietArg.enabled, shell: false)
-                : System.execute(cmd, silent: cliArgs.quietArg.enabled)
+            // Legacy adapters retain their shell-compatible argument contract.
+            let response = System.execute(cmd, silent: cliArgs.quietArg.enabled)
             validateCompilerResult(response.exitCode, output)
         } catch (Exception error) {
-            // Failed/aborted compilation must not leave a runnable partial file.
             if (output?.isFile) output.delete()
             throw error
         }
@@ -486,7 +502,10 @@ class {
 
         let cmd = getInstallCommand(package, source, dependencies)
 
-        checkInstallTarget()
+        // Generated compilation consumes sources, not legacy target packages.
+        if (cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() != "flat") {
+            checkInstallTarget()
+        }
 
         if (airship.debug) {
             Console.writeLine(cmd.map({ System.sanitizeCliArgument(_) }).join(" "))

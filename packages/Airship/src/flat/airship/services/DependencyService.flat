@@ -44,12 +44,11 @@ class {
 
     getDependencyPackageAt(String location, String compilationRuntime = null) -> Airship {
         let args = ["-f", location]
-        airship.propagateArgs(args)
-        // Preserve effective runtime selection even when inherited from the
-        // parent's manifest rather than an explicit CLI flag.
+        // Runtime options must precede the propagated compiler delimiter.
         if (!cliArgs.targetRuntimeArg.enabled && compilationRuntime) {
             args.addAll(["-r", compilationRuntime])
         }
+        airship.propagateArgs(args)
         return Airship(args, airship)
     }
 

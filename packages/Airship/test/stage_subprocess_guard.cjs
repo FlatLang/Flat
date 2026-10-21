@@ -58,8 +58,16 @@ function admit(command, args = [], options = {}) {
     }
     const name = path.basename(command);
     if (policy.debugOnly && name !== 'git') throw Error('debug-only policy prohibits executable launches');
-    if (options.cwd && !path.resolve(options.cwd).startsWith(policy.root + path.sep) &&
-        path.resolve(options.cwd) !== policy.root) throw Error('Subprocess cwd outside stage');
+    if (options.detached) throw Error('Detached subprocess escapes stage process-group ownership');
+    if (options.argv0 || options.uid !== undefined || options.gid !== undefined) {
+      throw Error('Subprocess identity overrides are not admitted');
+    }
+    if (options.cwd) {
+      const cwd = fs.realpathSync(options.cwd);
+      if (cwd !== policy.root && !cwd.startsWith(policy.root + path.sep)) {
+        throw Error('Subprocess cwd outside stage');
+      }
+    }
     if (name === 'node' || command === policy.node) {
       if (command !== 'node' && command !== policy.node) throw Error('Unpinned Node executable');
       if (args.length && args[0].startsWith('-')) {
@@ -119,6 +127,12 @@ function admit(command, args = [], options = {}) {
       }
       verify(policy.java, policy.javaSha256);
       verify(policy.javaJar, policy.javaJarSha256);
+      // flatc dynamically loads the ES6 backend; it is an execution input even
+      // though it is absent from argv. Recheck each launch, not just its copy.
+      if (!policy.javaBackendJar || fs.realpathSync(policy.javaBackendJar) !== policy.javaBackendJar) {
+        throw Error('Stage0 backend jar must retain its canonical reviewed path');
+      }
+      verify(policy.javaBackendJar, policy.javaBackendJarSha256);
       command = policy.java;
     } else if (name === 'git') {
       if (command !== 'git' && command !== policy.git) throw Error('Unpinned Git executable');
@@ -134,8 +148,17 @@ function admit(command, args = [], options = {}) {
     return reject(original, args, error.message);
   }
   record('allow', command, args, 'explicit stage policy');
-  return [command, args, {...options, shell: false, env: {
-    ...(options.env || process.env),
+  const childEnv = {...(options.env || process.env)};
+  // Application variables may vary; tool/configuration selection may not.
+  for (const key of Object.keys(childEnv)) {
+    if (/^(?:NODE_PATH|JAVA_TOOL_OPTIONS|JDK_JAVA_OPTIONS|_JAVA_OPTIONS|LD_.*|DYLD_.*|GIT_.*)$/.test(key)) {
+      delete childEnv[key];
+    }
+  }
+  childEnv.GIT_CONFIG_NOSYSTEM = '1';
+  childEnv.GIT_CONFIG_GLOBAL = process.platform === 'win32' ? 'NUL' : '/dev/null';
+  return [command, args, {...options, shell: false, detached: false, env: {
+    ...childEnv,
     FLAT_BOOTSTRAP_POLICY: policyFile,
     NODE_OPTIONS: '--require=' + __filename,
     FLAT_HOME: process.env.FLAT_HOME, HOME: process.env.HOME,

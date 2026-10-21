@@ -1,0 +1,188 @@
+package flat/writer/es6/bound
+
+import flat/bound
+import flat/semantic/types
+
+/** Statement-local ES6 sequencing. The inherited immutable visitor supplies the
+ * ordered operands; every earlier operand is captured before a later setup.
+ * Selection is emitted as real control flow, never an extra function boundary.
+ * State belongs to one emission and is never shared between functions/workers.
+ */
+class extends BoundTreeLoweringPass {
+    visible var String code = ""
+    visible var Es6BackendDiagnostic diagnostic = null
+    override public name() => "es6-expression-sequencing"
+    override public inputInvariant() => "canonical-expression-local-evaluation"
+    override public outputInvariant() => "es6-enclosing-control-flow"
+    public construct(visible Es6ExpressionOrchestrator expressions) {}
+
+    fresh() -> String => expressions.freshTemporary()
+
+    append(BoundStatement[] values) {
+        for (value in values) {
+            let emitted = Es6StatementOrchestrator(expressions: expressions).emit(value)
+            if (!emitted.emitted) { diagnostic = emitted.diagnostic; return }
+            var String selected = emitted.code
+            if (value.class.isOfType(BoundLocalDeclarationStatement.class)) {
+                BoundLocalDeclarationStatement local = (BoundLocalDeclarationStatement)value
+                let name = Es6NameMangler.mangle(local.local.symbolIdentity.value)
+                // Semantic identities, not a synthetic branch block, own setup locals.
+                selected = selected.replace("let " + name, "var " + name)
+            }
+            code += selected
+        }
+    }
+
+    capture(BoundExpression expression) -> BoundExpression {
+        if (diagnostic) return expression
+        let emitted = expressions.emit(expression)
+        if (!emitted.emitted) {
+            diagnostic = emitted.diagnostic
+            return expression
+        }
+        let name = fresh()
+        code += emitted.setup + "let " + name + " = " + emitted.code + ";\n"
+        return BoundLiteralExpression(expression.range, expression.semanticType, name)
+    }
+
+    public target(BoundExpression expression) -> BoundExpression {
+        if (expression.class.isOfType(BoundMemberAccessExpression.class)) {
+            BoundMemberAccessExpression value = (BoundMemberAccessExpression)expression
+            return BoundMemberAccessExpression(value.range, value.semanticType,
+                lowerExpression(value.receiver), value.memberName, value.memberIdentity, value.safeAccess)
+        }
+        if (expression.class.isOfType(BoundArrayAccessExpression.class)) {
+            BoundArrayAccessExpression value = (BoundArrayAccessExpression)expression
+            let receiver = lowerExpression(value.receiver)
+            let index = lowerExpression(value.index)
+            return BoundLiteralExpression(value.range, value.semanticType,
+                expressions.emit(receiver).code + "[" + expressions.emit(index).code + "]")
+        }
+        return expression
+    }
+
+    override public lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (!expression || diagnostic) return expression
+        let capability = Es6TargetCapabilities.diagnoseExpression(expression.expressionKind())
+        if (capability) { diagnostic = capability; return expression }
+        if (expression.class.isOfType(BoundCallExpression.class)) {
+            BoundCallExpression call = (BoundCallExpression)expression
+            if (call.safeAccess) {
+                diagnostic = Es6BackendDiagnostic("es6.unlowered-safe-call", "Safe call requires target-independent lowering", expression.range)
+                return expression
+            }
+        }
+        if (expression.class.isOfType(BoundMemberAccessExpression.class)) {
+            BoundMemberAccessExpression member = (BoundMemberAccessExpression)expression
+            if (member.safeAccess) {
+                diagnostic = Es6BackendDiagnostic("es6.unlowered-safe-field", "Safe field access requires target-independent lowering", expression.range)
+                return expression
+            }
+        }
+        if (expression.class.isOfType(BoundBinaryExpression.class)) {
+            BoundBinaryExpression binary = (BoundBinaryExpression)expression
+            if (binary.operator == "?:") {
+                diagnostic = Es6BackendDiagnostic("es6.unlowered-fallback", "Null fallback requires target-independent lowering", expression.range)
+                return expression
+            }
+        }
+        if (expression.class.isOfType(BoundEvaluationExpression.class)) {
+            BoundEvaluationExpression value = (BoundEvaluationExpression)expression
+            append(value.setup())
+            return lowerExpression(value.value)
+        }
+        // Lambda bodies and defaults are handled by their own statement owner.
+        if (expression.class.isOfType(BoundLambdaExpression.class)) return capture(expression)
+        if (expression.class.isOfType(BoundCallExpression.class)) {
+            BoundCallExpression value = (BoundCallExpression)expression
+            var BoundExpression receiver = null
+            if (value.receiver) receiver = lowerExpression(value.receiver)
+            var String method = null
+            if (receiver) {
+                method = fresh()
+                let name = value.target.externalName ?: Es6NameMangler.mangle(
+                    value.target.dispatchIdentity ?: value.target.identity.declaration.value)
+                code += "let " + method + " = " + expressions.emit(receiver).code + "." + name + ";\n"
+            }
+            let arguments = BoundExpression[]
+            let conversions = TypeConversion[]
+            let inputs = value.argumentValues()
+            let evidence = value.argumentConversions()
+            var Int index
+            while (index < inputs.count) {
+                let operand = lowerExpression(BoundConversionExpression(inputs[index].range,
+                    evidence[index].toType, inputs[index], evidence[index]))
+                arguments.add(operand)
+                conversions.add(TypeConversions.classify(operand.semanticType, operand.semanticType))
+                index++
+            }
+            if (diagnostic) return expression
+            if (receiver) {
+                let text = expressions.emitArguments(arguments)
+                if (!text.emitted) { diagnostic = text.diagnostic; return expression }
+                let call = method + ".call(" + expressions.emit(receiver).code +
+                    (arguments.isEmpty ? "" : ", " + text.code) + ")"
+                return capture(BoundLiteralExpression(value.range, value.semanticType,
+                    value.target.asyncFunction && !value.suppressAwait ? "(await " + call + ")" : call))
+            }
+            return capture(BoundCallExpression(value.range, value.semanticType, value.target, null,
+                arguments, conversions, false, value.receiverConversion, value.suppressAwait))
+        }
+        if (expression.class.isOfType(BoundConditionalExpression.class)) {
+            BoundConditionalExpression value = (BoundConditionalExpression)expression
+            let condition = lowerExpression(value.condition)
+            let name = fresh()
+            code += "let " + name + ";\nif (" + Es6ExpressionOrchestrator().emit(condition).code + ") {\n"
+            let yes = lowerExpression(value.whenTrue)
+            code += name + " = " + Es6ExpressionOrchestrator().emit(yes).code + ";\n} else {\n"
+            let no = lowerExpression(value.whenFalse)
+            code += name + " = " + Es6ExpressionOrchestrator().emit(no).code + ";\n}\n"
+            return BoundLiteralExpression(value.range, value.semanticType, name)
+        }
+        if (expression.class.isOfType(BoundBinaryExpression.class)) {
+            BoundBinaryExpression value = (BoundBinaryExpression)expression
+            if (value.operator == "&&" || value.operator == "||") {
+                let left = lowerExpression(value.left)
+                let name = fresh()
+                code += "let " + name + " = " + Es6ExpressionOrchestrator().emit(left).code + ";\nif (" +
+                    (value.operator == "||" ? "!" : "") + name + ") {\n"
+                let right = lowerExpression(value.right)
+                code += name + " = " + Es6ExpressionOrchestrator().emit(right).code + ";\n}\n"
+                return BoundLiteralExpression(value.range, value.semanticType, name)
+            }
+        }
+        if (expression.class.isOfType(BoundInterpolatedStringExpression.class)) {
+            BoundInterpolatedStringExpression value = (BoundInterpolatedStringExpression)expression
+            let name = fresh()
+            code += "let " + name + " = '';\n"
+            for (segment in value.segmentValues()) {
+                if (segment.literal()) code += name + " += " + segment.literalSourceValue + ";\n"
+                else {
+                    let operand = lowerExpression(segment.expression)
+                    if (diagnostic) return expression
+                    code += name + " += " + expressions.emit(operand).code + ";\n"
+                }
+            }
+            return BoundLiteralExpression(value.range, value.semanticType, name)
+        }
+        if (expression.class.isOfType(BoundArrayAccessExpression.class)) return capture(target(expression))
+        if (expression.class.isOfType(BoundPostfixUpdateExpression.class)) {
+            BoundPostfixUpdateExpression value = (BoundPostfixUpdateExpression)expression
+            return capture(BoundPostfixUpdateExpression(value.range, value.semanticType,
+                target(value.target), value.updateOperator))
+        }
+        if (expression.class.isOfType(BoundMemberAssignmentValueExpression.class)) {
+            BoundMemberAssignmentValueExpression value = (BoundMemberAssignmentValueExpression)expression
+            BoundMemberAccessExpression selected = (BoundMemberAccessExpression)target(value.target)
+            let previous = capture(selected)
+            let operand = lowerExpression(value.value)
+            let operation = BoundBinaryExpression(value.range, value.semanticType, value.operator, previous, operand)
+            let converted = BoundConversionExpression(value.range, selected.semanticType, operation, value.storageConversion)
+            let emitted = Es6ExpressionOrchestrator().emit(converted)
+            if (!emitted.emitted) { diagnostic = emitted.diagnostic; return expression }
+            return capture(BoundLiteralExpression(value.range, value.semanticType,
+                "(" + Es6ExpressionOrchestrator().emit(selected).code + " = " + emitted.code + ")"))
+        }
+        return capture(super.lowerExpression(expression))
+    }
+}

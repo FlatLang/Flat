@@ -15,12 +15,35 @@ class {
         if (!statement) throw Exception("ES6 statement orchestration requires statement")
         let capability = Es6TargetCapabilities.diagnoseStatement(statement.unitKind())
         if (capability) return Es6CodeResult(diagnostic: capability)
+        if (statement.class.isOfType(BoundBreakStatement.class)) return Es6CodeResult(code:
+            expressions.breakTarget ? "break " + expressions.breakTarget + ";\n" : "break;\n")
+        if (statement.class.isOfType(BoundLoopLatchStatement.class)) {
+            let value = (BoundLoopLatchStatement)statement
+            let outer = expressions.continueTarget
+            let outerBreak = expressions.breakTarget
+            expressions.setBreakTarget(null)
+            expressions.setContinueTarget(null)
+            let condition = expressions.emit(value.condition)
+            let advance = emitAll(value.advanceValues())
+            let latch = expressions.freshTemporary()
+            expressions.setContinueTarget(latch)
+            let body = emitAll(value.bodyValues())
+            expressions.setContinueTarget(outer)
+            expressions.setBreakTarget(outerBreak)
+            if (!condition.emitted) return condition
+            if (!body.emitted) return body
+            if (!advance.emitted) return advance
+            return Es6CodeResult(code: "while (true) {\n" + condition.setup +
+                "if (!(" + condition.code + ")) break;\n" + latch + ": {\n" + body.code +
+                "}\n" + advance.code + "}\n")
+        }
         if (statement.class.isOfType(BoundContinueStatement.class)) {
-            return Es6ContinueEmitter().emit((BoundContinueStatement)statement)
+            return Es6CodeResult(code: expressions.continueTarget ?
+                "break " + expressions.continueTarget + ";\n" : "continue;\n")
         }
         if (statement.class.isOfType(BoundExternalStatement.class)) {
             let value = (BoundExternalStatement)statement
-            return statements.emitExternal(value)
+            return statements.emitExternal(value, expressions)
         }
         if (statement.class.isOfType(BoundIfStatement.class)) {
             let value = (BoundIfStatement)statement
@@ -32,39 +55,39 @@ class {
             )
         }
         if (statement.class.isOfType(BoundSwitchStatement.class)) {
-            let value = (BoundSwitchStatement)statement
-            let emittedCases = Es6CodeResult[]
-            for (caseValue in value.caseValues()) {
-                let label = caseValue.defaultCase ? Es6CodeResult(code: "") :
-                    expressions.emit(caseValue.label)
-                let body = emitAll(caseValue.statementValues())
-                if (!label.emitted) return label
-                if (!body.emitted) return body
-                emittedCases.add(statements.emitSwitchCase(
-                    caseValue, label, body
-                ))
-            }
-            return statements.emitSwitch(
-                value, expressions.emit(value.value), emittedCases
-            )
+            BoundSwitchStatement value = (BoundSwitchStatement)statement
+            return emitSwitch(value)
         }
         if (statement.class.isOfType(BoundForEachStatement.class)) {
             let value = (BoundForEachStatement)statement
-            return statements.emitForEach(
-                value,
-                emitAll(value.initialization()),
-                expressions.emit(value.condition),
-                emitAll(value.body()),
-                emitAll(value.advance())
-            )
+            let initialization = emitAll(value.initialization())
+            if (!initialization.emitted) return initialization
+            let outer = expressions.continueTarget
+            let outerBreak = expressions.breakTarget
+            expressions.setBreakTarget(null)
+            expressions.setContinueTarget(null)
+            let condition = expressions.emit(value.condition)
+            let advance = emitAll(value.advance())
+            let latch = expressions.freshTemporary()
+            expressions.setContinueTarget(latch)
+            let body = emitAll(value.body())
+            expressions.setContinueTarget(outer)
+            expressions.setBreakTarget(outerBreak)
+            if (!body.emitted) return body
+            return statements.emitForEach(value, initialization, condition,
+                Es6CodeResult(code: latch + ": {\n" + body.code + "}\n"), advance)
         }
         if (statement.class.isOfType(BoundWhileStatement.class)) {
             let value = (BoundWhileStatement)statement
-            return statements.emitWhile(
-                value,
-                expressions.emit(value.condition),
-                emitAll(value.bodyValues())
-            )
+            let outer = expressions.continueTarget
+            let outerBreak = expressions.breakTarget
+            expressions.setBreakTarget(null)
+            expressions.setContinueTarget(null)
+            let body = emitAll(value.bodyValues())
+            let condition = expressions.emit(value.condition)
+            expressions.setContinueTarget(outer)
+            expressions.setBreakTarget(outerBreak)
+            return statements.emitWhile(value, condition, body)
         }
         if (statement.class.isOfType(BoundTryStatement.class)) {
             let value = (BoundTryStatement)statement
@@ -96,14 +119,12 @@ class {
         }
         if (statement.class.isOfType(BoundNativeArrayClearStatement.class)) {
             let value = (BoundNativeArrayClearStatement)statement
-            return statements.emitAssignmentValue(expressions.emit(value.target), Es6CodeResult("null"))
+            return emitStore(value.target, BoundLiteralExpression(value.range, value.target.semanticType, "null"))
         }
         if (statement.class.isOfType(BoundArrayAssignmentStatement.class)) {
             let value = (BoundArrayAssignmentStatement)statement
-            return statements.emitAssignmentValue(
-                expressions.emit(value.target), expressions.emit(BoundConversionExpression(
-                    value.range, value.target.semanticType, value.value, value.conversion))
-            )
+            return emitStore(value.target, BoundConversionExpression(
+                value.range, value.target.semanticType, value.value, value.conversion))
         }
         if (statement.class.isOfType(BoundAssignmentStatement.class)) {
             let value = (BoundAssignmentStatement)statement
@@ -114,22 +135,74 @@ class {
             let value = (BoundMemberAssignmentStatement)statement
             if (value.compoundOperator) return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
                 "es6.unlowered-compound-store", "Compound field statement requires target-independent lowering"))
-            return statements.emitMemberAssignment(
-                value, expressions.emit(value.target), expressions.emit(BoundConversionExpression(
-                    value.range, value.target.semanticType, value.value, value.conversion))
-            )
+            return emitStore(value.target, BoundConversionExpression(
+                value.range, value.target.semanticType, value.value, value.conversion))
         }
         if (statement.class.isOfType(BoundReturnStatement.class)) {
             let value = (BoundReturnStatement)statement
             if (!value.value) return statements.emitVoidReturn(value)
-            return statements.emitReturn(value, expressions.emit(BoundConversionExpression(
-                value.range, value.requiredType, value.value, value.conversion)))
+            var Es6CodeResult result = expressions.emit(BoundConversionExpression(
+                value.range, value.requiredType, value.value, value.conversion))
+            if (expressions.returnDeclaration && expressions.returnDeclaration.kind() == "generic-parameter") {
+                result = expressions.expressions.emitGenericResult(value.requiredType, result, expressions.returnBoxingConstructor)
+            }
+            return statements.emitReturn(value, result)
         }
         return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
             "es6.unsupported-statement",
             "ES6 backend cannot orchestrate reduced statement '#{statement.unitKind()}'",
             statement.range
         ))
+    }
+
+    emitSwitch(BoundSwitchStatement value) -> Es6CodeResult {
+        let outer = expressions.breakTarget
+        let exit = expressions.freshTemporary()
+        expressions.setBreakTarget(exit)
+        let result = emitSwitchSelection(value, exit)
+        expressions.setBreakTarget(outer)
+        return result
+    }
+
+    emitSwitchSelection(BoundSwitchStatement value, String exit) -> Es6CodeResult {
+        let selected = expressions.emit(value.value)
+        if (!selected.emitted) return selected
+        let input = expressions.freshTemporary()
+        let index = expressions.freshTemporary()
+        var String code = exit + ": {\n" + selected.setup + "let " + input + " = " + selected.code + ";\n" +
+            "let " + index + " = -1;\n"
+        var String cases = ""
+        var Int ordinal
+        var Int defaultIndex = -1
+        for (caseValue in value.caseValues()) {
+            if (caseValue.defaultCase) defaultIndex = ordinal
+            else {
+                let label = expressions.emit(caseValue.label)
+                if (!label.emitted) return label
+                code += "if (" + index + " === -1) {\n" + label.setup + "if (" + input + " === " + label.code +
+                    ") " + index + " = " + ordinal + ";\n}\n"
+            }
+            let body = emitAll(caseValue.statementValues())
+            if (!body.emitted) return body
+            cases += "case " + ordinal + ":\n" + body.code + (caseValue.fallsThrough ? "" : "break;\n")
+            ordinal++
+        }
+        code += "if (" + index + " === -1) " + index + " = " + defaultIndex + ";\n"
+        return Es6CodeResult(code: code + "switch (" + index + ") {\n" + cases + "}\n}\n")
+    }
+
+    emitStore(BoundExpression target, BoundExpression value) -> Es6CodeResult {
+        let scan = Es6EvaluationScan()
+        scan.lowerExpression(target)
+        scan.lowerExpression(value)
+        if (!scan.found) return statements.emitAssignmentValue(expressions.emit(target), expressions.emit(value))
+        let plan = Es6EvaluationPlan(expressions)
+        let location = plan.target(target)
+        let selected = plan.lowerExpression(value)
+        if (plan.diagnostic) return Es6CodeResult(diagnostic: plan.diagnostic)
+        let result = statements.emitAssignmentValue(expressions.emit(location), expressions.emit(selected))
+        if (!result.emitted) return result
+        return Es6CodeResult(code: plan.code + result.code)
     }
 
     public emitAll(BoundStatement[] values) -> Es6CodeResult {

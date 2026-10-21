@@ -4,6 +4,33 @@ import flat/compiler/models
 import flat/semantic/types
 
 testable class {
+    test `numeric projection and casts expose integral truncation including Long`() {
+        let fixture = BoundIR_TestFixture()
+        let number = UserClassSemanticType(fixture.declaration("class", "Number", 90))
+        let realType = SemanticTypes.doubleType()
+        let projection = CallableSignature(fixture.symbol("method", "realValue", 91),
+            "realValue", CallableKind("instance-method"), SemanticType[], realType, number)
+        let source = BoundLiteralExpression(fixture.range(), SemanticTypes.objectType(), "null")
+        let real = BoundLiteralExpression(fixture.range(), realType, "-12.75")
+        String[] numericNames = ["Byte", "UByte", "Short", "UShort", "Int", "UInt", "Long", "ULong", "Char", "Float", "Double"]
+        for (name in numericNames) {
+            let target = PrimitiveSemanticType(name)
+            let cast = TypeConversions.classify(realType, target, explicit: true)
+            let unboxing = TypeConversions.classify(source.semanticType, target, explicit: true)
+            let unbox = BoundNumericUnboxExpression(fixture.range(), target, source,
+                number, projection, unboxing, cast)
+            let conversion = BoundConversionExpression(fixture.range(), target, real, cast)
+            let integral = name != "Float" && name != "Double"
+            expect(unbox.truncatesFractionalPart()).toBe(integral)
+            expect(conversion.truncatesFractionalPart()).toBe(integral)
+            expect(unbox.projection).toBe(projection)
+            expect(unbox.projectionConversion).toBe(cast)
+            expect(unbox.conversion).toBe(unboxing)
+        }
+        let identity = TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType())
+        expect(BoundConversionExpression.requiresIntegralTruncation(identity)).toBe(false)
+        expect(BoundConversionExpression.requiresIntegralTruncation(null)).toBe(false)
+    }
     test `selected call await suppression and receiver conversion survive lowering`() {
         let fixture = BoundIR_TestFixture()
         let owner = UserClassSemanticType(fixture.declaration("class", "AsyncOwner", 90))
@@ -121,21 +148,25 @@ testable class {
             [inner, BoundIfStatement(fixture.range(), condition, [continuation], BoundStatement[])], [advance], "outer", "outer-exit")
         let function = BoundFunctionUnit(fixture.declaration("function", "run", 1), "run", SemanticTypes.unitType(), [outer], fixture.range())
         let loweredObject = (Object)CollectionControlLoweringPass().lower(function).statements().first
-        let lowered = (BoundWhileStatement)loweredObject
+        Object castSource1 = loweredObject
+        BoundLoopLatchStatement lowered = (BoundLoopLatchStatement)castSource1
         let body = lowered.bodyValues()
         let innerObject = (Object)body[0]
-        let innerLoop = (BoundWhileStatement)innerObject
-        expect(innerLoop.bodyValues().count).toBe(3)
-        expect(innerLoop.bodyValues().first.range).toBe(innerAdvance.range)
+        Object castSource2 = innerObject
+        BoundLoopLatchStatement innerLoop = (BoundLoopLatchStatement)castSource2
+        expect(innerLoop.bodyValues()).toBe([continuation])
+        expect(innerLoop.advanceValues()).toBe([innerAdvance])
+        expect(lowered.advanceValues()).toBe([advance])
+        expect(innerLoop.loopIdentity.value == lowered.loopIdentity.value).toBe(false)
         let branchObject = (Object)body[1]
-        let branch = (BoundIfStatement)branchObject
-        expect(branch.thenValues().count).toBe(2)
-        expect(branch.thenValues().first.range).toBe(advance.range)
+        Object castSource3 = branchObject
+        BoundIfStatement branch = (BoundIfStatement)castSource3
+        expect(branch.thenValues()).toBe([continuation])
         expect(inner.body().count).toBe(1)
         expect(outer.body().count).toBe(2)
     }
 
-    test `foreach rejects cleanup crossing continue`() {
+    test `foreach preserves cleanup crossing continue for the loop owned latch`() {
         let fixture = BoundIR_TestFixture()
         let condition = BoundLiteralExpression(fixture.range(), SemanticTypes.boolType(), "true")
         let continuation = BoundContinueStatement(fixture.range())
@@ -143,10 +174,16 @@ testable class {
         let guarded = BoundTryStatement(fixture.range(), [continuation], BoundCatchClause[], [cleanup])
         let loop = BoundForEachStatement(fixture.range(), BoundStatement[], condition, [guarded], [cleanup], "loop", "exit")
         let function = BoundFunctionUnit(fixture.declaration("function", "run", 1), "run", SemanticTypes.unitType(), [loop], fixture.range())
-        var Bool rejected
-        try { CollectionControlLoweringPass().lower(function) }
-        catch (Exception error) { rejected = error.message.contains("cleanup-aware") }
-        expect(rejected).toBe(true)
+        let statements = CollectionControlLoweringPass().lower(function).statements()
+        Object castSource4 = statements.first
+        BoundLoopLatchStatement latch = (BoundLoopLatchStatement)castSource4
+        let body = latch.bodyValues()
+        Object castSource5 = body.first
+        BoundTryStatement lowered = (BoundTryStatement)castSource5
+        expect(lowered.tryValues()).toBe([continuation])
+        expect(lowered.finallyValues()).toBe([cleanup])
+        expect(latch.advanceValues()).toBe([cleanup])
+        expect(body.count).toBe(1)
     }
 
     test `checked conversion evidence`() {
@@ -236,7 +273,8 @@ testable class {
         expect(statements.count).toBe(2)
         expect(statements.first.unitKind()).toBe("local-declaration")
         let statementObject = statements.last
-        let lowered = (BoundMemberAssignmentStatement)statementObject
+        Object castSource6 = statementObject
+        BoundMemberAssignmentStatement lowered = (BoundMemberAssignmentStatement)castSource6
         expect(lowered.compoundOperator == null).toBe(true)
         expect(lowered.conversion.conversionKind).toBe("numeric-cast")
         expect(lowered.value.expressionKind()).toBe("binary")
@@ -254,10 +292,12 @@ testable class {
         let function = BoundFunctionUnit(fixture.declaration("function", "run", 3), "run", intType,
             [BoundReturnStatement(fixture.range(), intType, assignment, TypeConversions.classify(intType, intType))], fixture.range())
         let statementObject = CollectionControlLoweringPass().lower(function).statements().first
-        let returned = (BoundReturnStatement)statementObject
+        Object castSource7 = statementObject
+        BoundReturnStatement returned = (BoundReturnStatement)castSource7
         let assignmentObject = returned.value
-        let lowered = (BoundMemberAssignmentValueExpression)assignmentObject
-        expect(lowered.value.expressionKind()).toBe("function-invocation")
+        Object castSource8 = assignmentObject
+        BoundMemberAssignmentValueExpression lowered = (BoundMemberAssignmentValueExpression)castSource8
+        expect(lowered.value.expressionKind()).toBe("evaluation")
         expect(lowered.target.memberIdentity.value).toBe(target.memberIdentity.value)
     }
     test `fallback array index retains captures and await scope`() {
@@ -273,19 +313,30 @@ testable class {
         let function = BoundFunctionUnit(fixture.declaration("function", "run", 4), "run", intType,
             [BoundReturnStatement(fixture.range(), intType, fallback, TypeConversions.classify(intType, intType))], fixture.range())
         let statementObject = CollectionControlLoweringPass().lower(function).statements().first
-        let returned = (BoundReturnStatement)statementObject
-        let invocationObject = returned.value
-        let invocation = (BoundFunctionInvocationExpression)invocationObject
-        let lambdaObject = invocation.functionValue
-        let lambda = (BoundLambdaExpression)lambdaObject
-        let typeObject = lambda.semanticType
-        let loweredSignature = (FunctionSemanticType)typeObject
-        expect(loweredSignature.asyncFunction).toBe(true)
-        expect(lambda.captureValues().count).toBe(2)
-        expect(lambda.captureValues().first.symbolIdentity.value).toBe(array.symbolIdentity.value)
-        expect(lambda.captureValues().last.symbolIdentity.value).toBe(next.symbolIdentity.value)
+        Object castSource9 = statementObject
+        BoundReturnStatement returned = (BoundReturnStatement)castSource9
+        Object castSource10 = returned.value
+        BoundEvaluationExpression evaluation = (BoundEvaluationExpression)castSource10
+        let setup = evaluation.setup()
+        Object castSource11 = setup.first
+        BoundLocalDeclarationStatement localReference = (BoundLocalDeclarationStatement)castSource11
+        expect(setup.count).toBe(1)
+        expect(localReference.initializer).toBe(left)
+        Object castSource12 = evaluation.value
+        BoundConditionalExpression conditional = (BoundConditionalExpression)castSource12
+        Object castSource13 = conditional.whenTrue
+        BoundConversionExpression converted = (BoundConversionExpression)castSource13
+        Object castSource14 = converted.value
+        BoundArrayAccessExpression loweredAccess = (BoundArrayAccessExpression)castSource14
+        expect(loweredAccess.receiver).toBe(array)
+        Object castSource15 = loweredAccess.index
+        BoundFunctionInvocationExpression loweredIndex = (BoundFunctionInvocationExpression)castSource15
+        expect(loweredIndex.functionValue).toBe(next)
+        Object castSource16 = loweredIndex.functionValue.semanticType
+        FunctionSemanticType loweredType = (FunctionSemanticType)castSource16
+        expect(loweredType.asyncFunction).toBe(true)
     }
-    test `fallback lowers to captured conditional invocation`() {
+    test `fallback lowers to an expression local conditional inside its original lambda`() {
         let fixture = BoundIR_TestFixture()
         let intType = SemanticTypes.intType()
         let nullable = NullableSemanticType(intType)
@@ -300,19 +351,29 @@ testable class {
         let function = BoundFunctionUnit(fixture.declaration("function", "run", 3), "run", intType,
             [BoundReturnStatement(fixture.range(), intType, invoked, TypeConversions.classify(intType, intType))], fixture.range())
         let statementObject = CollectionControlLoweringPass().lower(function).statements().first
-        let returned = (BoundReturnStatement)statementObject
+        Object castSource17 = statementObject
+        BoundReturnStatement returned = (BoundReturnStatement)castSource17
         let wrapperInvocationObject = returned.value
-        let wrapperInvocation = (BoundFunctionInvocationExpression)wrapperInvocationObject
+        Object castSource18 = wrapperInvocationObject
+        BoundFunctionInvocationExpression wrapperInvocation = (BoundFunctionInvocationExpression)castSource18
         let wrapperObject = wrapperInvocation.functionValue
-        let loweredWrapper = (BoundLambdaExpression)wrapperObject
+        Object castSource19 = wrapperObject
+        BoundLambdaExpression loweredWrapper = (BoundLambdaExpression)castSource19
         expect(loweredWrapper.captureValues().count).toBe(2)
-        let invocationObject = loweredWrapper.body
-        let invocation = (BoundFunctionInvocationExpression)invocationObject
-        let lambdaObject = invocation.functionValue
-        let lambda = (BoundLambdaExpression)lambdaObject
-        expect(invocation.argumentValues().count).toBe(1)
-        expect(lambda.captureValues().count).toBe(1)
-        expect(lambda.captureValues().first.symbolIdentity.value).toBe(right.symbolIdentity.value)
+        Object castSource20 = loweredWrapper.body
+        BoundEvaluationExpression evaluation = (BoundEvaluationExpression)castSource20
+        let setup = evaluation.setup()
+        Object castSource21 = setup.first
+        BoundLocalDeclarationStatement localReference = (BoundLocalDeclarationStatement)castSource21
+        expect(localReference.initializer).toBe(left)
+        Object castSource22 = evaluation.value
+        BoundConditionalExpression conditional = (BoundConditionalExpression)castSource22
+        Object castSource23 = conditional.whenTrue
+        BoundConversionExpression converted = (BoundConversionExpression)castSource23
+        Object castSource24 = converted.value
+        BoundAssignmentValueExpression assigned = (BoundAssignmentValueExpression)castSource24
+        expect(assigned.target.symbolIdentity).toBe(right.symbolIdentity)
+        expect(loweredWrapper.captureValues()).toBe([left, right])
     }
     test `safe call lowering retains argument local capture`() {
         let fixture = BoundIR_TestFixture()
@@ -329,15 +390,26 @@ testable class {
         let function = BoundFunctionUnit(fixture.declaration("function", "run", 5), "run", resultType,
             [BoundReturnStatement(fixture.range(), resultType, call, TypeConversions.classify(resultType, resultType))], fixture.range())
         let statementObject = CollectionControlLoweringPass().lower(function).statements().first
-        let returned = (BoundReturnStatement)statementObject
-        let invocationObject = returned.value
-        let invocation = (BoundFunctionInvocationExpression)invocationObject
-        let lambdaObject = invocation.functionValue
-        let lambda = (BoundLambdaExpression)lambdaObject
-        expect(lambda.captureValues().count).toBe(1)
-        expect(lambda.captureValues().first.symbolIdentity.value).toBe(argument.symbolIdentity.value)
+        Object castSource25 = statementObject
+        BoundReturnStatement returned = (BoundReturnStatement)castSource25
+        Object castSource26 = returned.value
+        BoundEvaluationExpression evaluation = (BoundEvaluationExpression)castSource26
+        let setup = evaluation.setup()
+        Object castSource27 = setup.first
+        BoundLocalDeclarationStatement localReference = (BoundLocalDeclarationStatement)castSource27
+        expect(setup.count).toBe(1)
+        expect(localReference.initializer).toBe(receiver)
+        Object castSource28 = evaluation.value
+        BoundConditionalExpression conditional = (BoundConditionalExpression)castSource28
+        Object castSource29 = conditional.whenFalse
+        BoundConversionExpression converted = (BoundConversionExpression)castSource29
+        Object castSource30 = converted.value
+        BoundCallExpression selected = (BoundCallExpression)castSource30
+        expect(selected.argumentValues()).toBe([argument])
+        expect(selected.target).toBe(target)
+        expect(selected.safeAccess).toBe(false)
     }
-    test `safe field lowers to ordinary single argument invocation`() {
+    test `safe field lowers to expression local single receiver evaluation`() {
         let fixture = BoundIR_TestFixture()
         let owner = fixture.declaration("class", "Box", 1)
         let receiver = BoundReferenceExpression(fixture.range(), UserClassSemanticType(owner),
@@ -350,20 +422,23 @@ testable class {
                 TypeConversions.classify(resultType, resultType))], fixture.range())
         let lowered = CollectionControlLoweringPass().lower(function)
         let statementObject = lowered.statements().first
-        let returned = (BoundReturnStatement)statementObject
-        expect(returned.value.expressionKind()).toBe("function-invocation")
+        Object castSource31 = statementObject
+        BoundReturnStatement returned = (BoundReturnStatement)castSource31
+        expect(returned.value.expressionKind()).toBe("evaluation")
         expect(access.safeAccess).toBe(true)
-        let local = BoundReferenceExpression(fixture.range(), resultType, "result", fixture.symbol("local", "result", 4))
-        let declaration = BoundLocalDeclarationStatement(fixture.range(), local, access,
+        let localReference = BoundReferenceExpression(fixture.range(), resultType, "result", fixture.symbol("local", "result", 4))
+        let declaration = BoundLocalDeclarationStatement(fixture.range(), localReference, access,
             TypeConversions.classify(resultType, resultType))
         let conditional = BoundIfStatement(fixture.range(),
             BoundLiteralExpression(fixture.range(), SemanticTypes.boolType(), "true"), [declaration])
         let nested = BoundFunctionUnit(function.identity, function.name, resultType, [conditional], fixture.range())
         let nestedObject = CollectionControlLoweringPass().lower(nested).statements().first
-        let loweredIf = (BoundIfStatement)nestedObject
+        Object castSource32 = nestedObject
+        BoundIfStatement loweredIf = (BoundIfStatement)castSource32
         let localObject = loweredIf.thenValues().first
-        let loweredLocal = (BoundLocalDeclarationStatement)localObject
-        expect(loweredLocal.initializer.expressionKind()).toBe("function-invocation")
+        Object castSource33 = localObject
+        BoundLocalDeclarationStatement loweredLocal = (BoundLocalDeclarationStatement)castSource33
+        expect(loweredLocal.initializer.expressionKind()).toBe("evaluation")
     }
     test `lazy static lowering separates initialization from cached access`() {
         let fixture = BoundIR_TestFixture()
@@ -386,17 +461,21 @@ testable class {
         let wrapper = lowered.functionUnits().first
         expect(wrapper.identity.value).toBe(getter.value)
         let conditionalObject = wrapper.statements().first
-        let conditional = (BoundIfStatement)conditionalObject
+        Object castSource34 = conditionalObject
+        BoundIfStatement conditional = (BoundIfStatement)castSource34
         expect(conditional.condition.semanticType.value()).toBe("primitive:Bool")
         let body = wrapper.statements()
         expect(body.count).toBe(4)
         let assignmentObject = body[1]
-        let assignment = (BoundAssignmentStatement)assignmentObject
+        Object castSource35 = assignmentObject
+        BoundAssignmentStatement assignment = (BoundAssignmentStatement)castSource35
         expect(assignment.target.staticOwner.value).toBe(owner.value)
         let initializedObject = body[2]
-        let initialized = (BoundAssignmentStatement)initializedObject
+        Object castSource36 = initializedObject
+        BoundAssignmentStatement initialized = (BoundAssignmentStatement)castSource36
         let initializedValue = initialized.value
-        let literal = (BoundLiteralExpression)initializedValue
+        Object castSource37 = initializedValue
+        BoundLiteralExpression literal = (BoundLiteralExpression)castSource37
         expect(literal.sourceValue).toBe("true")
     }
     test `static reference retains field ownership`() {
@@ -523,13 +602,13 @@ testable class {
         expect(branch.elseValues().count).toBe(1)
         expect(loop.bodyValues().count).toBe(1)
         let typeIdentity = fixture.declaration("class", "Example", 0)
-        let type = BoundTypeUnit(
+        let resolvedType = BoundTypeUnit(
             typeIdentity,
             UserClassSemanticType(typeIdentity),
             [function],
             fixture.range(0, 5)
         )
-        let program = BoundProgram([type], BoundFunctionUnit[])
+        let program = BoundProgram([resolvedType], BoundFunctionUnit[])
 
         expect(literal.expressionKind()).toBe("literal")
         expect(converted.conversion).toBe(conversion)
@@ -537,8 +616,8 @@ testable class {
         expect(returned.unitKind()).toBe("return")
         expect(statement.unitKind()).toBe("external")
         expect(function.statements()).toBe([assignment, returned])
-        expect(type.functionUnits()).toBe([function])
-        expect(program.typeUnits()).toBe([type])
+        expect(resolvedType.functionUnits()).toBe([function])
+        expect(program.typeUnits()).toBe([resolvedType])
     }
 
     test `fixed size array allocation retains typed immutable size evidence`() {
@@ -583,14 +662,14 @@ testable class {
             "toLowerCase", CallableKind("static-method"),
             [SemanticTypes.charType()], SemanticTypes.charType(), owner
         )
-        let type = FunctionSemanticType(
+        let resolvedType = FunctionSemanticType(
             target.parameterTypes(), target.returnType
         )
-        let value = BoundFunctionValue(fixture.range(), type, target)
+        let value = BoundFunctionValue(fixture.range(), resolvedType, target)
 
         expect(value.expressionKind()).toBe("function-reference")
         expect(value.target).toBe(target)
-        expect(value.semanticType.value()).toBe(type.value())
+        expect(value.semanticType.value()).toBe(resolvedType.value())
     }
 
     test `published arrays are defensively copied`() {
@@ -638,7 +717,8 @@ testable class {
         expect(childConstructor.parentConstructorCall.target.ownerType.value()).toBe(parentType.value())
         let retainedArguments = childConstructor.parentConstructorCall.argumentValues()
         let argumentObject = (Object)retainedArguments.first
-        let retainedArgument = (BoundLiteralExpression)argumentObject
+        Object castSource38 = argumentObject
+        BoundLiteralExpression retainedArgument = (BoundLiteralExpression)castSource38
         expect(retainedArgument.sourceValue).toBe("'message'")
         let copied = childConstructor.parentConstructorCall.argumentValues()
         copied.clear()

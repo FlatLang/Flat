@@ -1,0 +1,15 @@
+package flat/compiler
+
+/**
+ * Synchronous observation only, never an admission/cancellation hook. Implementations
+ * must stream bounded evidence and record their own delivery failures. Exceptions
+ * are isolated from storage ownership and cannot turn a completed rename into a
+ * retry. No callback is inferred from session completion or a successful rm call.
+ * finalized describes the named temporary tree, not all invocation/process state.
+ */
+abstract class {
+    public temporaryCreated(CompilerArtifactLifecycleBinding binding, String path) {}
+    public temporaryRemoved(CompilerArtifactLifecycleBinding binding, String path) {}
+    public published(CompilerArtifactLifecycleBinding binding) {}
+    public finalized(CompilerArtifactLifecycleBinding binding, String path, Bool removed, Exception failure) {}
+}

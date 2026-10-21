@@ -1,0 +1,24 @@
+{
+  "name": "JavaTernaryArrayOwnershipRegression",
+  "version": "0.1.0",
+  "description": "Bootstrap ternary branch ownership after array initializer lowering",
+  "defaultTarget": "es6",
+  "scripts": {
+    "test": "node dist/es6/test.js"
+  },
+  "sources": {
+    "main": {
+      "source": "bootstrap",
+      "dependencies": {}
+    },
+    "test": {
+      "source": "bootstrap",
+      "mainClass": "bootstrap/ternary/TernaryArrayOwnershipRegression",
+      "outDirectory": "dist/es6",
+      "outFile": "test.js",
+      "dependencies": {
+        "https://github.com/FlatLang/System.git": "master"
+      }
+    }
+  }
+}

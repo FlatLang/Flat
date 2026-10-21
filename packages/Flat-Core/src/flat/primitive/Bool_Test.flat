@@ -23,6 +23,25 @@ testable class {
         expect(value.equals(text)).toBe(false)
     }
 
+    test `Object equality preserves both boolean values without truthy coercion`() {
+        let Object falseValue = Bool(false)
+        let Object trueValue = Bool(true)
+        let Object absent = null
+        let Object zero = Int(0)
+        let Object one = Int(1)
+        let Object text = "true"
+
+        expect(falseValue.equals(Bool(false))).toBe(true)
+        expect(trueValue.equals(Bool(true))).toBe(true)
+        expect(falseValue.equals(trueValue)).toBe(false)
+        expect(trueValue.equals(falseValue)).toBe(false)
+        expect(falseValue.equals(absent)).toBe(false)
+        expect(trueValue.equals(absent)).toBe(false)
+        expect(falseValue.equals(zero)).toBe(false)
+        expect(trueValue.equals(one)).toBe(false)
+        expect(trueValue.equals(text)).toBe(false)
+    }
+
     test `boolean text round trips both values`() {
         expect(Bool.toString(false)).toBe("false")
         expect(Bool.toString(true)).toBe("true")

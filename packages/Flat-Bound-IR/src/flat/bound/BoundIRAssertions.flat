@@ -51,49 +51,19 @@ class {
     }
 
     public static assertNoRichCoreForms(BoundFunctionUnit function) {
-        let prohibited = [
-            "constructor", "property-get", "accessor", "mutator", "operator", "named-call"
-        ]
-        for (kind in expressionKinds(function)) {
-            if (prohibited.contains(kind)) {
-                throw Exception("Expression '#kind' was not lowered to the reduced core subset")
-            }
-        }
-        if (statementKinds(function).contains("constructor-initialization")) {
-            throw Exception("Constructor initialization was not lowered to reduced statements")
-        }
+        BoundLoweringInvariantCheck("core").lower(function)
     }
 
     public static assertNoRichCollectionForms(BoundFunctionUnit function) {
-        let prohibited = ["array", "array-access", "range", "safe-access", "match"]
-        for (kind in expressionKinds(function)) {
-            if (prohibited.contains(kind)) {
-                throw Exception("Expression '#kind' was not lowered to the reduced collection subset")
-            }
-        }
-        if (statementKinds(function).contains("foreach")) {
-            throw Exception("Foreach was not lowered to explicit control flow")
-        }
+        BoundLoweringInvariantCheck("collection").lower(function)
     }
 
     public static assertNoDeferredForms(BoundFunctionUnit function) {
-        let prohibited = ["lambda", "closure", "function-reference", "async"]
-        for (kind in expressionKinds(function)) {
-            if (prohibited.contains(kind)) {
-                throw Exception("Expression '#kind' was not lowered to explicit setup/value form")
-            }
-        }
-        if (statementKinds(function).contains("static-initialization")) {
-            throw Exception("Static initialization was not lowered to reduced statements")
-        }
+        BoundLoweringInvariantCheck("deferred").lower(function)
     }
 
     public static assertNoExternalForms(BoundFunctionUnit function) {
-        for (kind in expressionKinds(function)) {
-            if (kind == "external" || kind == "native") {
-                throw Exception("Expression '#kind' was not lowered to a native call")
-            }
-        }
+        BoundLoweringInvariantCheck("native").lower(function)
     }
 
     public static assertStatementKinds(
@@ -116,7 +86,7 @@ class {
 
     public static assertReducedSubset(BoundFunctionUnit function) {
         let allowed = [
-            "expression", "assignment", "array-assignment", "native-array-clear", "local-declaration", "return", "while",
+            "expression", "assignment", "array-assignment", "native-array-clear", "local-declaration", "return", "while", "loop-latch",
             "label", "branch", "conditional-branch"
         ]
         for (kind in statementKinds(function)) {

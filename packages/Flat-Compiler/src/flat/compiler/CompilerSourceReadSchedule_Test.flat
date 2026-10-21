@@ -1,0 +1,228 @@
+package flat/compiler
+
+import flat/io
+import flat/time/Time
+import flat/writer/es6/bound
+
+/** Controlled source-read transitions, backed by the real filesystem provider. */
+testable class {
+    class ArtifactObservation extends CompilerArtifactLifecycleObserver {
+        visible Int createdCount
+        visible Int removedCount
+        visible Int finalizedCount
+        visible Int publicationCount
+        visible Bool invalid
+        visible var String revision
+        visible var String destination
+        check(CompilerArtifactLifecycleBinding binding) {
+            if (binding.revision != revision || binding.destination != destination) invalid = true
+        }
+        override public temporaryCreated(CompilerArtifactLifecycleBinding binding, String path) {
+            check(binding)
+            if (!File(path).exists) invalid = true
+            createdCount++
+        }
+        override public temporaryRemoved(CompilerArtifactLifecycleBinding binding, String path) {
+            check(binding)
+            if (File(path).exists) invalid = true
+            removedCount++
+        }
+        override public published(CompilerArtifactLifecycleBinding binding) {
+            check(binding)
+            if (!File(binding.destination).isFile) invalid = true
+            publicationCount++
+        }
+        override public finalized(CompilerArtifactLifecycleBinding binding, String path, Bool removed, Exception failure) {
+            check(binding)
+            if (!removed || failure != null || File(path).exists) invalid = true
+            finalizedCount++
+        }
+    }
+
+    class Observation extends CompilerInvocationObserver {
+        visible ArtifactObservation lifecycle = ArtifactObservation()
+        override public artifactLifecycleObserver() -> CompilerArtifactLifecycleObserver => lifecycle
+        override public invocationAdmitted(String revision, String destination, String persistentEvidence) {
+            lifecycle.revision = revision
+            lifecycle.destination = destination
+        }
+        visible String[] order = String[]
+        visible Int admittedCount
+        visible Int settledCount
+        visible Int peakActive
+        visible Int peakRetained
+        visible Bool drainedReads
+        visible var Bool cancelAtRead
+        visible var Bool cancelAtStage
+        visible Bool readReady
+        visible Bool stageReady
+        override public admitted(String identity, Int admitted, Int retained, Int peakRetained) {
+            admittedCount = admitted
+            this.peakRetained = peakRetained
+        }
+        override public settled(String identity, Int settled, Int active) {
+            if (order.count >= 64) throw Exception("Test observation capacity exceeded")
+            order.add(File(identity).name)
+            settledCount = settled
+        }
+        override public drained(Int admitted, Int settled, Int peakActive, Int peakRetained) {
+            admittedCount = admitted
+            settledCount = settled
+            this.peakActive = peakActive
+            this.peakRetained = peakRetained
+            drainedReads = true
+        }
+        override public sourceReadCompleted(CompilerSession session, String identity) {
+            readReady = true
+            if (cancelAtRead) session.cancel()
+        }
+        override public artifactAccepted(CompilerSession session, String identity) {
+            stageReady = true
+            if (cancelAtStage) session.cancel()
+        }
+    }
+
+    async test `real filesystem reads settle forward and reverse within bounded windows`() {
+        let root = File(".flat-read-schedule-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let files = File[]
+            for (name in ["A", "B", "C"]) {
+                let file = File(root, "#name.flat")
+                Es6ArtifactFiles.write(file, "class #name {}")
+                files.add(file)
+            }
+            var String reference
+            for (capacity in [1, 3]) {
+                for (reverse in [false, true]) {
+                    let observer = Observation()
+                    let schedule = reverse ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
+                    let sink = MemoryCompilerArtifactSink()
+                    let engine = CompilerEngine(maxActiveSources: capacity, sourceReadSchedule: schedule,
+                        sourceReadObserver: observer, invocationObserver: observer)
+                    let session = engine.compilePackage(FilesystemCompilerSourceProvider(files), sink, "program.js")
+                    let summary = session.completion.get()
+                    expect(summary.diagnosticCount).toBe(0)
+                    expect(observer.admittedCount).toBe(3)
+                    expect(observer.settledCount).toBe(3)
+                    expect(observer.drainedReads).toBe(true)
+                    expect(observer.peakRetained <= capacity).toBe(true)
+                    expect(observer.peakActive <= capacity).toBe(true)
+                    expect(observer.order.join(",")).toBe(reverse && capacity == 3 ? "C.flat,B.flat,A.flat" : "A.flat,B.flat,C.flat")
+                    let code = sink.artifacts().first.code
+                    if (reference == null) reference = code
+                    else expect(code).toBe(reference)
+                }
+            }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `unchanged real Core closure has identical artifacts under controlled source settlements`() {
+        let files = File[]
+        for (source in Compiler_Test.realCoreExecutionSources()) {
+            files.add(File(File("../Flat-Core/src"), source.identity))
+        }
+        var String reference
+        for (capacity in [1, 3]) {
+            for (reverse in [false, true]) {
+                let observer = Observation()
+                let schedule = reverse ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
+                let sink = MemoryCompilerArtifactSink()
+                let engine = CompilerEngine(maxActiveSources: capacity, sourceReadSchedule: schedule,
+                    sourceReadObserver: observer, invocationObserver: observer)
+                let session = engine.compilePackage(FilesystemCompilerSourceProvider(files), sink, "core.js")
+                let summary = session.completion.get()
+                expect(summary.diagnosticCount).toBe(0)
+                expect(summary.artifactCount).toBe(1)
+                expect(observer.admittedCount).toBe(files.count)
+                expect(observer.settledCount).toBe(files.count)
+                expect(observer.drainedReads).toBe(true)
+                expect(observer.peakRetained <= capacity).toBe(true)
+                expect(observer.peakActive <= capacity).toBe(true)
+                let code = sink.artifacts().first.code
+                if (reference == null) reference = code
+                else expect(code).toBe(reference)
+            }
+        }
+    }
+
+    async test `CLI successful publication streams actual artifact cleanup observations`() {
+        let root = File(".flat-cli-observed-publication-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let output = File(root, "program.js")
+        Es6ArtifactFiles.write(source, "class Main {}")
+        try {
+            let observer = Observation()
+            expect(CompilerCli.run(["flatc", source.normalizedLocation, "-target", "es6", "-library",
+                "-o", output.normalizedLocation], observer)).toBe(0)
+            expect(observer.lifecycle.invalid).toBe(false)
+            expect(observer.lifecycle.createdCount > 0).toBe(true)
+            expect(observer.lifecycle.removedCount).toBe(observer.lifecycle.createdCount)
+            expect(observer.lifecycle.publicationCount).toBe(1)
+            expect(observer.lifecycle.finalizedCount > 0).toBe(true)
+            expect(output.isFile).toBe(true)
+            expect(File(output.normalizedLocation + ".flat-incremental.json").isFile).toBe(true)
+            expect(root.getChildFilesBounded(3).count).toBe(3)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `CLI cancellation after real staging leaves destination and manifest unchanged`() {
+        let root = File(".flat-cli-controlled-cancel-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let file = File(root, "Main.flat")
+        let output = File(root, "program.js")
+        Es6ArtifactFiles.write(file, "class Main {}")
+        Es6ArtifactFiles.write(output, "previous")
+        try {
+            for (afterStage in [false, true]) {
+                let observer = Observation()
+                observer.cancelAtRead = !afterStage
+                observer.cancelAtStage = afterStage
+                let code = CompilerCli.run(["flatc", file.normalizedLocation, "-target", "es6", "-library",
+                    "-threads", "3", "-o", output.normalizedLocation], observer,
+                    CompilerSourceReadSchedule.reverse(3))
+                expect(code).toBe(1)
+                expect(observer.readReady).toBe(true)
+                expect(observer.stageReady).toBe(afterStage)
+                expect(observer.drainedReads).toBe(true)
+                expect(observer.admittedCount).toBe(observer.settledCount)
+                expect(Es6ArtifactFiles.read(output)).toBe("previous")
+                expect(File(output.normalizedLocation + ".flat-incremental.json").exists).toBe(false)
+                expect(root.getChildFilesBounded(2).count).toBe(2)
+                expect(observer.lifecycle.invalid).toBe(false)
+                expect(observer.lifecycle.createdCount).toBe(afterStage ? 2 : 0)
+                expect(observer.lifecycle.removedCount).toBe(observer.lifecycle.createdCount)
+                expect(observer.lifecycle.publicationCount).toBe(0)
+                expect(observer.lifecycle.finalizedCount).toBe(afterStage ? 2 : 0)
+            }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `actual source and staging readiness trigger structural cancellation and drain`() {
+        let root = File(".flat-read-cancel-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let file = File(root, "Main.flat")
+        Es6ArtifactFiles.write(file, "class Main {}")
+        try {
+            for (afterStage in [false, true]) {
+                let observer = Observation()
+                observer.cancelAtRead = !afterStage
+                observer.cancelAtStage = afterStage
+                let sink = MemoryCompilerArtifactSink()
+                let engine = CompilerEngine(maxActiveSources: 3,
+                    sourceReadSchedule: CompilerSourceReadSchedule.reverse(3),
+                    sourceReadObserver: observer, invocationObserver: observer)
+                let session = engine.compilePackage(FilesystemCompilerSourceProvider([file]), sink, "program.js")
+                let summary = session.completion.get()
+                expect(observer.readReady).toBe(true)
+                expect(observer.stageReady).toBe(afterStage)
+                expect(summary.cancelled).toBe(true)
+                expect(summary.cleanupSettled).toBe(true)
+                expect(observer.drainedReads).toBe(true)
+                expect(observer.admittedCount).toBe(observer.settledCount)
+                expect(sink.artifacts().count).toBe(afterStage ? 1 : 0)
+            }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+}

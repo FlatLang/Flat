@@ -1,0 +1,14 @@
+package flat/compiler
+
+/** Immutable invocation/artifact binding; paths are exact normalized destinations. */
+class {
+    public construct(visible String revision, visible String identity, visible String destination) {
+        if (!revision || revision.count == 0 || !destination || destination.count == 0) {
+            throw Exception("Artifact lifecycle requires revision and destination")
+        }
+        FilesystemCompilerArtifactSink.validateIdentity(identity)
+        this.revision = revision.concat("")
+        this.identity = identity.concat("")
+        this.destination = destination.concat("")
+    }
+}

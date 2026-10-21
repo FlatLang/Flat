@@ -17,5 +17,21 @@ data class extends BoundExpression {
         }
         super(range, semanticType)
     }
+    /** Numeric casts to integral primitives discard the fractional part toward zero,
+     * including Long/ULong. This is a language operation, not a target coercion.
+     * It specifies neither overflow wrapping nor a fixed-width representation.
+     */
+    public truncatesFractionalPart() -> Bool {
+        return requiresIntegralTruncation(conversion)
+    }
+
+    /** Shared by explicit numeric casts and resolved numeric-family projections. */
+    public static requiresIntegralTruncation(TypeConversion conversion) -> Bool {
+        if (!conversion || !conversion.applicable ||
+            conversion.conversionKind != "numeric-cast" ||
+            !conversion.toType.class.isOfType(PrimitiveSemanticType.class)) return false
+        return TypeConversions.isIntegral(conversion.toType)
+    }
+
     override public expressionKind() => "conversion"
 }

@@ -8,4 +8,335 @@ testable class {
 
         expect(value).toNotBe(null)
     }
+
+    [Target js]
+    test `bounded read accepts empty and exact UTF8 bytes including split characters`() {
+        withReadFixture(0, 0, 1, 1, {
+            expect(FileReader(File("fixture")).readAllContentsBounded(0)).toBe("")
+        })
+        withReadFixture(1, 8, 1, 1, {
+            expect(FileReader(File("fixture")).readAllContentsBounded(8)).toBe("a€😀")
+        })
+        withReadFixture(1, 8, 1, 1, {
+            expect(FileReader(File("fixture")).readAllContentsBounded(30)).toBe("a€😀")
+        })
+    }
+
+    [Target js]
+    test `bounded read rejects growth after the limit without reading to EOF`() {
+        withReadFixture(2, 5, 1, 1, {
+            expect({ FileReader(File("fixture")).readAllContentsBounded(4) })
+                .toThrowWithMessage(Exception.class, "File byte limit exceeded")
+        })
+        withReadFixture(2, 1, 1, 1, {
+            expect({ FileReader(File("fixture")).readAllContentsBounded(0) })
+                .toThrowWithMessage(Exception.class, "File byte limit exceeded")
+        })
+        // Limit in bytes, not UTF-16 characters; no partial string is returned.
+        withReadFixture(1, 8, 1, 1, {
+            expect({ FileReader(File("fixture")).readAllContentsBounded(7) })
+                .toThrowWithMessage(Exception.class, "File byte limit exceeded")
+        })
+    }
+
+    [Target js]
+    test `bounded read chunks large files and closes descriptor zero`() {
+        withReadFixture(6, 65537, 1, 1, {
+            expect(FileReader(File("fixture")).readAllContentsBounded(65537).count).toBe(65537)
+        })
+    }
+
+    [Target js]
+    test `bounded read failures release the handle and invalid limits never open`() {
+        withReadFixture(3, 0, 1, 1, {
+            expect({ FileReader(File("fixture")).readAllContentsBounded(10) })
+                .toThrowWithMessage(Exception.class, "read failed")
+        })
+        withReadFixture(4, 0, 1, 0, {
+            expect({ FileReader(File("fixture")).readAllContentsBounded(10) })
+                .toThrowWithMessage(Exception.class, "open failed")
+        })
+        withReadFixture(5, 0, 1, 1, {
+            expect({ FileReader(File("fixture")).readAllContentsBounded(0) })
+                .toThrowWithMessage(Exception.class, "close failed")
+        })
+        withReadFixture(4, 0, 0, 0, {
+            expect({ FileReader(File("fixture")).readAllContentsBounded(-1) })
+                .toThrowWithMessage(Exception.class, "File byte limit must not be negative")
+        })
+    }
+
+    [Target js]
+    test `bounded enumeration includes immediate hidden and directory entries without stat`() {
+        withDirectoryFixture(0, 1, 1, 1, {
+            expect(File("fixture").getChildFilesBounded(0).count).toBe(0)
+        })
+        withDirectoryFixture(1, 3, 1, 1, {
+            let entries = File("fixture").getChildFilesBounded(2)
+            expect(entries.count).toBe(2)
+            expect(entries[0].name).toBe(".hidden")
+            expect(entries[1].name).toBe("directory")
+        })
+    }
+
+    [Target js]
+    test `bounded enumeration stops at first overflow entry and closes`() {
+        withDirectoryFixture(2, 4, 1, 1, {
+            expect({ File("fixture").getChildFilesBounded(3) })
+                .toThrowWithMessage(Exception.class, "Directory entry limit exceeded")
+        })
+        withDirectoryFixture(2, 1, 1, 1, {
+            expect({ File("fixture").getChildFilesBounded(0) })
+                .toThrowWithMessage(Exception.class, "Directory entry limit exceeded")
+        })
+    }
+
+    [Target js]
+    test `bounded enumeration failures release handles and negative limit never opens`() {
+        withDirectoryFixture(3, 1, 1, 1, {
+            expect({ File("fixture").getChildFilesBounded(3) })
+                .toThrowWithMessage(Exception.class, "directory read failed")
+        })
+        withDirectoryFixture(4, 0, 1, 0, {
+            expect({ File("fixture").getChildFilesBounded(3) })
+                .toThrowWithMessage(Exception.class, "directory open failed")
+        })
+        withDirectoryFixture(5, 1, 1, 1, {
+            expect({ File("fixture").getChildFilesBounded(0) })
+                .toThrowWithMessage(Exception.class, "directory close failed")
+        })
+        withDirectoryFixture(4, 0, 0, 0, {
+            expect({ File("fixture").getChildFilesBounded(-1) })
+                .toThrowWithMessage(Exception.class, "Directory entry limit must not be negative")
+        })
+    }
+
+    [Target js]
+    test `bounded operations read real files and enumerate a real directory`() {
+        native_array native var Char[] temporaryPath
+        external {
+            var fs = #{File.FileGlobal.fs};
+            var path = #{File.FileGlobal.path};
+            #{temporaryPath} = fs.mkdtempSync(path.join(process.cwd(), '.io-bounded-'));
+        }
+        let directory = File(String(temporaryPath))
+        try {
+            external {
+                fs.writeFileSync(path.join(#{temporaryPath}, '.hidden'), 'a€😀', 'utf8');
+                fs.mkdirSync(path.join(#{temporaryPath}, 'directory'));
+            }
+            let file = directory.getChild(".hidden")
+            expect(FileReader(file).readAllContentsBounded(8)).toBe("a€😀")
+            expect({ FileReader(file).readAllContentsBounded(7) })
+                .toThrowWithMessage(Exception.class, "File byte limit exceeded")
+            let entries = directory.getChildFilesBounded(2)
+            expect(entries.count).toBe(2)
+            // Directory order is not promised by the IO contract.
+            expect(entries.filter({ _.name == ".hidden" }).count).toBe(1)
+            expect(entries.filter({ _.name == "directory" }).count).toBe(1)
+            expect({ directory.getChildFilesBounded(1) })
+                .toThrowWithMessage(Exception.class, "Directory entry limit exceeded")
+        } finally {
+            external {
+                fs.rmSync(#{temporaryPath}, {recursive: true, force: true});
+            }
+        }
+    }
+
+    [Target not js]
+    test `bounded operations fail explicitly on unsupported targets`() {
+        expect({ File("fixture").getChildFilesBounded(1) })
+            .toThrowWithMessage(Exception.class, "Bounded directory enumeration is not supported by this target")
+        let reader = FileReader(File("fixture"))
+        try {
+            expect({ reader.readAllContentsBounded(1) })
+                .toThrowWithMessage(Exception.class, "Bounded file reads are not supported by this target")
+        } finally {
+            reader.close()
+        }
+    }
+
+    [Target js]
+    test async `canonical paths resolve relative absolute chained and ancestor symlinks`() {
+        native_array native var Char[] temporaryPath
+        native_array native var Char[] expectedPath
+        external {
+            var fs = #{File.FileGlobal.fs};
+            var path = #{File.FileGlobal.path};
+            #{temporaryPath} = fs.mkdtempSync(path.join(process.cwd(), '.io-canonical-'));
+        }
+        let directory = File(String(temporaryPath))
+        try {
+            external {
+                fs.mkdirSync(path.join(#{temporaryPath}, 'physical'));
+                fs.mkdirSync(path.join(#{temporaryPath}, 'physical', 'nested'));
+                fs.mkdirSync(path.join(#{temporaryPath}, 'links'));
+                fs.writeFileSync(path.join(#{temporaryPath}, 'physical', 'source.flat'), 'source');
+                fs.symlinkSync('../physical', path.join(#{temporaryPath}, 'links', 'relative'), 'dir');
+                fs.symlinkSync(path.join(#{temporaryPath}, 'physical'), path.join(#{temporaryPath}, 'absolute'), 'dir');
+                fs.symlinkSync('relative', path.join(#{temporaryPath}, 'links', 'chain'), 'dir');
+                #{expectedPath} = fs.realpathSync.native(path.join(#{temporaryPath}, 'physical', 'source.flat'));
+            }
+            let expected = String(expectedPath)
+            let names = ["physical/source.flat", "links/relative/source.flat", "absolute/source.flat", "links/chain/source.flat", "links/relative/nested/../source.flat", "links/relative/../physical/source.flat"]
+            for (Int i = 0; i < names.count; i++) {
+                let file = directory.getChild(names[i])
+                expect(file.getCanonicalPathSync()).toBe(expected)
+                expect(file.getCanonicalPath()).toBe(expected)
+                expect(file.getCanonicalFileSync().normalizedLocation).toBe(File(expected).normalizedLocation)
+                expect(file.getCanonicalFile().normalizedLocation).toBe(File(expected).normalizedLocation)
+            }
+            // Relative input, plus a real system temp path (on macOS /tmp is
+            // itself a relative symlink to private/tmp).
+            native_array native var Char[] relativePath
+            native_array native var Char[] systemTemp
+            native_array native var Char[] expectedTemp
+            external {
+                #{relativePath} = path.relative(process.cwd(), path.join(#{temporaryPath}, 'links', 'relative', 'source.flat'));
+                #{systemTemp} = process.platform === 'win32' ? process.env.TEMP : '/tmp';
+                #{expectedTemp} = fs.realpathSync.native(#{systemTemp});
+            }
+            expect(File(String(relativePath)).getCanonicalPathSync()).toBe(expected)
+            expect(File(String(relativePath)).getCanonicalPath()).toBe(expected)
+            expect(File(String(systemTemp)).getCanonicalPathSync()).toBe(String(expectedTemp))
+            expect(File(String(systemTemp)).getCanonicalPath()).toBe(String(expectedTemp))
+        } finally {
+            external {
+                fs.rmSync(#{temporaryPath}, {recursive: true, force: true});
+            }
+        }
+    }
+
+    [Target js]
+    test async `canonical paths reject missing dangling cyclic and nondirectory paths`() {
+        native_array native var Char[] temporaryPath
+        external {
+            var fs = #{File.FileGlobal.fs};
+            var path = #{File.FileGlobal.path};
+            #{temporaryPath} = fs.mkdtempSync(path.join(process.cwd(), '.io-canonical-errors-'));
+        }
+        let directory = File(String(temporaryPath))
+        try {
+            external {
+                fs.symlinkSync('missing', path.join(#{temporaryPath}, 'dangling'), 'file');
+                fs.symlinkSync('cycle-b', path.join(#{temporaryPath}, 'cycle-a'), 'file');
+                fs.symlinkSync('cycle-a', path.join(#{temporaryPath}, 'cycle-b'), 'file');
+                fs.writeFileSync(path.join(#{temporaryPath}, 'ordinary'), 'not a directory');
+            }
+            let names = ["missing", "dangling", "cycle-a", "ordinary/child"]
+            for (Int i = 0; i < names.count; i++) {
+                let file = directory.getChild(names[i])
+                var Int rejected = 0
+                try { file.getCanonicalPathSync() } catch (Exception error) {
+                    expect(error.message.startsWith("Could not canonicalize path: ")).toBe(true)
+                    rejected++
+                }
+                try { file.getCanonicalPath() } catch (Exception error) {
+                    expect(error.message.startsWith("Could not canonicalize path: ")).toBe(true)
+                    rejected++
+                }
+                expect(rejected).toBe(2)
+            }
+        } finally {
+            external {
+                fs.rmSync(#{temporaryPath}, {recursive: true, force: true});
+            }
+        }
+    }
+
+    // Synchronous, controlled native fixtures: no disk/timing races or whole-file
+    // fallback can hide an unbounded read. Always restore the process IO binding.
+    [Target js]
+    withReadFixture(Int mode, Int expectedBytes, Int expectedOpens, Int expectedCloses, action()) {
+        var Int consumed = 0
+        var Int opens = 0
+        var Int closes = 0
+        external {
+            var savedFs = #{File.FileGlobal.fs};
+            const data = #{mode} === 1 ? Buffer.from('a€😀', 'utf8') : Buffer.alloc(65537, 120);
+            let position = 0;
+            #{File.FileGlobal.fs} = {
+                openSync(path, flags) {
+                    #{opens}++;
+                    if (#{mode} === 4) throw new Error('open failed');
+                    if (flags !== 'r') throw new Error('expected read-only descriptor');
+                    return 0;
+                },
+                readSync(fd, buffer, offset, length, positionArg) {
+                    if (fd !== 0 || positionArg !== null || length > 65536) {
+                        throw new Error('invalid bounded read');
+                    }
+                    if (#{mode} === 3) throw new Error('read failed');
+                    let count = 0;
+                    if (#{mode} === 2) {
+                        count = length;
+                        buffer.fill(120, offset, offset + count);
+                    } else if (#{mode} === 1 || #{mode} === 6) {
+                        count = Math.min(length, data.length - position, 2);
+                        data.copy(buffer, offset, position, position + count);
+                        position += count;
+                    }
+                    #{consumed} += count;
+                    return count;
+                },
+                closeSync(fd) {
+                    if (fd !== 0) throw new Error('invalid descriptor close');
+                    #{closes}++;
+                    if (#{mode} === 5) throw new Error('close failed');
+                }
+            };
+        }
+        try {
+            action()
+        } finally {
+            external {
+                #{File.FileGlobal.fs} = savedFs;
+            }
+        }
+        expect(consumed).toBe(expectedBytes)
+        expect(opens).toBe(expectedOpens)
+        expect(closes).toBe(expectedCloses)
+    }
+
+    [Target js]
+    withDirectoryFixture(Int mode, Int expectedReads, Int expectedOpens, Int expectedCloses, action()) {
+        var Int reads = 0
+        var Int opens = 0
+        var Int closes = 0
+        external {
+            var savedFs = #{File.FileGlobal.fs};
+            #{File.FileGlobal.fs} = {
+                opendirSync(path, options) {
+                    #{opens}++;
+                    if (#{mode} === 4) throw new Error('directory open failed');
+                    if (options.bufferSize !== 1) throw new Error('unbounded directory buffer');
+                    return {
+                        readSync() {
+                            #{reads}++;
+                            if (#{mode} === 3) throw new Error('directory read failed');
+                            if (#{mode} === 2) return {name: 'growing-entry'};
+                            if (#{mode} === 1 && #{reads} <= 2) {
+                                return {name: #{reads} === 1 ? '.hidden' : 'directory'};
+                            }
+                            return null;
+                        },
+                        closeSync() {
+                            #{closes}++;
+                            if (#{mode} === 5) throw new Error('directory close failed');
+                        }
+                    };
+                }
+            };
+        }
+        try {
+            action()
+        } finally {
+            external {
+                #{File.FileGlobal.fs} = savedFs;
+            }
+        }
+        expect(reads).toBe(expectedReads)
+        expect(opens).toBe(expectedOpens)
+        expect(closes).toBe(expectedCloses)
+    }
 }

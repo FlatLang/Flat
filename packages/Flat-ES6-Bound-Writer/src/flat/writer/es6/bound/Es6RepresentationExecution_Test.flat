@@ -1,6 +1,7 @@
 package flat/writer/es6/bound
 
 import flat/bound
+import flat/compiler/models
 import flat/semantic/types
 import flat/io
 import flat/system
@@ -305,6 +306,516 @@ testable class {
         expect(result.emitted).toBe(false)
         expect(result.diagnostic.code).toBe("es6.unsupported-checked-cast")
     }
+
+    async test `interpolation coerces a single numeric expression to String`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let expression = BoundInterpolatedStringExpression(fixture.range(), [
+            BoundInterpolatedStringSegment(fixture.range(), null,
+                BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "42"))
+        ])
+        let emitted = Es6ExpressionOrchestrator().emit(expression)
+        expect(emitted.emitted).toBe(true)
+        execute("const result = " + emitted.code + ";\n" +
+            "if (result !== '42' || typeof result !== 'string') throw new Error('interpolation type');\n" +
+            "console.log('ok');\n")
+    }
+
+    async test `interpolation concatenates leading numbers and evaluates segments once in order`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let expression = BoundInterpolatedStringExpression(fixture.range(), [
+            BoundInterpolatedStringSegment(fixture.range(), null,
+                BoundNativeCallExpression(fixture.range(), SemanticTypes.intType(), "readFirst", BoundExpression[])),
+            BoundInterpolatedStringSegment(fixture.range(), null,
+                BoundNativeCallExpression(fixture.range(), SemanticTypes.intType(), "readSecond", BoundExpression[])),
+            BoundInterpolatedStringSegment(fixture.range(), "\" items\"", null)
+        ])
+        let emitted = Es6ExpressionOrchestrator().emit(expression)
+        expect(emitted.emitted).toBe(true)
+        execute("let events = [];\n" +
+            "globalThis.readFirst = () => { events.push('first'); return 1; };\n" +
+            "globalThis.readSecond = () => { events.push('second'); return 2; };\n" +
+            "const result = " + emitted.code + ";\n" +
+            "if (result !== '12 items' || events.join(',') !== 'first,second') " +
+            "throw new Error('interpolation value or evaluation order');\nconsole.log('ok');\n")
+    }
+
+    async test `interpolation failure does not evaluate later segments`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let expression = BoundInterpolatedStringExpression(fixture.range(), [
+            BoundInterpolatedStringSegment(fixture.range(), null,
+                BoundNativeCallExpression(fixture.range(), SemanticTypes.intType(), "failSegment", BoundExpression[])),
+            BoundInterpolatedStringSegment(fixture.range(), null,
+                BoundNativeCallExpression(fixture.range(), SemanticTypes.intType(), "laterSegment", BoundExpression[]))
+        ])
+        let emitted = Es6ExpressionOrchestrator().emit(expression)
+        expect(emitted.emitted).toBe(true)
+        execute("let calls = 0; const failure = new Error('segment');\n" +
+            "globalThis.failSegment = () => { calls++; throw failure; };\n" +
+            "globalThis.laterSegment = () => { calls++; return 2; };\n" +
+            "let caught; try { " + emitted.code + "; } catch (error) { caught = error; }\n" +
+            "if (caught !== failure || calls !== 1) throw new Error('interpolation failure isolation');\n" +
+            "console.log('ok');\n")
+    }
+
+    async test `resolved real projection converts every production numeric target once`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let number = UserClassSemanticType(fixture.declaration("class", "NumericFamily", 70))
+        let projection = CallableSignature(fixture.symbol("method", "realValue", 71),
+            "realValue", CallableKind("instance-method"), SemanticType[], SemanticTypes.doubleType(), number)
+        let owner = Es6NameMangler.mangle(number.declarationIdentity.value)
+        let getter = Es6NameMangler.mangle(projection.identity.declaration.value)
+        let source = BoundNativeCallExpression(fixture.range(), SemanticTypes.objectType(), "readBox", BoundExpression[])
+        SemanticType[] targets = [SemanticTypes.byteType(), SemanticTypes.shortType(), SemanticTypes.charType(),
+            SemanticTypes.intType(), SemanticTypes.longType(), SemanticTypes.floatType(), SemanticTypes.doubleType()]
+        var String checks = ""
+        for (target in targets) {
+            let expression = BoundNumericUnboxExpression(fixture.range(), target, source, number, projection,
+                TypeConversions.classify(source.semanticType, target, explicit: true),
+                TypeConversions.classify(projection.returnType, target, explicit: true))
+            let emitted = Es6ExpressionOrchestrator().emit(expression)
+            expect(emitted.emitted).toBe(true)
+            let expected = TypeConversions.isIntegral(target) ? "Math.trunc(payload)" : "payload"
+            checks += "{ reads = 0; calls = 0; const result = " + emitted.code + ";\n" +
+                "if (!Object.is(result, " + expected + ") || reads !== 1 || calls !== 1) " +
+                "throw new Error('projection conversion " + target.value() + "'); }\n"
+        }
+        execute("let reads = 0, calls = 0, payload, current;\n" +
+            "class " + owner + " { " + getter + "() { throw new Error('base projection'); } }\n" +
+            "class Derived extends " + owner + " { " + getter + "() { calls++; return payload; } }\n" +
+            "current = new Derived(); globalThis.readBox = () => { reads++; return current; };\n" +
+            "for (payload of [9.75, -9.75, 0, -0, NaN, Infinity, -Infinity]) {\n" + checks + "}\n" +
+            "console.log('ok');\n")
+    }
+
+    async test `integral projection rejects nonfamily objects without coercion or getter calls`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let number = UserClassSemanticType(fixture.declaration("class", "NumericFamily", 70))
+        let projection = CallableSignature(fixture.symbol("method", "realValue", 71),
+            "realValue", CallableKind("instance-method"), SemanticType[], SemanticTypes.doubleType(), number)
+        let source = BoundNativeCallExpression(fixture.range(), SemanticTypes.objectType(), "readBox", BoundExpression[])
+        let expression = BoundNumericUnboxExpression(fixture.range(), SemanticTypes.intType(), source, number, projection,
+            TypeConversions.classify(source.semanticType, SemanticTypes.intType(), explicit: true),
+            TypeConversions.classify(projection.returnType, SemanticTypes.intType(), explicit: true))
+        let emitted = Es6ExpressionOrchestrator().emit(expression)
+        expect(emitted.emitted).toBe(true)
+        let owner = Es6NameMangler.mangle(number.declarationIdentity.value)
+        let getter = Es6NameMangler.mangle(projection.identity.declaration.value)
+        execute("let reads = 0, calls = 0, coercions = 0, current;\n" +
+            "class " + owner + " { " + getter + "() { calls++; throw failure; } }\n" +
+            "const failure = new Error('projection');\n" +
+            "globalThis.readBox = () => { reads++; return current; };\n" +
+            "const fake = { valueOf() { coercions++; return 1; }, " + getter + "() { calls++; return 1; } };\n" +
+            "for (current of [null, undefined, 1, '1', {}, fake]) {\n" +
+            "reads = 0; let caught; try { " + emitted.code + "; } catch (error) { caught = error; }\n" +
+            "if (!(caught instanceof TypeError) || reads !== 1 || calls !== 0 || coercions !== 0) " +
+            "throw new Error('invalid numeric family'); }\n" +
+            "current = new " + owner + "(); reads = 0; let caught;\n" +
+            "try { " + emitted.code + "; } catch (error) { caught = error; }\n" +
+            "if (caught !== failure || reads !== 1 || calls !== 1) throw new Error('projection failure');\n" +
+            "console.log('ok');\n")
+    }
+
+    async test `Long numeric casts truncate positive and negative fractions without int32 narrowing`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let target = SemanticTypes.longType()
+        let source = BoundNativeCallExpression(fixture.range(), SemanticTypes.doubleType(), "readReal", BoundExpression[])
+        let expression = BoundConversionExpression(fixture.range(), target, source,
+            TypeConversions.classify(source.semanticType, target, explicit: true))
+        let emitted = Es6ExpressionOrchestrator().emit(expression)
+        expect(emitted.emitted).toBe(true)
+        execute("let reads = 0, payload; globalThis.readReal = () => { reads++; return payload; };\n" +
+            "for (payload of [9.75, -9.75, 4294967296.75, -4294967296.75, 0.75, -0.75]) {\n" +
+            "reads = 0; const result = " + emitted.code + ";\n" +
+            "if (!Object.is(result, Math.trunc(payload)) || reads !== 1) throw new Error('Long cast'); }\n" +
+            "console.log('ok');\n")
+    }
+
+    async test `evaluation setup preserves lazy branches nested operands and earlier argument values`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let intType = SemanticTypes.intType()
+        let boolType = SemanticTypes.boolType()
+        let chosen = BoundEvaluationExpression(range, intType, [host("events.push('chosen');")],
+            BoundEvaluationExpression(range, intType, [host("events.push('nested');")],
+                BoundLiteralExpression(range, intType, "7")))
+        let skipped = BoundEvaluationExpression(range, intType, [host("throw new Error('unselected');")],
+            BoundLiteralExpression(range, intType, "9"))
+        let conditional = BoundConditionalExpression(range, intType,
+            BoundLiteralExpression(range, boolType, "true"), chosen, skipped)
+        let call = BoundNativeCallExpression(range, intType, "combine", [
+            BoundLiteralExpression(range, intType, "state"),
+            BoundEvaluationExpression(range, intType, [host("state = 20;")], conditional)
+        ])
+        let lazy = BoundBinaryExpression(range, boolType, "&&",
+            BoundLiteralExpression(range, boolType, "false"),
+            BoundEvaluationExpression(range, boolType, [host("throw new Error('short circuit');")],
+                BoundLiteralExpression(range, boolType, "true")))
+        let statements = Es6StatementOrchestrator()
+        let emitted = statements.emit(BoundExpressionStatement(range, call))
+        let booleanStatement = statements.emit(BoundExpressionStatement(range, lazy))
+        expect(emitted.emitted).toBe(true)
+        expect(booleanStatement.emitted).toBe(true)
+        execute("let state = 3, events = []; globalThis.combine = (a,b) => { " +
+            "if (a !== 3 || b !== 7) throw new Error('operand stabilization'); };\n" +
+            emitted.code + booleanStatement.code +
+            "if (events.join(',') !== 'chosen,nested' || state !== 20) throw new Error('selected setup');\n" +
+            "console.log('ok');\n")
+    }
+
+    async test `loop latch runs after surviving continue cleanup and never after exits`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        String[] modes = ["normal", "continue", "break", "return", "throw", "override-break", "override-return", "override-throw", "override-continue"]
+        var String code = ""
+        var Int ordinal
+        for (mode in modes) {
+            let continued = mode == "continue" || mode == "override-break" ||
+                mode == "override-return" || mode == "override-throw"
+            let body = BoundStatement[]
+            if (continued) body.add(BoundExpressionStatement(range, BoundEvaluationExpression(range,
+                SemanticTypes.intType(), [BoundContinueStatement(range)],
+                BoundLiteralExpression(range, SemanticTypes.intType(), "failValue()"))))
+            else if (mode == "break" || mode == "override-continue") body.add(BoundExpressionStatement(range,
+                BoundEvaluationExpression(range, SemanticTypes.intType(), [BoundBreakStatement(range)],
+                    BoundLiteralExpression(range, SemanticTypes.intType(), "failValue()"))))
+            else if (mode == "return") body.add(BoundReturnStatement(range, SemanticTypes.intType(),
+                BoundLiteralExpression(range, SemanticTypes.intType(), "11"),
+                TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType())))
+            else if (mode == "throw") body.add(host("throw failure;"))
+            else body.add(host("events.push('body');"))
+            let cleanup = BoundStatement[]
+            cleanup.add(host("events.push('finally');"))
+            if (mode == "override-break") cleanup.add(BoundBreakStatement(range))
+            if (mode == "override-continue") cleanup.add(BoundContinueStatement(range))
+            if (mode == "override-return") cleanup.add(host("return 12;"))
+            if (mode == "override-throw") cleanup.add(host("throw failure;"))
+            let loop = BoundLoopLatchStatement(range,
+                BoundEvaluationExpression(range, SemanticTypes.boolType(), [host("events.push('condition');")],
+                    BoundLiteralExpression(range, SemanticTypes.boolType(), "index < 1")),
+                [BoundTryStatement(range, body, BoundCatchClause[], cleanup)],
+                [host("events.push('advance'); index++;")],
+                SyntaxIslandIdentity(range.snapshot, "execution-latch", range.startTokenIndex))
+            let emitted = Es6StatementOrchestrator().emit(loop)
+            expect(emitted.emitted).toBe(true)
+            let advances = mode == "normal" || mode == "continue" || mode == "override-continue"
+            let expected = mode == "normal" ? "condition,body,finally,advance,condition" :
+                (advances ? "condition,finally,advance,condition" : "condition,finally")
+            let result = mode == "return" ? "11" : (mode == "override-return" ? "12" : "undefined")
+            let throwsFailure = mode == "throw" || mode == "override-throw"
+            code += "{ let events = [], index = 0, caught, result; const failure = new Error('exit');\n" +
+                "function run" + ordinal + "() {\n" + emitted.code + "}\n" +
+                "try { result = run" + ordinal + "(); } catch (error) { caught = error; }\n" +
+                "if (events.join(',') !== '" + expected + "' || index !== " + (advances ? "1" : "0") +
+                " || result !== " + result + " || caught !== " + (throwsFailure ? "failure" : "undefined") +
+                ") throw new Error('latch " + mode + "'); }\n"
+            ordinal++
+        }
+        execute(code + "console.log('ok');\n")
+    }
+
+    async test `evaluation setup return and throw retain enclosing finally ownership`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let intType = SemanticTypes.intType()
+        let returnExpression = BoundEvaluationExpression(range, intType,
+            [host("events.push('setup'); return 17;")], BoundLiteralExpression(range, intType, "failValue()"))
+        let throwExpression = BoundEvaluationExpression(range, intType,
+            [host("events.push('setup'); throw failure;")], BoundLiteralExpression(range, intType, "failValue()"))
+        let returning = Es6StatementOrchestrator().emit(BoundTryStatement(range,
+            [BoundExpressionStatement(range, returnExpression)], BoundCatchClause[], [host("events.push('finally');")]))
+        let throwing = Es6StatementOrchestrator().emit(BoundTryStatement(range,
+            [BoundExpressionStatement(range, throwExpression)], BoundCatchClause[], [host("events.push('finally');")]))
+        expect(returning.emitted).toBe(true)
+        expect(throwing.emitted).toBe(true)
+        execute("let events = []; const failure = new Error('setup'); function failValue(){throw new Error('value ran');}\n" +
+            "function returning(){\n" + returning.code + "}\nfunction throwing(){\n" + throwing.code + "}\n" +
+            "if (returning() !== 17 || events.join(',') !== 'setup,finally') throw new Error('setup return');\n" +
+            "events = []; let caught; try { throwing(); } catch (error) { caught = error; }\n" +
+            "if (caught !== failure || events.join(',') !== 'setup,finally') throw new Error('setup throw');\n" +
+            "console.log('ok');\n")
+    }
+
+    async test `evaluation in lambda defaults and body executes only on invocation`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let intType = SemanticTypes.intType()
+        let parameter = BoundFunctionParameter("input", fixture.symbol("parameter", "input", 85), intType,
+            BoundEvaluationExpression(range, intType, [host("events.push('default');")],
+                BoundLiteralExpression(range, intType, "5")))
+        let body = BoundEvaluationExpression(range, intType, [host("events.push('body');")],
+            BoundReferenceExpression(range, intType, "input", parameter.identity))
+        let lambda = BoundLambdaExpression(range, FunctionSemanticType([intType], intType),
+            [parameter], BoundReferenceExpression[], body)
+        let emitted = Es6ExpressionOrchestrator().emit(lambda)
+        expect(emitted.emitted).toBe(true)
+        execute("let events = []; const callback = " + emitted.code + ";\n" +
+            "if (events.length !== 0) throw new Error('eager lambda');\n" +
+            "if (callback() !== 5 || callback(9) !== 9 || events.join(',') !== 'default,body,body') " +
+            "throw new Error('lambda sequencing');\nconsole.log('ok');\n")
+    }
+
+    async test `nested loop continue and advance continue keep distinct owners`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let condition = BoundLiteralExpression(range, SemanticTypes.boolType(), "outer < 2")
+        let inner = BoundWhileStatement(range, BoundLiteralExpression(range, SemanticTypes.boolType(), "inner++ < 1"),
+            [BoundTryStatement(range, [BoundContinueStatement(range)], BoundCatchClause[], [host("events.push('inner-finally');")])])
+        let loop = BoundLoopLatchStatement(range, condition,
+            [host("inner = 0;"), inner,
+                BoundSwitchStatement(range, BoundLiteralExpression(range, SemanticTypes.intType(), "0"), [
+                    BoundSwitchCase(range, BoundLiteralExpression(range, SemanticTypes.intType(), "0"),
+                        [BoundContinueStatement(range)], false, false)
+                ])],
+            [host("events.push('advance'); outer++;"), BoundContinueStatement(range), host("throw new Error('advance replay');")],
+            SyntaxIslandIdentity(range.snapshot, "nested-latch", range.startTokenIndex))
+        let emitted = Es6StatementOrchestrator().emit(loop)
+        expect(emitted.emitted).toBe(true)
+        execute("let events = [], outer = 0, inner = 0;\n" + emitted.code +
+            "if (outer !== 2 || events.join(',') !== 'inner-finally,advance,inner-finally,advance') " +
+            "throw new Error('continue owner');\nconsole.log('ok');\n")
+    }
+
+    async test `evaluation condition repeats after continue without entering latch on false`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let loop = BoundWhileStatement(range,
+            BoundEvaluationExpression(range, SemanticTypes.boolType(), [host("checks++;")],
+                BoundLiteralExpression(range, SemanticTypes.boolType(), "checks < 3")),
+            [host("bodies++;"), BoundContinueStatement(range)])
+        let emitted = Es6StatementOrchestrator().emit(loop)
+        expect(emitted.emitted).toBe(true)
+        execute("let checks = 0, bodies = 0;\n" + emitted.code +
+            "if (checks !== 3 || bodies !== 2) throw new Error('condition frequency');\nconsole.log('ok');\n")
+    }
+
+    async test `foreach lowering and function writer execute stored latch after cleanup`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let loop = BoundForEachStatement(range, [host("events.push('initialize');")],
+            BoundLiteralExpression(range, SemanticTypes.boolType(), "index < 2"),
+            [BoundTryStatement(range, [BoundContinueStatement(range)], BoundCatchClause[],
+                [host("events.push('finally');")])],
+            [host("events.push('advance'); index++;")], "foreach-loop", "foreach-exit")
+        let unit = BoundFunctionUnit(fixture.declaration("function", "foreach", 88), "foreach", SemanticTypes.unitType(),
+            [loop], range)
+        let emitted = Es6UnitOrchestrator().emitFunction(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        let name = Es6NameMangler.mangle(unit.identity.value)
+        execute("let events = [], index = 0;\n" + emitted.fragment.code + name + "();\n" +
+            "if (index !== 2 || events.join(',') !== 'initialize,finally,advance,finally,advance') " +
+            "throw new Error('foreach lowering integration');\nconsole.log('ok');\n")
+    }
+
+    async test `evaluation setup awaits in its enclosing async function and rejects without replay`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let expression = BoundEvaluationExpression(range, SemanticTypes.intType(),
+            [host("events.push('before'); await globalThis.gate(); events.push('after');")],
+            BoundLiteralExpression(range, SemanticTypes.intType(), "23"))
+        let emitted = Es6StatementOrchestrator().emit(BoundReturnStatement(range, SemanticTypes.intType(), expression,
+            TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType())))
+        expect(emitted.emitted).toBe(true)
+        execute("let events = [], release, calls = 0; const failure = new Error('cancelled');\n" +
+            "globalThis.gate = () => { calls++; return new Promise(resolve => { release = resolve; }); };\n" +
+            "async function run() {\n" + emitted.code + "}\n" +
+            "(async () => { const pending = run();\n" +
+            "if (events.join(',') !== 'before' || calls !== 1) throw new Error('await ownership');\n" +
+            "release(); if (await pending !== 23 || events.join(',') !== 'before,after') throw new Error('resume');\n" +
+            "events = []; globalThis.gate = () => { calls++; return Promise.reject(failure); };\n" +
+            "let caught; try { await run(); } catch (error) { caught = error; }\n" +
+            "if (caught !== failure || calls !== 2 || events.join(',') !== 'before') throw new Error('rejection replay');\n" +
+            "console.log('ok'); })().catch(error => { console.error(error); process.exitCode = 1; });\n")
+    }
+
+    async test `evaluation setup in parameter default and parent arguments stays in constructor owner`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let intType = SemanticTypes.intType()
+        let parameter = BoundFunctionParameter("value", fixture.symbol("parameter", "value", 86), intType,
+            BoundEvaluationExpression(range, intType, [host("events.push('default');")],
+                BoundLiteralExpression(range, intType, "5")))
+        let unit = BoundFunctionUnit(fixture.declaration("function", "defaults", 87), "defaults", intType,
+            [BoundReturnStatement(range, intType, BoundReferenceExpression(range, intType, "value", parameter.identity),
+                TypeConversions.classify(intType, intType))], range, [parameter])
+        let emitted = Es6UnitOrchestrator().emitFunction(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        let name = Es6NameMangler.mangle(unit.identity.value)
+        let arguments = Es6ExpressionOrchestrator().emitArguments([
+            BoundLiteralExpression(range, intType, "state"),
+            BoundEvaluationExpression(range, intType, [host("state = 20; events.push('parent');")],
+                BoundLiteralExpression(range, intType, "7"))
+        ])
+        expect(arguments.emitted).toBe(true)
+        execute("let events = [], state = 3;\n" + emitted.fragment.code +
+            "if (" + name + "() !== 5 || " + name + "(9) !== 9 || events.join(',') !== 'default') " +
+            "throw new Error('default selection');\n" +
+            "class Parent { constructor(a,b) { if (a !== 3 || b !== 7) throw new Error('parent arguments'); } }\n" +
+            "class Child extends Parent { constructor() {\n" + arguments.setup + "super(" + arguments.code + "); } }\n" +
+            "new Child(); if (events.join(',') !== 'default,parent') throw new Error('parent setup');\n" +
+            "console.log('ok');\n")
+    }
+
+    test `opaque host interpolation rejects setup without guessing an insertion point`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let value = BoundEvaluationExpression(range, SemanticTypes.intType(), [host("sideEffect();")],
+            BoundLiteralExpression(range, SemanticTypes.intType(), "1"))
+        let statement = BoundExternalStatement(range, "es6", [BoundExternalCodeSegment(range, "", value, "identity")])
+        let emitted = Es6StatementOrchestrator().emit(statement)
+        expect(emitted.emitted).toBe(false)
+        expect(emitted.diagnostic.code).toBe("es6.external-evaluation-context")
+    }
+
+    async test `generic lambda results box after concrete conversion with resolved constructors`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let intType = SemanticTypes.intType()
+        let wrapper = UserClassSemanticType(fixture.declaration("class", "CanonicalInteger", 90))
+        let constructor = CallableSignature(fixture.symbol("constructor", "box", 91), "box",
+            CallableKind("constructor"), [intType], wrapper, wrapper)
+        let generic = GenericParameterSemanticType(fixture.declaration("function", "produce", 92), "T", 0)
+        let declaration = FunctionSemanticType(SemanticType[], generic)
+        let source = BoundLiteralExpression(range, SemanticTypes.doubleType(), "readReal()")
+        let conversion = TypeConversions.classify(source.semanticType, intType, explicit: true)
+        let body = BoundConversionExpression(range, intType, source, conversion)
+        let expressionLambda = BoundLambdaExpression(range, FunctionSemanticType(SemanticType[], intType),
+            BoundFunctionParameter[], BoundReferenceExpression[], body, declarationContract: declaration,
+            resultBoxingConstructor: constructor)
+        let blockLambda = BoundLambdaExpression(range, FunctionSemanticType(SemanticType[], intType),
+            BoundFunctionParameter[], BoundReferenceExpression[], BoundLiteralExpression(range, intType, "0"),
+            [BoundReturnStatement(range, intType, source, conversion)], declarationContract: declaration,
+            resultBoxingConstructor: constructor)
+        let writer = Es6ExpressionOrchestrator()
+        let expression = writer.emit(expressionLambda)
+        let block = writer.emit(blockLambda)
+        expect(expression.emitted).toBe(true)
+        expect(block.emitted).toBe(true)
+        let withoutEvidence = BoundLambdaExpression(range, FunctionSemanticType(SemanticType[], intType),
+            BoundFunctionParameter[], BoundReferenceExpression[], body, declarationContract: declaration)
+        let missing = Es6ExpressionOrchestrator().emit(withoutEvidence)
+        expect(missing.emitted).toBe(false)
+        expect(missing.diagnostic.code).toBe("es6.generic-result-boxing-evidence")
+        let owner = Es6NameMangler.mangle(wrapper.declarationIdentity.value)
+        execute("let reads = 0, boxes = 0; function readReal(){ reads++; return -9.75; }\n" +
+            "class " + owner + " { constructor(value){ boxes++; this.value = value; } }\n" +
+            "const expression = " + expression.code + "; const block = " + block.code + ";\n" +
+            "if (reads !== 0 || boxes !== 0) throw new Error('eager boxing');\n" +
+            "for (const callback of [expression, block]) { const result = callback();\n" +
+            "if (!(result instanceof " + owner + ") || result.value !== -9) throw new Error('convert before box'); }\n" +
+            "if (reads !== 2 || boxes !== 2) throw new Error('boxing evaluation count');\nconsole.log('ok');\n")
+    }
+
+    async test `generic lambda boundary preserves null and already boxed identity`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let wrapper = UserClassSemanticType(fixture.declaration("class", "CanonicalInteger", 90))
+        let generic = GenericParameterSemanticType(fixture.declaration("function", "produce", 92), "T", 0)
+        let declaration = FunctionSemanticType(SemanticType[], generic)
+        let reference = BoundLambdaExpression(range, FunctionSemanticType(SemanticType[], wrapper),
+            BoundFunctionParameter[], BoundReferenceExpression[], BoundLiteralExpression(range, wrapper, "boxed"),
+            declarationContract: declaration)
+        let absent = BoundLambdaExpression(range, FunctionSemanticType(SemanticType[], SemanticTypes.nullType()),
+            BoundFunctionParameter[], BoundReferenceExpression[], BoundLiteralExpression(range, SemanticTypes.nullType(), "null"),
+            declarationContract: declaration)
+        let writer = Es6ExpressionOrchestrator()
+        let selected = writer.emit(reference)
+        let missing = writer.emit(absent)
+        expect(selected.emitted).toBe(true)
+        expect(missing.emitted).toBe(true)
+        execute("const boxed = {}; const selected = " + selected.code + "; const missing = " + missing.code + ";\n" +
+            "if (selected() !== boxed || missing() !== null) throw new Error('generic reference identity');\n" +
+            "console.log('ok');\n")
+    }
+
+    async test `async generic lambda boxes resolved payload rather than promise container`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let type = SemanticTypes.intType()
+        let wrapper = UserClassSemanticType(fixture.declaration("class", "CanonicalInteger", 90))
+        let constructor = CallableSignature(fixture.symbol("constructor", "box", 91), "box",
+            CallableKind("constructor"), [type], wrapper, wrapper)
+        let generic = GenericParameterSemanticType(fixture.declaration("function", "produce", 92), "T", 0)
+        let body = BoundEvaluationExpression(range, type, [host("await globalThis.gate();")],
+            BoundLiteralExpression(range, type, "7"))
+        let lambda = BoundLambdaExpression(range, FunctionSemanticType(SemanticType[], type, asyncFunction: true),
+            BoundFunctionParameter[], BoundReferenceExpression[], body,
+            declarationContract: FunctionSemanticType(SemanticType[], generic, asyncFunction: true),
+            resultBoxingConstructor: constructor)
+        let emitted = Es6ExpressionOrchestrator().emit(lambda)
+        expect(emitted.emitted).toBe(true)
+        let owner = Es6NameMangler.mangle(wrapper.declarationIdentity.value)
+        execute("let boxes = 0, release; class " + owner + " { constructor(value){ boxes++; this.value = value; } }\n" +
+            "globalThis.gate = () => new Promise(resolve => { release = resolve; });\n" +
+            "const callback = " + emitted.code + "; const pending = callback();\n" +
+            "if (!(pending instanceof Promise) || boxes !== 0) throw new Error('promise boxed');\n" +
+            "release(); pending.then(result => { if (!(result instanceof " + owner +
+            ") || result.value !== 7 || boxes !== 1) throw new Error('payload boxing'); console.log('ok'); })" +
+            ".catch(error => { console.error(error); process.exitCode = 1; });\n")
+    }
+
+    async test `binder function reference adapter carries per lambda boxing evidence without eager calls`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let type = SemanticTypes.intType()
+        let wrapper = UserClassSemanticType(fixture.declaration("class", "CanonicalInteger", 90))
+        let constructor = CallableSignature(fixture.symbol("constructor", "box", 91), "box",
+            CallableKind("constructor"), [type], wrapper, wrapper)
+        let generic = GenericParameterSemanticType(fixture.declaration("function", "produce", 92), "T", 0)
+        let declaration = FunctionSemanticType([type], generic)
+        let target = CallableSignature(fixture.symbol("function", "read", 93), "read",
+            CallableKind("function"), [type], type)
+        let functionType = FunctionSemanticType([type], type)
+        let reference = BoundFunctionValue(range, functionType, target)
+        // Match the actual binder adapter shape: function invocation inside a
+        // lambda, with a concrete result and the original generic declaration.
+        let parameter = BoundFunctionParameter("argument0", fixture.symbol("parameter", "argument0", 94), type)
+        let invocation = BoundFunctionInvocationExpression(range, reference, functionType,
+            [BoundReferenceExpression(range, type, parameter.name, parameter.identity)])
+        let adapter = BoundLambdaExpression(range, functionType, [parameter], BoundReferenceExpression[], invocation,
+            declarationContract: declaration, resultBoxingConstructor: constructor)
+        let emitted = Es6ExpressionOrchestrator().emit(adapter)
+        expect(emitted.emitted).toBe(true)
+        let owner = Es6NameMangler.mangle(wrapper.declarationIdentity.value)
+        let selected = Es6NameMangler.mangle(target.identity.declaration.value)
+        execute("let reads = 0, boxes = 0; class " + owner + " { constructor(value){ boxes++; this.value = value; } }\n" +
+            "function " + selected + "(value){ reads++; return value + 1; }\n" +
+            "const adapter = " + emitted.code + "; if (reads || boxes) throw new Error('eager adapter');\n" +
+            "const result = adapter(6); if (!(result instanceof " + owner +
+            ") || result.value !== 7 || reads !== 1 || boxes !== 1) throw new Error('reference adapter');\n" +
+            "console.log('ok');\n")
+    }
+
+    test `per lambda boxing evidence cannot fall back to a different constructor`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let wrapper = UserClassSemanticType(fixture.declaration("class", "CanonicalInteger", 90))
+        let valid = CallableSignature(fixture.symbol("constructor", "box", 91), "box",
+            CallableKind("constructor"), [SemanticTypes.intType()], wrapper, wrapper)
+        let incompatible = CallableSignature(fixture.symbol("constructor", "wrong", 95), "wrong",
+            CallableKind("constructor"), [SemanticTypes.boolType()], wrapper, wrapper)
+        let result = Es6ExpressionEmitter([valid]).emitGenericResult(SemanticTypes.intType(),
+            Es6CodeResult(code: "1"), incompatible)
+        expect(result.emitted).toBe(false)
+        expect(result.diagnostic.code).toBe("es6.generic-result-boxing-evidence")
+    }
+
+    test `generic result boxing fails closed for ambiguous or incompatible evidence`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let wrapper = UserClassSemanticType(fixture.declaration("class", "CanonicalInteger", 90))
+        let constructor = CallableSignature(fixture.symbol("constructor", "box", 91), "box",
+            CallableKind("constructor"), [SemanticTypes.intType()], wrapper, wrapper)
+        let ambiguous = Es6ExpressionEmitter([constructor, constructor]).emitGenericResult(
+            SemanticTypes.intType(), Es6CodeResult(code: "1"))
+        expect(ambiguous.emitted).toBe(false)
+        expect(ambiguous.diagnostic.code).toBe("es6.generic-result-boxing-evidence")
+        let incompatible = Es6ExpressionEmitter([constructor]).emitGenericResult(
+            SemanticTypes.boolType(), Es6CodeResult(code: "false"))
+        expect(incompatible.emitted).toBe(false)
+        let failure = Es6CodeResult(diagnostic: Es6BackendDiagnostic("test.failure", "upstream"))
+        expect(Es6ExpressionEmitter([constructor]).emitGenericResult(SemanticTypes.intType(), failure)).toBe(failure)
+    }
+
+    host(String code) -> BoundExternalStatement => BoundExternalStatement(
+        Es6BoundWriter_TestFixture().range(), "es6", [BoundExternalCodeSegment(Es6BoundWriter_TestFixture().range(), code)])
 
     async execute(String code) {
         let root = File(".flat-es6-representation-#{Time.currentTimeMillis}")

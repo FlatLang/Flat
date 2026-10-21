@@ -98,8 +98,10 @@ testable class {
 
     async test `real package artifact agrees at concurrency one and three with observed reversed settlement`() {
         let serial = packageSchedule(1, false)
+        let serialReversed = packageSchedule(1, true)
         let forward = packageSchedule(3, false)
         let reversed = packageSchedule(3, true)
+        expect(serialReversed).toBe(serial)
         expect(forward).toBe(serial)
         expect(reversed).toBe(serial)
     }
@@ -122,9 +124,9 @@ testable class {
                 provider.gates[index].release.complete(true)
                 provider.gates[index].settled.get()
             }
-            expect(provider.settlementOrder.first).toBe("Value2.flat")
-            expect(provider.settlementOrder[1]).toBe("Value1.flat")
-            expect(provider.settlementOrder[2]).toBe("Value0.flat")
+            for (offset in 0..parallelism) {
+                expect(provider.settlementOrder[offset]).toBe("Value#{parallelism - 1 - offset}.flat")
+            }
         } else {
             for (index in 0..parallelism) {
                 provider.gates[index].release.complete(true)
@@ -314,18 +316,23 @@ testable class {
     }
 
     async test `artifact saturation bounds retained work and cancellation releases pending delivery`() {
+        artifactPressureCancellationSchedule(1)
+        artifactPressureCancellationSchedule(3)
+    }
+
+    async artifactPressureCancellationSchedule(Int parallelism) {
         let compiler = GatedCompiler(9, immediate: true)
         let sink = MemoryCompilerArtifactSink()
         let session = CompilerSession()
-        CompilerEngine(sourceCompiler: compiler, maxActiveSources: 3, maxQueuedSources: 1).start(
+        CompilerEngine(sourceCompiler: compiler, maxActiveSources: parallelism, maxQueuedSources: 1).start(
             MemoryCompilerSourceProvider(compiler.sources()), sink, session)
         expect(session.artifactBackpressure.get()).toBe(true)
         expect(session.artifacts.bufferedCount).toBe(4)
         expect(session.artifacts.pendingSendCount).toBe(1)
         let pendingArtifactSendsAtPressure = session.artifacts.pendingSendCount
         let bufferedArtifactsAtPressure = session.artifacts.bufferedCount
-        expect(session.retainedSourceCount <= 4).toBe(true)
-        expect(session.peakActiveSourceCount <= 3).toBe(true)
+        expect(session.retainedSourceCount <= parallelism + 1).toBe(true)
+        expect(session.peakActiveSourceCount <= parallelism).toBe(true)
         expect(session.completion.completed).toBe(false)
         // The final input cannot enter while publication owns this full window.
         expect(compiler.gates.last.entryCount).toBe(0)
@@ -344,8 +351,8 @@ testable class {
         for (index in 0..4) expect(session.artifacts.receive().received).toBe(true)
         expect(session.artifacts.receive().completed).toBe(true)
         expect(sink.artifacts().count).toBe(committed)
-        emitLifecycle("artifact-backpressure-cancellation", 3, compiler.gates,
-            compiler.settlementOrder, compiler.peak, compiler.active, 4, session, summary,
+        emitLifecycle("artifact-backpressure-cancellation", parallelism, compiler.gates,
+            compiler.settlementOrder, compiler.peak, compiler.active, parallelism + 1, session, summary,
             pendingArtifactSendsAtPressure: pendingArtifactSendsAtPressure,
             bufferedArtifactsAtPressure: bufferedArtifactsAtPressure)
     }
@@ -382,7 +389,7 @@ testable class {
         String[] settlementOrder, Int peak, Int activeAfter, Int retainedCapacity,
         CompilerSession session, CompilationSummary summary,
         Int executorActiveAfter = -1, Int executorQueuedAfter = -1,
-        Int cleanupWaitSamples = 0, Int unrelatedArtifactsBeforeFirstSettlement = -1,
+        Int cleanupWaitSamples = -1, Int unrelatedArtifactsBeforeFirstSettlement = -1,
         Int pendingArtifactSendsAtPressure = -1, Int bufferedArtifactsAtPressure = -1
     ) {
         var Int entered
@@ -403,9 +410,10 @@ testable class {
         let unrelated = unrelatedArtifactsBeforeFirstSettlement < 0 ? "null" : "#unrelatedArtifactsBeforeFirstSettlement"
         let pendingAtPressure = pendingArtifactSendsAtPressure < 0 ? "null" : "#pendingArtifactSendsAtPressure"
         let bufferedAtPressure = bufferedArtifactsAtPressure < 0 ? "null" : "#bufferedArtifactsAtPressure"
+        let cleanupSamples = cleanupWaitSamples < 0 ? "null" : "#cleanupWaitSamples"
         // Completion is awaited by each caller, and all assertions precede output.
         // No pass/status or broad acceptance flags are synthesized from labels.
         Console.log(CompilerEvidence.render(summary))
-        Console.log("{\"schema\":\"flat.compiler.lifecycle.v1\",\"scenario\":\"#scenario\",\"concurrency\":#concurrency,\"settlementOrder\":#order,\"activeCapacity\":#concurrency,\"retainedCapacity\":#retainedCapacity,\"peakActive\":#peak,\"peakRetained\":#retainedPeak,\"enteredCount\":#entered,\"settledCount\":#settled,\"activeAfter\":#activeAfter,\"executorActiveAfter\":#executorActive,\"executorQueuedAfter\":#executorQueued,\"inFlightAfter\":#{session.inFlightSourceCount},\"retainedSourcesAfter\":#{session.retainedSourceCount},\"retainedCodeCharactersAfter\":#{session.retainedSourceCodeCharacters},\"pendingArtifactSendsAfter\":#{session.artifacts.pendingSendCount},\"artifactBackpressure\":#{session.artifactBackpressure.get()},\"cancelled\":#{summary.cancelled},\"cleanupSettled\":#{summary.cleanupSettled},\"unrelatedArtifactsBeforeFirstSettlement\":#unrelated,\"pendingArtifactSendsAtPressure\":#pendingAtPressure,\"bufferedArtifactsAtPressure\":#bufferedAtPressure,\"cleanupWaitSamples\":#cleanupWaitSamples,\"unobserved\":[\"children_reaped\",\"temporary_outputs_removed\"]}")
+        Console.log("{\"schema\":\"flat.compiler.lifecycle.v1\",\"scenario\":\"#scenario\",\"concurrency\":#concurrency,\"settlementOrder\":#order,\"activeCapacity\":#concurrency,\"retainedCapacity\":#retainedCapacity,\"peakActive\":#peak,\"peakRetained\":#retainedPeak,\"enteredCount\":#entered,\"settledCount\":#settled,\"activeAfter\":#activeAfter,\"executorActiveAfter\":#executorActive,\"executorQueuedAfter\":#executorQueued,\"inFlightAfter\":#{session.inFlightSourceCount},\"retainedSourcesAfter\":#{session.retainedSourceCount},\"retainedCodeCharactersAfter\":#{session.retainedSourceCodeCharacters},\"pendingArtifactSendsAfter\":#{session.artifacts.pendingSendCount},\"artifactBackpressure\":#{session.artifactBackpressure.get()},\"cancelled\":#{summary.cancelled},\"cleanupSettled\":#{summary.cleanupSettled},\"unrelatedArtifactsBeforeFirstSettlement\":#unrelated,\"pendingArtifactSendsAtPressure\":#pendingAtPressure,\"bufferedArtifactsAtPressure\":#bufferedAtPressure,\"cleanupWaitSamples\":#cleanupSamples,\"unobserved\":[\"children_reaped\",\"temporary_outputs_removed\"]}")
     }
 }

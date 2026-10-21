@@ -43,6 +43,23 @@ testable class {
         expect(Long.parseLong("-12034")).toBe(-12034)
     }
 
+    test `parseLong preserves integers beyond the Int range`() {
+        expect(Long.parseLong("2147483648")).toBe(2147483648)
+        expect(Long.parseLong("-2147483649")).toBe(-2147483649)
+        expect(Long.parseLong("4294967296")).toBe(4294967296)
+        expect(Long.parseLong("-4294967296")).toBe(-4294967296)
+        expect(Long.parseLong("4294967297")).toBe(4294967297)
+    }
+
+    test `parseLong boxes its declared result as Long rather than Int`() {
+        let Object positive = Long.parseLong("4294967297")
+        let Object negative = Long.parseLong("-4294967297")
+        expect(positive.class).toBe(Long.class)
+        expect(negative.class).toBe(Long.class)
+        expect(positive.equals(Long(4294967297))).toBe(true)
+        expect(negative.equals(Long(-4294967297))).toBe(true)
+    }
+
     test `toEnglish can get number less than 10`() {
         expect(Long.toEnglish(5)).toBe("5")
     }

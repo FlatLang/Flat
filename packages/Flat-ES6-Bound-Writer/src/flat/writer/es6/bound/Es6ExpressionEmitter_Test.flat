@@ -27,11 +27,41 @@ testable class {
         let integral = BoundNumericUnboxExpression(fixture.range(), SemanticTypes.intType(), value,
             number, projection, TypeConversions.classify(value.semanticType, SemanticTypes.intType(), explicit: true),
             TypeConversions.classify(SemanticTypes.doubleType(), SemanticTypes.intType(), explicit: true))
-        let rejected = Es6ExpressionOrchestrator().emit(integral)
+        let narrowed = Es6ExpressionOrchestrator().emit(integral)
+        expect(narrowed.emitted).toBe(true)
+        expect(narrowed.code.contains("return Math.trunc(value." +
+            Es6NameMangler.mangle(projection.identity.declaration.value) + "())")).toBe(true)
+        let inconsistent = BoundNumericUnboxExpression(fixture.range(), SemanticTypes.intType(), value,
+            number, projection, TypeConversions.classify(value.semanticType, SemanticTypes.intType(), explicit: true),
+            TypeConversion(SemanticTypes.doubleType(), SemanticTypes.intType(), "identity", true, false, false, 0))
+        let rejected = Es6ExpressionOrchestrator().emit(inconsistent)
         expect(rejected.emitted).toBe(false)
         expect(rejected.diagnostic.code).toBe("es6.numeric-unbox-unsupported")
-        expect(rejected.diagnostic.range).toBe(integral.range)
+        expect(rejected.diagnostic.range).toBe(inconsistent.range)
     }
+    test `numeric unbox rejects unsupported projection evidence and unresolved casts for every target`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let number = UserClassSemanticType(fixture.declaration("class", "NumericFamily", 70))
+        let projection = CallableSignature(fixture.symbol("method", "realValue", 71),
+            "realValue", CallableKind("instance-method"), SemanticType[], SemanticTypes.doubleType(), number)
+        let source = fixture.reference("local", "boxed", 72, SemanticTypes.objectType())
+        SemanticType[] targets = [SemanticTypes.byteType(), SemanticTypes.shortType(), SemanticTypes.charType(),
+            SemanticTypes.intType(), SemanticTypes.longType(), SemanticTypes.floatType(), SemanticTypes.doubleType()]
+        for (target in targets) {
+            let conversion = TypeConversions.classify(source.semanticType, target, explicit: true)
+            let unresolved = Es6ExpressionOrchestrator().emit(BoundConversionExpression(
+                fixture.range(), target, source, conversion))
+            expect(unresolved.emitted).toBe(false)
+            expect(unresolved.diagnostic.code).toBe("es6.unlowered-numeric-unboxing")
+            let expression = BoundNumericUnboxExpression(fixture.range(), target, source, number, projection,
+                conversion, TypeConversion(projection.returnType, target, "unresolved-projection", true, false, false, 0))
+            let rejected = Es6ExpressionOrchestrator().emit(expression)
+            expect(rejected.emitted).toBe(false)
+            expect(rejected.diagnostic.code).toBe("es6.numeric-unbox-unsupported")
+            expect(rejected.diagnostic.range).toBe(expression.range)
+        }
+    }
+
     test `checked reference emission`() {
         let fixture = Es6BoundWriter_TestFixture()
         let parent = UserClassSemanticType(fixture.declaration("class", "Parent", 1))
@@ -115,16 +145,16 @@ testable class {
             fixture.range(), FunctionSemanticType(SemanticType[], SemanticTypes.unitType(), asyncFunction: true),
             BoundFunctionParameter[], BoundReferenceExpression[], body
         )
-        expect(emitter.emit(synchronous).code).toBe("() => void 0")
-        expect(emitter.emit(asynchronous).code).toBe("async () => void 0")
+        expect(emitter.emit(synchronous).code).toBe("() => {\nreturn void 0;\n}")
+        expect(emitter.emit(asynchronous).code).toBe("async () => {\nreturn void 0;\n}")
         let syncType = (FunctionSemanticType)synchronous.semanticType
         let asyncType = (FunctionSemanticType)asynchronous.semanticType
         expect(emitter.emit(BoundFunctionInvocationExpression(
             fixture.range(), synchronous, syncType, BoundExpression[]
-        )).code).toBe("(() => void 0)()")
+        )).code).toBe("(() => {\nreturn void 0;\n})()")
         expect(emitter.emit(BoundFunctionInvocationExpression(
             fixture.range(), asynchronous, asyncType, BoundExpression[]
-        )).code).toBe("(await (async () => void 0)())")
+        )).code).toBe("(await (async () => {\nreturn void 0;\n})())")
     }
     test `emits Unit literal as undefined without changing null`() {
         let fixture = Es6BoundWriter_TestFixture()
@@ -227,12 +257,12 @@ testable class {
             BoundInterpolatedStringSegment(fixture.range(), null, receiver)
         ])
         expect(orchestrator.emit(interpolation).code).toBe(
-            "(\"Hello \" + #{Es6NameMangler.mangle(receiver.symbolIdentity.value)})"
+            "(\"\" + \"Hello \" + #{Es6NameMangler.mangle(receiver.symbolIdentity.value)})"
         )
         let conditionalInterpolation = BoundInterpolatedStringExpression(fixture.range(), [
             BoundInterpolatedStringSegment(fixture.range(), null, conditional)
         ])
-        expect(orchestrator.emit(conditionalInterpolation).code).toBe("((true ? 1 : 2))")
+        expect(orchestrator.emit(conditionalInterpolation).code).toBe("(\"\" + (true ? 1 : 2))")
         let invocationType = FunctionSemanticType(
             [SemanticTypes.intType()], SemanticTypes.intType()
         )

@@ -1,8 +1,142 @@
 package flat/parser/flat
 
 import flat/compiler/models
+import flat/lexer/Lexer
 
 testable class {
+    async test `outer returns preserve nested statement lambda semicolons and generic member calls`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-return-boundary"), "one")
+        let variants = ["", "<Int>"]
+        for (typeArguments in variants) {
+            let source = "return Future.from" + typeArguments + "({ return 0; }); return 1;"
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let values = stream.consumeAll<Token>("data")
+            let shift = typeArguments.isEmpty ? 0 : 3
+            let statements = PrimitiveStatementParser().parse(values, snapshot, 40).statements()
+            expect(statements.count).toBe(2)
+            let returned = (PrimitiveReturnSyntax)statements[0]
+            let callObject = (Object)returned.value
+            let call = (PrimitiveMemberCallSyntax)callObject
+            let argument = call.argumentValues()[0]
+            let lambda = (PrimitiveLambdaSyntax)argument
+            let innerStatements = lambda.statementValues()
+            expect(innerStatements.count).toBe(1)
+            let innerReturn = (PrimitiveReturnSyntax)innerStatements[0]
+            let literalObject = (Object)innerReturn.value
+            let literal = (PrimitiveLiteralSyntax)literalObject
+            expect(literal.sourceValue).toBe("0")
+            expect(call.memberName).toBe("from")
+            expect(call.typeArgumentNames().count).toBe(typeArguments.isEmpty ? 0 : 1)
+            expect(returned.range.startTokenIndex).toBe(40)
+            expect(returned.range.endTokenIndex).toBe(51 + shift)
+            expect(lambda.range.startTokenIndex).toBe(45 + shift)
+            expect(lambda.range.endTokenIndex).toBe(50 + shift)
+            expect(innerReturn.range.startTokenIndex).toBe(46 + shift)
+            expect(innerReturn.range.endTokenIndex).toBe(48 + shift)
+            expect(returned.range.start.column).toBe(1)
+            expect(returned.range.end.column).toBe(source.indexOf("; return 1;") + 1)
+            expect(innerReturn.range.start.column).toBe(source.indexOf("return 0") + 1)
+            expect(innerReturn.range.end.column).toBe(source.indexOf("0;") + 2)
+            expect(statements[1].range.startTokenIndex).toBe(52 + shift)
+            // Exercise the delegating entry point used by class/body parsing too.
+            let delegated = PrimitiveControlStatementParser().parse(values, snapshot, 40).statements()
+            expect(delegated.count).toBe(2)
+            let delegatedReturn = (PrimitiveReturnSyntax)delegated[0]
+            let delegatedCallObject = (Object)delegatedReturn.value
+            let delegatedCall = (PrimitiveMemberCallSyntax)delegatedCallObject
+            let delegatedArgument = delegatedCall.argumentValues()[0]
+            let delegatedLambda = (PrimitiveLambdaSyntax)delegatedArgument
+            expect(delegatedLambda.statementValues().count).toBe(1)
+            expect(delegatedLambda.range.startTokenIndex).toBe(45 + shift)
+        }
+    }
+
+    async test `nested brackets parentheses and braces retain only outer statement boundaries`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:three-delimiters"), "one")
+        let source = "return Future.from({ return [Future.from({ return 0; })]; }); return 1;"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let statements = PrimitiveStatementParser().parse(stream.consumeAll<Token>("data"), snapshot).statements()
+        expect(statements.count).toBe(2)
+        let returned = (PrimitiveReturnSyntax)statements[0]
+        let callObject = (Object)returned.value
+        let call = (PrimitiveMemberCallSyntax)callObject
+        let argument = call.argumentValues()[0]
+        let lambda = (PrimitiveLambdaSyntax)argument
+        expect(lambda.statementValues().count).toBe(1)
+        let innerStatement = lambda.statementValues()[0]
+        let inner = (PrimitiveReturnSyntax)innerStatement
+        expect(inner.value.expressionKind()).toBe("array")
+    }
+
+    async test `lexer strings and comments containing delimiters do not truncate nested lambda returns`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-opaque-delimiters"), "one")
+        var String source = "return Future.from({ /* ; ) ] } */ return \""
+        source += '#'
+        source += "{value} ; ) ] }\"; }); return 1;"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let statements = PrimitiveStatementParser().parse(stream.consumeAll<Token>("data"), snapshot).statements()
+        expect(statements.count).toBe(2)
+        let returned = (PrimitiveReturnSyntax)statements[0]
+        let callObject = (Object)returned.value
+        let call = (PrimitiveMemberCallSyntax)callObject
+        let argument = call.argumentValues()[0]
+        let lambda = (PrimitiveLambdaSyntax)argument
+        let innerStatements = lambda.statementValues()
+        expect(innerStatements.count).toBe(1)
+        let innerReturn = (PrimitiveReturnSyntax)innerStatements[0]
+        let innerValue = innerReturn.value
+        expect(innerValue.expressionKind()).toBe("interpolated-string")
+    }
+
+    test `literal interpolation and comment token contents are opaque to statement splitting`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:opaque-delimiters"), "one")
+        var String interpolation = "\""
+        interpolation += '#'
+        interpolation += "{value}\""
+        let values = [
+            token("return", Token.Type.IDENTIFIER, 1),
+            token("\"; ) ] }\"", Token.Type.STRING, 8), token(";", Token.Type.SYMBOL, 17),
+            token("; ) ] }", Token.Type.COMMENT, 18),
+            token("return", Token.Type.IDENTIFIER, 26), token("';'", Token.Type.CHAR, 33),
+            token(";", Token.Type.SYMBOL, 36),
+            token("return", Token.Type.IDENTIFIER, 38), token(interpolation, Token.Type.STRING, 45),
+            token(";", Token.Type.SYMBOL, 60)
+        ]
+        let statements = PrimitiveStatementParser().parse(values, snapshot, 10).statements()
+        expect(statements.count).toBe(3)
+        let last = (PrimitiveReturnSyntax)statements[2]
+        let lastValue = last.value
+        expect(lastValue.expressionKind()).toBe("interpolated-string")
+        expect(last.range.startTokenIndex).toBe(16)
+        expect(last.range.endTokenIndex).toBe(18)
+    }
+
+    async test `statement delimiter diagnostics identify mismatches unexpected closers and EOF`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:bad-statement-delimiters"), "one")
+        let sources = ["return call(];", "return [1);", "return { return 0; ];", "return 0);", "return call({ return 0;"]
+        let positions = ["43..44", "43..44", "45..46", "42..43", "47..47"]
+        let reasons = ["Expected ')'", "Expected ']'", "Expected '}'", "Unexpected closing", "at token 43"]
+        let parser = PrimitiveStatementParser()
+        for (index in 0..sources.count) {
+            let stream = Lexer().lex(sources[index])
+            stream.emit("start")
+            var String message
+            try { parser.parse(stream.consumeAll<Token>("data"), snapshot, 40) }
+            catch (Exception error) { message = error.message }
+            expect(message.contains("Primitive statement syntax error at " + positions[index])).toBe(true)
+            expect(message.contains(reasons[index])).toBe(true)
+        }
+        let recovered = parser.parse([
+            token("return", Token.Type.IDENTIFIER, 1), token("1", Token.Type.INTEGER, 8)
+        ], snapshot, 90).statements()
+        expect(recovered.count).toBe(1)
+        expect(recovered[0].range.startTokenIndex).toBe(90)
+        expect(recovered[0].range.endTokenIndex).toBe(92)
+    }
+
     test `retains native scalar local evidence in both modifier orders`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:scalar-native-local"), "one")
         let first = PrimitiveStatementParser().parse([

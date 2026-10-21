@@ -4,21 +4,24 @@ import flat/bound
 
 /** Emits reduced statements from already-emitted child expressions. */
 class {
-    public emitExternal(BoundExternalStatement statement) -> Es6CodeResult {
+    public emitExternal(BoundExternalStatement statement,
+        Es6ExpressionOrchestrator expressions = Es6ExpressionOrchestrator()) -> Es6CodeResult {
         if (!statement || statement.target != "es6") {
             throw Exception("ES6 external statement requires selected es6 evidence")
         }
         var String code = ""
         for (binding in statement.nameBindingValues()) {
-            let emitted = Es6ExpressionOrchestrator().emit(binding.value)
+            let emitted = expressions.emit(binding.value)
             if (!emitted.emitted) return emitted
             code += "let " + binding.sourceName + " = " + emitted.code + ";\n"
         }
         for (segment in statement.segmentValues()) {
             if (!segment.interpolated()) code += segment.text
             else {
-                let emitted = Es6ExpressionOrchestrator().emit(segment.value)
+                let emitted = expressions.emit(segment.value)
                 if (!emitted.emitted) return emitted
+                if (emitted.setup.count > 0) return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+                    "es6.external-evaluation-context", "Opaque external code requires a structured evaluation insertion point", segment.range))
                 if (segment.rendering != "identity" &&
                     segment.rendering != "es6-native-string") {
                     throw Exception("Unsupported ES6 external interpolation rendering")
@@ -54,7 +57,7 @@ class {
             throw Exception("ES6 switch requires statement, value, and cases")
         }
         if (!value.emitted) return value
-        var String code = "switch (" + value.code + ") {\n"
+        var String code = value.setup + "switch (" + value.code + ") {\n"
         for (caseValue in cases) {
             if (!caseValue.emitted) return caseValue
             code += caseValue.code
@@ -68,7 +71,7 @@ class {
     ) -> Es6CodeResult {
         if (!statement || !value) throw Exception("ES6 throw requires statement and value")
         if (!value.emitted) return value
-        return Es6CodeResult(code: "throw " + value.code + ";\n")
+        return Es6CodeResult(code: value.setup + "throw " + value.code + ";\n")
     }
 
     public emitCatch(
@@ -112,7 +115,7 @@ class {
         if (!condition.emitted) return condition
         if (!thenBody.emitted) return thenBody
         if (!elseBody.emitted) return elseBody
-        var String code = "if (" + condition.code + ") {\n" + indent(thenBody.code) + "}"
+        var String code = condition.setup + "if (" + condition.code + ") {\n" + indent(thenBody.code) + "}"
         if (statement.elseValues().isNotEmpty) {
             code += " else {\n" + indent(elseBody.code) + "}"
         }
@@ -134,8 +137,8 @@ class {
         if (!body.emitted) return body
         if (!advance.emitted) return advance
         return Es6CodeResult(code:
-            initialization.code + "while (" + condition.code + ") {\n" +
-                indent(body.code + advance.code) + "}\n"
+            initialization.code + "while (true) {\n" +
+                indent(condition.setup + "if (!(" + condition.code + ")) break;\n" + body.code + advance.code) + "}\n"
         )
     }
 
@@ -150,7 +153,9 @@ class {
         if (!condition.emitted) return condition
         if (!body.emitted) return body
         return Es6CodeResult(code:
-            "while (" + condition.code + ") {\n" + indent(body.code) + "}\n"
+            condition.setup.count == 0 ?
+                "while (" + condition.code + ") {\n" + indent(body.code) + "}\n" :
+                "while (true) {\n" + indent(condition.setup + "if (!(" + condition.code + ")) break;\n" + body.code) + "}\n"
         )
     }
 
@@ -168,7 +173,7 @@ class {
             throw Exception("ES6 expression statement requires statement and expression")
         }
         if (!expression.emitted) return expression
-        return Es6CodeResult(code: expression.code + ";\n")
+        return Es6CodeResult(code: expression.setup + expression.code + ";\n")
     }
 
     public emitInitializedLocal(
@@ -180,7 +185,7 @@ class {
         }
         if (!initializer.emitted) return initializer
         let name = Es6NameMangler.mangle(statement.local.symbolIdentity.value)
-        return Es6CodeResult(code: "let " + name + " = " + initializer.code + ";\n")
+        return Es6CodeResult(code: initializer.setup + "let " + name + " = " + initializer.code + ";\n")
     }
 
     public emitUninitializedLocal(
@@ -202,7 +207,7 @@ class {
         }
         if (!target.emitted) return target
         if (!value.emitted) return value
-        return Es6CodeResult(code: target.code + " = " + value.code + ";\n")
+        return Es6CodeResult(code: target.setup + value.setup + target.code + " = " + value.code + ";\n")
     }
 
     public emitAssignment(
@@ -214,7 +219,7 @@ class {
         }
         if (!value.emitted) return value
         let name = Es6ExpressionEmitter().emitReference(statement.target).code
-        return Es6CodeResult(code: name + " = " + value.code + ";\n")
+        return Es6CodeResult(code: value.setup + name + " = " + value.code + ";\n")
     }
 
     public emitMemberAssignment(
@@ -229,7 +234,7 @@ class {
             "es6.unlowered-compound-store", "Compound field statement requires target-independent lowering"))
         if (!target.emitted) return target
         if (!value.emitted) return value
-        return Es6CodeResult(code: target.code + " = " + value.code + ";\n")
+        return Es6CodeResult(code: target.setup + value.setup + target.code + " = " + value.code + ";\n")
     }
 
     public emitReturn(
@@ -240,7 +245,7 @@ class {
             throw Exception("ES6 value return requires statement and value")
         }
         if (!value.emitted) return value
-        return Es6CodeResult(code: "return " + value.code + ";\n")
+        return Es6CodeResult(code: value.setup + "return " + value.code + ";\n")
     }
 
     public emitVoidReturn(BoundReturnStatement statement) -> Es6CodeResult {

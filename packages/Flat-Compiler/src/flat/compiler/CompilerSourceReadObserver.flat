@@ -1,0 +1,13 @@
+package flat/compiler
+
+/** Synchronous observations; implementations must not retain an unbounded replay.
+ * Callbacks report actual scheduler transitions, never acceptance verdicts.
+ * Throwing aborts the owning compilation; observers must not reenter scheduling.
+ */
+abstract class CompilerSourceReadObserver {
+    public admitted(String identity, Int admitted, Int retained, Int peakRetained) {}
+    public started(String identity, Int active, Int peakActive) {}
+    public settled(String identity, Int settled, Int active) {}
+    public consumed(String identity, Int retained) {}
+    public drained(Int admitted, Int settled, Int peakActive, Int peakRetained) {}
+}

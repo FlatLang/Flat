@@ -1,0 +1,20 @@
+package bootstrap/boxing
+
+class CallbackBoxing_TestSuite {
+    public static async main(String[] args) {
+        var failures = 0
+        var completed = 0
+        let tests = CallbackBoxing_Test()
+        tests.runTests({
+            completed++
+            if (!_.success) {
+                failures++
+                Console.log("#_")
+            }
+        })
+
+        if (failures > 0 || completed != 7) {
+            System.exit(1)
+        }
+    }
+}

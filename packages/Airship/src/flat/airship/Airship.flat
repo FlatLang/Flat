@@ -591,5 +591,10 @@ class {
         if (cliArgs.quietArg.enabled) {
             args.add("-q")
         }
+        // The delimiter must remain last, after all Airship options.
+        if (cliArgs.propagationArgs.enabled) {
+            args.add("--")
+            args.addAll(cliArgs.propagationArgs.values)
+        }
     }
 }

@@ -4,7 +4,8 @@ import flat/io
 
 class extends CompilerSourceProvider {
     var File[] files
-    public construct(File[] values) {
+    public construct(File[] values, visible Int maxSourceBytes = 4194304) {
+        if (maxSourceBytes < 0) throw Exception("Filesystem source byte capacity cannot be negative")
         if (!values || values.any((value) => !value || !value.isFile)) {
             throw Exception("Filesystem source provider requires existing files")
         }
@@ -17,7 +18,7 @@ class extends CompilerSourceProvider {
         if (!file) return null
         let reader = FileReader(file)
         var String text
-        try { text = reader.readString() } finally { reader.close() }
+        try { text = reader.readAllContentsBounded(maxSourceBytes) } finally { reader.close() }
         return CompilerSource(identity, text)
     }
 }

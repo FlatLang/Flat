@@ -35,6 +35,9 @@ class<TType> {
         cancellationListeners.clear()
     }
 
+    // The callback must return the generic TType representation, including
+    // compiler-inserted boxing of concrete primitive results. Implementations
+    // must preserve existing boxes, reference identity, and null unchanged.
     public static from<TType>(async func() -> TType) -> Future<TType> {
         throw Exception("Not implemented for target language or runtime")
     }

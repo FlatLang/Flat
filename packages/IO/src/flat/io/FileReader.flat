@@ -3,6 +3,16 @@ package flat/io
 class FileReader implements InputStream {
     visible Bool isOpen => false
 
+    // UTF-8 text bounded by bytes consumed, not a racy preflight file size.
+    // A zero limit accepts only an empty file. Overflow throws, never truncates.
+    // ES6 owns and closes a private descriptor for this synchronous operation.
+    public readAllContentsBounded(Int maxBytes) -> String {
+        if (maxBytes < 0) {
+            throw Exception("File byte limit must not be negative")
+        }
+        throw Exception("Bounded file reads are not supported by this target")
+    }
+
     public readBytes() -> Byte[] => null
 
     visible File file

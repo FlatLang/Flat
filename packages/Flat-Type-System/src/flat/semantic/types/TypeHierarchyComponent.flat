@@ -6,6 +6,34 @@ class {
     var TypeHierarchyDiagnostic[] diagnosticValues = TypeHierarchyDiagnostic[]
     var UserClassSemanticType arrayDeclaration
     var UserClassSemanticType rootDeclaration
+    // At most one entry per language primitive (twelve), component-owned and
+    // frozen by seal(). These are declaration identities, not spelling aliases.
+    var String[] primitiveKinds = String[]
+    var UserClassSemanticType[] primitiveDeclarations = UserClassSemanticType[]
+
+    public registerPrimitiveDeclaration(PrimitiveSemanticType primitive, UserClassSemanticType declaration) {
+        if (sealed || !primitive || !declaration || primitiveKinds.contains(primitive.value()) ||
+            primitiveDeclarations.any({ _.value() == declaration.value() })) {
+            throw Exception("Primitive declaration requires a unique primitive and declaration before sealing")
+        }
+        primitiveKinds.add(primitive.value())
+        primitiveDeclarations.add(declaration)
+    }
+
+    /** Receiver-only projection; never an implicit boxing or numeric conversion. */
+    public primitiveReceiverDistance(PrimitiveSemanticType primitive, UserClassSemanticType owner) -> Int {
+        requireValid()
+        var Int index
+        while (index < primitiveKinds.count) {
+            if (primitiveKinds[index] == primitive.value()) {
+                let declaration = primitiveDeclarations[index]
+                if (!find(declaration) || !find(owner)) return -1
+                return distance(declaration, owner)
+            }
+            index++
+        }
+        return -1
+    }
 
     /** Registers the source-declared universal root of this component. */
     public registerRootDeclaration(UserClassSemanticType declaration) {

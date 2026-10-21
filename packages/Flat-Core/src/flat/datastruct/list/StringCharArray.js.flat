@@ -24,7 +24,15 @@ class {
         this.count = data.count
 
         external {
-            #{this.data} = #{data.data}.join("");
+            #{this.data} = "";
+        }
+
+        for (i in 0..count) {
+            let Char value = data[i]
+
+            external {
+                #{this.data} += #{value};
+            }
         }
     }
 

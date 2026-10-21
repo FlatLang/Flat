@@ -19,7 +19,10 @@ class {
         visible FlatEs6PackageLinker packageLinker = FlatEs6PackageLinker(),
         private CompilerPackageReuse packageReuse = null,
         visible Int maxActiveSources = 1,
-        visible Int maxQueuedSources = 0
+        visible Int maxQueuedSources = 0,
+        private CompilerSourceReadSchedule sourceReadSchedule = null,
+        private CompilerSourceReadObserver sourceReadObserver = null,
+        private CompilerInvocationObserver invocationObserver = null
     ) {
         if (maxActiveSources <= 0 || maxQueuedSources < 0 ||
             maxActiveSources > 2147483647 - maxQueuedSources) {
@@ -235,7 +238,7 @@ class {
         if (session.cancelled) return
         session.enter()
         let reads = PackageCompilerSourceProvider(SessionCompilerSourceProvider(sources, session), session, ordered,
-            maxActiveSources, packageLinker.maxSourceCharacters)
+            maxActiveSources, packageLinker.maxSourceCharacters, sourceReadSchedule, sourceReadObserver, invocationObserver)
         try {
             let cached = snapshot ? packageReuse.find(snapshot) : null
             if (snapshot) session.recordReuse(packageReuse.evidence(snapshot, cached != null))
@@ -247,6 +250,7 @@ class {
                 let artifact = CompilerArtifact(artifactIdentity, code)
                 sink.write(artifact)
                 session.recordArtifact()
+                if (invocationObserver) invocationObserver.artifactAccepted(session, artifactIdentity)
                 publishArtifact(session, artifact)
                 if (!session.cancelled) publishProgress(session, "Compiled package artifact #artifactIdentity")
             }

@@ -180,6 +180,12 @@ public class TernaryOperation extends IValue implements Accessible {
                 n.addChild(trueValue);
                 n.addChild(falseValue);
 
+                // onAdded may lower a branch in place (Array initializers replace
+                // themselves with a generated MethodCall). Resolve types from the
+                // attached replacements, not the now-detached decoded nodes.
+                trueValue = n.getTrueValue();
+                falseValue = n.getFalseValue();
+
                 if (traditional && !"Bool".equals(condition.getReturnedNode().getType())) {
                     condition.replaceWithNullCheck();
                 }

@@ -2,31 +2,44 @@ package flat/eventstream
 
 class<In, Out> {
     completeOrderedEmitter() {
+        // Future's generic payload is boxed, unlike native JS lifecycle flags.
+        Object result = true
+        native var Object nativeResult
+        nativeResult = result
         external {
             if (!#{orderedEmitterCompletion.completed}) {
                 #{orderedEmitterCompletion.completed} = true;
-                #{orderedEmitterCompletion.resolveFunc}(true);
+                #{orderedEmitterCompletion.resolveFunc}(#{nativeResult});
             }
         }
     }
 
     signalOutputBackpressure() {
+        Object result = true
+        native var Object nativeResult
+        nativeResult = result
         external {
             if (!#{outputBackpressure.completed}) {
                 #{outputBackpressure.completed} = true;
-                #{outputBackpressure.resolveFunc}(true);
+                #{outputBackpressure.resolveFunc}(#{nativeResult});
             }
         }
     }
 
     completeOperation() {
+        Object noBackpressure = false
+        Object result = true
+        native var Object nativeNoBackpressure
+        native var Object nativeResult
+        nativeNoBackpressure = noBackpressure
+        nativeResult = result
         external {
             if (!#{outputBackpressure.completed}) {
                 #{outputBackpressure.completed} = true;
-                #{outputBackpressure.resolveFunc}(false);
+                #{outputBackpressure.resolveFunc}(#{nativeNoBackpressure});
             }
             #{completion.completed} = true;
-            #{completion.resolveFunc}(true);
+            #{completion.resolveFunc}(#{nativeResult});
         }
     }
 }

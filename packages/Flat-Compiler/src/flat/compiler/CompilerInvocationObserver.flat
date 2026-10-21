@@ -1,0 +1,19 @@
+package flat/compiler
+
+/**
+ * In-process production driver contract. Bound once by CLI after persistent input
+ * admission, before any source load. Fingerprints are actual incremental producer
+ * evidence, not caller-supplied labels. Callbacks are synchronous and bounded;
+ * observers own receipt storage and must not accumulate unbounded event history.
+ * sourceReadCompleted and artifactAccepted are readiness observations at actual
+ * work boundaries. A driver may request session.cancel() there; ordinary compiler
+ * cleanup still drains admitted reads before session completion. Artifact acceptance
+ * is a sink write, NOT destination publication or filesystem cleanup evidence.
+ */
+abstract class CompilerInvocationObserver extends CompilerSourceReadObserver {
+    public artifactLifecycleObserver() -> CompilerArtifactLifecycleObserver => null
+    public manifestLifecycleObserver() -> CompilerArtifactLifecycleObserver => null
+    public invocationAdmitted(String revision, String destination, String persistentEvidence) {}
+    public sourceReadCompleted(CompilerSession session, String identity) {}
+    public artifactAccepted(CompilerSession session, String identity) {}
+}

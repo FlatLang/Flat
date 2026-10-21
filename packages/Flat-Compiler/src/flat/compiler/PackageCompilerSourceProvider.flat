@@ -16,12 +16,19 @@ class extends CompilerSourceProvider {
     var Int peakActive
     var Int peakRetained
     var Bool disposed
+    var Int admittedCount
+    var Int settledCount
 
     public construct(private CompilerSourceProvider source, private CompilerSession session,
-        private String[] ordered, visible Int capacity, visible Int maxCharacters) {
+        private String[] ordered, visible Int capacity, visible Int maxCharacters,
+        private CompilerSourceReadSchedule schedule = null,
+        private CompilerSourceReadObserver observer = null,
+        private CompilerInvocationObserver invocationObserver = null) {
         if (!source || !session || !ordered || capacity <= 0 || maxCharacters <= 0) {
             throw Exception("Package source reads require source, session and positive bounds")
         }
+        if (schedule && schedule.capacity != capacity) throw Exception("Controlled read schedule must match package capacity")
+        if (schedule) schedule.claim()
         this.ordered = ordered.copy()
     }
 
@@ -39,23 +46,44 @@ class extends CompilerSourceProvider {
 
     override public async load(String identity) -> CompilerSource {
         checkpoint()
-        while (next < ordered.count && pending.count < capacity) {
+        let admitWindow = !schedule || pending.isEmpty
+        while (admitWindow && next < ordered.count && pending.count < capacity) {
+            checkpoint()
             let work = PendingRead(ordered[next++])
+            if (pending.count + 1 > peakRetained) peakRetained = pending.count + 1
+            admittedCount++
+            if (observer) observer.admitted(work.identity, admittedCount, pending.count + 1, peakRetained)
             pending.add(work)
-            if (pending.count > peakRetained) peakRetained = pending.count
+            var Future<Bool> gate
+            if (schedule) gate = schedule.admit()$
             work.result = Future.from<CompilerSource>(async {
                 active++
                 if (active > peakActive) peakActive = active
                 try {
+                    if (observer) observer.started(work.identity, active, peakActive)
                     checkpoint()
                     let value = source.load(work.identity)
+                    if (value && invocationObserver) invocationObserver.sourceReadCompleted(session, work.identity)
+                    checkpoint()
                     if (value && value.text.count > maxCharacters) {
                         throw Exception("Flat package source exceeds configured character capacity")
                     }
                     if (!value) return null
                     return CompilerSource(value.identity.concat(""), value.text.concat(""))
-                } finally { active-- }
+                } finally {
+                    // Controlled completion releases are explicit test-driver
+                    // ownership, not cancellation of native filesystem work.
+                    if (gate) gate.get()
+                    active--
+                    settledCount++
+                    try { if (observer) observer.settled(work.identity, settledCount, active) }
+                    finally { if (schedule) schedule.settle() }
+                }
             })$
+        }
+        if (schedule) {
+            schedule.seal()
+            schedule.awaitSettlement()
         }
         if (pending.isEmpty || pending.first.identity != identity) {
             throw Exception("Package source reads require stable sequential consumption")
@@ -63,6 +91,7 @@ class extends CompilerSourceProvider {
         let work = pending.first
         let value = work.result.get()
         pending.remove(0)
+        if (observer) observer.consumed(identity, pending.count)
         checkpoint()
         return value
     }
@@ -70,11 +99,13 @@ class extends CompilerSourceProvider {
     public async dispose() {
         if (disposed) return
         disposed = true
+        if (schedule) schedule.seal()
         // All work has already started; awaiting here does not admit another read.
         for (work in pending) {
             try { work.result.get() } catch (Exception error) {}
         }
         pending.clear()
         session.recordPackageReadPeaks(peakActive, peakRetained)
+        if (observer) observer.drained(admittedCount, settledCount, peakActive, peakRetained)
     }
 }

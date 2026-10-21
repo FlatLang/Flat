@@ -117,14 +117,132 @@ testable class {
         expect(count).toBe(1)
     }
 
-    async test `Future.from: propagates exceptions`() {
-        let future = Future.from<String>(async {
-            throw Exception("broken")
+    async test `Future.from: preserves Int arithmetic through generic results without replay`() {
+        var calls = 0
+        let future = Future.from<Int>(async {
+            calls++
+            return 6 * 7
         })
+
+        Int first = await future.get()
+        Int second = await future.get()
+
+        expect(first + 1).toBe(43)
+        expect(second + 1).toBe(43)
+        expect(calls).toBe(1)
+        expect(future.completed).toBe(true)
+
+        let zero = Future.from<Int>(async { return 0 })
+        let negative = Future.from<Int>(async { return -42 })
+        Int zeroResult = await zero.get()
+        Int negativeResult = await negative.get()
+
+        expect(zeroResult + 1).toBe(1)
+        expect(negativeResult + 1).toBe(-41)
+    }
+
+    async test `Future.from: inferred numeric callback results remain usable as Int`() {
+        Int input = 7
+        let future = Future.from(async { return input * 6 })
+        Int response = await future.get()
+
+        expect(response + 1).toBe(43)
+    }
+
+    async test `Future.from: preserves both Bool values through generic results`() {
+        let yes = Future.from<Bool>(async { return true })
+        let no = Future.from<Bool>(async { return false })
+
+        Bool yesResult = await yes.get()
+        Bool noResult = await no.get()
+
+        expect(yesResult).toBe(true)
+        expect(noResult).toBe(false)
+        expect(!yesResult).toBe(false)
+        expect(!noResult).toBe(true)
+    }
+
+    async test `Future.from: preserves String contents and identity`() {
+        let original = "future payload"
+        let future = Future.from<String>(async { return original })
+        String response = await future.get()
+
+        expect(response).toBe("future payload")
+        expect(response.count).toBe(14)
+        expect(Object.referenceEquals(response, original)).toBe(true)
+    }
+
+    async test `Future.from: preserves reference identity across repeated reads`() {
+        let original = Object()
+        let future = Future.from<Object>(async { return original })
+        Object first = await future.get()
+        Object second = await future.get()
+
+        expect(Object.referenceEquals(first, original)).toBe(true)
+        expect(Object.referenceEquals(second, original)).toBe(true)
+    }
+
+    async test `Future.from: does not rebox an already boxed payload`() {
+        Object original = 42
+        let future = Future.from<Object>(async { return original })
+        Object response = await future.get()
+
+        expect(Object.referenceEquals(response, original)).toBe(true)
+    }
+
+    async test `Future.from: preserves null as a generic payload`() {
+        let future = Future.from<Object>(async { return null })
+        Object response = await future.get()
+
+        expect(Object.referenceEquals(response, null)).toBe(true)
+        expect(future.completed).toBe(true)
+        expect(future.cancelled).toBe(false)
+        expect(future.exception).toBe(null)
+    }
+
+    async test `Future.from: cancellation remains terminal after the callback returns`() {
+        let started = Future.create<Bool>()
+        let release = Future.create<Bool>()
+        let finished = Future.create<Bool>()
+        var cancellations = 0
+        let future = Future.from<Int>(async {
+            started.complete(true)
+            release.get()
+            finished.complete(true)
+            return 42
+        })
+        future.onCancel({ cancellations++ })
+        started.get()
+
+        future.cancel()
+        future.cancel()
+
+        expectAsync(async { future.get() }).toThrow(CancellationException.class)
+        expect(cancellations).toBe(1)
+        expect(future.completed).toBe(true)
+        expect(future.cancelled).toBe(true)
+
+        release.complete(true)
+        finished.get()
+
+        expectAsync(async { future.get() }).toThrow(CancellationException.class)
+        expect(cancellations).toBe(1)
+        expect(future.exception).toBe(null)
+    }
+
+    async test `Future.from: propagates exceptions`() {
+        let error = Exception("broken")
+        let future = Future.from<String>(async {
+            throw error
+        })
+        let independent = Future.from<String>(async { return "unaffected" })
 
         expectAsync(async { future.get() }).toThrowWithMessage(Exception.class, "broken")
         expect(future.completed).toBe(true)
         expect(future.exception.message).toBe("broken")
+        expect(Object.referenceEquals(future.exception, error)).toBe(true)
+        expect(independent.get()).toBe("unaffected")
+        expect(independent.exception).toBe(null)
     }
 
     futureThing() -> Future<String> {

@@ -160,6 +160,29 @@ class {
      * Synchronous: capacity is checked before signatures; failure publishes no partial result.
      * No pending work queue or interruptible cancellation is introduced.
      */
+    /** Register only exact source-qualified Core identities before sealing the component. */
+    registerScalarDeclarations(TypeHierarchyComponent hierarchy, PrimitiveResolvedDeclarationContext scope) {
+        if (!scope) return
+        let names = ["Byte", "Short", "Int", "Long", "Float", "Double", "Char"]
+        for (name in names) {
+            let declarations = scope.candidates("flat/primitive/number/#name")
+            if (declarations.count > 1) throw Exception("Canonical scalar declaration must be unique")
+            if (declarations.isEmpty) continue
+            SemanticType resolvedPrimitive = PrimitiveStructuralTypeResolver().resolve(name)
+            PrimitiveSemanticType primitiveType = (PrimitiveSemanticType)resolvedPrimitive
+            let canonicalType = UserClassSemanticType(declarations.first)
+            hierarchy.registerPrimitiveDeclaration(primitiveType, canonicalType)
+        }
+        let booleans = scope.candidates("flat/primitive/Bool")
+        if (booleans.count > 1) throw Exception("Canonical Bool declaration must be unique")
+        if (booleans.isNotEmpty) {
+            SemanticType resolvedBoolean = SemanticTypes.boolType()
+            PrimitiveSemanticType booleanType = (PrimitiveSemanticType)resolvedBoolean
+            let canonicalBoolean = UserClassSemanticType(booleans.first)
+            hierarchy.registerPrimitiveDeclaration(booleanType, canonicalBoolean)
+        }
+    }
+
     public bindContexts(
         PrimitiveSourceBindingContext[] contexts,
         Int maxTypes = 256,
@@ -331,6 +354,7 @@ class {
                     }
                 }
             }
+            registerScalarDeclarations(contextHierarchy, PrimitiveResolvedDeclarationContext(ordered.first, ordered))
             contextHierarchy.seal()
             if (!contextHierarchy.valid) throw Exception("Invalid source component hierarchy")
         }
@@ -693,6 +717,7 @@ class {
             hierarchy.add(TypeHierarchyDeclaration(UserClassSemanticType(identity), "class", directParents,
                 genericParameters: declaredGenerics, genericParents: concreteParents))
         }
+        registerScalarDeclarations(hierarchy, context)
         hierarchy.seal()
         if (!hierarchy.valid) {
             let diagnostic = hierarchy.diagnostics().first

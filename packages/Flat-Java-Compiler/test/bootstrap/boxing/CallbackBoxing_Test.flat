@@ -1,0 +1,90 @@
+package bootstrap/boxing
+
+import flat/future/Future
+import flat/test/Test
+
+testable class CallbackBoxing_Test {
+    async test `concrete Int callbacks cross generic returns boxed`() {
+        let zero = Future.from<Int>(async { return 0 })
+        let negative = Future.from<Int>(async { return -42 })
+        Int input = 7
+        let inferred = Future.from(async { return input * 6 })
+
+        Int zeroResult = await zero.get()
+        Int negativeResult = await negative.get()
+        Int inferredResult = await inferred.get()
+        expect(zeroResult + 1).toBe(1)
+        expect(negativeResult + 1).toBe(-41)
+        expect(inferredResult + 1).toBe(43)
+    }
+
+    async test `concrete Bool callbacks preserve both values`() {
+        let yes = Future.from<Bool>(async { return true })
+        let no = Future.from<Bool>(async { return false })
+        Bool yesResult = await yes.get()
+        Bool noResult = await no.get()
+
+        expect(yesResult).toBe(true)
+        expect(noResult).toBe(false)
+        expect(!yesResult).toBe(false)
+        expect(!noResult).toBe(true)
+    }
+
+    async test `String callbacks retain contents and identity`() {
+        let original = "callback payload"
+        let future = Future.from<String>(async { return original })
+        String response = await future.get()
+
+        expect(response).toBe("callback payload")
+        expect(response.count).toBe(16)
+        expect(Object.referenceEquals(response, original)).toBe(true)
+    }
+
+    async test `reference callbacks retain identity on repeated reads`() {
+        let original = Object()
+        let future = Future.from<Object>(async { return original })
+        Object first = await future.get()
+        Object second = await future.get()
+
+        expect(Object.referenceEquals(first, original)).toBe(true)
+        expect(Object.referenceEquals(second, original)).toBe(true)
+    }
+
+    async test `null callbacks remain null`() {
+        let future = Future.from<Object>(async { return null })
+        Object response = await future.get()
+
+        expect(Object.referenceEquals(response, null)).toBe(true)
+        expect(future.completed).toBe(true)
+        expect(future.exception).toBe(null)
+    }
+
+    async test `generic callbacks retain existing Int and Bool boxes`() {
+        Object number = 42
+        Object flag = false
+        Object numberResult = await fromGeneric<Object>(number).get()
+        Object flagResult = await fromGeneric<Object>(flag).get()
+
+        expect(Object.referenceEquals(numberResult, number)).toBe(true)
+        expect(Object.referenceEquals(flagResult, flag)).toBe(true)
+    }
+
+    test `returned callable preserves closure representation`() {
+        let callback() -> Int = intCallback()
+        expect(callback() + 1).toBe(43)
+        expect(invoke<Int>({ return 42 }) + 1).toBe(43)
+        expect(invoke<Bool>({ return false })).toBe(false)
+    }
+
+    fromGeneric<TType>(TType original) -> Future<TType> {
+        return Future.from<TType>(async { return original })
+    }
+
+    invoke<TType>(callback() -> TType) -> TType {
+        return callback()
+    }
+
+    intCallback() -> callback() -> Int {
+        return { return 42 }
+    }
+}

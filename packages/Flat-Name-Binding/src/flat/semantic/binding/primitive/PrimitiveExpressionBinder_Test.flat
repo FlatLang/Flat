@@ -18,6 +18,23 @@ testable class {
         SourceSnapshotIdentity(SourceIdentity("memory:#name"), "one"), start, start + 1,
         Location(lineNumber: 1, column: start + 1), Location(lineNumber: 1, column: start + 2))
 
+    callbackBoxingContext(SourceRange range, String name) -> PrimitiveResolvedDeclarationContext {
+        let syntax = PrimitiveClassSyntax(range, name, null, null, PrimitiveFieldSyntax[],
+            PrimitiveConstructorSyntax(range, PrimitiveFunctionParameterSyntax[], PrimitiveStatementSyntax[]),
+            PrimitiveFunctionSyntax[])
+        let source = PrimitiveSourceBindingContext(name == "Bool" ? "flat/primitive" : "flat/primitive/number",
+            range.snapshot, [syntax])
+        return PrimitiveResolvedDeclarationContext(source, [source])
+    }
+
+    callbackBoxingTarget(PrimitiveResolvedDeclarationContext context, SemanticType type) -> CallableSignature {
+        let name = type.value().substring("primitive:".count)
+        let owner = UserClassSemanticType(context.candidates(name == "Bool" ? "flat/primitive/Bool" :
+            "flat/primitive/number/#name").first)
+        return CallableSignature(SymbolIdentity(owner.declarationIdentity, "constructor"), name,
+            CallableKind("constructor"), [type], owner, owner)
+    }
+
     arrayTextContext(SourceRange range) -> PrimitiveResolvedDeclarationContext {
         let syntax = PrimitiveClassSyntax(range, "String", null, null, PrimitiveFieldSyntax[],
             PrimitiveConstructorSyntax(range, PrimitiveFunctionParameterSyntax[], PrimitiveStatementSyntax[]),
@@ -366,6 +383,179 @@ testable class {
         let missing = PrimitiveExpressionBinder().bind(syntax)
         expect(missing.succeeded).toBe(false)
         expect(missing.diagnostic.range).toBe(range)
+    }
+
+    test `generic callback boxing rejects missing ambiguous and shadow evidence`() {
+        let range = arrayRange("generic-boxing-rejection")
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "function", 100), "function", "from")
+        let declaration = FunctionSemanticType(SemanticType[], GenericParameterSemanticType(owner, "T", 0))
+        let context = callbackBoxingContext(range, "Int")
+        let target = callbackBoxingTarget(context, SemanticTypes.intType())
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "0"))
+        for (mode in 0..4) {
+            var CallableSignature[] targets = CallableSignature[]
+            if (mode != 0) targets = [target]
+            if (mode == 2) targets.add(target)
+            let source = context.owner
+            let shadow = PrimitiveSourceBindingContext("shadow", source.snapshot, source.classValues())
+            let scope = mode == 3 ? PrimitiveResolvedDeclarationContext(shadow, [shadow]) : context
+            let bound = PrimitiveExpressionBinder().bindCallback(syntax,
+                FunctionSemanticType(SemanticType[], SemanticTypes.intType()), LocalBinding[], targets,
+                originalContract: declaration, declarationContext: mode == 1 ? null : scope)
+            expect(bound.succeeded).toBe(false)
+            expect(bound.diagnostic.message.contains("boxing")).toBe(true)
+        }
+    }
+
+    test `generic zero argument function reference publishes typed invocation adapter`() {
+        let range = arrayRange("generic-function-reference")
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "function", 100), "function", "read")
+        let type = FunctionSemanticType(SemanticType[], SemanticTypes.intType(), true)
+        let target = CallableSignature(SymbolIdentity(owner, "function"), "read", CallableKind("function"),
+            SemanticType[], SemanticTypes.intType(), asyncFunction: true)
+        let selected = BoundFunctionValue(range, type, target)
+        let declaration = FunctionSemanticType(SemanticType[], GenericParameterSemanticType(owner, "T", 0), true)
+        let context = callbackBoxingContext(range, "Int")
+        let boxing = callbackBoxingTarget(context, SemanticTypes.intType())
+        let adapted = PrimitiveExpressionBinder.adaptCallbackReference(selected, declaration, context, [boxing])
+        let lambda = arrayLambda(adapted)
+        expect(lambda.declarationContract.value()).toBe(declaration.value())
+        expect(lambda.resultBoxingConstructor.identity.value).toBe(boxing.identity.value)
+        expect(lambda.statementValues().isEmpty).toBe(true)
+        expect(lambda.body.expressionKind()).toBe("function-invocation")
+        Object evidenceSource1 = lambda.body
+        BoundFunctionInvocationExpression invocation = (BoundFunctionInvocationExpression)evidenceSource1
+        Object selectedEvidence2Source = invocation.functionValue
+        BoundFunctionValue selectedEvidence2 = (BoundFunctionValue)selectedEvidence2Source
+        expect(selectedEvidence2.target.identity.value).toBe(target.identity.value)
+        expect(invocation.argumentValues().isEmpty).toBe(true)
+        expect(invocation.semanticType.value()).toBe("primitive:Int")
+        let withParameter = FunctionSemanticType([SemanticTypes.intType()], SemanticTypes.intType(), true)
+        let parameterTarget = CallableSignature(SymbolIdentity(owner, "function", 1), "read", CallableKind("function"),
+            [SemanticTypes.intType()], SemanticTypes.intType(), asyncFunction: true)
+        let concreteDeclaration = FunctionSemanticType([SemanticTypes.intType()], declaration.returnType, true)
+        let parameterAdapter = arrayLambda(PrimitiveExpressionBinder.adaptCallbackReference(
+            BoundFunctionValue(range, withParameter, parameterTarget), concreteDeclaration, context, [boxing]))
+        expect(parameterAdapter.parameterValues().count).toBe(1)
+        Object evidenceSource3 = parameterAdapter.body
+        BoundFunctionInvocationExpression parameterInvocation = (BoundFunctionInvocationExpression)evidenceSource3
+        expect(parameterInvocation.argumentValues().count).toBe(1)
+        let parameterArguments = parameterInvocation.argumentValues()
+        Object parameterReferenceSource = parameterArguments.first
+        BoundReferenceExpression parameterReference = (BoundReferenceExpression)parameterReferenceSource
+        expect(parameterReference.symbolIdentity.value).toBe(parameterAdapter.parameterValues().first.identity.value)
+        var String failure
+        try {
+            PrimitiveExpressionBinder.adaptCallbackReference(BoundFunctionValue(range, withParameter, parameterTarget),
+                FunctionSemanticType([declaration.returnType], declaration.returnType, true), context, [boxing])
+        } catch (Exception error) { failure = error.message }
+        if (!failure) throw Exception("Generic reference input representation was guessed")
+        expect(failure.contains("parameter representation evidence")).toBe(true)
+    }
+
+    async test `generic callback return retains declaration ABI and concrete typed returns`() {
+        let range = arrayRange("generic-callback-return")
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "function", 100), "function", "from")
+        let generic = GenericParameterSemanticType(owner, "T", 0)
+        let declaration = FunctionSemanticType(SemanticType[], generic, true)
+        let values = ["0", "-42", "true", "false"]
+        let bodyForms = [false, true]
+        for (index in 0..values.count) {
+            for (block in bodyForms) {
+                let type = index < 2 ? SemanticTypes.intType() : SemanticTypes.boolType()
+                let boxingContext = callbackBoxingContext(range, index < 2 ? "Int" : "Bool")
+                let boxingTarget = callbackBoxingTarget(boxingContext, type)
+                let text = block ? "{ return #{values[index]}; }" : "{ #{values[index]} }"
+                let stream = Lexer().lex(text)
+                stream.emit("start")
+                Object evidenceSource4 = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), range.snapshot)
+                PrimitiveLambdaSyntax syntax = (PrimitiveLambdaSyntax)evidenceSource4
+                let result = PrimitiveExpressionBinder().bindCallback(syntax,
+                    FunctionSemanticType(SemanticType[], type, true), LocalBinding[], [boxingTarget],
+                    originalContract: declaration, declarationContext: boxingContext)
+                expect(result.succeeded).toBe(true)
+                let lambda = arrayLambda(result.expression)
+                expect(lambda.declarationContract.value()).toBe(declaration.value())
+                expect(lambda.resultBoxingConstructor.identity.value).toBe(boxingTarget.identity.value)
+                expect(lambda.resultBoxingConstructor.parameterTypes().first.value()).toBe(type.value())
+                expect(arrayFunction(lambda.semanticType).returnType.value()).toBe(type.value())
+                expect(lambda.body.semanticType.value()).toBe(type.value())
+                if (block) {
+                    Object evidenceSource5 = lambda.statementValues().first
+                    BoundReturnStatement returned = (BoundReturnStatement)evidenceSource5
+                    expect(returned.requiredType.value()).toBe(type.value())
+                    expect(returned.value.semanticType.value()).toBe(type.value())
+                    expect(returned.conversion.conversionKind).toBe("identity")
+                }
+            }
+        }
+    }
+
+    test `generic callback reference and null returns retain static representation evidence`() {
+        let range = arrayRange("generic-callback-reference-return")
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "function", 100), "function", "from")
+        let generic = GenericParameterSemanticType(owner, "T", 0)
+        let declaration = FunctionSemanticType(SemanticType[], generic, true)
+        let local = LocalBinding("original", SymbolIdentity(owner, "local", 0), SemanticTypes.objectType())
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], PrimitiveReferenceSyntax(range, "original"))
+        let bound = PrimitiveExpressionBinder().bindCallback(syntax,
+            FunctionSemanticType(SemanticType[], local.semanticType, true), [local], CallableSignature[],
+            originalContract: declaration)
+        expect(bound.succeeded).toBe(true)
+        let lambda = arrayLambda(bound.expression)
+        expect(lambda.declarationContract.returnType.value()).toBe(generic.value())
+        expect(lambda.body.expressionKind()).toBe("reference")
+        expect(lambda.body.semanticType.value()).toBe(local.semanticType.value())
+        let nullSyntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveLiteralSyntax(range, Token.Type.NULL, "null"))
+        let nullable = NullableSemanticType(local.semanticType)
+        let nullBound = PrimitiveExpressionBinder().bindCallback(nullSyntax,
+            FunctionSemanticType(SemanticType[], nullable, true), LocalBinding[], CallableSignature[],
+            originalContract: declaration)
+        expect(nullBound.succeeded).toBe(true)
+        let nullLambda = arrayLambda(nullBound.expression)
+        expect(nullLambda.declarationContract.returnType.value()).toBe(generic.value())
+        expect(nullLambda.body.semanticType.value()).toBe(nullable.value())
+        expect(arrayConversion(nullLambda.body).conversion.conversionKind).toBe("null")
+    }
+
+    async test `callback concrete return conversion precedes generic erasure`() {
+        let range = arrayRange("callback-return-widening")
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "function", 100), "function", "from")
+        let generic = GenericParameterSemanticType(owner, "T", 0)
+        let declaration = FunctionSemanticType(SemanticType[], generic)
+        let boxingContext = callbackBoxingContext(range, "Long")
+        let boxingTarget = callbackBoxingTarget(boxingContext, SemanticTypes.longType())
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "42"))
+        let result = PrimitiveExpressionBinder().bindCallback(syntax,
+            FunctionSemanticType(SemanticType[], SemanticTypes.longType()), LocalBinding[], [boxingTarget],
+            originalContract: declaration, declarationContext: boxingContext)
+        expect(result.succeeded).toBe(true)
+        let lambda = arrayLambda(result.expression)
+        expect(lambda.declarationContract.returnType.value()).toBe(generic.value())
+        expect(lambda.resultBoxingConstructor.identity.value).toBe(boxingTarget.identity.value)
+        expect(arrayFunction(lambda.semanticType).returnType.value()).toBe("primitive:Long")
+        let conversion = arrayConversion(lambda.body)
+        expect(conversion.conversion.conversionKind).toBe("numeric-widening")
+        expect(conversion.value.semanticType.value()).toBe("primitive:Int")
+        let block = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveLiteralSyntax(range, Token.Type.NULL, "null"),
+            statementValues: [PrimitiveReturnSyntax(range,
+                PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "42"))])
+        let blockResult = PrimitiveExpressionBinder().bindCallback(block,
+            FunctionSemanticType(SemanticType[], SemanticTypes.longType()), LocalBinding[], [boxingTarget],
+            originalContract: declaration, declarationContext: boxingContext)
+        expect(blockResult.succeeded).toBe(true)
+        let blockLambda = arrayLambda(blockResult.expression)
+        Object evidenceSource6 = blockLambda.statementValues().first
+        BoundReturnStatement returned = (BoundReturnStatement)evidenceSource6
+        expect(blockLambda.declarationContract.returnType.value()).toBe(generic.value())
+        expect(blockLambda.resultBoxingConstructor.identity.value).toBe(boxingTarget.identity.value)
+        expect(returned.requiredType.value()).toBe("primitive:Long")
+        expect(returned.value.semanticType.value()).toBe("primitive:Int")
+        expect(returned.conversion.conversionKind).toBe("numeric-widening")
     }
 
     async test `binds callback metadata`() {

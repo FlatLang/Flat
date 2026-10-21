@@ -3,8 +3,11 @@ package flat/compiler
 import flat/semantic/binding/BindingDiagnostic
 
 /** Immutable terminal counts. sourceCount counts admitted identities, artifactCount
- * counts successful sink commits (including commits preceding cancellation), and
- * diagnosticCount counts recorded failures. Completion follows action cleanup.
+ * counts successful writes to the supplied sink (staging for a spool, not final
+ * destination publication), and diagnosticCount counts recorded failures.
+ * Completion follows session-owned action cleanup; it does not prove that caller-
+ * owned sinks were finalized, subprocesses reaped, or temporary outputs removed.
+ * Those require observations by the owning lifecycle harness.
  * packageDiagnostic retains at most the last failure, including executor rejection;
  * it is not an event replay queue. Compatibility adapters consume notifications
  * while artifacts remain owned by the supplied sink.

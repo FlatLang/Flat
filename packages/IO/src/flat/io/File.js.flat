@@ -53,6 +53,45 @@ class File {
         }
     }
 
+    public getChildFilesBounded(Int maxEntries) -> File[] {
+        if (maxEntries < 0) {
+            throw Exception("Directory entry limit must not be negative")
+        }
+
+        let entries = File[]
+        native_array native var Char[] filename
+        native_array native var Char[] errorMessage
+
+        external {
+            let directory;
+            try {
+                try {
+                    // Do not use readdirSync: it materializes the entire directory.
+                    directory = #{FileGlobal.fs}.opendirSync(#{location.chars.data}, {bufferSize: 1});
+                    let count = 0;
+                    let entry;
+                    while ((entry = directory.readSync()) !== null) {
+                        if (count >= #{maxEntries}) {
+                            throw new Error('Directory entry limit exceeded');
+                        }
+                        #{filename} = entry.name;
+                        #{entries.add(File("#{location}/#{String(filename)}"))};
+                        count++;
+                    }
+                } finally {
+                    if (directory !== undefined) directory.closeSync();
+                }
+            } catch (err) {
+                #{errorMessage} = String(err.message || err);
+            }
+        }
+
+        if (errorMessage) {
+            throw Exception(String(errorMessage))
+        }
+        return entries
+    }
+
     visible File[] files {
         get {
             if (!isDirectory) {
@@ -127,44 +166,44 @@ class File {
         return File(getCanonicalPathSync())
     }
 
+    // Resolve existing paths through the filesystem, including ancestor links.
+    // Relative link targets belong to their parent directory, never the cwd.
     public async getCanonicalPath() -> String {
-        var current = this
-        let names = Array<String>()
+        native_array native var Char[] data
+        native_array native var Char[] errorMessage
 
-        while (current) {
-            let target = current.isSymbolicLink ?
-                current.getSymbolicLinkTarget() :
-                current.normalizedLocation
-
-            if (!normalizedLocation.startsWith(target)) {
-                return normalizeLocation(target + "/" + names.join("/"))
+        external {
+            try {
+                #{data} = await #{FileGlobal.fs}.promises.realpath(#{location.chars.data});
+            } catch (err) {
+                #{errorMessage} = 'Could not canonicalize path: ' + (err.code || 'UNKNOWN') + ': ' + err.message;
             }
-
-            names.unshift(current.name)
-            current = current.getParent()
         }
 
-        return normalizedLocation
+        if (errorMessage) {
+            throw Exception(String(errorMessage))
+        }
+        return String(data)
     }
 
     public getCanonicalPathSync() -> String {
-        var current = this
-        let names = Array<String>()
+        native_array native var Char[] data
+        native_array native var Char[] errorMessage
 
-        while (current) {
-            let target = current.isSymbolicLink ?
-                current.getSymbolicLinkTargetSync() :
-                current.normalizedLocation
-
-            if (!normalizedLocation.startsWith(target)) {
-                return normalizeLocation(target + "/" + names.join("/"))
+        external {
+            try {
+                // Native resolution preserves symlink/.. ordering and uses the
+                // OS symlink limit; no recursive Flat walk or global cache.
+                #{data} = #{FileGlobal.fs}.realpathSync.native(#{location.chars.data});
+            } catch (err) {
+                #{errorMessage} = 'Could not canonicalize path: ' + (err.code || 'UNKNOWN') + ': ' + err.message;
             }
-
-            names.unshift(current.name)
-            current = current.getParent()
         }
 
-        return normalizedLocation
+        if (errorMessage) {
+            throw Exception(String(errorMessage))
+        }
+        return String(data)
     }
 
     public async getSymbolicLinkTarget() -> String {

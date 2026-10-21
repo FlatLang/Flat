@@ -1,0 +1,74 @@
+package flat/airship
+
+/** Airship's Node subprocess boundary. Streams are inherited (no retained output
+ * backlog), argv is exact, and completion includes child/stdio closure. */
+class AirshipProcess {
+    public static async executeShell(String command, String workingDirectory = null, Bool: silent = false) -> Int {
+        if (System.OS_INT == System.WINDOWS) {
+            let String[] arguments = ["cmd.exe", "/d", "/s", "/c", command]
+            return execute(arguments, workingDirectory, silent)
+        }
+        let String[] arguments = ["/bin/sh", "-c", command]
+        return execute(arguments, workingDirectory, silent)
+    }
+
+    public static async execute(String[] arguments, String workingDirectory = null, Bool: silent = false) -> Int {
+        native var Int status = -1
+        native_array native var Char[] message
+        external js {
+            const childProcess = await import('node:child_process');
+            const argv = #{arguments.map({ _.chars.data }).data};
+            try {
+                #{status} = await new Promise((resolve, reject) => {
+                    let child;
+                    let cancelled = false;
+                    let escalation;
+                    const kill = (signal) => {
+                        try {
+                            if (process.platform === 'win32') child.kill(signal);
+                            else process.kill(-child.pid, signal);
+                        } catch (error) {
+                            if (error.code !== 'ESRCH') child.kill(signal);
+                        }
+                    };
+                    const forward = (signal) => {
+                        cancelled = true;
+                        if (child && child.exitCode === null && child.signalCode === null) {
+                            kill(signal);
+                            // One bounded timer per live child; a second signal
+                            // also escalates. Never report cancellation as success.
+                            if (escalation) kill('SIGKILL');
+                            else escalation = setTimeout(() => kill('SIGKILL'), 5000);
+                        }
+                    };
+                    const interrupt = () => forward('SIGINT');
+                    const terminate = () => forward('SIGTERM');
+                    const cleanup = () => {
+                        process.removeListener('SIGINT', interrupt);
+                        process.removeListener('SIGTERM', terminate);
+                        if (escalation) clearTimeout(escalation);
+                    };
+                    try {
+                        child = childProcess.spawn(argv[0], argv.slice(1), {
+                            cwd: #{workingDirectory ? workingDirectory.chars.data : ".".chars.data},
+                            shell: false,
+                            detached: process.platform !== 'win32',
+                            stdio: ['inherit', #{silent} ? 'ignore' : 'inherit', #{silent} ? 'ignore' : 'inherit']
+                        });
+                        process.on('SIGINT', interrupt);
+                        process.on('SIGTERM', terminate);
+                        child.once('error', (error) => { cleanup(); reject(error); });
+                        child.once('close', (code, signal) => {
+                            cleanup();
+                            resolve(cancelled || signal || code === null ? -1 : code);
+                        });
+                    } catch (error) { cleanup(); reject(error); }
+                });
+            } catch (error) {
+                #{message} = String(error);
+                throw #{ExecutionFailureException(String(message))};
+            }
+        }
+        return status
+    }
+}

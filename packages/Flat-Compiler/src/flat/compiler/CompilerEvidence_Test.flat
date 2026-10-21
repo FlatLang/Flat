@@ -1,0 +1,39 @@
+package flat/compiler
+
+/** Evidence is a report of observations, never a substitute for acceptance. */
+testable class {
+    test `terminal failure is distinct from source diagnostics`() {
+        let summary = CompilationSummary(1, 1, 0, false)
+        let batch = CompilerEvidence.renderDiagnostics(summary, "sha256:input", "Output published; cleanup failed: controlled\nerror")
+        expect(batch.contains("\"complete\":false,\"records\":[]")).toBe(true)
+        expect(batch.contains("\"diagnosticCount\":0")).toBe(true)
+        expect(batch.contains("\"terminalFailure\":\"Output published; cleanup failed: controlled\\u000aerror\"")).toBe(true)
+        expect(batch.contains("\"source\":")).toBe(false)
+        expect(batch.contains("children_reaped")).toBe(false)
+        expect(batch.contains("temporary_outputs_removed")).toBe(false)
+    }
+
+    test `untyped failure remains incomplete and retains bounded failure text`() {
+        let batch = CompilerEvidence.renderDiagnostics(
+            CompilationSummary(1, 0, 1, false, "source read failed"), "sha256:input")
+        expect(batch.contains("\"complete\":false,\"records\":[]")).toBe(true)
+        expect(batch.contains("\"terminalFailure\":\"source read failed\"")).toBe(true)
+        expect(batch.contains("\"diagnosticCount\":1")).toBe(true)
+    }
+
+    test `unsettled cleanup cannot advertise complete diagnostics`() {
+        let summary = CompilationSummary(1, 0, 0, false, cleanupSettled: false)
+        let batch = CompilerEvidence.renderDiagnostics(summary, "sha256:input")
+        let receipt = CompilerEvidence.render(summary)
+        expect(batch.contains("\"complete\":false")).toBe(true)
+        expect(receipt.contains("\"diagnostics\":{\"complete\":false")).toBe(true)
+    }
+
+    test `successful terminal batch has no invented cleanup observations`() {
+        let batch = CompilerEvidence.renderDiagnostics(CompilationSummary(1, 1, 0, false), "sha256:input")
+        expect(batch.contains("\"complete\":true,\"records\":[]")).toBe(true)
+        expect(batch.contains("\"terminalFailure\":null")).toBe(true)
+        expect(batch.contains("children_reaped")).toBe(false)
+        expect(batch.contains("temporary_outputs_removed")).toBe(false)
+    }
+}

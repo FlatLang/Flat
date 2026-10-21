@@ -3,7 +3,17 @@ package flat/bound
 import flat/compiler/models
 import flat/semantic/types
 
-/** Immutable typed expression lambda with explicit captures. */
+/** Immutable typed expression lambda with explicit captures.
+ * semanticType and body describe the concrete checked callback. Optional
+ * declarationContract retains its upstream-selected generic declaration boundary.
+ * Emit concrete return/storage conversions and boxing BEFORE declaration erasure;
+ * never infer concrete result representation from an erased generic result.
+ * Null retains the concrete contract. No semantic substitution occurs in a writer.
+ * resultBoxingConstructor optionally carries the binder-selected constructor for
+ * the concrete callback result crossing the declared generic boundary. Preserve
+ * its identity; apply it after concrete return conversions, before erasure. Null
+ * supplies no boxing evidence and never authorizes runtime constructor guessing.
+ */
 data class extends BoundExpression {
     var BoundStatement[] statements
     var BoundFunctionParameter[] parameters
@@ -14,12 +24,16 @@ data class extends BoundExpression {
         BoundFunctionParameter[] parameterValues,
         BoundReferenceExpression[] captureValues,
         visible BoundExpression body,
-        BoundStatement[] statementValues = BoundStatement[]
+        BoundStatement[] statementValues = BoundStatement[],
+        visible FunctionSemanticType declarationContract = null,
+        visible CallableSignature resultBoxingConstructor = null
     ) {
         if (!range || !semanticType || !parameterValues || parameterValues.any({ !_ }) ||
             !captureValues || captureValues.any({ !_ }) || !body || !statementValues ||
             statementValues.any({ !_ }) ||
-            body.semanticType.value() != semanticType.returnType.value()) {
+            body.semanticType.value() != semanticType.returnType.value() ||
+            (declarationContract && (declarationContract.parameterTypes().count != parameterValues.count ||
+                declarationContract.asyncFunction != semanticType.asyncFunction))) {
             throw Exception("Bound lambda requires type parameters captures and body")
         }
         super(range, semanticType)

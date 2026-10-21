@@ -4,77 +4,12 @@ import flat/compiler/models
 import flat/semantic/types
 
 /** Lowers arrays/ranges/foreach/safe access/match to canonical expressions and CFG primitives. */
-class extends BoundFunctionLoweringPass {
+class extends BoundTreeLoweringPass {
     override public name() => "collection-control-forms"
     override public inputInvariant() => "typed-rich-collection-control"
     override public outputInvariant() => "canonical-expressions-and-control-flow"
 
-    override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
-        let output = BoundStatement[]
-        for (statement in input.statements()) lowerStatement(statement, output)
-        return BoundFunctionUnit(
-            input.identity, input.name, input.returnType, output, input.range,
-            input.parameterValues(), input.staticFunction, input.mainFunction,
-            input.constructorFunction, input.dispatchIdentity, input.parentConstructorCall,
-            input.constructorDelegation,
-            input.asyncFunction, input.externalName, input.abstractFunction, input.lazyProperty
-        )
-    }
-
-    lowerStatements(BoundStatement[] statements) -> BoundStatement[] {
-        let output = BoundStatement[]
-        for (statement in statements) lowerStatement(statement, output)
-        return output
-    }
-
-    /** Advance only continues targeting this foreach; nested loops own their continues. */
-    continueBody(BoundStatement[] statements, BoundStatement[] advance) -> BoundStatement[] {
-        let result = BoundStatement[]
-        for (statement in statements) {
-            if (statement.class.isOfType(BoundContinueStatement.class)) {
-                result.addAll(advance)
-                result.add(statement)
-            } else if (statement.class.isOfType(BoundIfStatement.class)) {
-                let branch = (BoundIfStatement)statement
-                result.add(BoundIfStatement(branch.range, branch.condition,
-                    continueBody(branch.thenValues(), advance), continueBody(branch.elseValues(), advance)))
-            } else if (statement.class.isOfType(BoundSwitchStatement.class)) {
-                let branch = (BoundSwitchStatement)statement
-                let cases = BoundSwitchCase[]
-                for (caseValue in branch.caseValues()) cases.add(BoundSwitchCase(
-                    caseValue.range, caseValue.label, continueBody(caseValue.statementValues(), advance),
-                    caseValue.defaultCase, caseValue.fallsThrough))
-                result.add(BoundSwitchStatement(branch.range, branch.value, cases))
-            } else if (statement.class.isOfType(BoundTryStatement.class)) {
-                let guarded = (BoundTryStatement)statement
-                if (targetsContinue(guarded.tryValues()) || targetsContinue(guarded.finallyValues()) ||
-                    guarded.catchValues().any({ targetsContinue(_.statements()) })) {
-                    throw Exception("Foreach continue through try/catch/finally requires cleanup-aware loop lowering")
-                }
-                result.add(statement)
-            } else result.add(statement)
-        }
-        return result
-    }
-
-    targetsContinue(BoundStatement[] statements) -> Bool {
-        for (statement in statements) {
-            if (statement.class.isOfType(BoundContinueStatement.class)) return true
-            if (statement.class.isOfType(BoundIfStatement.class)) {
-                let branch = (BoundIfStatement)statement
-                if (targetsContinue(branch.thenValues()) || targetsContinue(branch.elseValues())) return true
-            } else if (statement.class.isOfType(BoundSwitchStatement.class)) {
-                if (((BoundSwitchStatement)statement).caseValues().any({ targetsContinue(_.statementValues()) })) return true
-            } else if (statement.class.isOfType(BoundTryStatement.class)) {
-                let guarded = (BoundTryStatement)statement
-                if (targetsContinue(guarded.tryValues()) || targetsContinue(guarded.finallyValues()) ||
-                    guarded.catchValues().any({ targetsContinue(_.statements()) })) return true
-            }
-        }
-        return false
-    }
-
-    lowerStatement(BoundStatement statement, BoundStatement[] output) {
+    override public lowerStatement(BoundStatement statement, BoundStatement[] output) {
         if (statement.class.isOfType(BoundIfStatement.class)) {
             let value = (BoundIfStatement)statement
             output.add(BoundIfStatement(value.range, lowerExpression(value.condition),
@@ -114,11 +49,9 @@ class extends BoundFunctionLoweringPass {
         } else if (statement.class.isOfType(BoundForEachStatement.class)) {
             let loop = (BoundForEachStatement)statement
             for (initialization in loop.initialization()) lowerStatement(initialization, output)
-            let loweredBody = continueBody(lowerStatements(loop.body()), lowerStatements(loop.advance()))
-            for (advance in loop.advance()) lowerStatement(advance, loweredBody)
-            output.add(BoundWhileStatement(
-                loop.range, lowerExpression(loop.condition), loweredBody
-            ))
+            output.add(BoundLoopLatchStatement(loop.range, lowerExpression(loop.condition),
+                lowerStatements(loop.body()), lowerStatements(loop.advance()),
+                SyntaxIslandIdentity(loop.range.snapshot, "foreach-latch:#{loop.loopLabel}", loop.range.startTokenIndex)))
         } else if (statement.class.isOfType(BoundExpressionStatement.class)) {
             let value = (BoundExpressionStatement)statement
             output.add(BoundExpressionStatement(value.range, lowerExpression(value.expression)))
@@ -165,108 +98,11 @@ class extends BoundFunctionLoweringPass {
                 value.range, value.requiredType, lowerExpression(value.value), value.conversion
             ))
         } else {
-            output.add(statement)
+            super.lowerStatement(statement, output)
         }
     }
 
-    // Source traversal order gives deterministic first-use capture ordering.
-    collectArgumentCaptures(BoundExpression expression, BoundReferenceExpression[] captures) {
-        if (!expression) return
-        if (expression.class.isOfType(BoundReferenceExpression.class)) {
-            let reference = (BoundReferenceExpression)expression
-            if (!reference.staticOwner && captures.none({ _.symbolIdentity.value == reference.symbolIdentity.value })) {
-                captures.add(reference)
-            }
-        } else if (expression.class.isOfType(BoundBinaryExpression.class)) {
-            let value = (BoundBinaryExpression)expression
-            collectArgumentCaptures(value.left, captures)
-            collectArgumentCaptures(value.right, captures)
-        } else if (expression.class.isOfType(BoundUnaryExpression.class)) {
-            collectArgumentCaptures(((BoundUnaryExpression)expression).operand, captures)
-        } else if (expression.class.isOfType(BoundConversionExpression.class)) {
-            collectArgumentCaptures(((BoundConversionExpression)expression).value, captures)
-        } else if (expression.class.isOfType(BoundMemberAccessExpression.class)) {
-            collectArgumentCaptures(((BoundMemberAccessExpression)expression).receiver, captures)
-        } else if (expression.class.isOfType(BoundCallExpression.class)) {
-            let value = (BoundCallExpression)expression
-            collectArgumentCaptures(value.receiver, captures)
-            for (argument in value.argumentValues()) collectArgumentCaptures(argument, captures)
-        } else if (expression.class.isOfType(BoundFunctionInvocationExpression.class)) {
-            let value = (BoundFunctionInvocationExpression)expression
-            collectArgumentCaptures(value.functionValue, captures)
-            for (argument in value.argumentValues()) collectArgumentCaptures(argument, captures)
-        } else if (expression.class.isOfType(BoundAssignmentValueExpression.class)) {
-            let value = (BoundAssignmentValueExpression)expression
-            collectArgumentCaptures(value.target, captures)
-            collectArgumentCaptures(value.value, captures)
-        } else if (expression.class.isOfType(BoundMemberAssignmentValueExpression.class)) {
-            let value = (BoundMemberAssignmentValueExpression)expression
-            collectArgumentCaptures(value.target, captures)
-            collectArgumentCaptures(value.value, captures)
-        } else if (expression.class.isOfType(BoundArrayAccessExpression.class)) {
-            let value = (BoundArrayAccessExpression)expression
-            collectArgumentCaptures(value.receiver, captures)
-            collectArgumentCaptures(value.index, captures)
-        } else if (expression.class.isOfType(BoundArrayLengthExpression.class)) {
-            collectArgumentCaptures(((BoundArrayLengthExpression)expression).receiver, captures)
-        } else if (expression.class.isOfType(BoundNativeArrayDataExpression.class)) {
-            collectArgumentCaptures(((BoundNativeArrayDataExpression)expression).receiver, captures)
-        } else if (expression.class.isOfType(BoundLambdaExpression.class)) {
-            for (capture in ((BoundLambdaExpression)expression).captureValues()) collectArgumentCaptures(capture, captures)
-        } else if (expression.class.isOfType(BoundConditionalExpression.class)) {
-            let value = (BoundConditionalExpression)expression
-            collectArgumentCaptures(value.condition, captures)
-            collectArgumentCaptures(value.whenTrue, captures)
-            collectArgumentCaptures(value.whenFalse, captures)
-        } else if (!expression.class.isOfType(BoundLiteralExpression.class)) {
-            throw Exception("Safe call argument capture analysis does not support '#{expression.expressionKind()}'")
-        }
-    }
-
-    requiresAwait(BoundExpression expression) -> Bool {
-        if (!expression) return false
-        if (expression.class.isOfType(BoundFunctionInvocationExpression.class)) {
-            let value = (BoundFunctionInvocationExpression)expression
-            let signatureObject = value.functionValue.semanticType
-            let signature = (FunctionSemanticType)signatureObject
-            return (signature.asyncFunction && !value.suppressAwait) || requiresAwait(value.functionValue) ||
-                value.argumentValues().any({ requiresAwait(_) })
-        }
-        if (expression.class.isOfType(BoundBinaryExpression.class)) {
-            let value = (BoundBinaryExpression)expression
-            return requiresAwait(value.left) || requiresAwait(value.right)
-        }
-        if (expression.class.isOfType(BoundUnaryExpression.class)) return requiresAwait(((BoundUnaryExpression)expression).operand)
-        if (expression.class.isOfType(BoundConversionExpression.class)) return requiresAwait(((BoundConversionExpression)expression).value)
-        if (expression.class.isOfType(BoundMemberAccessExpression.class)) return requiresAwait(((BoundMemberAccessExpression)expression).receiver)
-        if (expression.class.isOfType(BoundCallExpression.class)) {
-            let value = (BoundCallExpression)expression
-            return (value.target.asyncFunction && !value.suppressAwait) ||
-                requiresAwait(value.receiver) || value.argumentValues().any({ requiresAwait(_) })
-        }
-        if (expression.class.isOfType(BoundConditionalExpression.class)) {
-            let value = (BoundConditionalExpression)expression
-            return requiresAwait(value.condition) || requiresAwait(value.whenTrue) || requiresAwait(value.whenFalse)
-        }
-        if (expression.class.isOfType(BoundAssignmentValueExpression.class)) {
-            let value = (BoundAssignmentValueExpression)expression
-            return requiresAwait(value.value)
-        }
-        if (expression.class.isOfType(BoundMemberAssignmentValueExpression.class)) {
-            let value = (BoundMemberAssignmentValueExpression)expression
-            return requiresAwait(value.target) || requiresAwait(value.value)
-        }
-        if (expression.class.isOfType(BoundArrayAccessExpression.class)) {
-            let value = (BoundArrayAccessExpression)expression
-            return requiresAwait(value.receiver) || requiresAwait(value.index)
-        }
-        if (expression.class.isOfType(BoundArrayLengthExpression.class)) return requiresAwait(((BoundArrayLengthExpression)expression).receiver)
-        if (expression.class.isOfType(BoundNativeArrayDataExpression.class)) return requiresAwait(((BoundNativeArrayDataExpression)expression).receiver)
-        // Nested lambda bodies execute in their own async scope, not this one.
-        return false
-    }
-
-    lowerExpression(BoundExpression expression) -> BoundExpression {
+    override public lowerExpression(BoundExpression expression) -> BoundExpression {
         if (!expression) return null
         if (expression.class.isOfType(BoundConditionalExpression.class)) {
             let value = (BoundConditionalExpression)expression
@@ -286,16 +122,12 @@ class extends BoundFunctionLoweringPass {
                 let identity = SymbolIdentity(DeclarationIdentity(
                     SyntaxIslandIdentity(value.range.snapshot, "fallback-value", value.range.startTokenIndex),
                     "lowered-expression", "value"), "parameter")
-                let parameter = BoundFunctionParameter("value", identity, left.semanticType)
                 let reference = BoundReferenceExpression(value.range, left.semanticType, "value", identity)
                 let nullValue = BoundLiteralExpression(value.range, SemanticTypes.nullType(), "null")
                 if (left.semanticType.kind() == "null") {
-                    let signature = FunctionSemanticType([left.semanticType], value.semanticType,
-                        asyncFunction: requiresAwait(right))
-                    let captures = BoundReferenceExpression[]
-                    collectArgumentCaptures(right, captures)
-                    return BoundFunctionInvocationExpression(value.range,
-                        BoundLambdaExpression(value.range, signature, [parameter], captures, right), signature, [left])
+                    return BoundEvaluationExpression(value.range, value.semanticType,
+                        [BoundLocalDeclarationStatement(value.range, reference, left,
+                            TypeConversions.classify(left.semanticType, left.semanticType))], right)
                 }
                 let nullableType = left.semanticType.kind() == "nullable" ? left.semanticType :
                     NullableSemanticType(left.semanticType)
@@ -307,12 +139,9 @@ class extends BoundFunctionLoweringPass {
                         TypeConversions.classify(right.semanticType, value.semanticType)),
                     BoundConversionExpression(value.range, value.semanticType, reference,
                         TypeConversions.classify(left.semanticType, value.semanticType, explicit: true)))
-                let signature = FunctionSemanticType([left.semanticType], value.semanticType,
-                    asyncFunction: requiresAwait(body))
-                let captures = BoundReferenceExpression[]
-                collectArgumentCaptures(right, captures)
-                return BoundFunctionInvocationExpression(value.range,
-                    BoundLambdaExpression(value.range, signature, [parameter], captures, body), signature, [left])
+                return BoundEvaluationExpression(value.range, value.semanticType,
+                    [BoundLocalDeclarationStatement(value.range, reference, left,
+                        TypeConversions.classify(left.semanticType, left.semanticType))], body)
             }
             return BoundBinaryExpression(value.range, value.semanticType, value.operator,
                 lowerExpression(value.left), lowerExpression(value.right))
@@ -325,7 +154,6 @@ class extends BoundFunctionLoweringPass {
             let identity = SymbolIdentity(DeclarationIdentity(
                 SyntaxIslandIdentity(value.range.snapshot, "safe-field-receiver", value.range.startTokenIndex),
                 "lowered-expression", "receiver"), "parameter")
-            let parameter = BoundFunctionParameter("receiver", identity, receiver.semanticType)
             let reference = BoundReferenceExpression(value.range, receiver.semanticType, "receiver", identity)
             let nullValue = BoundLiteralExpression(value.range, SemanticTypes.nullType(), "null")
             let nullableReceiver = receiver.semanticType.kind() == "nullable" ? receiver.semanticType :
@@ -338,9 +166,9 @@ class extends BoundFunctionLoweringPass {
                     TypeConversions.classify(nullValue.semanticType, value.semanticType)),
                 BoundMemberAccessExpression(value.range, value.semanticType, reference,
                     value.memberName, value.memberIdentity))
-            let signature = FunctionSemanticType([receiver.semanticType], value.semanticType)
-            let lambda = BoundLambdaExpression(value.range, signature, [parameter], BoundReferenceExpression[], result)
-            return BoundFunctionInvocationExpression(value.range, lambda, signature, [receiver])
+            return BoundEvaluationExpression(value.range, value.semanticType,
+                [BoundLocalDeclarationStatement(value.range, reference, receiver,
+                    TypeConversions.classify(receiver.semanticType, receiver.semanticType))], result)
         }
         if (expression.class.isOfType(BoundFunctionInvocationExpression.class)) {
             let value = (BoundFunctionInvocationExpression)expression
@@ -355,7 +183,8 @@ class extends BoundFunctionLoweringPass {
             let typeObject = value.semanticType
             let signature = (FunctionSemanticType)typeObject
             return BoundLambdaExpression(value.range, signature, value.parameterValues(),
-                value.captureValues(), lowerExpression(value.body), lowerStatements(value.statementValues()))
+                value.captureValues(), lowerExpression(value.body), lowerStatements(value.statementValues()),
+                value.declarationContract, value.resultBoxingConstructor)
         }
         if (expression.class.isOfType(BoundDeclarationValueExpression.class)) {
             let value = (BoundDeclarationValueExpression)expression
@@ -410,8 +239,7 @@ class extends BoundFunctionLoweringPass {
                 let identity = SymbolIdentity(DeclarationIdentity(
                     SyntaxIslandIdentity(call.range.snapshot, "safe-call-receiver", call.range.startTokenIndex),
                     "lowered-expression", "receiver"), "parameter")
-                let parameter = BoundFunctionParameter("receiver", identity, receiver.semanticType)
-                let reference = BoundReferenceExpression(call.range, receiver.semanticType, "receiver", identity)
+                    let reference = BoundReferenceExpression(call.range, receiver.semanticType, "receiver", identity)
                 let nullableReceiver = receiver.semanticType.kind() == "nullable" ? receiver.semanticType : NullableSemanticType(receiver.semanticType)
                 let checkedReceiver = BoundConversionExpression(call.range, nullableReceiver, reference,
                     TypeConversions.classify(receiver.semanticType, nullableReceiver))
@@ -426,13 +254,9 @@ class extends BoundFunctionLoweringPass {
                         TypeConversions.classify(nullValue.semanticType, call.semanticType)),
                     BoundConversionExpression(call.range, call.semanticType, invoked,
                         TypeConversions.classify(invoked.semanticType, call.semanticType)))
-                let signature = FunctionSemanticType([receiver.semanticType], call.semanticType,
-                    asyncFunction: requiresAwait(body))
-                let captures = BoundReferenceExpression[]
-                for (argument in call.argumentValues()) collectArgumentCaptures(argument, captures)
-                return BoundFunctionInvocationExpression(call.range,
-                    BoundLambdaExpression(call.range, signature, [parameter], captures, body),
-                    signature, [receiver])
+                return BoundEvaluationExpression(call.range, call.semanticType,
+                    [BoundLocalDeclarationStatement(call.range, reference, receiver,
+                        TypeConversions.classify(receiver.semanticType, receiver.semanticType))], body)
             }
             return BoundCallExpression(
                 call.range,
@@ -443,6 +267,12 @@ class extends BoundFunctionLoweringPass {
                 call.argumentConversions(), call.safeAccess, call.receiverConversion, call.suppressAwait
             )
         }
+        if (expression.class.isOfType(BoundNumericUnboxExpression.class)) {
+            let value = (BoundNumericUnboxExpression)expression
+            return BoundNumericUnboxExpression(value.range, value.semanticType,
+                lowerExpression(value.value), value.numberType, value.projection,
+                value.conversion, value.projectionConversion)
+        }
         if (expression.class.isOfType(BoundConversionExpression.class)) {
             let conversion = (BoundConversionExpression)expression
             return BoundConversionExpression(
@@ -452,6 +282,6 @@ class extends BoundFunctionLoweringPass {
                 conversion.conversion
             )
         }
-        return expression
+        return super.lowerExpression(expression)
     }
 }

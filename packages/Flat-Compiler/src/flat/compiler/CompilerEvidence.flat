@@ -12,14 +12,24 @@ class CompilerEvidence {
         return state.evidence()
     }
 
-    public static renderDiagnostics(CompilationSummary summary, String revision) -> String {
+    /**
+     * One terminal invocation batch. A finalization failure is not a source
+     * diagnostic: retain any ranged compiler records, mark the batch incomplete,
+     * and report the failure separately instead of inventing a source/range.
+     */
+    public static renderDiagnostics(CompilationSummary summary, String revision,
+        String terminalFailure = null) -> String {
         if (!summary || !revision) throw Exception("Diagnostic batch requires terminal summary and input revision")
+        let failure = terminalFailure ?: summary.packageDiagnostic
+        let encodedFailure = failure != null ? quote(failure) : "null"
         return "{\"schema\":\"flat.compiler.diagnostics.v1\",\"revision\":#{quote(revision)}," +
-            "\"complete\":#{diagnosticsComplete(summary)},\"records\":#{diagnosticRecords(summary)}}\n"
+            "\"complete\":#{terminalFailure == null && diagnosticsComplete(summary)},\"records\":#{diagnosticRecords(summary)}," +
+            "\"diagnosticCount\":#{summary.diagnosticCount},\"cancelled\":#{summary.cancelled}," +
+            "\"cleanupSettled\":#{summary.cleanupSettled},\"terminalFailure\":#{encodedFailure}}\n"
     }
 
     static diagnosticsComplete(CompilationSummary summary) -> Bool {
-        return !summary.cancelled && (summary.diagnosticCount == 0 ||
+        return summary.cleanupSettled && !summary.cancelled && (summary.diagnosticCount == 0 ||
             (summary.diagnosticCount == 1 && summary.bindingDiagnostic != null))
     }
 
@@ -55,7 +65,7 @@ class CompilerEvidence {
             "\"removedSources\":#{reuse.removedSources},\"toolFingerprint\":#{quote(reuse.toolFingerprint)}}}\n"
     }
 
-    static quote(String value) -> String {
+    public static quote(String value) -> String {
         if (value.count > 4096) throw Exception("Compiler evidence string exceeds receipt capacity")
         var String encoded = "\""
         let hex = "0123456789abcdef"

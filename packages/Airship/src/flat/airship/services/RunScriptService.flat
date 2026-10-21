@@ -39,10 +39,10 @@ class {
                     if (airship.debug) {
                         Console.writeLine(fullCmd.map({ System.sanitizeCliArgument(_) }).join(" "))
                     } else {
-                        let response = System.execute(fullCmd, workingDirectory, silent: cliArgs.quietArg.enabled)
+                        let status = AirshipProcess.execute(fullCmd, workingDirectory, silent: cliArgs.quietArg.enabled)
 
-                        if (response.exitCode != 0) {
-                            throw ExecutionFailureException("Script exited with exit code #response.exitCode")
+                        if (status != 0) {
+                            throw ExecutionFailureException("Script exited with exit code #status")
                         }
                     }
                 } else if (obj.class.isOfType(String.class)) {
@@ -56,10 +56,10 @@ class {
                     if (airship.debug) {
                         Console.writeLine(fullCmd)
                     } else {
-                        let response = System.execute(fullCmd, workingDirectory, silent: cliArgs.quietArg.enabled)
+                        let status = AirshipProcess.executeShell(fullCmd, workingDirectory, silent: cliArgs.quietArg.enabled)
 
-                        if (response.exitCode != 0) {
-                            throw ExecutionFailureException("Script exited with exit code #response.exitCode")
+                        if (status != 0) {
+                            throw ExecutionFailureException("Script exited with exit code #status")
                         }
                     }
                 }
@@ -78,10 +78,10 @@ class {
                 return
             }
 
-            let response = System.execute(fullCmd, workingDirectory, silent: cliArgs.quietArg.enabled)
+            let status = AirshipProcess.executeShell(fullCmd, workingDirectory, silent: cliArgs.quietArg.enabled)
 
-            if (response.exitCode != 0) {
-                throw ExecutionFailureException("Script exited with exit code #response.exitCode")
+            if (status != 0) {
+                throw ExecutionFailureException("Script exited with exit code #status")
             }
         }
     }

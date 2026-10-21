@@ -1,0 +1,25 @@
+{
+  "name": "JavaCallbackBoxingRegression",
+  "version": "0.1.0",
+  "description": "Owning bootstrap compiler callback return representation regression",
+  "defaultTarget": "es6",
+  "scripts": {
+    "test": "node dist/es6/test.js"
+  },
+  "sources": {
+    "main": {
+      "source": "bootstrap",
+      "dependencies": {}
+    },
+    "test": {
+      "mainClass": "bootstrap/boxing/CallbackBoxing_TestSuite",
+      "source": "bootstrap/**/*.flat",
+      "outDirectory": "dist/es6",
+      "outFile": "test.js",
+      "dependencies": {
+        "https://github.com/FlatLang/Future.git": "master",
+        "https://github.com/FlatLang/Test.git": "master"
+      }
+    }
+  }
+}

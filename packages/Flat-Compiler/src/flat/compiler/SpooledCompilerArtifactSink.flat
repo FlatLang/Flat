@@ -21,6 +21,7 @@ class extends CompilerArtifactSink {
         visible File file
         visible Long bytes
         visible var Bool published
+        visible var CompilerArtifactLifecycleStorage storage
         visible var FilesystemCompilerArtifactSink cleanupDestination
 
         public construct(String identity, File file, Long bytes) {
@@ -32,13 +33,19 @@ class extends CompilerArtifactSink {
 
     var StagedArtifact[] pending = StagedArtifact[]
     var File staging
+    var CompilerArtifactLifecycleStorage stagingStorage
     var Long retainedBytes
     var Long nextOrdinal
     var Bool disposed
 
-    public construct(visible File root, visible Int capacity, visible Long maxBytes = 1048576) {
+    public construct(visible File root, visible Int capacity, visible Long maxBytes = 1048576,
+        visible String revision = "", visible File destination = null,
+        visible CompilerArtifactLifecycleObserver observer = null) {
         if (!root || capacity <= 0 || maxBytes <= 0) {
             throw Exception("Spooled sink requires root and positive count and byte capacities")
+        }
+        if (observer && (!revision || revision.count == 0 || !destination)) {
+            throw Exception("Spool observer requires revision and destination root")
         }
         Es6ArtifactFiles.ensureDirectory(root)
     }
@@ -55,34 +62,61 @@ class extends CompilerArtifactSink {
         if (bytes > maxBytes - retainedBytes) throw Exception("Spooled artifact sink byte capacity exceeded")
         // concat allocates independent Core String/StringCharArray wrappers.
         let identity = artifact.identity.concat("")
-        if (!staging) staging = Es6ArtifactFiles.createCommitDirectory(File(root, "spool"))
+        let binding = observer ? CompilerArtifactLifecycleBinding(revision, identity,
+            File(destination, identity).normalizedLocation) : null
+        if (!staging) {
+            staging = Es6ArtifactFiles.createCommitDirectory(File(root, "spool"))
+            stagingStorage = CompilerArtifactLifecycleStorage(staging, binding, observer)
+            stagingStorage.observeCreated()
+        }
         let file = File(staging, "artifact-#{nextOrdinal++}.spool")
         // Private monotonically named files need no replacement: a failed
         // write remains cleanup-only and is never admitted for publication.
         let staged = StagedArtifact(identity, file, bytes)
+        staged.storage = CompilerArtifactLifecycleStorage(file, binding, observer)
         try {
             Es6ArtifactFiles.write(file, artifact.code)
         } catch (Exception error) {
             // A partial write may leave bytes. Never publish failed admission;
             // retain bounded cleanup-only metadata if removing it also fails.
             // Preserve the first error.
+            staged.storage.observeCreated()
             staged.published = true
             pending.add(staged)
             retainedBytes += bytes
             try {
-                Es6ArtifactFiles.remove(file)
+                staged.storage.remove()
                 pending.remove(staged)
                 retainedBytes -= bytes
             } catch (Exception cleanupError) {}
             throw error
         }
+        staged.storage.observeCreated()
         pending.add(staged)
         retainedBytes += bytes
+    }
+
+    /**
+     * Borrow the sole unpublished artifact for pre-publication fingerprinting.
+     * Only a capacity-one owner may use this API. The file remains spool-owned:
+     * callers must not mutate, remove, publish or retain it beyond commit/dispose.
+     * No payload is read or materialized here. Cleanup-only failed admissions and
+     * already-published entries are never exposed as valid compilation output.
+     */
+    public stagedFile() -> File {
+        if (disposed || capacity != 1 || pending.count != 1 || pending.first.published) {
+            throw Exception("Staged file requires one unpublished artifact in a live capacity-one spool")
+        }
+        return File(pending.first.file.normalizedLocation)
     }
 
     public commitTo(FilesystemCompilerArtifactSink destination) {
         if (disposed) throw Exception("Spooled sink is disposed")
         if (!destination) throw Exception("Spooled sink requires destination")
+        if (observer && (destination.root.normalizedLocation != this.destination.normalizedLocation ||
+            (destination.observer && destination.revision != revision))) {
+            throw Exception("Spool publication does not match lifecycle binding")
+        }
         // Count-bounded metadata ordering only; Core Array.sort -> mergeSort
         // returns clone(), so removing from pending cannot skip iteration items.
         // Load one byte-bounded payload at a time.
@@ -91,36 +125,55 @@ class extends CompilerArtifactSink {
             // Failed destination publication remains an immediate failure. Only
             // already-published cleanup failures are isolated from unrelated work.
             if (!artifact.published) {
-                destination.write(CompilerArtifact(artifact.identity.concat(""), Es6ArtifactFiles.read(artifact.file)))
+                if (artifact.cleanupDestination) artifact.cleanupDestination.retryCleanup(artifact.identity)
+                // A failed publication may still transfer pre-rename cleanup
+                // ownership. Keep that destination reachable for terminal dispose.
                 artifact.cleanupDestination = destination
+                destination.write(CompilerArtifact(artifact.identity.concat(""), Es6ArtifactFiles.read(artifact.file)))
                 artifact.published = true
             }
             try {
                 if (artifact.cleanupDestination) artifact.cleanupDestination.retryCleanup(artifact.identity)
-                Es6ArtifactFiles.remove(artifact.file)
+                artifact.storage.remove()
                 pending.remove(artifact)
                 retainedBytes -= artifact.bytes
             } catch (Exception cleanupError) {
                 if (!failure) failure = cleanupError
             }
         }
-        cleanupEmptyDirectory()
+        try { cleanupEmptyDirectory() }
+        catch (Exception cleanupError) { if (!failure) failure = cleanupError }
         if (failure) throw failure
     }
 
     /** Terminal abort, idempotent and retryable if owned-storage cleanup fails. */
     public dispose() {
         disposed = true
-        if (staging) Es6ArtifactFiles.remove(staging)
-        staging = null
-        pending.clear()
-        retainedBytes = 0
+        var Exception failure
+        // Attempt every bounded entry. Destination receipts remain owned until
+        // actually cleaned, including when cancellation bypasses another commit.
+        for (artifact in pending.copy()) {
+            try {
+                if (artifact.cleanupDestination) artifact.cleanupDestination.retryCleanup(artifact.identity)
+            } catch (Exception error) { if (!failure) failure = error }
+            try {
+                artifact.storage.remove()
+                if (!artifact.cleanupDestination || !artifact.cleanupDestination.cleanupError(artifact.identity)) {
+                    pending.remove(artifact)
+                    retainedBytes -= artifact.bytes
+                }
+            } catch (Exception error) { if (!failure) failure = error }
+        }
+        try { cleanupEmptyDirectory() }
+        catch (Exception error) { if (!failure) failure = error }
+        if (failure) throw failure
     }
 
     cleanupEmptyDirectory() {
         if (pending.isEmpty && staging) {
-            Es6ArtifactFiles.remove(staging)
+            stagingStorage.remove()
             staging = null
+            stagingStorage = null
         }
     }
 

@@ -28,7 +28,15 @@ on:
         required: true
         type: string
       production_evidence:
-        description: Absolute reviewed supplemental production evidence receipt (with retained referenced files)
+        description: Absolute reviewed supplemental receipt in a dedicated, non-secret evidence directory (entire directory retained)
+        required: true
+        type: string
+      scaling_plan:
+        description: Absolute predeclared reviewed scaling plan (source-bound tiers, budgets and pinned RSS timer)
+        required: true
+        type: string
+      scaling_plan_sha256:
+        description: Independent expected SHA-256 of reviewed scaling plan
         required: true
         type: string
       production_evidence_sha256:
@@ -55,6 +63,55 @@ jobs:
           python-version: "3.12"
       - name: Run isolated receipt validation tests
         run: python3 -B -m unittest discover -s packages/Airship/test -p test_dogfood_acceptance.py
+      - name: Regress producer failure propagation (mocked workloads, NOT acceptance)
+        shell: bash
+        run: |
+          python3 -B - <<'PY'
+          import sys
+          import tempfile
+          from pathlib import Path
+          import unittest
+          from unittest import mock
+          sys.path.insert(0, 'packages/Airship/test')
+          import dogfood_acceptance as gate
+
+          class ProducerExitContract(unittest.TestCase):
+              def invoke(self):
+                  root = Path(self.directory.name)
+                  argv = ['dogfood_acceptance.py', '--produce', '--repo', str(root / 'repo'),
+                          '--output', str(root / 'output'), '--bootstrap-output', str(root / 'stages'),
+                          '--seeds', str(root / 'seeds.json'), '--review', str(root / 'review.json'),
+                          '--review-sha256', 'a' * 64, '--changed-input', 'Changed.flat',
+                          '--removed-input', 'Removed.flat', '--scaling-plan', str(root / 'scaling-plan.json'),
+                          '--scaling-plan-sha256', 'b' * 64]
+                  with mock.patch.object(sys, 'argv', argv):
+                      gate.main()
+
+              def setUp(self):
+                  self.directory = tempfile.TemporaryDirectory()
+                  self.addCleanup(self.directory.cleanup)
+
+              def test_blocked_producer_is_not_cli_success(self):
+                  with mock.patch.object(gate, 'produce_evidence', return_value={'status': 'blocked'}) as produce:
+                      with self.assertRaises(SystemExit) as raised:
+                          self.invoke()
+                      self.assertTrue(raised.exception.code)
+                      produce.assert_called_once()
+                      root = Path(self.directory.name)
+                      self.assertEqual(produce.call_args.kwargs['scaling_plan_path'], root / 'scaling-plan.json')
+                      self.assertEqual(produce.call_args.kwargs['scaling_plan_sha'], 'b' * 64)
+
+              def test_passed_producer_returns_success(self):
+                  with mock.patch.object(gate, 'produce_evidence', return_value={'status': 'passed'}):
+                      self.assertIsNone(self.invoke())
+
+              def test_workload_failure_is_not_converted_to_success(self):
+                  with mock.patch.object(gate, 'produce_evidence', side_effect=RuntimeError('workload failed')):
+                      with self.assertRaisesRegex(RuntimeError, 'workload failed'):
+                          self.invoke()
+
+          unittest.main()
+          PY
 
   production-acceptance:
     # Only explicitly dispatched gates claim production acceptance. No untrusted
@@ -63,52 +120,207 @@ jobs:
     needs: receipt-tests
     runs-on: [self-hosted, flat-dogfood]
     environment: flat-dogfood-acceptance
-    timeout-minutes: 190
+    # Provision a dedicated ephemeral POSIX runner with Python 3.12+, reviewed
+    # seed executables, a plan-pinned BSD/GNU RSS timer, offline dependencies/local
+    # Git origin, and enough disk
+    # for stage workspaces plus production snapshots. Do not download latest tools.
+    # Environment approval must review the dispatched commit AND all local inputs;
+    # workflow_dispatch alone does not establish that the selected ref is trusted.
+    concurrency:
+      group: flat-dogfood-provisioned-runner
+      cancel-in-progress: false
+    timeout-minutes: 230
+    env:
+      SEEDS: ${{ inputs.seed_manifest }}
+      REVIEW: ${{ inputs.review_receipt }}
+      REVIEW_SHA256: ${{ inputs.review_sha256 }}
+      STAGES: ${{ inputs.bootstrap_output }}
+      CHANGED: ${{ inputs.changed_input }}
+      REMOVED: ${{ inputs.removed_input }}
+      SCALING_PLAN: ${{ inputs.scaling_plan }}
+      SCALING_PLAN_SHA256: ${{ inputs.scaling_plan_sha256 }}
+      EVIDENCE: ${{ inputs.production_evidence }}
+      EVIDENCE_SHA256: ${{ inputs.production_evidence_sha256 }}
+      PYTHONDONTWRITEBYTECODE: "1"
+      ACCEPTANCE_ROOT: ${{ runner.temp }}/flat-acceptance-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v4
-      - name: Execute actual stage2 production Core and retained-output/clean comparisons
+        with:
+          persist-credentials: false
+      - name: Check reviewed local provisioning before production execution
+        id: provisioning
         shell: bash
-        env:
-          SEEDS: ${{ inputs.seed_manifest }}
-          REVIEW: ${{ inputs.review_receipt }}
-          REVIEW_SHA256: ${{ inputs.review_sha256 }}
-          STAGES: ${{ inputs.bootstrap_output }}
-          CHANGED: ${{ inputs.changed_input }}
-          REMOVED: ${{ inputs.removed_input }}
         run: |
           set -euo pipefail
+          mkdir "$ACCEPTANCE_ROOT"
+          # Keep early provisioning errors as well as harness-level receipts.
+          exec > >(tee "$ACCEPTANCE_ROOT/provisioning.log") 2>&1
+          python3 -B - <<'PY'
+          import hashlib
+          import json
+          import os
+          import shutil
+          from pathlib import Path
+          import sys
+
+          root = Path(os.environ['ACCEPTANCE_ROOT'])
+          metadata = {'revision': os.environ['GITHUB_SHA'],
+                      'run_id': os.environ['GITHUB_RUN_ID'],
+                      'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                      'status': 'failed'}
+          try:
+              if sys.version_info < (3, 12):
+                  raise ValueError('Provision Python 3.12 or newer')
+              paths = {}
+              for name in ('SEEDS', 'REVIEW', 'STAGES', 'EVIDENCE', 'SCALING_PLAN'):
+                  value = os.environ[name]
+                  path = Path(value)
+                  if not path.is_absolute() or any(c in value for c in '\r\n'):
+                      raise ValueError(f'{name} must be an absolute local path without newlines')
+                  if path.is_symlink() or not (path.is_dir() if name == 'STAGES' else path.is_file()):
+                      raise ValueError(f'{name} is missing or linked')
+                  paths[name] = path.resolve()
+              # The full trees are required for later hash/reference verification.
+              # Their provisioning contract excludes secrets and unrelated files.
+              evidence_root = paths['EVIDENCE'].parent
+              workspace = Path(os.environ['GITHUB_WORKSPACE']).resolve()
+              for tree in (paths['STAGES'], evidence_root):
+                  if tree == Path(tree.anchor) or tree == workspace or tree in workspace.parents or workspace in tree.parents:
+                      raise ValueError('Evidence trees must be dedicated directories outside checkout')
+              for name, pin in (('REVIEW', 'REVIEW_SHA256'), ('EVIDENCE', 'EVIDENCE_SHA256'),
+                                ('SCALING_PLAN', 'SCALING_PLAN_SHA256')):
+                  expected = os.environ[pin]
+                  if len(expected) != 64 or any(c not in '0123456789abcdef' for c in expected):
+                      raise ValueError(f'{pin} must be an independently supplied lowercase SHA-256')
+                  digest = hashlib.sha256()
+                  with paths[name].open('rb') as stream:
+                      for block in iter(lambda: stream.read(1024 * 1024), b''):
+                          digest.update(block)
+                  if digest.hexdigest() != expected:
+                      raise ValueError(f'{name} reviewed digest mismatch')
+              for name in ('CHANGED', 'REMOVED'):
+                  if not os.environ[name].strip():
+                      raise ValueError(f'{name} must identify a reviewed Flat-Core source')
+              for name in ('acceptance.json', 'sources.json', 'seeds.json', 'review.json'):
+                  if not (paths['STAGES'] / name).is_file():
+                      raise ValueError(f'Missing bootstrap {name}')
+              for number in range(3):
+                  if not (paths['STAGES'] / f'stage{number}/workspace').is_dir():
+                      raise ValueError(f'Missing retained stage{number} workspace')
+              sys.path.insert(0, str(workspace / 'packages/Airship/test'))
+              import dogfood_acceptance as gate
+              # Validate the exact production schema against accepted sources before
+              # launching any workloads. The independent pin is never derived here.
+              plan = gate.scaling_plan(paths['SCALING_PLAN'], os.environ['SCALING_PLAN_SHA256'],
+                                       gate.bootstrap.digest(paths['STAGES'] / 'sources.json'))
+              timer = Path(plan['timer']['path'])
+              if timer.is_symlink() or not timer.is_file() or not os.access(timer, os.X_OK):
+                  raise ValueError('Provision the reviewed executable RSS timer')
+              if gate.bootstrap.digest(timer) != plan['timer']['sha256']:
+                  raise ValueError('RSS timer reviewed digest mismatch')
+              retained = root / 'reviewed-inputs'
+              retained.mkdir()
+              for name in ('SEEDS', 'REVIEW', 'SCALING_PLAN'):
+                  shutil.copyfile(paths[name], retained / (name.lower() + '.json'))
+              metadata.update(status='provisioned', paths={k: str(v) for k, v in paths.items()},
+                              review_sha256=os.environ['REVIEW_SHA256'],
+                              scaling_plan_sha256=os.environ['SCALING_PLAN_SHA256'],
+                              evidence_sha256=os.environ['EVIDENCE_SHA256'])
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+                  stream.write(f'bootstrap={paths["STAGES"]}\n')
+                  stream.write(f'evidence_root={evidence_root}\n')
+          except BaseException as error:
+              metadata['error'] = str(error)
+              raise
+          finally:
+              (root / 'provisioning.json').write_text(json.dumps(metadata, indent=2) + '\n')
+          PY
+          python3 -B packages/Airship/test/stage_bootstrap.py \
+            --preflight-only --repo "$GITHUB_WORKSPACE" \
+            --output "$ACCEPTANCE_ROOT/seed-preflight" \
+            --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256"
+      - name: Execute actual stage2 production Core and retained-output/clean comparisons
+        id: production
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Preserve nonzero failure for unsupported/unobserved contracts; a
+          # receipt-only or blocked run must never turn this green.
           python3 -B packages/Airship/test/dogfood_acceptance.py \
             --produce --repo "$GITHUB_WORKSPACE" \
-            --output "$RUNNER_TEMP/flat-production-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            --output "$ACCEPTANCE_ROOT/production" \
             --bootstrap-output "$STAGES" \
             --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256" \
-            --changed-input "$CHANGED" --removed-input "$REMOVED"
+            --changed-input "$CHANGED" --removed-input "$REMOVED" \
+            --scaling-plan "$SCALING_PLAN" --scaling-plan-sha256 "$SCALING_PLAN_SHA256" \
+            --run-seconds 10800 --command-seconds 600 \
+            2>&1 | tee "$ACCEPTANCE_ROOT/production.log"
       - name: Validate complete production and self-host evidence
+        id: validation
+        # Collect independent validator failures even when the producer is blocked.
+        # Do not start more workloads after cancellation or failed provisioning.
+        if: ${{ !cancelled() && steps.provisioning.outcome == 'success' }}
         shell: bash
-        env:
-          SEEDS: ${{ inputs.seed_manifest }}
-          REVIEW: ${{ inputs.review_receipt }}
-          REVIEW_SHA256: ${{ inputs.review_sha256 }}
-          STAGES: ${{ inputs.bootstrap_output }}
-          EVIDENCE: ${{ inputs.production_evidence }}
-          EVIDENCE_SHA256: ${{ inputs.production_evidence_sha256 }}
         run: |
           set -euo pipefail
-          for receipt in "$SEEDS" "$REVIEW" "$EVIDENCE"; do
-            test -n "$receipt" && test -f "$receipt" || { echo 'Required approved receipt is not provisioned' >&2; exit 1; }
-          done
-          test -d "$STAGES" || { echo 'Required stage0/1/2 outputs are not provisioned' >&2; exit 1; }
           python3 -B packages/Airship/test/dogfood_acceptance.py \
             --repo "$GITHUB_WORKSPACE" \
-            --output "$RUNNER_TEMP/flat-dogfood-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            --output "$ACCEPTANCE_ROOT/validation" \
             --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256" \
             --bootstrap-output "$STAGES" \
-            --evidence "$EVIDENCE" --evidence-sha256 "$EVIDENCE_SHA256"
-      - uses: actions/upload-artifact@v4
+            --evidence "$EVIDENCE" --evidence-sha256 "$EVIDENCE_SHA256" \
+            --run-seconds 600 --command-seconds 600 \
+            2>&1 | tee "$ACCEPTANCE_ROOT/validation.log"
+      - name: Record acceptance step outcomes
+        if: always()
+        shell: bash
+        env:
+          PROVISIONING: ${{ steps.provisioning.outcome }}
+          PRODUCTION: ${{ steps.production.outcome }}
+          VALIDATION: ${{ steps.validation.outcome }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$ACCEPTANCE_ROOT"
+          python3 -B - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          outcomes = {key.lower(): os.environ[key] for key in ('PROVISIONING', 'PRODUCTION', 'VALIDATION')}
+          outcomes['full_acceptance'] = all(value == 'success' for value in outcomes.values())
+          (Path(os.environ['ACCEPTANCE_ROOT']) / 'outcomes.json').write_text(json.dumps(outcomes, indent=2) + '\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('## Production dogfood acceptance\n\n')
+              for key, value in outcomes.items():
+                  summary.write(f'- {key}: {value}\n')
+              summary.write('\nHarness tests alone are NOT production acceptance. Retain the bootstrap and supplemental evidence artifacts alongside this run.\n')
+          PY
+      - name: Retain receipts, command logs, failures and production outputs
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: full-dogfood-receipt-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            ${{ runner.temp }}/flat-dogfood-${{ github.run_id }}-${{ github.run_attempt }}/
-            ${{ runner.temp }}/flat-production-${{ github.run_id }}-${{ github.run_attempt }}/
+          path: ${{ env.ACCEPTANCE_ROOT }}/
           if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14
+      - name: Retain bootstrap provenance and stage0/1/2 workspaces
+        uses: actions/upload-artifact@v4
+        if: ${{ always() && steps.provisioning.outputs.bootstrap != '' }}
+        with:
+          name: full-dogfood-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.provisioning.outputs.bootstrap }}/
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14
+      - name: Retain reviewed supplemental evidence and referenced files
+        uses: actions/upload-artifact@v4
+        if: ${{ always() && steps.provisioning.outputs.evidence_root != '' }}
+        with:
+          name: full-dogfood-supplemental-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.provisioning.outputs.evidence_root }}/
+          if-no-files-found: error
+          include-hidden-files: true
+          compression-level: 0
+          retention-days: 14

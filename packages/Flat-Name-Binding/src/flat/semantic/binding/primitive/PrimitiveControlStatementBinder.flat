@@ -1569,9 +1569,7 @@ class {
                 )
             }
         }
-        let result = currentExpressions.bind(
-            syntax, locals: locals, callables: callables
-        )
+        let result = currentExpressions.bindNested(syntax, locals, callables)
         if (!result.succeeded) {
             throw Exception(
                 "Structured expression #{syntax.expressionKind()} token #{syntax.range.startTokenIndex}: #{result.diagnostic.message}"

@@ -155,6 +155,153 @@ testable class {
         expect(loaded.contents).toBe("class Example {}")
     }
 
+    test `explicit concurrency wins over parallel hint in either argument order`() {
+        let adapter = AirshipCompilerArguments()
+        expect(adapter.fromArguments(["src", "-library", "-parallel", "-threads", "1"])
+            .options.maxConcurrency).toBe(1)
+        expect(adapter.fromArguments(["src", "-library", "-threads", "1", "-parallel"])
+            .options.maxConcurrency).toBe(1)
+        expect(adapter.fromArguments(["src", "-library", "-parallel"])
+            .options.maxConcurrency).toBe(2)
+    }
+
+    test `argument contracts reject empty values exclusions defaults and property keys`() {
+        let options = ["-x", "-default-import", "-default-static-import", "-target-runtime", "-o", "-d"]
+        var Int rejected
+        for (option in options) {
+            try { AirshipCompilerArguments().fromArguments(["src", "-library", option, " "]) }
+            catch (Exception error) { rejected++ }
+            try { AirshipCompilerArguments().fromArguments(["src", "-library", option]) }
+            catch (Exception error) { rejected++ }
+        }
+        try { AirshipCompilerArguments().fromArguments(["src", "-library", "-app-props", " =value"]) }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(options.count * 2 + 1)
+    }
+
+    test `source and dependency contracts preserve a closure beyond sixty four entries`() {
+        let arguments = ["-library"]
+        for (index in 0..96) {
+            arguments.add("sources/#index")
+            arguments.addAll(["-l", "dependencies/#index", "-x", "excluded/#index"])
+            arguments.addAll(["-default-import", "flat/defaults/Value#index"])
+        }
+        let package = AirshipCompilerArguments().fromArguments(arguments).packages.first
+        expect(package.sourceRoots.count).toBe(96)
+        expect(package.dependencies.count).toBe(96)
+        expect(package.exclusions.count).toBe(96)
+        expect(package.defaultImports.count).toBe(96)
+        expect(package.sourceRoots.last.location).toBe("sources/95")
+        expect(package.dependencies.last.sourceLocation).toBe("dependencies/95")
+        expect(package.exclusions.last.location).toBe("excluded/95")
+        expect(package.defaultImports.last.location).toBe("flat/defaults/Value95")
+    }
+
+    test `overlay acceptance agrees with case sensitive identity and rank`() {
+        expect(Es6SourceSelection.accepts("Value.JS.flat")).toBe(false)
+        expect(Es6SourceSelection.accepts("Value.ES6.flat")).toBe(false)
+        let locations = ["B.es6.flat", "A.es6.flat", "B.flat", "A.js.flat", "A.flat"]
+        expect(locations.sort({ Es6SourceSelection.compare(_a, _b) }))
+            .toBe(["A.flat", "A.js.flat", "A.es6.flat", "B.flat", "B.es6.flat"])
+    }
+
+    test `filesystem byte capacity rejects oversized loads without poisoning the provider`() {
+        var Int rejected
+        try { FilesystemSourceProvider("res/sources", maxSourceBytes: 0) }
+        catch (Exception error) { rejected++ }
+        let small = FilesystemSourceProvider("res/sources", maxSourceBytes: 16)
+        try { small.load(small.identities().first) }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+        expect(small.identities().count).toBe(1)
+        let exact = FilesystemSourceProvider("res/sources", maxSourceBytes: 17)
+        expect(exact.load(exact.identities().first).contents.count).toBe(17)
+    }
+
+    test `filesystem entry capacity rejects invalid bounds and admits the exact inventory`() {
+        var Int rejected
+        try { FilesystemSourceProvider("res/sources", maxEntries: 0) }
+        catch (Exception error) { rejected++ }
+        try { FilesystemSourceProvider("res/sources", maxEntries: -1) }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+        expect(FilesystemSourceProvider("res/sources", maxEntries: 1).identities().count).toBe(1)
+    }
+
+    test `bounded filesystem inventory charges hidden non-source and nested entries before filtering`() {
+        // Five immediate entries, then one child in nested: the root budget is
+        // aggregate, not reset for each directory. No partial inventory escapes.
+        var Int rejected
+        let capacities = [4, 5]
+        for (capacity in capacities) {
+            try { FilesystemSourceProvider("res/bounded", maxEntries: capacity) }
+            catch (Exception error) { rejected++ }
+        }
+        expect(rejected).toBe(2)
+        let provider = FilesystemSourceProvider("res/bounded", maxEntries: 6)
+        let identities = provider.identities()
+        expect(identities.count).toBe(3)
+        expect(identities[0].value.endsWith("res/bounded/A.flat")).toBe(true)
+        expect(identities[1].value.endsWith("res/bounded/Z.flat")).toBe(true)
+        expect(identities[2].value.endsWith("res/bounded/nested/Unicode.flat")).toBe(true)
+        expect(FilesystemSourceProvider("res/bounded", maxEntries: 6).identities()).toBe(identities)
+        expect(provider.load(identities[0]).contents).toBe("class A {}\n")
+    }
+
+    test `bounded source reads measure UTF8 bytes and reject overflow without truncation`() {
+        let small = FilesystemSourceProvider("res/bounded/nested", maxSourceBytes: 10)
+        var Bool rejected
+        try { small.load(small.identities().first) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        let exact = FilesystemSourceProvider("res/bounded/nested", maxSourceBytes: 11)
+        expect(exact.load(exact.identities().first).contents).toBe("// €😀\n")
+        expect(exact.load(exact.identities().first).contents).toBe("// €😀\n")
+        expect(small.identities()).toBe(exact.identities())
+    }
+
+    test `bounded inventory failure and cancellation leave subsequent requests usable`() {
+        var Int rejected
+        try { FilesystemSourceProvider("res/bounded", maxSources: 2) }
+        catch (Exception error) { rejected++ }
+        try { FilesystemSourceProvider("res/bounded", maxDirectories: 1) }
+        catch (Exception error) { rejected++ }
+        try { FilesystemSourceProvider("res/bounded", maxDepth: 1) }
+        catch (Exception error) { rejected++ }
+        var Int checks
+        try {
+            // Stop immediately after the bounded root enumeration.
+            FilesystemSourceProvider("res/bounded", "filesystem", 4096, 16384, 128, 65536, 16777216,
+                { checks++; return checks == 3 })
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(4)
+        expect(FilesystemSourceProvider("res/bounded", maxSources: 3,
+            maxDirectories: 2, maxDepth: 2, maxEntries: 6).identities().count).toBe(3)
+    }
+
+    test `filesystem cancellation interrupts discovery and isolates later requests`() {
+        var Int rejected
+        try { FilesystemSourceProvider("res/sources", "filesystem", 4096, 16384, 128, 65536, 16777216, { true }) }
+        catch (Exception error) { rejected++ }
+        var Int checks
+        try {
+            FilesystemSourceProvider("res/sources", "filesystem", 4096, 16384, 128, 65536, 16777216,
+                { checks++; return checks >= 3 })
+        } catch (Exception error) { rejected++ }
+        let provider = FilesystemSourceProvider("res/sources")
+        let identity = provider.identities().first
+        try { provider.loadCancellable(identity, { true }) }
+        catch (Exception error) { rejected++ }
+        // The final check runs after the reader has been closed; no snapshot escapes.
+        var Int loadChecks
+        try { provider.loadCancellable(identity, { loadChecks++; return loadChecks == 3 }) }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(4)
+        expect(provider.load(identity).contents).toBe("class Example {}\n")
+        expect(provider.load(SourceIdentity("file:not-registered.flat"))).toBe(null)
+        expect(provider.load(SourceIdentity("memory:Example.flat"))).toBe(null)
+    }
+
     test `filesystem provider enumerates and loads source snapshots deterministically`() {
         let provider = FilesystemSourceProvider("res/sources")
         let identities = provider.identities()

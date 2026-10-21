@@ -13,18 +13,26 @@ import flat/io
  * miss (output digest disagreement), never authority to accept stale output. A
  * failed/cancelled compilation never replaces the prior manifest. Lock acquisition
  * fails visibly rather than waiting unboundedly or stealing another process's lock.
+ * Optional manifestObserver uses artifact lifecycle callbacks, bound to revision
+ * and the absolute manifest destination (identity is the manifest basename).
+ * Only observed paths emit create/remove; finalization failure retains the exact
+ * temporary tree and destination lock for dispose retry. No event queue is held.
  */
 class extends CompilerSourceProvider {
     native var Object state
     private CompilerSourceProvider provider
+    private CompilerArtifactLifecycleObserver manifestObserver
+    private CompilerArtifactLifecycleStorage manifestTemporary
+    private CompilerArtifactLifecycleBinding manifestBinding
     visible Bool reused
 
     public construct(CompilerSourceProvider provider, File[] files, String[] arguments,
         File destination, Long maxArtifactBytes, Int maxSourceCharacters = 1048576,
-        String toolLocation = null) {
+        String toolLocation = null, CompilerArtifactLifecycleObserver manifestObserver = null) {
         if (!provider || !files || !arguments || !destination || maxArtifactBytes <= 0 ||
             maxSourceCharacters <= 0) throw Exception("Persistent compiler state requires bounded inputs")
         this.provider = provider
+        this.manifestObserver = manifestObserver
         native_array native var Char[] errorMessage
         var Bool hit
         external js {
@@ -46,9 +54,11 @@ class extends CompilerSourceProvider {
                     throw error;
                 }
                 owned = true;
+                const lockIdentity = fs.lstatSync(lock);
                 fs.writeFileSync(path.join(lock,'owner.json'), JSON.stringify({pid:process.pid,
                     host:require('os').hostname(), startedAt:new Date().toISOString(),
                     compiler:process.argv[1], destination:destinationPath}), {flag:'wx'});
+                const ownerIdentity = fs.lstatSync(path.join(lock,'owner.json'));
                 const digestFile = (location, limit) => {
                     const fd = fs.openSync(location, 'r');
                     try {
@@ -80,19 +90,25 @@ class extends CompilerSourceProvider {
                 const entries = [];
                 let metadataBytes = 0;
                 const expected = new Map();
+                const physicalSources = new Set();
                 for (const identity of #{files.map({ _.normalizedLocation.chars.data }).data}) {
                     const location = fs.realpathSync(identity);
+                    const sourceIdentity = path.resolve(identity);
                     const digest = digestFile(location, maxSourceBytes);
-                    metadataBytes += Buffer.byteLength(location) + 128;
-                    if (Buffer.byteLength(location) > 16384 || metadataBytes > 4000000) {
+                    metadataBytes += Buffer.byteLength(sourceIdentity) + 128;
+                    if (Buffer.byteLength(sourceIdentity) > 16384 || metadataBytes > 4000000) {
                         throw new Error('Incremental source metadata exceeds capacity');
                     }
-                    entries.push({identity:location, digest});
+                    if (physicalSources.has(location)) throw new Error('Incremental closure requires unique physical sources');
+                    physicalSources.add(location);
+                    // Preserve the compiler-visible identity. Hashing only the real path
+                    // loses alias identity and can miss a retargeted source symlink.
+                    entries.push({identity:sourceIdentity, digest});
                     expected.set(identity, digest);
                 }
                 entries.sort((a,b) => a.identity < b.identity ? -1 : a.identity > b.identity ? 1 : 0);
                 const configuration = crypto.createHash('sha256').update(JSON.stringify({
-                    schema:'flat.compiler.incremental.v1', options, tool:toolDigest,
+                    schema:'flat.compiler.incremental.v1', publication:'staged-sha256-v1', options, tool:toolDigest,
                     node:process.versions.node, maxSourceBytes, maxOutputBytes
                 })).digest('hex');
                 const key = crypto.createHash('sha256').update(JSON.stringify({configuration,entries})).digest('hex');
@@ -112,9 +128,15 @@ class extends CompilerSourceProvider {
                             !Array.isArray(previous.entries) || previous.entries.length > 16384 ||
                             !previous.diagnostics || previous.diagnostics.complete !== true ||
                             !Array.isArray(previous.diagnostics.records) || previous.diagnostics.records.length !== 0 ||
-                            typeof previous.output !== 'string' || typeof previous.key !== 'string' ||
-                            previous.entries.some(value => !value || typeof value.identity !== 'string' ||
+                            !/^[0-9a-f]{64}$/.test(previous.output) || !/^[0-9a-f]{64}$/.test(previous.key) ||
+                            !/^[0-9a-f]{64}$/.test(previous.configuration) ||
+                            previous.entries.some((value,index) => !value || typeof value.identity !== 'string' ||
+                                Buffer.byteLength(value.identity) > 16384 || !path.isAbsolute(value.identity) ||
+                                (index > 0 && previous.entries[index-1].identity >= value.identity) ||
                                 !/^[0-9a-f]{64}$/.test(value.digest))) previous = null;
+                        if (previous && crypto.createHash('sha256').update(JSON.stringify({
+                            configuration:previous.configuration, entries:previous.entries
+                        })).digest('hex') !== previous.key) previous = null;
                     } catch (_) { previous = null; }
                 }
                 let unchanged = 0, changed = 0, added = 0, removed = 0;
@@ -134,7 +156,7 @@ class extends CompilerSourceProvider {
                 const reason = hit ? 'exact-hit' : !previous ? 'cold' :
                     previous.configuration !== configuration ? 'configuration-changed' :
                     previous.key !== key ? 'closure-changed' : 'output-changed';
-                #{state} = {fs, crypto, digestFile, manifest, lock, destinationPath, entries,
+                #{state} = {fs, crypto, digestFile, manifest, lock, lockIdentity, ownerIdentity, ownerRemoved:false, destinationPath, entries,
                     expected, configuration, key, toolDigest, maxSourceBytes, maxOutputBytes,
                     tool:path.resolve(tool), owned:true, hit, previousOutput:previous ? previous.output : null,
                     evidence:{schema:'flat.compiler.incremental.v1', scope:'persistent-cli-package',
@@ -158,7 +180,20 @@ class extends CompilerSourceProvider {
         reused = hit
     }
 
-    override public identities() -> String[] => provider.identities()
+    override public identities() -> String[] {
+        let values = provider.identities()
+        native_array native var Char[] errorMessage
+        external js {
+            const expected = #{state}.expected;
+            const values = #{values.map({ _.chars.data }).data};
+            if (values.length !== expected.size || new Set(values).size !== values.length ||
+                values.some(identity => !expected.has(identity))) {
+                #{errorMessage} = 'Provider closure differs from incremental admission';
+            }
+        }
+        if (errorMessage) throw Exception(String(errorMessage))
+        return values
+    }
     override public checkpoint() { provider.checkpoint() }
     override public async load(String identity) -> CompilerSource {
         let value = provider.load(identity)
@@ -175,12 +210,16 @@ class extends CompilerSourceProvider {
 
     /** Revalidate before publication; cancellation never writes persistent state. */
     public validate() {
+        identities()
         native_array native var Char[] errorMessage
         external js {
             try {
                 const s = #{state};
                 if (!s.owned) throw new Error('Incremental transaction is closed');
                 if (s.digestFile(s.tool,268435456) !== s.toolDigest) throw new Error('Compiler changed during compilation');
+                if (s.published && s.digestFile(s.destinationPath,s.maxOutputBytes) !== s.preparedOutput && !s.hit) {
+                    throw new Error('Published output changed after incremental commit');
+                }
                 const expectedOutput = s.hit ? s.previousOutput : null;
                 if (expectedOutput && s.digestFile(s.destinationPath,s.maxOutputBytes) !== expectedOutput) {
                     throw new Error('Output changed during incremental admission');
@@ -193,42 +232,118 @@ class extends CompilerSourceProvider {
         if (errorMessage) throw Exception(String(errorMessage))
     }
 
-    /** Call only after successful atomic destination publication or a validated hit. */
-    public commit(CompilationSummary summary) {
-        if (!summary || summary.cancelled || !summary.cleanupSettled || summary.diagnosticCount != 0 ||
-            summary.artifactCount != 1) throw Exception("Persistent publication requires successful settled compilation")
+    /** Bind the exact staged artifact before the caller atomically publishes it.
+     * A summary alone cannot prove that the destination belongs to this compilation.
+     * Keep the staging file private until publication; commit verifies its digest.
+     */
+    public preparePublication(File artifact, CompilationSummary summary) {
+        requireSuccessfulSummary(summary)
+        if (!artifact) throw Exception("Persistent publication requires a staged artifact")
         validate()
         native_array native var Char[] errorMessage
         external js {
+            try {
+                const s = #{state};
+                if (s.hit || s.published || s.preparedOutput) throw new Error('Incremental publication already admitted');
+                s.preparedOutput = s.digestFile(#{artifact.normalizedLocation.chars.data},s.maxOutputBytes);
+            } catch (error) { #{errorMessage} = error.message; }
+        }
+        if (errorMessage) throw Exception(String(errorMessage))
+    }
+
+    private requireSuccessfulSummary(CompilationSummary summary) {
+        identities()
+        if (!summary || summary.cancelled || !summary.cleanupSettled || summary.diagnosticCount != 0 ||
+            summary.packageDiagnostic != null || summary.bindingDiagnostic != null ||
+            summary.artifactCount != 1) throw Exception("Persistent publication requires successful settled compilation")
+        var Int sourceCount
+        external js { #{sourceCount} = #{state}.entries.length; }
+        if (summary.sourceCount != sourceCount) throw Exception("Persistent publication requires the complete admitted closure")
+    }
+
+    /** Call only after successful atomic destination publication or a validated hit.
+     * At most one manifest temporary is owned; failed cleanup survives for dispose retry.
+     */
+    public commit(CompilationSummary summary) {
+        requireSuccessfulSummary(summary)
+        validate()
+        if (manifestTemporary) throw Exception("Incremental manifest cleanup remains pending")
+        native_array native var Char[] errorMessage
+        native_array native var Char[] temporaryPath
+        native_array native var Char[] manifestPath
+        external js {
             const s = #{state};
-            let temporary = null;
             try {
                 const output = s.digestFile(s.destinationPath,s.maxOutputBytes);
+                if (s.published) throw new Error('Incremental transaction already published');
+                const expectedOutput = s.hit ? s.previousOutput : s.preparedOutput;
+                if (!expectedOutput || output !== expectedOutput) {
+                    throw new Error('Destination does not match the admitted publication artifact');
+                }
                 const contents = JSON.stringify({schema:'flat.compiler.incremental.v1',
                     key:s.key, configuration:s.configuration, entries:s.entries, output,
                     diagnostics:{complete:true, records:[]}});
                 if (Buffer.byteLength(contents) > 4194304) throw new Error('Incremental manifest exceeds capacity');
-                temporary = s.fs.mkdtempSync(s.manifest+'.tmp-');
-                const staged = temporary + '/manifest';
-                const fd = s.fs.openSync(staged,'wx');
-                try { s.fs.writeFileSync(fd,contents); s.fs.fsyncSync(fd); }
-                finally { s.fs.closeSync(fd); }
-                s.fs.renameSync(staged,s.manifest);
-                s.evidence.manifestPublished = true;
-                s.evidence.diagnostics = {complete:true, records:[]};
+                s.manifestContents = contents;
+                #{manifestPath} = s.manifest;
             } catch (error) { #{errorMessage} = error.message; }
-            finally {
-                if (temporary) {
-                    try {
-                        if (s.fs.existsSync(temporary+'/manifest')) s.fs.unlinkSync(temporary+'/manifest');
-                        s.fs.rmdirSync(temporary);
-                    } catch (cleanup) {
-                        #{errorMessage} = 'Incremental manifest cleanup failed: ' + cleanup.message;
-                    }
-                }
-            } }
         }
         if (errorMessage) throw Exception(String(errorMessage))
+        let destination = File(String(manifestPath))
+        manifestBinding = CompilerArtifactLifecycleBinding(revision(), destination.name, destination.normalizedLocation)
+        external js {
+            const s = #{state};
+            try { #{temporaryPath} = s.fs.mkdtempSync(s.manifest+'.tmp-'); }
+            catch (error) {
+                delete s.manifestContents;
+                #{errorMessage} = error.message;
+            }
+        }
+        if (errorMessage) throw Exception(String(errorMessage))
+        let temporary = File(String(temporaryPath))
+        let staged = File(temporary, "manifest")
+        manifestTemporary = CompilerArtifactLifecycleStorage(temporary, manifestBinding, manifestObserver, staged)
+        manifestTemporary.observeCreated()
+        var Exception failure
+        try {
+            external js {
+                const s = #{state};
+                try {
+                    const fd = s.fs.openSync(#{staged.normalizedLocation.chars.data},'wx');
+                    try { s.fs.writeFileSync(fd,s.manifestContents); s.fs.fsyncSync(fd); }
+                    finally { s.fs.closeSync(fd); }
+                } catch (error) { #{errorMessage} = error.message; }
+                finally { delete s.manifestContents; }
+            }
+            // Observe even a partially written payload before any removal attempt.
+            manifestTemporary.observeCreated()
+            if (errorMessage) throw Exception(String(errorMessage))
+            external js {
+                const s = #{state};
+                try {
+                    s.fs.renameSync(#{staged.normalizedLocation.chars.data},s.manifest);
+                    s.published = true;
+                    s.evidence.manifestPublished = true;
+                    s.evidence.diagnostics = {complete:true, records:[]};
+                } catch (error) { #{errorMessage} = error.message; }
+            }
+            if (errorMessage) throw Exception(String(errorMessage))
+            manifestTemporary.observeRemoved()
+            manifestTemporary.publicationObserved()
+        } catch (Exception error) { failure = error }
+        try { cleanupManifestTemporary() }
+        catch (Exception cleanup) {
+            if (!failure) failure = cleanup
+        }
+        if (failure) throw failure
+    }
+
+    /** Cleanup remains owned, with its failure receipt, until verified removal. */
+    private cleanupManifestTemporary() {
+        if (manifestTemporary) {
+            manifestTemporary.remove()
+            manifestTemporary = null
+        }
     }
 
     public revision() -> String {
@@ -250,17 +365,43 @@ class extends CompilerSourceProvider {
     }
 
     public evidence() -> String {
+        // Never report a complete successful batch after the admitted bytes changed.
+        validate()
         native_array native var Char[] json
         external js { #{json} = JSON.stringify(#{state}.evidence) + '\n'; }
         return String(json)
     }
 
     public dispose() {
+        // Do not release the destination lock while an observed temporary is owned.
+        // A failed finalization is retryable and keeps the same binding/path.
+        cleanupManifestTemporary()
         native_array native var Char[] errorMessage
         external js {
             const s = #{state};
             if (s && s.owned) {
-                try { s.fs.unlinkSync(s.lock+'/owner.json'); s.fs.rmdirSync(s.lock); s.owned=false; }
+                try {
+                    const currentLock = s.fs.lstatSync(s.lock);
+                    if (!currentLock.isDirectory() || currentLock.dev !== s.lockIdentity.dev ||
+                        currentLock.ino !== s.lockIdentity.ino) throw new Error('Incremental lock ownership changed');
+                    const owner = s.lock+'/owner.json';
+                    if (!s.ownerRemoved) {
+                        const currentOwner = s.fs.lstatSync(owner);
+                        if (!currentOwner.isFile() || currentOwner.dev !== s.ownerIdentity.dev ||
+                            currentOwner.ino !== s.ownerIdentity.ino) throw new Error('Incremental owner identity changed');
+                        s.fs.unlinkSync(owner);
+                        // Persist this transition before rmdir: a failed rmdir must
+                        // not make retry unlink a missing (or replacement) owner.
+                        s.ownerRemoved = true;
+                    } else {
+                        try {
+                            s.fs.lstatSync(owner);
+                            throw new Error('Incremental owner reappeared during lock release');
+                        } catch (error) { if (error.code !== 'ENOENT') throw error; }
+                    }
+                    s.fs.rmdirSync(s.lock);
+                    s.owned = false;
+                }
                 catch (error) { #{errorMessage}=error.message; }
             }
         }

@@ -1,0 +1,66 @@
+package flat/compiler
+
+import flat/io
+import flat/writer/es6/bound
+
+/** One owned temporary tree, at most two observed paths, no event backlog. */
+class {
+    var Bool created
+    var Bool payloadCreated
+    visible var Exception failure
+
+    public construct(visible File file, visible CompilerArtifactLifecycleBinding binding,
+        visible CompilerArtifactLifecycleObserver observer, visible File payload = null) {}
+
+    public observeCreated() {
+        if (!created && file.exists) {
+            created = true
+            if (observer) {
+                try { observer.temporaryCreated(binding, file.normalizedLocation) } catch (Exception error) {}
+            }
+        }
+        if (payload && !payloadCreated && payload.exists) {
+            payloadCreated = true
+            if (observer) {
+                try { observer.temporaryCreated(binding, payload.normalizedLocation) } catch (Exception error) {}
+            }
+        }
+    }
+
+    /** Also used after rename; absence is checked rather than assumed. */
+    public observeRemoved() {
+        if (payloadCreated && !payload.exists) {
+            payloadCreated = false
+            if (observer) {
+                try { observer.temporaryRemoved(binding, payload.normalizedLocation) } catch (Exception error) {}
+            }
+        }
+        if (created && !file.exists) {
+            created = false
+            if (observer) {
+                try { observer.temporaryRemoved(binding, file.normalizedLocation) } catch (Exception error) {}
+            }
+        }
+    }
+
+    public publicationObserved() {
+        if (observer) {
+            try { observer.published(binding) } catch (Exception error) {}
+        }
+    }
+
+    /** Retain ownership on failure even when rm reports success but leaves a path. */
+    public remove() {
+        failure = null
+        try {
+            Es6ArtifactFiles.remove(file)
+            if (file.exists || (payload && payload.exists)) throw Exception("Artifact temporary remains after cleanup")
+        } catch (Exception error) { failure = error }
+        observeRemoved()
+        if (observer) {
+            try { observer.finalized(binding, file.normalizedLocation, !file.exists && (!payload || !payload.exists), failure) }
+            catch (Exception error) {}
+        }
+        if (failure) throw failure
+    }
+}

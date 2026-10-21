@@ -2,6 +2,23 @@ package flat/semantic/types
 
 /** Complete target-independent conversion classification for foundational types. */
 class {
+    /** Primitive values can receive members of explicitly registered source
+     * declarations without making primitive-to-class argument conversions legal. */
+    public static classifyReceiver(
+        SemanticType fromType,
+        SemanticType toType,
+        TypeHierarchyComponent hierarchy = null
+    ) -> TypeConversion {
+        if (fromType && toType && hierarchy && fromType.kind() == "primitive" &&
+            toType.kind() == "user-class") {
+            let distance = hierarchy.primitiveReceiverDistance((PrimitiveSemanticType)fromType,
+                (UserClassSemanticType)toType)
+            if (distance >= 0) return TypeConversion(fromType, toType,
+                "primitive-receiver", true, true, false, distance)
+        }
+        return classify(fromType, toType, hierarchy: hierarchy)
+    }
+
     public static classify(
         SemanticType fromType,
         SemanticType toType,
@@ -45,7 +62,9 @@ class {
             if (fromType.kind() == "null") {
                 return TypeConversion(fromType, toType, "null", true, true, false, 1)
             }
-            let underlying = classify(fromType, nullable.underlyingType, explicit, hierarchy)
+            let source = fromType.kind() == "nullable" ?
+                ((NullableSemanticType)fromType).underlyingType : fromType
+            let underlying = classify(source, nullable.underlyingType, explicit, hierarchy)
             if (underlying.applicable) {
                 return TypeConversion(
                     fromType,

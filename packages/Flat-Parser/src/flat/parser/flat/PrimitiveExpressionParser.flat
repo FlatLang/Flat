@@ -91,13 +91,15 @@ class {
 
     parseLevel(Int level) -> PrimitiveExpressionSyntax {
         if (level >= 6) return parseUnary()
+        // Keep the local cursor: interpolation nodes share one containing token range,
+        // which cannot be converted back into an expression-token cursor.
+        let start = index
         var PrimitiveExpressionSyntax left = parseLevel(level + 1)
         let operators = operatorsFor(level)
         while (index < tokens.count && operators.contains(tokens[index].value)) {
             let operator = tokens[index++].value
             let right = parseLevel(level + 1)
-            let expressionRange = range(left.range.startTokenIndex - tokenIndexOffset,
-                index)
+            let expressionRange = range(start, index)
             left = PrimitiveBinarySyntax(expressionRange, operator, left, right)
         }
         return left

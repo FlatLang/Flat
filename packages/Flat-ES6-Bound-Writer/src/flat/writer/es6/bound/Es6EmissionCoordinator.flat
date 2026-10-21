@@ -45,7 +45,11 @@ class {
         Future.CompletableFuture<Es6EmissionResult> completion
     ) {
         let task = executor.submit({
-            if (!completion.cancelled) completion.complete(units.emitFunction(functionUnit, ordinal))
+            // Mutable temporary/control-owner state belongs to this task only.
+            let isolated = Es6UnitOrchestrator(Es6StatementOrchestrator(
+                Es6ExpressionOrchestrator(units.statements.expressions.expressions, units.statements.expressions.calls),
+                units.statements.statements), units.units)
+            if (!completion.cancelled) completion.complete(isolated.emitFunction(functionUnit, ordinal))
         })$
         observeTask(task, functionUnit, completion)$
         completion.onCancel({ task.cancel() })

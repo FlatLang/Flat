@@ -78,8 +78,8 @@ testable class {
         let destination = File(root, "program.js")
         Es6ArtifactCommitter().commit(destination,
             "(async()=>{let calls=0; let " + leftName + "=0; const " + arrayName + "=[42]; const " + nextName +
-            "=async()=>{calls++;return 0;}; console.log(" + emitted.code + ",calls); " + leftName +
-            "=null; console.log(" + emitted.code + ",calls);})();\n")
+            "=async()=>{calls++;return 0;}; {\n" + emitted.setup + "console.log(" + emitted.code + ",calls); } " + leftName +
+            "=null; {\n" + emitted.setup + "console.log(" + emitted.code + ",calls); } })();\n")
         let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
         Es6ArtifactFiles.remove(root)
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
@@ -101,13 +101,14 @@ testable class {
         let statementObject = lowered.statements().first
         let returned = (BoundReturnStatement)statementObject
         let emitted = Es6ExpressionOrchestrator().emit(returned.value)
-        let code = emitted.code.replace(Es6NameMangler.mangle(receiver.symbolIdentity.value), "read()")
+        let setup = emitted.setup.replace(Es6NameMangler.mangle(receiver.symbolIdentity.value), "read()")
+        let code = emitted.code
         let root = File(".flat-es6-safe-field-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "program.js")
         Es6ArtifactCommitter().commit(destination, "let calls=0; let value=null; function read(){calls++;return value;}\n" +
-            "console.log(" + code + ",calls); value={" + Es6NameMangler.mangle(field.value) + ":0};\n" +
-            "console.log(" + code + ",calls);\n")
+            "{\n" + setup + "console.log(" + code + ",calls); } value={" + Es6NameMangler.mangle(field.value) + ":0};\n" +
+            "{\n" + setup + "console.log(" + code + ",calls); }\n")
         let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
         Es6ArtifactFiles.remove(root)
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
@@ -134,8 +135,8 @@ testable class {
         let destination = File(root, "program.js")
         Es6ArtifactCommitter().commit(destination,
             "let reads=0, fallbacks=0; let " + leftName + "=()=>{reads++;return false;}; let " + rightName + "=()=>{fallbacks++;return true;};\n" +
-            "console.log(" + emitted.code + ", reads, fallbacks);\n" +
-            leftName + "=()=>{reads++;return null;}; console.log(" + emitted.code + ", reads, fallbacks);\n")
+            "{\n" + emitted.setup + "console.log(" + emitted.code + ", reads, fallbacks); }\n" +
+            leftName + "=()=>{reads++;return null;}; {\n" + emitted.setup + "console.log(" + emitted.code + ", reads, fallbacks); }\n")
         let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
         Es6ArtifactFiles.remove(root)
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))

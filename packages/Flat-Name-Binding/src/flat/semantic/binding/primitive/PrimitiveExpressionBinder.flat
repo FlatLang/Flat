@@ -97,6 +97,31 @@ class {
         return result
     }
 
+    /** Keep concrete return conversions explicit before an ABI pass erases generic slots. */
+    typedCallbackReturns(BoundStatement[] statements, SemanticType resultType) -> BoundStatement[] {
+        let result = BoundStatement[]
+        for (statement in statements) {
+            if (statement.class.isOfType(BoundReturnStatement.class)) {
+                let returned = (BoundReturnStatement)statement
+                if (!returned.value || (resultType.value() == SemanticTypes.unitType().value() &&
+                    returned.requiredType.kind() == "null")) {
+                    result.add(statement)
+                } else {
+                    let conversion = TypeConversions.classify(returned.value.semanticType, resultType,
+                        hierarchy: currentHierarchy)
+                    if (!conversion.applicable) throw Exception("Callback return type mismatch at token #{returned.range.startTokenIndex}")
+                    result.add(BoundReturnStatement(returned.range, resultType, returned.value, conversion))
+                }
+            } else if (statement.class.isOfType(BoundIfStatement.class)) {
+                let branch = (BoundIfStatement)statement
+                result.add(BoundIfStatement(branch.range, branch.condition,
+                    typedCallbackReturns(branch.thenValues(), resultType),
+                    typedCallbackReturns(branch.elseValues(), resultType)))
+            } else result.add(statement)
+        }
+        return result
+    }
+
     terminalStatements(BoundStatement[] statements) -> Bool {
         for (statement in statements) {
             if (statement.class.isOfType(BoundReturnStatement.class) || statement.class.isOfType(BoundThrowStatement.class)) return true
@@ -157,6 +182,55 @@ class {
         return BoundConversionExpression(value.range, required, adapted, conversion)
     }
 
+    /** Resolve representation evidence while canonical source identities are available.
+     * A generic result is boxed only after its concrete return conversion.
+     */
+    public static callbackBoxingConstructor(SemanticType concrete, FunctionSemanticType declaration,
+        PrimitiveResolvedDeclarationContext context, CallableSignature[] callables) -> CallableSignature {
+        if (!declaration || declaration.returnType.kind() != "generic-parameter" ||
+            concrete.kind() != "primitive") return null
+        if (!context) throw Exception("Generic callback result requires canonical boxing declaration evidence")
+        let name = concrete.value().substring("primitive:".count)
+        let location = name == "Bool" ? "flat/primitive/Bool" : "flat/primitive/number/#name"
+        let declarations = context.candidates(location)
+        if (declarations.count != 1) throw Exception("Generic callback result requires one canonical boxing declaration")
+        let owner = UserClassSemanticType(declarations.first)
+        let targets = callables.filter((candidate) => candidate.callableKind.value == "constructor" &&
+            !candidate.asyncFunction && candidate.ownerType && candidate.ownerType.value() == owner.value() &&
+            candidate.returnType.value() == owner.value() && candidate.parameterTypes().count == 1 &&
+            candidate.optionalParameterCount == 0 && candidate.parameterTypes().first.value() == concrete.value())
+        if (targets.count != 1) throw Exception("Generic callback result requires one canonical storage boxing constructor")
+        return targets.first
+    }
+
+    /** Static references are immutable selections: adapting them introduces no eager call. */
+    public static adaptCallbackReference(BoundExpression value, FunctionSemanticType declaration,
+        PrimitiveResolvedDeclarationContext context, CallableSignature[] callables) -> BoundExpression {
+        if (!declaration || !value.class.isOfType(BoundFunctionValue.class)) return value
+        Object referenceTypeSource = value.semanticType
+        FunctionSemanticType type = (FunctionSemanticType)referenceTypeSource
+        if (declaration.returnType.kind() != "generic-parameter") return value
+        if (declaration.parameterTypes().any({ _.kind() == "generic-parameter" })) {
+            throw Exception("Generic function reference adapter requires resolved parameter representation evidence")
+        }
+        let parameters = BoundFunctionParameter[]
+        let arguments = BoundExpression[]
+        var Int index
+        for (parameterType in type.parameterTypes()) {
+            let owner = DeclarationIdentity(SyntaxIslandIdentity(value.range.snapshot, "callback-reference", value.range.startTokenIndex),
+                "callback-reference", "argument#index")
+            let identity = SymbolIdentity(owner, "parameter", index)
+            let name = "argument#index"
+            parameters.add(BoundFunctionParameter(name, identity, parameterType))
+            arguments.add(BoundReferenceExpression(value.range, parameterType, name, identity))
+            index++
+        }
+        let invocation = BoundFunctionInvocationExpression(value.range, value, type, arguments)
+        return BoundLambdaExpression(value.range, type, parameters, BoundReferenceExpression[],
+            invocation, declarationContract: declaration,
+            resultBoxingConstructor: callbackBoxingConstructor(type.returnType, declaration, context, callables))
+    }
+
     public bindCallback(PrimitiveLambdaSyntax syntax, FunctionSemanticType context,
         LocalBinding[] locals, CallableSignature[] callables,
         TypeHierarchyComponent hierarchy = null,
@@ -183,6 +257,12 @@ class {
             originalCallbackRange = null
             specializedGenericParameters = SymbolIdentity[]
         }
+    }
+
+    /** Nested statement expressions retain the enclosing callback's semantic authority. */
+    public bindNested(PrimitiveExpressionSyntax syntax, LocalBinding[] locals, CallableSignature[] callables) -> PrimitiveExpressionBindingResult {
+        return bind(syntax, locals: locals, callables: callables,
+            hierarchy: currentHierarchy, declarationContext: currentDeclarationContext)
     }
 
     public bind(
@@ -221,11 +301,14 @@ class {
                     }
                     return PrimitiveExpressionBindingResult(expression: BoundLambdaExpression(
                         lambda.range, type, parameters, BoundReferenceExpression[],
-                        BoundLiteralExpression(lambda.range, SemanticTypes.unitType(), "null")
+                        BoundLiteralExpression(lambda.range, SemanticTypes.unitType(), "null"),
+                        declarationContract: type
                     ))
                 }
             }
-            let expression = bindSyntax(syntax, locals, callables, requiredType)
+            var BoundExpression expression = bindSyntax(syntax, locals, callables, requiredType)
+            if (requiredType && requiredType.kind() == "function") expression = adaptCallbackReference(
+                expression, (FunctionSemanticType)requiredType, currentDeclarationContext, callables)
             if (!requiredType) return PrimitiveExpressionBindingResult(expression: expression)
             let conversion = TypeConversions.classify(
                 expression.semanticType, requiredType, explicit: explicitConversion, hierarchy: currentHierarchy
@@ -878,20 +961,15 @@ class {
             try {
                 if (value.statementValues().isNotEmpty) {
                     if (!expected) throw Exception("Statement callback requires contextual function type");
-                    statements.addAll(PrimitiveControlStatementBinder().bind(
+                    let boundStatements = PrimitiveControlStatementBinder().bind(
                         PrimitiveStatementSyntaxResult(value.statementValues()), value.range.snapshot,
-                        lambdaLocals, callables, expressionBinder: this, hierarchy: currentHierarchy).statements())
-                    let returns = statementReturns(statements)
+                        lambdaLocals, callables, expressionBinder: this, hierarchy: currentHierarchy).statements()
+                    let returns = statementReturns(boundStatements)
                     var SemanticType resultType = expected.returnType
                     if (resultType.kind() == "unknown" || resultType.kind() == "generic-parameter") {
                         resultType = returns.isEmpty ? SemanticTypes.unitType() : returns.first.requiredType
                     }
-                    for (returned in returns) {
-                        if (resultType.value() == SemanticTypes.unitType().value() && returned.requiredType.kind() == "null") continue
-                        if (returned.requiredType.value() != resultType.value()) {
-                            throw Exception("Callback return type mismatch at token #{returned.range.startTokenIndex}")
-                        }
-                    }
+                    statements.addAll(typedCallbackReturns(boundStatements, resultType))
                     if (resultType.value() != SemanticTypes.unitType().value() && !terminalStatements(statements)) {
                         throw Exception("Callback may complete without returning a value")
                     }
@@ -915,6 +993,16 @@ class {
                 if (conversion.applicable) body = BoundConversionExpression(
                     body.range, expected.returnType, body, conversion)
             }
+            if (expected && value.statementValues().isEmpty &&
+                expected.returnType.kind() != "unknown" && expected.returnType.kind() != "generic-parameter" &&
+                expected.returnType.value() != body.semanticType.value()) {
+                let conversion = TypeConversions.classify(body.semanticType, expected.returnType,
+                    hierarchy: currentHierarchy)
+                // Preserve independently inferred results when they cannot convert here.
+                // The selected call's FunctionTypeChecker must reject incompatible contracts;
+                // bindCallback also serves inference callers before a target is selected.
+                if (conversion.applicable) body = BoundConversionExpression(body.range, expected.returnType, body, conversion)
+            }
             let parameterNames = value.parameterValues().map({ _.name })
             let captures = BoundReferenceExpression[]
             for (local in locals) {
@@ -926,11 +1014,15 @@ class {
                     ))
                 }
             }
+            var FunctionSemanticType declaration = expected
+            if (originalCallbackRange == value.range && originalCallbackContract) declaration = originalCallbackContract
+            CallableSignature boxing = callbackBoxingConstructor(body.semanticType, declaration, currentDeclarationContext, callables)
             return BoundLambdaExpression(
                 value.range,
                 FunctionSemanticType(parameters.map({ _.semanticType }), body.semanticType,
                     expected ? expected.asyncFunction : false),
-                parameters, captures, body, statements            )
+                parameters, captures, body, statements,
+                declarationContract: declaration, resultBoxingConstructor: boxing)
         }
         if (syntax.class.isOfType(PrimitiveFunctionReferenceSyntax.class)) {
             let value = (PrimitiveFunctionReferenceSyntax)syntax

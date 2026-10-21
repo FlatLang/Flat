@@ -13,6 +13,101 @@ import flat/extensions/SyntaxStringFunctions
 import flat/regex/RegexStringExtensions
 
 testable class {
+    // TestAsync.toThrowWithMessage's second argument is a custom failure label,
+    // not an expected message. Keep the exact-message assertion explicit here.
+    async assertAsyncThrows(async action(), Class exceptionType, String expectedMessage = null) {
+        let Exception error = Exception.catchTypeAsync(action, exceptionType)
+        expect(error).toNotBe(null, "Expected exception type #exceptionType")
+        if (expectedMessage) {
+            expect(error.message).toBe(expectedMessage)
+        }
+    }
+    test async `compiler pass through retains ordered budgets and evidence tokens in child installs`() {
+        let options = ["--threads", "3", "--max-sources", "128", "--max-types", "256",
+            "--max-artifact-bytes", "65536", "--quiet"]
+        let arguments = ["--use-links", "--flatc-runtime", "flat", "-t", "es6", "--"]
+        arguments.addAll(options)
+        let parent = Airship(arguments)
+        let childArguments = ["-f", parent.packageLocation.normalizedLocation]
+        parent.propagateArgs(childArguments)
+        let child = Airship(childArguments, parent)
+        expect(child.cliArgs.propagationArgs.values.join("|")).toBe(options.join("|"))
+        let command = child.installService.getFlatcInstallArguments("main", child.package.mainSource)
+        expect(command.skip(command.count - options.count).join("|")).toBe(options.join("|"))
+        expect(child.cliArgs.quietArg.enabled).toBe(false)
+    }
+
+    test async `generated compiler preserves committed output on failure and allows verified reuse`() {
+        let airship = Airship(["-t", "es6", "--flatc-runtime", "flat"])
+        let directory = File(".airship-generated-lifecycle-#{Time.currentTimeMillis}")
+        directory.mkdirs()
+        let output = File(directory, "selected.js")
+        let fixture = File(directory, "compiler.cjs")
+        try {
+            let source = airship.package.mainSource.copy(
+                outDirectory: directory.normalizedLocation, outFile: "selected.js")
+            FileWriter(fixture):write("process.exit(0);"):close()
+            assertAsyncThrows(async { airship.installService.executeCompilerCommand(source, ["node", fixture.normalizedLocation]) }, FlatInstallationFailureException.class)
+            // The real generated compiler owns atomic staging and cache checks.
+            // This fixture asserts that Airship never deletes committed output.
+            FileWriter(output):write("committed"):close()
+            FileWriter(fixture):write("const fs=require('fs'); if(fs.readFileSync(process.argv[2],'utf8')!=='committed') process.exit(9); process.exit(7);"):close()
+            assertAsyncThrows(async { airship.installService.executeCompilerCommand(source,
+                ["node", fixture.normalizedLocation, output.normalizedLocation]) }, FlatInstallationFailureException.class, "Compilation failed: exit code 7")
+            expect(output.isFile).toBe(true)
+            FileWriter(fixture):write("const fs=require('fs'); if(fs.readFileSync(process.argv[2],'utf8')!=='committed') process.exit(9);"):close()
+            airship.installService.executeCompilerCommand(source,
+                ["node", fixture.normalizedLocation, output.normalizedLocation])
+            expect(output.isFile).toBe(true)
+        } finally { directory.delete(recursive: true) }
+    }
+
+    test async `Airship subprocess uses exact argv and reports signal termination as failure`() {
+        expect(AirshipProcess.execute(["node", "-e",
+            "if(process.argv[1] !== 'spaces ; $HOME *') process.exit(9);", "spaces ; $HOME *"], silent: true)).toBe(0)
+        expect(AirshipProcess.execute(["node", "-e", "process.kill(process.pid, 'SIGTERM');"], silent: true)).toBe(-1)
+        expect(AirshipProcess.execute(["node", "-e", "process.exit(7);"], silent: true)).toBe(7)
+    }
+
+    test async `Airship cancellation waits for child closure and never reports a zero exit as success`() {
+        if (System.OS_INT == System.WINDOWS) return
+        native var Int before
+        native var Int after
+        external js {
+            #{before} = process.listenerCount('SIGINT') + process.listenerCount('SIGTERM');
+        }
+        // Handshake, not a timing sleep: the child installs its signal handler
+        // before requesting cancellation of its parent. A zero child exit must
+        // still be rejected by the already-cancelled Airship invocation.
+        let status = AirshipProcess.execute(["node", "-e",
+            "process.on('SIGTERM',()=>process.exit(0)); process.kill(process.ppid,'SIGTERM'); setInterval(()=>{},1000);"], silent: true)
+        expect(status).toBe(-1)
+        external js {
+            #{after} = process.listenerCount('SIGINT') + process.listenerCount('SIGTERM');
+        }
+        expect(after).toBe(before)
+        assertAsyncThrows(async { AirshipProcess.execute([".airship-no-such-executable"], silent: true) }, ExecutionFailureException.class)
+        external js {
+            #{after} = process.listenerCount('SIGINT') + process.listenerCount('SIGTERM');
+        }
+        expect(after).toBe(before)
+    }
+
+    test async `Airship script boundary retains deliberate shell syntax and large output does not require capture`() {
+        expect(AirshipProcess.executeShell("node -e \"process.exit(0)\" && node -e \"process.exit(7)\"", silent: true)).toBe(7)
+        expect(AirshipProcess.execute(["node", "-e",
+            "const b=Buffer.alloc(65536,120); for(let i=0;i<128;i++) { process.stdout.write(b); process.stderr.write(b); }"], silent: true)).toBe(0)
+    }
+
+    test async `workspace compiler cannot overwrite its own selected executable`() {
+        let workspace = Airship(["--use-links", "-t", "es6"]).getWorkspacePackagesDirectory()
+        let airship = Airship(["--use-links", "-f", workspace.normalizedLocation + "/Flat-Compiler",
+            "-t", "es6", "--flatc-runtime", "flat"])
+        let source = airship.getSourceForPackage("flatc")
+        assertAsyncThrows(async { airship.installService.getInstallCommand("flatc", source, Array<Dependency>()) }, ExecutionFailureException.class,
+                "Selected Flat compiler input cannot be the output being built; select an independent --flatc-script")
+    }
+
     test async `missing source lookup does not cache null or suppress later production fallback`() {
         let airship = Airship(["--use-links", "-t", "es6"])
         let main = airship.package.mainSource
@@ -141,7 +236,7 @@ testable class {
     }
 
     test async `rejects a Java compiler jar with the Flat runtime`() {
-        let runtimes = ["flat", " Flat "]
+        let String[] runtimes = ["flat", " Flat "]
         for (runtime in runtimes) {
             let airship = Airship([
                 "--flatc-runtime", runtime, "--flatc-jar", "custom/flatc.jar",
@@ -149,8 +244,7 @@ testable class {
             ])
             let source = airship.getSourceForPackage("main").copy(dependencies: Array<Dependency>())
 
-            expectAsync(async { airship.installService.getInstallCommand("main", source, Array<Dependency>()) })
-                .toThrowWithMessage(ExecutionFailureException.class,
+            assertAsyncThrows(async { airship.installService.getInstallCommand("main", source, Array<Dependency>()) }, ExecutionFailureException.class,
                     "--flatc-jar cannot be used with --flatc-runtime flat; remove --flatc-jar to use the Flat compiler or select --flatc-runtime java")
         }
     }
@@ -290,9 +384,10 @@ testable class {
         }
     }
 
-    test async `compiler command rejects zero exit no output and removes nonzero partial output`() {
-        for (runtime in ["java", "flat"]) {
-            let airship = Airship(["-t", "es6", "--flatc-runtime", runtime])
+    test async `legacy compiler command rejects zero exit no output and removes nonzero partial output`() {
+        let String[] runtimes = ["java"]
+        for (runtime in runtimes) {
+            let Airship airship = Airship(["-t", "es6", "--flatc-runtime", runtime])
             let directory = File(".airship-compiler-failure-#{Time.currentTimeMillis}")
             directory.mkdirs()
             let output = File(directory, "selected.js")
@@ -300,18 +395,16 @@ testable class {
             try {
                 // This subprocess fixture tests installation lifecycle only, not
                 // language compilation or production compiler acceptance.
-                let source = airship.getSourceForPackage("main").copy(
+                let PackageSource source = airship.getSourceForPackage("main").copy(
                     outDirectory: directory.normalizedLocation, outFile: "selected.js")
                 FileWriter(output):write("stale artifact"):close()
                 FileWriter(fixture):write("process.exit(0);"):close()
-                expect({ airship.installService.executeCompilerCommand(source, ["node", fixture.normalizedLocation]) })
-                    .toThrow(FlatInstallationFailureException.class)
+                assertAsyncThrows(async { airship.installService.executeCompilerCommand(source, ["node", fixture.normalizedLocation]) }, FlatInstallationFailureException.class)
                 expect(output.exists).toBe(false)
 
                 FileWriter(fixture):write("require('fs').writeFileSync(process.argv[2], 'partial'); process.exit(7);"):close()
-                expect({ airship.installService.executeCompilerCommand(source,
-                    ["node", fixture.normalizedLocation, output.normalizedLocation]) })
-                    .toThrowWithMessage(FlatInstallationFailureException.class, "Compilation failed: exit code 7")
+                assertAsyncThrows(async { airship.installService.executeCompilerCommand(source,
+                    ["node", fixture.normalizedLocation, output.normalizedLocation]) }, FlatInstallationFailureException.class, "Compilation failed: exit code 7")
                 expect(output.exists).toBe(false)
 
                 FileWriter(fixture):write("require('fs').writeFileSync(process.argv[2], 'complete');"):close()
@@ -349,44 +442,39 @@ testable class {
 
     test async `missing compiler selection fails before dependency installation`() {
         let airship = Airship(["--flatc-runtime", "flat", "--flatc-script", "res/test/not-installed-compiler.js"])
-        expect({ airship.installService.install("main") })
-            .toThrowWithMessage(ExecutionFailureException.class,
+        assertAsyncThrows(async { airship.installService.install("main") }, ExecutionFailureException.class,
                 "Explicit Flat compiler script is not installed at res/test/not-installed-compiler.js; no fallback is permitted")
     }
 
     test async `missing explicit compiler script never falls back to workspace compiler`() {
         let script = "res/test/not-installed-compiler.js"
         let airship = Airship(["--flatc-runtime", "flat", "--flatc-script", script])
-        expect({ airship.installService.getFlatCompilerCommand() })
-            .toThrowWithMessage(ExecutionFailureException.class,
+        assertAsyncThrows(async { airship.installService.getFlatCompilerCommand() }, ExecutionFailureException.class,
                 "Explicit Flat compiler script is not installed at #{script}; no fallback is permitted")
     }
 
     test async `explicit compiler script requires explicit Flat runtime`() {
-        for (runtime in ["java", "native"]) {
-            let airship = Airship(["--flatc-runtime", runtime, "--flatc-script", "test/stage_subprocess_guard.cjs"])
-            let source = airship.getSourceForPackage("main")
-            expect({ airship.installService.getInstallCommand("main", source, Array<Dependency>()) })
-                .toThrowWithMessage(ExecutionFailureException.class, "--flatc-script requires --flatc-runtime flat")
+        let String[] runtimes = ["java", "native"]
+        for (runtime in runtimes) {
+            let Airship airship = Airship(["--flatc-runtime", runtime, "--flatc-script", "test/stage_subprocess_guard.cjs"])
+            let PackageSource source = airship.getSourceForPackage("main")
+            assertAsyncThrows(async { airship.installService.getInstallCommand("main", source, Array<Dependency>()) }, ExecutionFailureException.class, "--flatc-script requires --flatc-runtime flat")
         }
         let airship = Airship(["--flatc-script", "test/stage_subprocess_guard.cjs"])
         let source = airship.getSourceForPackage("main")
-        expect({ airship.installService.getInstallCommand("main", source, Array<Dependency>()) })
-            .toThrowWithMessage(ExecutionFailureException.class, "--flatc-script requires --flatc-runtime flat")
+        assertAsyncThrows(async { airship.installService.getInstallCommand("main", source, Array<Dependency>()) }, ExecutionFailureException.class, "--flatc-script requires --flatc-runtime flat")
     }
 
     test async `explicit compiler script cannot be a blank path`() {
         let airship = Airship(["--flatc-runtime", "flat", "--flatc-script", "   "])
-        expect({ airship.installService.getFlatCompilerCommand() })
-            .toThrowWithMessage(ExecutionFailureException.class, "--flatc-script requires a nonempty compiler path")
+        assertAsyncThrows(async { airship.installService.getFlatCompilerCommand() }, ExecutionFailureException.class, "--flatc-script requires a nonempty compiler path")
     }
 
     test async `explicit script and jar cannot select two compiler runtimes`() {
         let airship = Airship(["--flatc-runtime", "flat", "--flatc-script", "test/stage_subprocess_guard.cjs",
                                "--flatc-jar", "custom/flatc.jar"])
         let source = airship.getSourceForPackage("main")
-        expect({ airship.installService.getInstallCommand("main", source, Array<Dependency>()) })
-            .toThrowWithMessage(ExecutionFailureException.class,
+        assertAsyncThrows(async { airship.installService.getInstallCommand("main", source, Array<Dependency>()) }, ExecutionFailureException.class,
                 "--flatc-jar cannot be used with --flatc-runtime flat; remove --flatc-jar to use the Flat compiler or select --flatc-runtime java")
     }
 
@@ -687,8 +775,7 @@ testable class {
         let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6", "-r", "node"])
         let source = airship.getSourceForPackage("main").copy(dependencies: Array<Dependency>())
 
-        expectAsync(async { airship.installService.getFlatcInstallArguments("main", source) })
-            .toThrowWithMessage(ExecutionFailureException.class, "Flat compiler target-runtime selection is not supported")
+        assertAsyncThrows(async { airship.installService.getFlatcInstallArguments("main", source) }, ExecutionFailureException.class, "Flat compiler target-runtime selection is not supported")
     }
 
     test async `forwards Flat library directory-only output`() {

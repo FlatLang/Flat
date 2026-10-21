@@ -1,97 +1,36 @@
 package flat/bound
 
-/** Lowers closures/references/async setup and static initialization in source order. */
-class extends BoundFunctionLoweringPass {
+/** Lowers setup without moving it across an operand's evaluation boundary. */
+class extends BoundTreeLoweringPass {
     override public name() => "deferred-execution-forms"
     override public inputInvariant() => "typed-deferred-and-static-forms"
     override public outputInvariant() => "explicit-setup-and-canonical-values"
 
-    override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
-        let output = BoundStatement[]
-        for (statement in input.statements()) lowerStatement(statement, output)
-        return BoundFunctionUnit(
-            input.identity, input.name, input.returnType, output, input.range,
-            input.parameterValues(), input.staticFunction, input.mainFunction,
-            input.constructorFunction, input.dispatchIdentity, input.parentConstructorCall, input.constructorDelegation,
-            input.asyncFunction, input.externalName, input.abstractFunction, input.lazyProperty
-        )
-    }
-
-    lowerStatement(BoundStatement statement, BoundStatement[] output) {
+    override public lowerStatement(BoundStatement statement, BoundStatement[] output) {
         if (statement.class.isOfType(BoundStaticInitializationStatement.class)) {
-            let initialization = (BoundStaticInitializationStatement)statement
-            for (child in initialization.initialization()) lowerStatement(child, output)
+            let value = (BoundStaticInitializationStatement)statement
+            output.addAll(lowerStatements(value.initialization()))
         } else if (statement.class.isOfType(BoundExpressionStatement.class)) {
             let value = (BoundExpressionStatement)statement
             let lowered = lowerExpression(value.expression)
-            output.addAll(lowered.setup())
-            output.add(BoundExpressionStatement(value.range, lowered.expression))
-        } else if (statement.class.isOfType(BoundAssignmentStatement.class)) {
-            let value = (BoundAssignmentStatement)statement
-            let lowered = lowerExpression(value.value)
-            output.addAll(lowered.setup())
-            output.add(BoundAssignmentStatement(
-                value.range, value.target, lowered.expression, value.conversion
-            ))
-        } else if (statement.class.isOfType(BoundReturnStatement.class)) {
-            let value = (BoundReturnStatement)statement
-            if (!value.value) {
-                output.add(value)
-            } else {
-                let lowered = lowerExpression(value.value)
-                output.addAll(lowered.setup())
-                output.add(BoundReturnStatement(
-                    value.range, value.requiredType, lowered.expression, value.conversion
-                ))
-            }
-        } else {
-            output.add(statement)
-        }
+            // Only the entire statement operand has no earlier sibling or lazy
+            // selection boundary. Its prelude can remain ordinary statements.
+            if (lowered.class.isOfType(BoundEvaluationExpression.class)) {
+                let evaluation = (BoundEvaluationExpression)lowered
+                output.addAll(evaluation.setup())
+                output.add(BoundExpressionStatement(value.range, evaluation.value))
+            } else output.add(BoundExpressionStatement(value.range, lowered))
+        } else super.lowerStatement(statement, output)
     }
 
-    lowerExpression(BoundExpression expression) -> LoweredExpression {
-        if (expression.class.isOfType(BoundDeferredExpression.class)) {
-            let deferred = (BoundDeferredExpression)expression
-            let setup = BoundStatement[]
-            for (statement in deferred.setup()) lowerStatement(statement, setup)
-            let canonical = lowerExpression(deferred.canonicalExpression)
-            setup.addAll(canonical.setup())
-            return LoweredExpression(setup, canonical.expression)
+    override public lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (expression && expression.class.isOfType(BoundDeferredExpression.class)) {
+            let value = (BoundDeferredExpression)expression
+            let setup = lowerStatements(value.setup())
+            let canonical = lowerExpression(value.canonicalExpression)
+            if (setup.isEmpty) return canonical
+            return BoundEvaluationExpression(value.range, value.semanticType, setup, canonical)
         }
-        if (expression.class.isOfType(BoundCallExpression.class)) {
-            let call = (BoundCallExpression)expression
-            let setup = BoundStatement[]
-            let arguments = BoundExpression[]
-            for (argument in call.argumentValues()) {
-                let lowered = lowerExpression(argument)
-                setup.addAll(lowered.setup())
-                arguments.add(lowered.expression)
-            }
-            return LoweredExpression(
-                setup,
-                BoundCallExpression(
-                    call.range,
-                    call.semanticType,
-                    call.target,
-                    call.receiver,
-                    arguments,
-                    call.argumentConversions(), call.safeAccess, call.receiverConversion, call.suppressAwait
-                )
-            )
-        }
-        if (expression.class.isOfType(BoundConversionExpression.class)) {
-            let conversion = (BoundConversionExpression)expression
-            let lowered = lowerExpression(conversion.value)
-            return LoweredExpression(
-                lowered.setup(),
-                BoundConversionExpression(
-                    conversion.range,
-                    conversion.semanticType,
-                    lowered.expression,
-                    conversion.conversion
-                )
-            )
-        }
-        return LoweredExpression(BoundStatement[], expression)
+        return super.lowerExpression(expression)
     }
 }

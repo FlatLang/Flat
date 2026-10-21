@@ -375,14 +375,33 @@ testable class {
         let stream = Lexer().lex("class Value { static async all<Out, In>(In value, async callback(In value) -> Out, Int limit, async after(Int count)) -> Out { return callback(value); } static async run(Int input) -> Bool { return Value.all<Bool>(input, { _ == 1 }, 2, {}); } }")
         stream.emit("start")
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
-        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
-        let code = Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let boolSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:explicit-prefix-bool"), "one")
+        let boolStream = Lexer().lex("class Bool { public construct(public Bool value) {} }")
+        boolStream.emit("start")
+        let boolSyntax = PrimitiveClassParser().parse(boolStream.consumeAll<Token>("data"), boolSnapshot)
+        let contexts = PrimitiveSourceBindingContext[]
+        contexts.add(PrimitiveSourceBindingContext("flat/primitive", boolSnapshot, [boolSyntax]))
+        contexts.add(PrimitiveSourceBindingContext("app", snapshot, [syntax]))
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let unit = units.firstOrNull({ _.identity.name == "Value" })
+        let boolUnit = units.firstOrNull({ _.identity.name == "Bool" })
+        let writer = Es6UnitOrchestrator()
+        let boolResult = writer.emitType(boolUnit, 0)
+        let valueResult = writer.emitType(unit, 1)
+        expect(boolResult.emitted).toBe(true)
+        expect(valueResult.emitted).toBe(true)
+        let code = boolResult.fragment.code + valueResult.fragment.code
+        let boolOwner = Es6NameMangler.mangle(boolUnit.identity.value)
+        let storage = Es6NameMangler.mangle(boolUnit.fieldUnits().firstOrNull({ _.name == "value" }).identity.value)
         let owner = Es6NameMangler.mangle(unit.identity.value)
         let method = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "run" }).identity.value)
         let root = File(".flat-es6-prefix-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "prefix.js")
-        Es6ArtifactCommitter().commit(destination, code + "(async()=>{console.log(await " + owner + "." + method + "(1),await " + owner + "." + method + "(0));})();\n")
+        Es6ArtifactCommitter().commit(destination, code + "(async()=>{const yes = await " + owner + "." + method +
+            "(1), no = await " + owner + "." + method + "(0); if (!(yes instanceof " + boolOwner +
+            ") || !(no instanceof " + boolOwner + ")) throw new Error('canonical Bool result'); console.log(yes." +
+            storage + ",no." + storage + ");})();\n")
         let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
         Es6ArtifactFiles.remove(root)
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))

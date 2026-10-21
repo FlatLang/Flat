@@ -8,8 +8,8 @@ import flat/regex
 
 /**
  * One bounded, deterministic source/dependency closure. Only identities are retained;
- * source text is opened later by the provider. IO exposes one directory listing as
- * an array, so traversal materializes one directory at a time, never its subtree.
+ * source text is opened later by the provider. IO bounds each immediate directory
+ * listing before materialization; traversal never collects a whole subtree.
  * Canonical directory identities prevent symlink cycles. Limits fail explicitly;
  * no source prefix is silently accepted. Instantiate per discovery request.
  */
@@ -18,8 +18,8 @@ class {
     var Int directoryCount
 
     public construct(visible Int maxSources = 4096, visible Int maxDirectories = 16384,
-        visible Int maxDepth = 128) {
-        if (maxSources <= 0 || maxDirectories <= 0 || maxDepth <= 0) {
+        visible Int maxDepth = 128, visible Int maxDirectoryEntries = 16384) {
+        if (maxSources <= 0 || maxDirectories <= 0 || maxDepth <= 0 || maxDirectoryEntries <= 0) {
             throw Exception("Source discovery requires positive capacities")
         }
     }
@@ -65,9 +65,13 @@ class {
             directoryCount++
             visited.add(canonical)
             // Stable traversal makes capacity failure independent of filesystem order.
-            let children = file.getChildFiles(includeDirectories: true)
+            let children = file.getChildFilesBounded(maxDirectoryEntries)
                 .sort({ _a.normalizedLocation.compareTo(_b.normalizedLocation) })
-            for (child in children) walk(child, exclusions, visited, depth + 1, globBase, pattern)
+            // Hidden entries charge the IO bound, but preserve the compiler's
+            // existing hidden-source exclusion after bounded enumeration.
+            for (child in children) {
+                if (!child.name.startsWith(".")) walk(child, exclusions, visited, depth + 1, globBase, pattern)
+            }
             return
         }
         if (!file.isFile || !Es6SourceSelection.accepts(file.normalizedLocation)) return

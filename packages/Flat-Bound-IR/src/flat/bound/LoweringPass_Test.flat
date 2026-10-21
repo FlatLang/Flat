@@ -3,6 +3,623 @@ package flat/bound
 import flat/semantic/types
 
 testable class {
+    test `lambda declaration contract remains separate from concrete return through every lowering pass`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let declaredResult = GenericParameterSemanticType(fixture.declaration("function", "map", 200), "R", 0)
+        let declaration = FunctionSemanticType(SemanticType[], declaredResult, asyncFunction: true)
+        let concrete = FunctionSemanticType(SemanticType[], intType, asyncFunction: true)
+        let literal = BoundLiteralExpression(fixture.range(), intType, "7")
+        let conversion = TypeConversions.classify(intType, intType)
+        let returned = BoundReturnStatement(fixture.range(), intType, literal, conversion)
+        let boxedType = UserClassSemanticType(fixture.declaration("class", "Int", 202))
+        let boxingConstructor = CallableSignature(fixture.symbol("constructor", "Int", 203), "Int",
+            CallableKind("constructor"), [intType], boxedType, boxedType)
+        let lambda = BoundLambdaExpression(fixture.range(), concrete, BoundFunctionParameter[],
+            BoundReferenceExpression[], literal, [returned], declarationContract: declaration,
+            resultBoxingConstructor: boxingConstructor)
+        let input = BoundFunctionUnit(fixture.declaration("function", "run", 201), "run",
+            SemanticTypes.unitType(), [BoundExpressionStatement(fixture.range(), lambda)], fixture.range())
+        BoundFunctionLoweringPass[] passes = [CoreLanguageLoweringPass(), ExternalNativeLoweringPass(),
+            DeferredExecutionLoweringPass(), CollectionControlLoweringPass()]
+        for (pass in passes) {
+            let output = pass.lower(input)
+            let statements = output.statements()
+            Object statementObject = statements.first
+            BoundExpressionStatement statement = (BoundExpressionStatement)statementObject
+            Object lambdaObject = statement.expression
+            BoundLambdaExpression lowered = (BoundLambdaExpression)lambdaObject
+            expect(lowered.semanticType).toBe(concrete)
+            expect(lowered.declarationContract).toBe(declaration)
+            expect(lowered.resultBoxingConstructor).toBe(boxingConstructor)
+            expect(lowered.resultBoxingConstructor.identity).toBe(boxingConstructor.identity)
+            expect(lowered.declarationContract.returnType).toBe(declaredResult)
+            expect(lowered.body.semanticType).toBe(intType)
+            let body = lowered.statementValues()
+            Object returnedObject = body.first
+            BoundReturnStatement loweredReturn = (BoundReturnStatement)returnedObject
+            expect(loweredReturn.requiredType).toBe(intType)
+            expect(loweredReturn.value).toBe(literal)
+            expect(loweredReturn.conversion).toBe(conversion)
+        }
+        let ordinary = BoundLambdaExpression(fixture.range(), concrete, BoundFunctionParameter[],
+            BoundReferenceExpression[], literal)
+        expect(ordinary.declarationContract == null).toBe(true)
+        expect(ordinary.resultBoxingConstructor == null).toBe(true)
+        var Bool rejected
+        try {
+            BoundLambdaExpression(fixture.range(), concrete, BoundFunctionParameter[],
+                BoundReferenceExpression[], literal, declarationContract:
+                    FunctionSemanticType([intType], declaredResult, asyncFunction: true))
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+    test `foreach latch separates advance from all body cleanup and abrupt exit alternatives`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let boolType = SemanticTypes.boolType()
+        let value = BoundLiteralExpression(fixture.range(), intType, "1")
+        let condition = BoundLiteralExpression(fixture.range(), boolType, "true")
+        let continuation = BoundContinueStatement(fixture.range())
+        let broken = BoundBreakStatement(fixture.range())
+        let returned = BoundReturnStatement(fixture.range(), intType, value, TypeConversions.classify(intType, intType))
+        let throwable = BoundLiteralExpression(fixture.range(), SemanticTypes.stringType(), "\"failure\"")
+        let thrown = BoundThrowStatement(fixture.range(), throwable)
+        let cleanup = BoundExpressionStatement(fixture.range(), value)
+        let advance = BoundExpressionStatement(fixture.range(8, 9), value)
+        let error = BoundReferenceExpression(fixture.range(), SemanticTypes.objectType(), "error",
+            fixture.symbol("catch", "error", 170))
+        // Each alternative remains under its original cleanup. No exit path may
+        // receive an injected advance; only the loop-owned latch owns advance.
+        BoundStatement[] exits = [continuation, broken, returned, thrown]
+        BoundStatement[] replacements = [cleanup, continuation, broken, returned, thrown]
+        for (exit in exits) {
+            for (replacement in replacements) {
+                let guarded = BoundTryStatement(fixture.range(), [exit],
+                    [BoundCatchClause(fixture.range(), error, [continuation])], [replacement])
+                let loop = BoundForEachStatement(fixture.range(), BoundStatement[], condition,
+                    [guarded], [advance], "loop", "exit")
+                let input = BoundFunctionUnit(fixture.declaration("function", "run", 171), "run",
+                    intType, [loop], fixture.range())
+                let output = CollectionControlLoweringPass().lower(input)
+                BoundIRAssertions.assertNoRichCollectionForms(output)
+                let statements = output.statements()
+                expect(statements.count).toBe(1)
+                Object castSource1 = statements.first
+                BoundLoopLatchStatement latch = (BoundLoopLatchStatement)castSource1
+                expect(latch.advanceValues()).toBe([advance])
+                let body = latch.bodyValues()
+                expect(body.count).toBe(1)
+                Object castSource2 = body.first
+                BoundTryStatement lowered = (BoundTryStatement)castSource2
+                expect(lowered.tryValues().count).toBe(1)
+                expect(lowered.tryValues().first.unitKind()).toBe(exit.unitKind())
+                expect(lowered.finallyValues().count).toBe(1)
+                expect(lowered.finallyValues().first.unitKind()).toBe(replacement.unitKind())
+                let catches = lowered.catchValues()
+                expect(catches.first.statements()).toBe([continuation])
+                expect(guarded.tryValues()).toBe([exit])
+                expect(loop.advance()).toBe([advance])
+            }
+        }
+    }
+
+    test `foreach latch retains evaluation setup continues and nested switch ownership`() {
+        let fixture = BoundIR_TestFixture()
+        let boolType = SemanticTypes.boolType()
+        let condition = BoundLiteralExpression(fixture.range(), boolType, "true")
+        let continuation = BoundContinueStatement(fixture.range())
+        let cleanup = BoundExpressionStatement(fixture.range(), condition)
+        let guarded = BoundTryStatement(fixture.range(), [continuation], BoundCatchClause[], [cleanup])
+        let evaluation = BoundEvaluationExpression(fixture.range(), boolType, [guarded], condition)
+        let switched = BoundSwitchStatement(fixture.range(), condition,
+            [BoundSwitchCase(fixture.range(), null, [BoundExpressionStatement(fixture.range(), evaluation)], true)])
+        let nested = BoundWhileStatement(fixture.range(), condition, [continuation])
+        let advance = BoundExpressionStatement(fixture.range(9, 10), condition)
+        let loop = BoundForEachStatement(fixture.range(), BoundStatement[], condition,
+            [nested, switched], [advance], "outer", "outer-exit")
+        let input = BoundFunctionUnit(fixture.declaration("function", "run", 180), "run",
+            SemanticTypes.unitType(), [loop], fixture.range())
+        let statements = CollectionControlLoweringPass().lower(input).statements()
+        Object castSource3 = statements.first
+        BoundLoopLatchStatement latch = (BoundLoopLatchStatement)castSource3
+        let body = latch.bodyValues()
+        Object castSource4 = body.first
+        BoundWhileStatement inner = (BoundWhileStatement)castSource4
+        expect(inner.bodyValues()).toBe([continuation])
+        Object castSource5 = body.last
+        BoundSwitchStatement loweredSwitch = (BoundSwitchStatement)castSource5
+        let cases = loweredSwitch.caseValues()
+        let caseBody = cases.first.statementValues()
+        Object castSource6 = caseBody.first
+        BoundExpressionStatement statement = (BoundExpressionStatement)castSource6
+        Object castSource7 = statement.expression
+        BoundEvaluationExpression selected = (BoundEvaluationExpression)castSource7
+        let setup = selected.setup()
+        Object castSource8 = setup.first
+        BoundTryStatement loweredTry = (BoundTryStatement)castSource8
+        expect(loweredTry.tryValues()).toBe([continuation])
+        expect(loweredTry.finallyValues()).toBe([cleanup])
+        expect(latch.advanceValues()).toBe([advance])
+        expect(body.count).toBe(2)
+    }
+
+    test `loop latch snapshots and recursive passes preserve identity and lower all three evaluation sites`() {
+        let fixture = BoundIR_TestFixture()
+        let boolType = SemanticTypes.boolType()
+        let nativeValue = BoundNativeCallExpression(fixture.range(), boolType, "foreign.ready", BoundExpression[])
+        let foreignValue = BoundExternalExpression(fixture.range(), boolType, "external", nativeValue)
+        let setup = BoundExpressionStatement(fixture.range(), nativeValue)
+        let deferred = BoundDeferredExpression(fixture.range(), boolType, "closure", [setup], foreignValue)
+        let body = BoundStatement[]
+        body.add(BoundExpressionStatement(fixture.range(), deferred))
+        let advance = BoundStatement[]
+        advance.add(BoundExpressionStatement(fixture.range(), foreignValue))
+        let loopIdentity = fixture.declaration("loop", "latch", 190).syntaxIdentity
+        let latch = BoundLoopLatchStatement(fixture.range(), deferred, body, advance, loopIdentity)
+        body.add(setup)
+        advance.add(setup)
+        let copy = latch.advanceValues()
+        copy.add(setup)
+        expect(latch.bodyValues().count).toBe(1)
+        expect(latch.advanceValues().count).toBe(1)
+        let input = BoundFunctionUnit(fixture.declaration("function", "run", 191), "run",
+            SemanticTypes.unitType(), [latch], fixture.range())
+        let lowered = ExternalNativeLoweringPass().lower(DeferredExecutionLoweringPass().lower(
+            CoreLanguageLoweringPass().lower(CollectionControlLoweringPass().lower(input))))
+        BoundIRAssertions.assertNoDeferredForms(lowered)
+        BoundIRAssertions.assertNoExternalForms(lowered)
+        let statements = lowered.statements()
+        Object castSource9 = statements.first
+        BoundLoopLatchStatement output = (BoundLoopLatchStatement)castSource9
+        expect(output.loopIdentity).toBe(loopIdentity)
+        Object castSource10 = output.condition
+        BoundEvaluationExpression condition = (BoundEvaluationExpression)castSource10
+        expect(condition.setup().count).toBe(1)
+        expect(condition.value.expressionKind()).toBe("native-call")
+        let advanced = output.advanceValues()
+        Object castSource11 = advanced.first
+        BoundExpressionStatement advancedStatement = (BoundExpressionStatement)castSource11
+        expect(advancedStatement.expression.expressionKind()).toBe("native-call")
+        var Bool rejected
+        try { BoundLoopLatchStatement(fixture.range(),
+            BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1"),
+            BoundStatement[], BoundStatement[], loopIdentity) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+    test `recursive native lowering reaches array sizes interpolation and foreign value segments`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let identity = TypeConversions.classify(intType, intType)
+        let nativeValue = BoundNativeCallExpression(fixture.range(), intType, "foreign.read", BoundExpression[])
+        let foreignValue = BoundExternalExpression(fixture.range(), intType, "external", nativeValue)
+        let arrayType = ArraySemanticType(intType)
+        let array = BoundArrayExpression(fixture.range(), arrayType, foreignValue)
+        let access = BoundArrayAccessExpression(fixture.range(), intType, array, foreignValue)
+        let interpolated = BoundInterpolatedStringExpression(fixture.range(),
+            [BoundInterpolatedStringSegment(fixture.range(), null, access)])
+        let opaque = BoundExternalStatement(fixture.range(), "es6",
+            [BoundExternalCodeSegment(fixture.range(), "", foreignValue, "value")])
+        let declaration = BoundReferenceExpression(fixture.range(), intType, "result",
+            fixture.symbol("local", "result", 160))
+        let stored = BoundDeclarationValueExpression(fixture.range(), intType, declaration, foreignValue, identity)
+        let input = BoundFunctionUnit(fixture.declaration("function", "run", 161), "run",
+            SemanticTypes.unitType(), [BoundExpressionStatement(fixture.range(), interpolated), opaque,
+                BoundExpressionStatement(fixture.range(), stored)], fixture.range())
+        let output = ExternalNativeLoweringPass().lower(input)
+        BoundIRAssertions.assertNoExternalForms(output)
+        let statements = output.statements()
+        Object castSource12 = statements.first
+        BoundExpressionStatement first = (BoundExpressionStatement)castSource12
+        Object castSource13 = first.expression
+        BoundInterpolatedStringExpression text = (BoundInterpolatedStringExpression)castSource13
+        let segments = text.segmentValues()
+        Object castSource14 = segments.first.expression
+        BoundArrayAccessExpression loweredAccess = (BoundArrayAccessExpression)castSource14
+        expect(loweredAccess.index.expressionKind()).toBe("native-call")
+        Object castSource15 = loweredAccess.receiver
+        BoundArrayExpression allocation = (BoundArrayExpression)castSource15
+        expect(allocation.allocationSize.expressionKind()).toBe("native-call")
+        Object castSource16 = statements[1]
+        BoundExternalStatement second = (BoundExternalStatement)castSource16
+        let values = second.segmentValues()
+        expect(values.first.value.expressionKind()).toBe("native-call")
+        expect(values.first.rendering).toBe("value")
+        Object castSource17 = statements.last
+        BoundExpressionStatement third = (BoundExpressionStatement)castSource17
+        Object castSource18 = third.expression
+        BoundDeclarationValueExpression loweredStored = (BoundDeclarationValueExpression)castSource18
+        expect(loweredStored.local).toBe(declaration)
+        expect(loweredStored.storageConversion).toBe(identity)
+        expect(loweredStored.value.expressionKind()).toBe("native-call")
+    }
+    test `recursive invariant checks reject rich forms hidden beneath structured bodies`() {
+        let fixture = BoundIR_TestFixture()
+        let throwableType = SemanticTypes.stringType()
+        let nativeValue = BoundNativeCallExpression(fixture.range(), throwableType, "foreign.read", BoundExpression[])
+        let foreignValue = BoundExternalExpression(fixture.range(), throwableType, "external", nativeValue)
+        let guarded = BoundIfStatement(fixture.range(),
+            BoundLiteralExpression(fixture.range(), SemanticTypes.boolType(), "false"),
+            [BoundThrowStatement(fixture.range(), foreignValue)])
+        let input = BoundFunctionUnit(fixture.declaration("function", "run", 140), "run",
+            SemanticTypes.unitType(), [guarded], fixture.range())
+        var Bool rejected
+        try { BoundIRAssertions.assertNoExternalForms(input) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        BoundIRAssertions.assertNoExternalForms(ExternalNativeLoweringPass().lower(input))
+    }
+
+    test `recursive lowering visits defaults parent calls and constructor delegation`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let unitType = SemanticTypes.unitType()
+        let nativeValue = BoundNativeCallExpression(fixture.range(), intType, "foreign.read", BoundExpression[])
+        let foreignValue = BoundExternalExpression(fixture.range(), intType, "external", nativeValue)
+        let parentType = UserClassSemanticType(fixture.declaration("class", "Parent", 149))
+        let target = CallableSignature(fixture.symbol("constructor", "Parent", 150), "Parent",
+            CallableKind("constructor"), [intType], parentType, parentType)
+        let identity = TypeConversions.classify(intType, intType)
+        let parameter = BoundFunctionParameter("value", fixture.symbol("parameter", "value", 151), intType, foreignValue)
+        let input = BoundFunctionUnit(fixture.declaration("constructor", "Child", 152), "Child", unitType,
+            BoundStatement[], fixture.range(), [parameter], constructorFunction: true,
+            parentConstructorCall: BoundParentConstructorCall(target, [foreignValue], [identity], fixture.range()))
+        let childType = UserClassSemanticType(fixture.declaration("class", "Child", 153))
+        let childTarget = CallableSignature(fixture.symbol("constructor", "Child", 154), "Child",
+            CallableKind("constructor"), [intType], childType, childType)
+        let delegated = BoundFunctionUnit(input.identity, input.name, unitType,
+            BoundStatement[], fixture.range(), [parameter], constructorFunction: true,
+            constructorDelegation: BoundConstructorDelegation(childTarget, [foreignValue], [identity], fixture.range()))
+        let parentResult = ExternalNativeLoweringPass().lower(input)
+        let delegationResult = ExternalNativeLoweringPass().lower(delegated)
+        expect(parentResult.parameterValues().first.defaultValue.expressionKind()).toBe("native-call")
+        expect(parentResult.parameterValues().first.identity).toBe(parameter.identity)
+        expect(parentResult.parentConstructorCall.argumentValues().first.expressionKind()).toBe("native-call")
+        expect(parentResult.parentConstructorCall.argumentConversions()).toBe([identity])
+        expect(delegationResult.constructorDelegation.argumentValues().first.expressionKind()).toBe("native-call")
+        expect(delegationResult.constructorDelegation.target).toBe(childTarget)
+        expect(delegationResult.constructorDelegation.target.ownerType.declarationIdentity).toBe(childType.declarationIdentity)
+        expect(parentResult.parentConstructorCall.target).toBe(target)
+        expect(parameter.defaultValue).toBe(foreignValue)
+    }
+    test `core and native rewrites reach nested loops switch catch finally and lambda bodies`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let boolType = SemanticTypes.boolType()
+        let identity = TypeConversions.classify(intType, intType)
+        let target = CallableSignature(fixture.symbol("function", "read", 100), "read",
+            CallableKind("function"), SemanticType[], intType)
+        let rich = BoundRichCallExpression(fixture.range(), intType, "property-get",
+            BoundCallExpression(fixture.range(), intType, target, BoundExpression[], TypeConversion[]))
+        let foreignValue = BoundExternalExpression(fixture.range(), intType, "external",
+            BoundNativeCallExpression(fixture.range(), intType, "foreign.read", [rich]))
+        let localReference = BoundReferenceExpression(fixture.range(), intType, "result",
+            fixture.symbol("local", "result", 101))
+        let declaration = BoundLocalDeclarationStatement(fixture.range(), localReference, foreignValue, identity)
+        let condition = BoundLiteralExpression(fixture.range(), boolType, "true")
+        let branch = BoundIfStatement(fixture.range(), condition, [declaration], [declaration])
+        let loop = BoundWhileStatement(fixture.range(), condition, [branch, BoundContinueStatement(fixture.range())])
+        let switched = BoundSwitchStatement(fixture.range(), localReference,
+            [BoundSwitchCase(fixture.range(), null, [loop], true)])
+        let error = BoundReferenceExpression(fixture.range(), SemanticTypes.objectType(), "error",
+            fixture.symbol("catch", "error", 102))
+        let guarded = BoundTryStatement(fixture.range(), [switched],
+            [BoundCatchClause(fixture.range(), error, [branch], acceptsSoftExceptions: true)], [branch])
+        let signature = FunctionSemanticType(SemanticType[], intType)
+        let lambda = BoundLambdaExpression(fixture.range(), signature, BoundFunctionParameter[],
+            [localReference], foreignValue, [guarded])
+        let input = BoundFunctionUnit(fixture.declaration("function", "run", 103), "run",
+            SemanticTypes.unitType(), [BoundExpressionStatement(fixture.range(), lambda)], fixture.range())
+        let nativeFirst = CoreLanguageLoweringPass().lower(ExternalNativeLoweringPass().lower(input))
+        let coreFirst = ExternalNativeLoweringPass().lower(CoreLanguageLoweringPass().lower(input))
+        BoundFunctionUnit[] loweredOrders = [nativeFirst, coreFirst]
+        for (output in loweredOrders) {
+            BoundIRAssertions.assertNoRichCoreForms(output)
+            BoundIRAssertions.assertNoExternalForms(output)
+            let statements = output.statements()
+            Object castSource19 = statements.first
+            BoundExpressionStatement statement = (BoundExpressionStatement)castSource19
+            Object castSource20 = statement.expression
+            BoundLambdaExpression lowered = (BoundLambdaExpression)castSource20
+            expect(lowered.captureValues()).toBe([localReference])
+            Object castSource21 = lowered.body
+            BoundNativeCallExpression loweredBody = (BoundNativeCallExpression)castSource21
+            expect(loweredBody.argumentValues().first.expressionKind()).toBe("call")
+            let lambdaStatements = lowered.statementValues()
+            Object castSource22 = lambdaStatements.first
+            BoundTryStatement loweredTry = (BoundTryStatement)castSource22
+            let tryStatements = loweredTry.tryValues()
+            Object castSource23 = tryStatements.first
+            BoundSwitchStatement loweredSwitch = (BoundSwitchStatement)castSource23
+            let cases = loweredSwitch.caseValues()
+            let caseStatements = cases.first.statementValues()
+            Object castSource24 = caseStatements.first
+            BoundWhileStatement loweredLoop = (BoundWhileStatement)castSource24
+            let loopStatements = loweredLoop.bodyValues()
+            expect(loopStatements.last.unitKind()).toBe("continue")
+            Object castSource25 = loopStatements.first
+            BoundIfStatement nested = (BoundIfStatement)castSource25
+            let catches = loweredTry.catchValues()
+            expect(catches.first.acceptsSoftExceptions).toBe(true)
+            expect(catches.first.local).toBe(error)
+            let caughtStatements = catches.first.statements()
+            Object castSource26 = caughtStatements.first
+            BoundIfStatement caughtBranch = (BoundIfStatement)castSource26
+            let finallyStatements = loweredTry.finallyValues()
+            Object castSource27 = finallyStatements.first
+            BoundIfStatement finallyBranch = (BoundIfStatement)castSource27
+            let branchBodies = BoundStatement[][]
+            branchBodies.add(nested.thenValues())
+            branchBodies.add(nested.elseValues())
+            branchBodies.add(caughtBranch.thenValues())
+            branchBodies.add(finallyBranch.thenValues())
+            for (body in branchBodies) {
+                Object castSource28 = body.first
+                BoundLocalDeclarationStatement loweredDeclaration = (BoundLocalDeclarationStatement)castSource28
+                Object castSource29 = loweredDeclaration.initializer
+                BoundNativeCallExpression nativeValue = (BoundNativeCallExpression)castSource29
+                expect(nativeValue.argumentValues().first.expressionKind()).toBe("call")
+                expect(loweredDeclaration.local).toBe(localReference)
+                expect(loweredDeclaration.conversion).toBe(identity)
+            }
+        }
+        expect(lambda.body).toBe(foreignValue)
+        expect(declaration.initializer).toBe(foreignValue)
+    }
+
+    test `deferred setup remains under lazy operands ternary branches and repeated loop conditions`() {
+        let fixture = BoundIR_TestFixture()
+        let boolType = SemanticTypes.boolType()
+        let yes = BoundLiteralExpression(fixture.range(), boolType, "true")
+        let no = BoundLiteralExpression(fixture.range(), boolType, "false")
+        let marker = BoundExpressionStatement(fixture.range(),
+            BoundLiteralExpression(fixture.range(), SemanticTypes.unitType(), "setup"))
+        let deferred = BoundDeferredExpression(fixture.range(), boolType, "closure", [marker], yes)
+        let selected = BoundConditionalExpression(fixture.range(), boolType, no, deferred, deferred)
+        let andValue = BoundBinaryExpression(fixture.range(), boolType, "&&", no, selected)
+        let orValue = BoundBinaryExpression(fixture.range(), boolType, "||", yes, deferred)
+        let loop = BoundWhileStatement(fixture.range(), deferred,
+            [BoundExpressionStatement(fixture.range(), andValue), BoundExpressionStatement(fixture.range(), orValue),
+                BoundContinueStatement(fixture.range())])
+        let input = BoundFunctionUnit(fixture.declaration("function", "run", 110), "run",
+            SemanticTypes.unitType(), [loop], fixture.range())
+        let statements = DeferredExecutionLoweringPass().lower(input).statements()
+        expect(statements.count).toBe(1)
+        Object castSource30 = statements.first
+        BoundWhileStatement lowered = (BoundWhileStatement)castSource30
+        Object castSource31 = lowered.condition
+        BoundEvaluationExpression condition = (BoundEvaluationExpression)castSource31
+        expect(condition.setup()).toBe([marker])
+        expect(condition.value).toBe(yes)
+        let body = lowered.bodyValues()
+        expect(body.count).toBe(3)
+        expect(body.last.unitKind()).toBe("continue")
+        Object castSource32 = body[0]
+        BoundExpressionStatement first = (BoundExpressionStatement)castSource32
+        Object castSource33 = first.expression
+        BoundBinaryExpression andExpression = (BoundBinaryExpression)castSource33
+        expect(andExpression.left).toBe(no)
+        Object castSource34 = andExpression.right
+        BoundConditionalExpression ternary = (BoundConditionalExpression)castSource34
+        expect(ternary.condition).toBe(no)
+        Object castSource35 = ternary.whenTrue
+        BoundEvaluationExpression whenTrue = (BoundEvaluationExpression)castSource35
+        Object castSource36 = ternary.whenFalse
+        BoundEvaluationExpression whenFalse = (BoundEvaluationExpression)castSource36
+        expect(whenTrue.setup()).toBe([marker])
+        expect(whenFalse.setup()).toBe([marker])
+        Object castSource37 = body[1]
+        BoundExpressionStatement second = (BoundExpressionStatement)castSource37
+        Object castSource38 = second.expression
+        BoundBinaryExpression orExpression = (BoundBinaryExpression)castSource38
+        expect(orExpression.left).toBe(yes)
+        Object selectedValue1Object = orExpression.right
+        BoundEvaluationExpression selectedValue1 = (BoundEvaluationExpression)selectedValue1Object
+        expect(selectedValue1.setup()).toBe([marker])
+        expect(loop.condition).toBe(deferred)
+    }
+
+    test `deferred setup retains abrupt control and cleanup owners without introducing a lambda`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let literal = BoundLiteralExpression(fixture.range(), intType, "7")
+        let identity = TypeConversions.classify(intType, intType)
+        let returned = BoundReturnStatement(fixture.range(), intType, literal, identity)
+        let continued = BoundContinueStatement(fixture.range())
+        let broken = BoundBreakStatement(fixture.range())
+        let cleanup = BoundExpressionStatement(fixture.range(), literal)
+        let guarded = BoundTryStatement(fixture.range(), [returned], BoundCatchClause[], [cleanup])
+        let deferred = BoundDeferredExpression(fixture.range(), intType, "async",
+            [guarded, continued, broken], literal)
+        let returnedValue = BoundReturnStatement(fixture.range(), intType, deferred, identity)
+        let loop = BoundWhileStatement(fixture.range(),
+            BoundLiteralExpression(fixture.range(), SemanticTypes.boolType(), "true"), [returnedValue])
+        let input = BoundFunctionUnit(fixture.declaration("function", "run", 120), "run",
+            intType, [loop], fixture.range(), asyncFunction: true)
+        let statements = DeferredExecutionLoweringPass().lower(input).statements()
+        expect(statements.count).toBe(1)
+        Object castSource39 = statements.first
+        BoundWhileStatement loweredLoop = (BoundWhileStatement)castSource39
+        let body = loweredLoop.bodyValues()
+        Object castSource40 = body.first
+        BoundReturnStatement lowered = (BoundReturnStatement)castSource40
+        Object castSource41 = lowered.value
+        BoundEvaluationExpression evaluation = (BoundEvaluationExpression)castSource41
+        let setup = evaluation.setup()
+        expect(setup.count).toBe(3)
+        Object castSource42 = setup[0]
+        BoundTryStatement loweredTry = (BoundTryStatement)castSource42
+        expect(loweredTry.tryValues().first.unitKind()).toBe("return")
+        expect(loweredTry.finallyValues().first.unitKind()).toBe("expression")
+        expect(setup[1]).toBe(continued)
+        expect(setup[2]).toBe(broken)
+        expect(evaluation.value).toBe(literal)
+        expect(lowered.conversion).toBe(identity)
+        let copied = evaluation.setup()
+        copied.add(cleanup)
+        expect(evaluation.setup().count).toBe(3)
+    }
+
+    test `deferred operands remain inside safe call selection with single receiver evaluation`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = UserClassSemanticType(fixture.declaration("class", "Box", 130))
+        let intType = SemanticTypes.intType()
+        let resultType = NullableSemanticType(intType)
+        let marker = BoundExpressionStatement(fixture.range(), BoundLiteralExpression(fixture.range(), intType, "0"))
+        let source = BoundLiteralExpression(fixture.range(), owner, "box")
+        let receiver = BoundDeferredExpression(fixture.range(), owner, "closure", [marker], source)
+        let argument = BoundDeferredExpression(fixture.range(), intType, "closure", [marker],
+            BoundLiteralExpression(fixture.range(), intType, "1"))
+        let target = CallableSignature(fixture.symbol("method", "read", 131), "read",
+            CallableKind("instance-method"), [intType], intType, owner, asyncFunction: true)
+        let call = BoundCallExpression(fixture.range(), resultType, target, receiver, [argument],
+            [TypeConversions.classify(intType, intType)], safeAccess: true, suppressAwait: true)
+        let input = BoundFunctionUnit(fixture.declaration("function", "run", 132), "run",
+            SemanticTypes.unitType(), [BoundExpressionStatement(fixture.range(), call)], fixture.range())
+        let deferredFirst = CollectionControlLoweringPass().lower(DeferredExecutionLoweringPass().lower(input))
+        let collectionFirst = DeferredExecutionLoweringPass().lower(CollectionControlLoweringPass().lower(input))
+        BoundFunctionUnit[] loweredOrders = [deferredFirst, collectionFirst]
+        for (output in loweredOrders) {
+            let statements = output.statements()
+            // Deferred lowering may inline a whole-statement evaluation prelude;
+            // either shape retains exactly one receiver declaration, before selection.
+            var BoundConditionalExpression conditional
+            if (statements.count == 1) {
+                Object castSource43 = statements.first
+                BoundExpressionStatement statement = (BoundExpressionStatement)castSource43
+                Object castSource44 = statement.expression
+                BoundEvaluationExpression evaluation = (BoundEvaluationExpression)castSource44
+                let setup = evaluation.setup()
+                Object castSource45 = setup.first
+                BoundLocalDeclarationStatement declaration = (BoundLocalDeclarationStatement)castSource45
+                Object selectedValue2Object = declaration.initializer
+                BoundEvaluationExpression selectedValue2 = (BoundEvaluationExpression)selectedValue2Object
+                expect(selectedValue2.setup()).toBe([marker])
+                conditional = (BoundConditionalExpression)evaluation.value
+            } else {
+                expect(statements.count).toBe(2)
+                Object castSource46 = statements.first
+                BoundLocalDeclarationStatement declaration = (BoundLocalDeclarationStatement)castSource46
+                Object selectedValue3Object = declaration.initializer
+                BoundEvaluationExpression selectedValue3 = (BoundEvaluationExpression)selectedValue3Object
+                expect(selectedValue3.setup()).toBe([marker])
+                Object castSource47 = statements.last
+                BoundExpressionStatement statement = (BoundExpressionStatement)castSource47
+                conditional = (BoundConditionalExpression)statement.expression
+            }
+            Object castSource48 = conditional.whenFalse
+            BoundConversionExpression converted = (BoundConversionExpression)castSource48
+            Object castSource49 = converted.value
+            BoundCallExpression selected = (BoundCallExpression)castSource49
+            expect(selected.suppressAwait).toBe(true)
+            expect(selected.target).toBe(target)
+            let arguments = selected.argumentValues()
+            Object selectedValue4Object = arguments.first
+            BoundEvaluationExpression selectedValue4 = (BoundEvaluationExpression)selectedValue4Object
+            expect(selectedValue4.setup()).toBe([marker])
+        }
+    }
+    test `collection lowering descends through numeric projection preserving selected evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let objectType = SemanticTypes.objectType()
+        let source = BoundLiteralExpression(fixture.range(), objectType, "null")
+        let rich = BoundRichCollectionExpression(fixture.range(), objectType, "match", source)
+        let number = UserClassSemanticType(fixture.declaration("class", "Number", 85))
+        let projection = CallableSignature(fixture.symbol("method", "realValue", 86),
+            "realValue", CallableKind("instance-method"), SemanticType[], SemanticTypes.doubleType(), number)
+        let conversion = TypeConversions.classify(objectType, SemanticTypes.longType(), explicit: true)
+        let projected = TypeConversions.classify(SemanticTypes.doubleType(), SemanticTypes.longType(), explicit: true)
+        let unbox = BoundNumericUnboxExpression(fixture.range(), SemanticTypes.longType(), rich,
+            number, projection, conversion, projected)
+        let input = BoundFunctionUnit(fixture.declaration("function", "read", 87), "read",
+            SemanticTypes.unitType(), [BoundExpressionStatement(fixture.range(), unbox)], fixture.range())
+        let statements = CollectionControlLoweringPass().lower(input).statements()
+        Object castSource50 = statements.first
+        BoundExpressionStatement statement = (BoundExpressionStatement)castSource50
+        Object castSource51 = statement.expression
+        BoundNumericUnboxExpression lowered = (BoundNumericUnboxExpression)castSource51
+        expect(lowered.value).toBe(source)
+        expect(lowered.projection).toBe(projection)
+        expect(lowered.projectionConversion).toBe(projected)
+        expect(lowered.truncatesFractionalPart()).toBe(true)
+        expect(unbox.value).toBe(rich)
+    }
+    test `core lowering descends into selected call receivers in local initializers`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = UserClassSemanticType(fixture.declaration("class", "Owner", 70))
+        let factory = CallableSignature(fixture.symbol("function", "owner", 71),
+            "owner", CallableKind("function"), SemanticType[], owner)
+        let canonical = BoundCallExpression(fixture.range(), owner, factory,
+            BoundExpression[], TypeConversion[])
+        let rich = BoundRichCallExpression(fixture.range(), owner, "constructor", canonical)
+        let method = CallableSignature(fixture.symbol("method", "read", 72),
+            "read", CallableKind("instance-method"), SemanticType[], SemanticTypes.intType(), owner,
+            asyncFunction: true)
+        let receiverConversion = TypeConversions.classify(owner, owner)
+        let call = BoundCallExpression(fixture.range(), SemanticTypes.intType(), method, rich,
+            BoundExpression[], TypeConversion[], receiverConversion: receiverConversion,
+            suppressAwait: true)
+        let localReference = BoundReferenceExpression(fixture.range(), SemanticTypes.intType(), "result",
+            fixture.symbol("local", "result", 73))
+        let storage = TypeConversions.classify(localReference.semanticType, localReference.semanticType)
+        let declaration = BoundLocalDeclarationStatement(fixture.range(), localReference, call, storage)
+        let input = BoundFunctionUnit(fixture.declaration("function", "read", 74), "read",
+            SemanticTypes.unitType(), [declaration], fixture.range())
+
+        let statements = CoreLanguageLoweringPass().lower(input).statements()
+        Object castSource52 = statements.first
+        BoundLocalDeclarationStatement lowered = (BoundLocalDeclarationStatement)castSource52
+        Object castSource53 = lowered.initializer
+        BoundCallExpression selected = (BoundCallExpression)castSource53
+        expect(selected.receiver.expressionKind()).toBe("call")
+        expect(selected.target).toBe(method)
+        expect(selected.receiverConversion).toBe(receiverConversion)
+        expect(selected.suppressAwait).toBe(true)
+        expect(lowered.conversion).toBe(storage)
+        expect(call.receiver).toBe(rich)
+        expect(declaration.initializer).toBe(call)
+    }
+
+    test `native lowering descends through calls and numeric projection without replacing evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let objectType = SemanticTypes.objectType()
+        let nativeCall = BoundNativeCallExpression(fixture.range(), objectType, "foreign.read",
+            BoundExpression[])
+        let foreignValue = BoundExternalExpression(fixture.range(), objectType, "external", nativeCall)
+        let number = UserClassSemanticType(fixture.declaration("class", "Number", 80))
+        let projection = CallableSignature(fixture.symbol("method", "realValue", 81),
+            "realValue", CallableKind("instance-method"), SemanticType[], SemanticTypes.doubleType(), number)
+        let conversion = TypeConversions.classify(objectType, SemanticTypes.doubleType(), explicit: true)
+        let projected = TypeConversions.classify(SemanticTypes.doubleType(), SemanticTypes.doubleType())
+        let unbox = BoundNumericUnboxExpression(fixture.range(), SemanticTypes.doubleType(),
+            foreignValue, number, projection, conversion, projected)
+        let target = CallableSignature(fixture.symbol("function", "consume", 82), "consume",
+            CallableKind("function"), [SemanticTypes.doubleType()], SemanticTypes.doubleType())
+        let call = BoundCallExpression(fixture.range(), SemanticTypes.doubleType(), target,
+            [unbox], [projected])
+        let localReference = BoundReferenceExpression(fixture.range(), SemanticTypes.doubleType(), "result",
+            fixture.symbol("local", "result", 83))
+        let input = BoundFunctionUnit(fixture.declaration("function", "read", 84), "read",
+            SemanticTypes.unitType(),
+            [BoundLocalDeclarationStatement(fixture.range(), localReference, call, projected)], fixture.range())
+
+        let statements = ExternalNativeLoweringPass().lower(input).statements()
+        Object castSource54 = statements.first
+        BoundLocalDeclarationStatement declaration = (BoundLocalDeclarationStatement)castSource54
+        Object castSource55 = declaration.initializer
+        BoundCallExpression selected = (BoundCallExpression)castSource55
+        let arguments = selected.argumentValues()
+        Object castSource56 = arguments.first
+        BoundNumericUnboxExpression lowered = (BoundNumericUnboxExpression)castSource56
+        expect(lowered.value.expressionKind()).toBe("native-call")
+        expect(lowered.projection).toBe(projection)
+        expect(lowered.conversion).toBe(conversion)
+        expect(lowered.projectionConversion).toBe(projected)
+        expect(selected.target).toBe(target)
+        expect(selected.argumentConversions()).toBe([projected])
+        expect(unbox.value).toBe(foreignValue)
+    }
     test `collection lowering descends into immutable switch cases`() {
         let fixture = BoundIR_TestFixture()
         let value = BoundLiteralExpression(fixture.range(1, 2), SemanticTypes.intType(), "1")
@@ -25,7 +642,8 @@ testable class {
         expect(output.statements().count).toBe(1)
         let outputStatements = output.statements()
         let loweredObject = (Object)outputStatements.first
-        let lowered = (BoundSwitchStatement)loweredObject
+        Object castSource57 = loweredObject
+        BoundSwitchStatement lowered = (BoundSwitchStatement)castSource57
         expect(lowered.range).toBe(switched.range)
         expect(lowered.value).toBe(value)
         expect(lowered.value.semanticType).toBe(value.semanticType)
@@ -52,11 +670,11 @@ testable class {
         let catchLoop = containerForeach(fixture, 20)
         let softLoop = containerForeach(fixture, 30)
         let finallyLoop = containerForeach(fixture, 40)
-        let local = BoundReferenceExpression(fixture.range(50, 51), SemanticTypes.stringType(),
+        let localReference = BoundReferenceExpression(fixture.range(50, 51), SemanticTypes.stringType(),
             "error", fixture.symbol("catch", "error", 50))
         let softLocal = BoundReferenceExpression(fixture.range(51, 52), SemanticTypes.objectType(),
             "soft", fixture.symbol("catch", "soft", 51))
-        let caught = BoundCatchClause(fixture.range(20, 29), local, containerBody(fixture, catchLoop, 20))
+        let caught = BoundCatchClause(fixture.range(20, 29), localReference, containerBody(fixture, catchLoop, 20))
         let softCaught = BoundCatchClause(fixture.range(30, 39), softLocal,
             containerBody(fixture, softLoop, 30), acceptsSoftExceptions: true)
         let guarded = BoundTryStatement(fixture.range(1, 53), containerBody(fixture, tryLoop, 10),
@@ -72,7 +690,8 @@ testable class {
         expect(output.statements().count).toBe(1)
         let outputStatements = output.statements()
         let loweredObject = (Object)outputStatements.first
-        let lowered = (BoundTryStatement)loweredObject
+        Object castSource58 = loweredObject
+        BoundTryStatement lowered = (BoundTryStatement)castSource58
         expect(lowered.range).toBe(guarded.range)
         expectContainerForeach(guarded.tryValues(), lowered.tryValues(), tryLoop)
         expectContainerForeach(guarded.finallyValues(), lowered.finallyValues(), finallyLoop)
@@ -109,10 +728,12 @@ testable class {
 
         let statements = CollectionControlLoweringPass().lower(input).statements()
         let guardedObject = (Object)statements.first
-        let loweredGuard = (BoundTryStatement)guardedObject
+        Object castSource59 = guardedObject
+        BoundTryStatement loweredGuard = (BoundTryStatement)castSource59
         let tryBody = loweredGuard.tryValues()
         let switchObject = (Object)tryBody.first
-        let loweredSwitch = (BoundSwitchStatement)switchObject
+        Object castSource60 = switchObject
+        BoundSwitchStatement loweredSwitch = (BoundSwitchStatement)castSource60
         expect(loweredGuard.range).toBe(guarded.range)
         expect(loweredGuard.finallyValues()).toBe([cleanup])
         expect(loweredSwitch.range).toBe(switched.range)
@@ -124,14 +745,14 @@ testable class {
     }
 
     containerForeach(BoundIR_TestFixture fixture, Int ordinal) -> BoundForEachStatement {
-        let type = SemanticTypes.intType()
+        let resolvedType = SemanticTypes.intType()
         let initialize = BoundExpressionStatement(fixture.range(ordinal, ordinal + 1),
-            BoundLiteralExpression(fixture.range(ordinal, ordinal + 1), type, "0"))
-        let literal = BoundLiteralExpression(fixture.range(ordinal + 2, ordinal + 3), type, "7")
+            BoundLiteralExpression(fixture.range(ordinal, ordinal + 1), resolvedType, "0"))
+        let literal = BoundLiteralExpression(fixture.range(ordinal + 2, ordinal + 3), resolvedType, "7")
         let body = BoundExpressionStatement(literal.range,
-            BoundRichCollectionExpression(literal.range, type, "match", literal))
+            BoundRichCollectionExpression(literal.range, resolvedType, "match", literal))
         let advance = BoundExpressionStatement(fixture.range(ordinal + 4, ordinal + 5),
-            BoundLiteralExpression(fixture.range(ordinal + 4, ordinal + 5), type, "1"))
+            BoundLiteralExpression(fixture.range(ordinal + 4, ordinal + 5), resolvedType, "1"))
         return BoundForEachStatement(fixture.range(ordinal, ordinal + 6), [initialize],
             BoundLiteralExpression(fixture.range(ordinal + 1, ordinal + 2), SemanticTypes.boolType(), "true"),
             [body], [advance], "loop:#ordinal", "exit:#ordinal")
@@ -149,26 +770,29 @@ testable class {
         expect(original.count).toBe(3)
         expect(original[1]).toBe(loop)
         expect(original[1].unitKind()).toBe("foreach")
-        expect(lowered.map({ _.unitKind() })).toBe(["expression", "expression", "while", "expression"])
+        expect(lowered.map({ _.unitKind() })).toBe(["expression", "expression", "loop-latch", "expression"])
         expect(lowered.first).toBe(original.first)
         expect(lowered[1]).toBe(loop.initialization().first)
         expect(lowered.last).toBe(original.last)
         let whileObject = (Object)lowered[2]
-        let canonical = (BoundWhileStatement)whileObject
+        Object castSource61 = whileObject
+        BoundLoopLatchStatement canonical = (BoundLoopLatchStatement)castSource61
         expect(canonical.range).toBe(loop.range)
         expect(canonical.condition).toBe(loop.condition)
         expect(canonical.condition.semanticType.value()).toBe("primitive:Bool")
         let body = canonical.bodyValues()
-        expect(body.count).toBe(2)
+        expect(body.count).toBe(1)
         expect(body.first.range).toBe(loop.body().first.range)
-        expect(body.last).toBe(loop.advance().first)
+        expect(canonical.advanceValues()).toBe(loop.advance())
         let expressionObject = (Object)body.first
-        let expression = (BoundExpressionStatement)expressionObject
+        Object castSource62 = expressionObject
+        BoundExpressionStatement expression = (BoundExpressionStatement)castSource62
         expect(expression.expression.expressionKind()).toBe("literal")
         expect(expression.expression.range).toBe(loop.body().first.range)
         expect(expression.expression.semanticType.value()).toBe("primitive:Int")
         let literalObject = (Object)expression.expression
-        let literal = (BoundLiteralExpression)literalObject
+        Object castSource63 = literalObject
+        BoundLiteralExpression literal = (BoundLiteralExpression)castSource63
         expect(literal.sourceValue).toBe("7")
         // Lowering must not rewrite the published input loop or its rich child.
         expect(loop.initialization().count).toBe(1)
@@ -176,7 +800,8 @@ testable class {
         expect(loop.body().count).toBe(1)
         let originalStatements = loop.body()
         let originalObject = (Object)originalStatements.first
-        let originalBody = (BoundExpressionStatement)originalObject
+        Object castSource64 = originalObject
+        BoundExpressionStatement originalBody = (BoundExpressionStatement)castSource64
         expect(originalBody.expression.expressionKind()).toBe("match")
     }
 
@@ -341,9 +966,27 @@ testable class {
         ]).lower(input)
 
         expect(result.succeeded).toBe(true)
-        BoundIRAssertions.assertStatementKinds(
-            result.loweredFunction, ["expression", "expression", "expression"]
-        )
+        BoundIRAssertions.assertStatementKinds(result.loweredFunction, ["expression"])
+        let statements = result.loweredFunction.statements()
+        Object castSource65 = statements.first
+        BoundExpressionStatement statement = (BoundExpressionStatement)castSource65
+        Object castSource66 = statement.expression
+        BoundCallExpression selected = (BoundCallExpression)castSource66
+        let arguments = selected.argumentValues()
+        Object castSource67 = arguments[0]
+        BoundEvaluationExpression firstEvaluation = (BoundEvaluationExpression)castSource67
+        Object castSource68 = arguments[1]
+        BoundEvaluationExpression secondEvaluation = (BoundEvaluationExpression)castSource68
+        expect(firstEvaluation.setup()).toBe([firstSetup])
+        expect(secondEvaluation.setup()).toBe([secondSetup])
+        Object selectedValue5Object = firstEvaluation.value
+        BoundLiteralExpression selectedValue5 = (BoundLiteralExpression)selectedValue5Object
+        expect(selectedValue5.sourceValue).toBe("1")
+        Object selectedValue6Object = secondEvaluation.value
+        BoundLiteralExpression selectedValue6 = (BoundLiteralExpression)selectedValue6Object
+        expect(selectedValue6.sourceValue).toBe("2")
+        expect(selected.target).toBe(target)
+        expect(selected.argumentConversions()).toBe([identity, identity])
         BoundIRAssertions.assertNoDeferredForms(result.loweredFunction)
     }
 
@@ -407,7 +1050,7 @@ testable class {
         expect(result.succeeded).toBe(true)
         BoundIRAssertions.assertStatementKinds(result.loweredFunction, [
             "expression", "expression", "expression", "expression", "expression",
-            "while"
+            "loop-latch"
         ])
         expect(BoundIRAssertions.expressionKinds(result.loweredFunction)).toBe([
             "literal", "literal", "literal", "literal", "literal"

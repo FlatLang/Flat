@@ -2,6 +2,13 @@ package flat/eventstream
 
 import flat/future
 
+/**
+ * Bounded mapping of typed Future payloads. A mapper transfers a Future<Out>
+ * whose result obeys Future's generic representation contract (including boxed
+ * primitive payloads on ES6). The operation preserves that payload and reference
+ * identity; it never guesses Out from JS typeof or normalizes arbitrary values.
+ * Native producers must use a typed completion boundary, not raw JS resolution.
+ */
 class<In, Out> {
     public static unordered<In, Out>(
         BoundedFlow<In> input,

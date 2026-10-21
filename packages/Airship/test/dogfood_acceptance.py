@@ -12,6 +12,7 @@ import json
 import os
 import shutil
 from pathlib import Path, PurePosixPath
+import re
 import sys
 
 import stage_bootstrap as bootstrap
@@ -157,6 +158,8 @@ def validate_bootstrap(stages):
 def validate_evidence(path, expected, stages):
     require(sha(expected) and bootstrap.digest(path) == expected, 'Evidence receipt digest mismatch')
     value = read_json(path)
+    if value.get('schema') == 2:
+        return validate_production_evidence(path, value, stages)
     root = path.parent.resolve()
     require(value.get('schema') == 1 and value.get('status') == 'passed', 'Incomplete evidence receipt')
     source = read_json(stages / 'sources.json')
@@ -222,19 +225,195 @@ def validate_evidence(path, expected, stages):
                 'failure_isolation', 'cancellation_observed', 'children_reaped', 'temporary_outputs_removed')
     require(all(lifecycle.get(name) is True for name in required), 'Missing observed lifecycle evidence')
     return {'schema': 1, 'status': 'blocked', 'full_acceptance': False,
-            'blockers': list(CONTRACT_BLOCKERS), 'evidence_sha256': expected,
+            'blockers': ['Legacy assertion-only receipt has no bound production observations'], 'evidence_sha256': expected,
             'bootstrap_receipt_sha256': bootstrap.digest(stages / 'acceptance.json'),
             'source_manifest_sha256': value['source_manifest_sha256'], 'tools': value['tools'],
             'options_sha256': value['options_sha256'], 'suites': list(SUITES),
             'gates': ['production-core', 'stage0-1-2', 'java-free', 'incremental', 'schedules', 'lifecycle']}
 
 
-CONTRACT_BLOCKERS = [
-    'Persistent CLI evidence is now emitted; production cold/warm/changed/removed observations still require execution.',
-    'Structured deterministic diagnostic evidence is not exported by CompilerCli.',
-    'Airship does not forward -threads; controlled forward/reverse source-read gates require an in-process executor.',
-    'CompilerSession cancellation/backpressure/cleanup observations are not exported by ordinary CLI execution.',
-]
+def production_gates(receipt):
+    """Derive coverage from validated producer measurements, never verdict flags.
+
+    Memory-sink schedules and watchdog fixtures deliberately have narrower scopes
+    than production artifacts and operating-system cleanup.
+    """
+    gates = {}
+    workloads = receipt.get('workloads', {})
+    for name in SCENARIOS:
+        workload = workloads.get(name, {})
+        retained, clean = workload.get('retained_output'), workload.get('clean')
+        present = isinstance(retained, dict) and isinstance(clean, dict)
+        gates['incremental-' + name] = bool(present and
+            incremental_observation(name, retained)['proven'] and
+            retained['artifacts'] == clean['artifacts'] and
+            retained['sources_sha256'] == clean['sources_sha256'] and
+            semantic_diagnostics(retained['commands'])['complete'] and
+            semantic_diagnostics(clean['commands'])['complete'] and
+            semantic_diagnostics(retained['commands'])['records'] ==
+            semantic_diagnostics(clean['commands'])['records'])
+    suites = receipt.get('stage2_suites', {})
+    gates['seven-production-suites'] = set(suites) == set(SUITES)
+    gates['structured-production-diagnostics'] = bool(suites) and all(
+        semantic_diagnostics(run.get('commands', []))['complete'] for run in suites.values())
+    records = [record for command in suites.get('Flat-Compiler', {}).get('commands', [])
+               for record in command.get('lifecycle', [])]
+    scenarios = {value['scenario'] for value in records}
+    expected = {'package-forward', 'package-reverse', 'source-failure-isolation',
+                'package-cancellation', 'running-source-cancellation',
+                'artifact-backpressure-cancellation', 'queued-source-cancellation'}
+    gates['compiler-lifecycle-scenarios'] = expected <= scenarios
+    schedules = [value for value in records if value['scenario'] in ('package-forward', 'package-reverse')]
+    gates['controlled-package-schedules'] = (
+        any(value['concurrency'] == 1 and value['scenario'] == 'package-forward' for value in schedules)
+        and any(value['concurrency'] > 1 and value['scenario'] == 'package-forward' for value in schedules)
+        and any(value['concurrency'] > 1 and value['scenario'] == 'package-reverse' for value in schedules))
+    gates['backpressure-cancellation'] = any(
+        value['scenario'] == 'artifact-backpressure-cancellation' and value['cancelled']
+        and value['artifactBackpressure'] and (value['pendingArtifactSendsAtPressure'] or 0) > 0
+        for value in records)
+    gates['failure-isolation'] = any(value['scenario'] == 'source-failure-isolation'
+        and (value['unrelatedArtifactsBeforeFirstSettlement'] or 0) > 0 for value in records)
+    gates['cancellation-waits-for-cleanup'] = any(value['cancelled'] and (value['cleanupWaitSamples'] or 0) > 0
+                                               for value in records)
+    # The current producer explicitly exports these as unobserved. Neither a
+    # caller-authored boolean nor a separate watchdog fixture closes this gate.
+    commands = [command for run in suites.values() for command in run.get('commands', [])]
+    gates['production-command-reaping'] = bool(commands) and all(
+        command.get('process_cleanup', {}).get('wait_completed') is True
+        and command.get('process_cleanup', {}).get('child_reaped') is True
+        and command.get('process_cleanup', {}).get('process_group_absent') is True
+        for command in commands)
+    gates['production-terminal-staging-absent'] = bool(commands) and all(
+        command.get('temporary_outputs_after') == [] for command in commands)
+    gates['production-measured-memory-scaling'] = bool(receipt.get('scaling', {}).get('tiers'))
+    driver = receipt.get('production_driver', {})
+    driver_runs = driver.get('runs', [])
+    gates['production-workload-controlled-schedules'] = len(driver_runs) == 8 and all(
+        (scenario, capacity) in {(run.get('scenario'), run.get('capacity')) for run in driver_runs}
+        for scenario in ('forward', 'reverse', 'cancel-after-read', 'cancel-after-stage') for capacity in (1, 3))
+    gates['production-structural-cancellation'] = gates['production-workload-controlled-schedules'] and all(
+        run.get('report', {}).get('cancellationRequested') is True
+        and run.get('report', {}).get('session', {}).get('cleanupSettled') is True
+        for run in driver_runs if run.get('scenario', '').startswith('cancel-'))
+    gates['production-subprocess-filesystem-cleanup'] = bool(driver_runs) and all(
+        run.get('artifact_lifecycle') is not None and run.get('temporary_outputs_after') == []
+        and all(run.get('process_cleanup', {}).get(name) is True
+                for name in ('wait_completed', 'child_reaped', 'process_group_absent')) for run in driver_runs)
+    gates['production-incremental-finalization'] = bool(driver_runs) and all(
+        run.get('report', {}).get('input', {}).get('reused') is False
+        and run.get('temporary_outputs_after') == []
+        and run.get('report', {}).get('session', {}).get('cleanupSettled') is True
+        for run in driver_runs)
+    # Every stream is re-read from a hash-bound log before this verdict. Cold
+    # successful runs must own and finalize real temporaries; cancellation may
+    # precede creation, but must not publish or leave staging/locks behind.
+    gates['incremental-temporary-lifecycle-observed'] = bool(driver_runs) and all(
+        'manifest_lifecycle' in run and run.get('temporary_outputs_after') == []
+        and (run['scenario'].startswith('cancel-') or bool(run['manifest_lifecycle'])) for run in driver_runs)
+    gates['cancellation-waits-for-cleanup'] = (gates['cancellation-waits-for-cleanup']
+        or gates['production-structural-cancellation'])
+    blockers = [name for name, observed in gates.items() if not observed]
+    return {'gates': gates, 'blockers': blockers, 'full_acceptance': not blockers,
+            'status': 'passed' if not blockers else 'blocked'}
+
+
+def validate_production_run(root, run, compiler_sha):
+    """Re-read pinned artifacts and logs; serialized observations are not authority."""
+    require(isinstance(run, dict) and run.get('status') == 'passed', 'Incomplete production run')
+    file_reference(root, run['source_receipt'])
+    observation = (root / run['source_receipt']['path']).parent
+    sources = read_json(observation / 'observed-sources.json')
+    require(fingerprint(sources) == run.get('sources_sha256'), 'Stale production source inventory')
+    workspace_name = PurePosixPath(run.get('workspace', ''))
+    require(workspace_name.parts and not workspace_name.is_absolute() and '..' not in workspace_name.parts,
+            'Invalid production workspace identity')
+    workspace = root.joinpath(*workspace_name.parts)
+    artifacts = run.get('artifact_references')
+    require(isinstance(artifacts, dict) and set(artifacts) == set(run.get('artifacts', {})),
+            'Incomplete retained artifacts')
+    for name, reference in artifacts.items():
+        file_reference(root, reference)
+        require(reference['sha256'] == run['artifacts'][name], 'Production artifacts changed')
+    commands = run.get('commands')
+    require(isinstance(commands, list) and len(commands) == 2, 'Incomplete production command pair')
+    require('install' in commands[0].get('argv', []) and 'run' in commands[1].get('argv', []),
+            'Production install/run order mismatch')
+    for command in commands:
+        file_reference(root, command['log_reference'])
+        file_reference(root, command['admission_reference'])
+        log = root / command['log_reference']['path']
+        journal = root / command['admission_reference']['path']
+        require(type(command.get('admission_offset')) is int and command['admission_offset'] >= 0
+                and type(command.get('admission_count')) is int and command['admission_count'] > 0,
+                'Invalid production admission boundary')
+        admissions = admission_records(journal, command['admission_offset'])
+        require(len(admissions) == command['admission_count'], 'Production admission boundary mismatch')
+        require(len(admissions) == command['admission_count'] and admissions,
+                'Missing production admissions')
+        require(command.get('status') == 'passed' and command.get('exit_status') == 0,
+                'Production command did not complete')
+        command_cleanup(root, command)
+        argv = command.get('argv')
+        require(isinstance(argv, list) and all(isinstance(item, str) for item in argv)
+                and ('install' in argv or 'run' in argv), 'Missing admitted production argv')
+        if 'install' in argv:
+            require('--flatc-script' in argv, 'Missing explicit compiler selection')
+            index = argv.index('--flatc-script')
+            require(index + 1 < len(argv), 'Missing explicit compiler identity')
+            compiler = argv[index + 1]
+            count = sum(compiler in record.get('args', []) for record in admissions)
+            require(count == command.get('compiler_invocations'), 'Compiler admission count mismatch')
+        else:
+            require(any(any(str(argument).endswith('/test.js') for argument in record.get('args', []))
+                        for record in admissions), 'Missing generated suite execution admission')
+        require(command.get('persistent') == persistent_records(log, compiler_sha), 'Persistent observations changed')
+        require(command.get('diagnostic_batches') == diagnostic_batches(log, workspace, command['persistent']),
+                'Diagnostic observations changed')
+        require(command.get('compiler_sessions') == compiler_session_records(log), 'Session observations changed')
+        require(command.get('lifecycle') == lifecycle_records(log), 'Lifecycle observations changed')
+    return sources
+
+
+def validate_production_evidence(path, value, stages):
+    tools = validate_bootstrap(stages)
+    require(value.get('producer') == 'dogfood_acceptance.py' and value.get('tools') == tools,
+            'Production evidence tool identity mismatch')
+    require(value.get('source_manifest_sha256') == bootstrap.digest(stages / 'sources.json'),
+            'Production evidence source snapshot mismatch')
+    require(value.get('options') == {'target': 'es6', 'flatc_runtime': 'flat'}, 'Production options mismatch')
+    root = path.parent.resolve()
+    baseline = read_json(stages / 'sources.json')
+    workloads = value.get('workloads', {})
+    require(set(workloads) == set(SCENARIOS), 'Incomplete production scenarios')
+    manifests = {}
+    for name in SCENARIOS:
+        workload = workloads[name]
+        sources = validate_production_run(root, workload['retained_output'], tools[bootstrap.PRODUCTS[0]])
+        clean = validate_production_run(root, workload['clean'], tools[bootstrap.PRODUCTS[0]])
+        require(sources == clean == workload.get('source_manifest'), 'Comparison input mismatch')
+        manifests[name] = sources
+    require(manifests['cold'] == manifests['warm'] == baseline, 'Cold/warm source mismatch')
+    require(set(manifests['changed']) == set(baseline) and manifests['changed'] != baseline,
+            'Changed scenario did not change source bytes')
+    require(set(manifests['removed']) < set(baseline)
+            and all(baseline[key] == digest for key, digest in manifests['removed'].items()),
+            'Removed scenario did not remove source inputs')
+    suites = value.get('stage2_suites', {})
+    require(set(suites) == set(SUITES), 'Missing production suite')
+    for suite, run in suites.items():
+        require(run.get('package') == suite, 'Production suite identity mismatch')
+        require(validate_production_run(root, run, tools[bootstrap.PRODUCTS[0]]) == baseline,
+                'Suite source snapshot mismatch')
+    driver = value.get('production_driver')
+    if driver is not None:
+        validate_driver_evidence(root, driver, fingerprint(baseline), tools[bootstrap.PRODUCTS[0]])
+    if value.get('scaling') is not None:
+        require(driver is not None, 'Scaling requires pinned production driver')
+        require(value['scaling'].get('compiler_sha256') == tools[bootstrap.PRODUCTS[0]],
+                'Scaling ordinary baseline selected different compiler bytes')
+        validate_scaling(root, value['scaling'], value['source_manifest_sha256'], baseline, driver['driver']['sha256'])
+    return dict(schema=2, evidence_sha256=bootstrap.digest(path), **production_gates(value))
 
 
 def watchdog_capability(path):
@@ -275,6 +454,48 @@ def mutation_path(name, package, sources):
             and not name.endswith('_TestSuite.flat'),
             'Mutation must select an existing production package source, not a suite entrypoint')
     return name
+
+
+def temporary_output_inventory(workspace):
+    """Observe only compiler-owned staging names; never delete possible evidence.
+
+    A terminal empty inventory proves absence, not that a temporary ever existed
+    or that cancellation ran a finalizer. Those require owner-emitted events.
+    Traversal includes ignored staging directories and excludes workspace links.
+    """
+    result = []
+    visited = 0
+    for directory, directories, files in os.walk(workspace / 'packages', followlinks=False):
+        directories[:] = sorted(name for name in directories if not (Path(directory) / name).is_symlink()
+                                and name not in ('.git', 'node_modules'))
+        for name in directories + sorted(files):
+            visited += 1
+            require(visited <= MAX_REFERENCES, 'Temporary output traversal capacity exceeded')
+            if ('.flat-tmp-' in name or '.flat-incremental.json.tmp-' in name
+                    or name.endswith('.flat-incremental.json.lock') or name.endswith('.spool')):
+                result.append((Path(directory) / name).relative_to(workspace).as_posix())
+    return result
+
+
+def command_cleanup(root, command):
+    file_reference(root, command['cleanup_reference'])
+    value = read_json(root / command['cleanup_reference']['path'])
+    require(value.get('schema') == 'flat.dogfood.command-cleanup.v1'
+            and value.get('scope') == 'production-command'
+            and value.get('argv') == command['argv']
+            and value.get('log_sha256') == command['log_reference']['sha256']
+            and value.get('admissions_sha256') == command['admission_reference']['sha256'],
+            'Unbound production cleanup observation')
+    process = value.get('process')
+    require(isinstance(process, dict) and type(process.get('pid')) is int and process['pid'] > 0
+            and type(process.get('exit_code')) is int and process['exit_code'] == command['exit_status'],
+            'Missing production process identity')
+    for name in ('wait_completed', 'child_reaped', 'process_group_absent'):
+        require(type(process.get(name)) is bool, 'Missing process cleanup measurement')
+    require(process == command.get('process_cleanup')
+            and value.get('temporary_outputs_after') == command.get('temporary_outputs_after')
+            and isinstance(value.get('temporary_outputs_after'), list), 'Changed cleanup measurement')
+    return value
 
 
 def output_inventory(workspace, package):
@@ -372,8 +593,17 @@ def execute_production(context, package, seeds, budget, seconds):
         command = {'argv': argv, 'status': 'running', 'log': str(log.relative_to(directory))}
         context['commands'].append(command)
         bootstrap.write_json(directory / 'commands.json', context['commands'])
-        bootstrap.run_command(argv, workspace / 'packages' / package, context['env'], log,
-                              context['journal'], timeout=seconds, budget=budget)
+        cleanup = {}
+        try:
+            bootstrap.run_command(argv, workspace / 'packages' / package, context['env'], log,
+                                  context['journal'], timeout=seconds, budget=budget,
+                                  cleanup_observation=cleanup)
+        finally:
+            # Persist measured process termination even on a failed command; a
+            # failed/partial run never becomes successful acceptance evidence.
+            command['process_cleanup'] = cleanup
+            command['temporary_outputs_after'] = temporary_output_inventory(workspace)
+            bootstrap.write_json(directory / 'commands.json', context['commands'])
         records = admission_records(context['journal'], offset)
         if operation == 'install':
             generated = output_inventory(workspace, package)
@@ -397,6 +627,22 @@ def execute_production(context, package, seeds, budget, seconds):
                        persistent=persistent_records(log, context['policy']['seedSha256']))
         command['diagnostic_batches'] = diagnostic_batches(log, workspace, command['persistent'])
         command['lifecycle'] = lifecycle_records(log)
+        retained_journal = log.with_suffix('.admissions.jsonl')
+        shutil.copyfile(context['journal'], retained_journal)
+        evidence_root = directory.parent
+        command['log_reference'] = {'path': log.relative_to(evidence_root).as_posix(),
+                                    'sha256': bootstrap.digest(log)}
+        command['admission_reference'] = {'path': retained_journal.relative_to(evidence_root).as_posix(),
+                                          'sha256': bootstrap.digest(retained_journal)}
+        command['admission_offset'] = offset
+        command['admission_count'] = len(records)
+        cleanup_path = log.with_suffix('.cleanup.json')
+        bootstrap.write_json(cleanup_path, {'schema': 'flat.dogfood.command-cleanup.v1',
+            'scope': 'production-command', 'argv': argv, 'log_sha256': bootstrap.digest(log),
+            'admissions_sha256': bootstrap.digest(retained_journal),
+            'process': cleanup, 'temporary_outputs_after': command['temporary_outputs_after']})
+        command['cleanup_reference'] = {'path': cleanup_path.relative_to(evidence_root).as_posix(),
+                                         'sha256': bootstrap.digest(cleanup_path)}
         bootstrap.write_json(directory / 'commands.json', context['commands'])
     require(output_inventory(workspace, package) == generated, 'Execution changed generated artifacts')
     manifests = {}
@@ -404,7 +650,22 @@ def execute_production(context, package, seeds, budget, seconds):
         require(not path.is_symlink() and path.stat().st_size <= 4 * 1024 * 1024,
                 'Invalid persistent manifest artifact')
         manifests[path.relative_to(workspace).as_posix()] = bootstrap.digest(path)
+    observation = directory / ('observation-' + str(len(context['commands'])))
+    observation.mkdir()
+    bootstrap.write_json(observation / 'observed-sources.json', scenario_sources(None, workspace))
+    artifact_references = {}
+    for name, digest in generated.items():
+        destination = observation / 'artifacts' / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(workspace / 'packages' / package / 'dist' / name, destination)
+        require(bootstrap.digest(destination) == digest, 'Retained artifact changed during copy')
+        artifact_references[name] = {'path': destination.relative_to(directory.parent).as_posix(), 'sha256': digest}
+    source_receipt = observation / 'observed-sources.json'
     return {'status': 'passed', 'artifacts': generated, 'persistent_manifests': manifests,
+            'package': package, 'workspace': workspace.relative_to(directory.parent).as_posix(),
+            'source_receipt': {'path': source_receipt.relative_to(directory.parent).as_posix(),
+                               'sha256': bootstrap.digest(source_receipt)},
+            'artifact_references': artifact_references,
             'commands': list(context['commands'][-2:]),
             'sources_sha256': fingerprint(scenario_sources(None, workspace)),
             'runtime_observation': 'ordinary generated test.js exited zero; individual test assertions are in retained log',
@@ -412,19 +673,30 @@ def execute_production(context, package, seeds, budget, seconds):
 
 
 def schema_log_records(log, schema):
-    require(log.is_file() and log.stat().st_size <= 100 * 1024 * 1024, 'Missing/oversized producer log')
+    require(log.is_file() and not log.is_symlink() and log.stat().st_size <= 100 * 1024 * 1024, 'Missing/oversized producer log')
     result = []
+    def unique(pairs):
+        value = {}
+        for key, item in pairs:
+            require(key not in value, 'Duplicate producer key')
+            value[key] = item
+        return value
     with log.open() as source:
-        for line in source:
+        while True:
+            line = source.readline(1024 * 1024 + 1)
+            if not line:
+                break
             require(len(line) <= 1024 * 1024, 'Producer line exceeds capacity')
             if not line.lstrip().startswith('{'):
                 continue
             try:
-                value = json.loads(line)
+                value = json.loads(line, object_pairs_hook=unique)
             except json.JSONDecodeError:
+                require(schema not in line, 'Malformed producer record')
                 continue
             if isinstance(value, dict) and value.get('schema') == schema:
-                require(len(result) < 4096, 'Producer record capacity exceeded')
+                capacity = MAX_REFERENCES if schema == 'flat.compiler.source-read-event.v1' else 4096
+                require(len(result) < capacity, 'Producer record capacity exceeded')
                 result.append(value)
     return result
 
@@ -443,15 +715,15 @@ def lifecycle_records(log):
     records = schema_log_records(log, 'flat.compiler.lifecycle.v1')
     mandatory = ('concurrency', 'activeCapacity', 'retainedCapacity', 'peakActive', 'peakRetained',
                  'enteredCount', 'settledCount', 'activeAfter', 'inFlightAfter', 'retainedSourcesAfter',
-                 'retainedCodeCharactersAfter', 'pendingArtifactSendsAfter', 'cleanupWaitSamples')
-    optional = ('executorActiveAfter', 'executorQueuedAfter', 'unrelatedArtifactsBeforeFirstSettlement',
+                 'retainedCodeCharactersAfter', 'pendingArtifactSendsAfter')
+    optional = ('cleanupWaitSamples', 'executorActiveAfter', 'executorQueuedAfter', 'unrelatedArtifactsBeforeFirstSettlement',
                 'pendingArtifactSendsAtPressure', 'bufferedArtifactsAtPressure')
     for value in records:
         require(isinstance(value.get('scenario'), str) and bool(value['scenario']), 'Missing lifecycle scenario')
         for name in mandatory:
             require(type(value.get(name)) is int and value[name] >= 0, 'Invalid lifecycle measured count')
         for name in optional:
-            require(value.get(name) is None or type(value[name]) is int and value[name] >= 0,
+            require(name in value and (value[name] is None or type(value[name]) is int and value[name] >= 0),
                     'Invalid nullable lifecycle measurement')
         for name in ('artifactBackpressure', 'cancelled', 'cleanupSettled'):
             require(type(value.get(name)) is bool, 'Missing lifecycle measured state')
@@ -459,8 +731,19 @@ def lifecycle_records(log):
                 and all(isinstance(item, str) for item in value['settlementOrder']), 'Invalid settlement order')
         require(value.get('unobserved') == ['children_reaped', 'temporary_outputs_removed'],
                 'Memory lifecycle test cannot claim subprocess/filesystem cleanup')
-        require(value['concurrency'] > 0 and value['peakActive'] <= value['activeCapacity']
+        require(value['concurrency'] > 0 and value['activeCapacity'] == value['concurrency']
+                and (value['peakActive'] > 0 or value['scenario'] == 'queued-source-cancellation')
+                and value['peakActive'] <= value['activeCapacity']
                 and value['peakRetained'] <= value['retainedCapacity'], 'Observed lifecycle capacity violation')
+        require(len(value['settlementOrder']) == value['settledCount']
+                and len(set(value['settlementOrder'])) == len(value['settlementOrder']),
+                'Incomplete lifecycle settlement order')
+        if value['scenario'] in ('package-forward', 'package-reverse'):
+            expected = ['Value0.flat', 'Value1.flat', 'Value2.flat', 'Value3.flat']
+            if value['scenario'] == 'package-reverse':
+                expected[:value['concurrency']] = reversed(expected[:value['concurrency']])
+            require(value['settlementOrder'] == expected and not value['cancelled'],
+                    'Unobserved controlled package settlement order')
         require(value['enteredCount'] == value['settledCount'] and value['cleanupSettled']
                 and all(value[name] == 0 for name in ('activeAfter', 'inFlightAfter', 'retainedSourcesAfter',
                                                       'retainedCodeCharactersAfter', 'pendingArtifactSendsAfter')),
@@ -484,6 +767,9 @@ def semantic_diagnostics(commands):
         records = [record for batch in batches for record in batch['records']]
         return {'complete': True, 'records': records, 'fingerprint': fingerprint(records),
                 'source': 'actual flat.compiler.diagnostics.v1 batches'}
+    if batches:
+        return {'complete': False, 'records': None,
+                'reason': 'Incomplete or duplicate structured diagnostic batches'}
     sessions = [value for command in commands for value in command.get('compiler_sessions', [])]
     persistent = [value for command in installs for value in command.get('persistent', [])]
     if not sessions or len(sessions) != invocations or any(value['reused'] for value in persistent):
@@ -497,11 +783,11 @@ def semantic_diagnostics(commands):
 
 
 def normalize_diagnostics(records, workspace):
-    """Comparator contract for a future typed producer, not a log-text parser.
+    """Compare actual typed diagnostics without parsing presentation text.
 
     Does not invent ranges, discard diagnostic order, strip messages, or rewrite
     arbitrary strings. Only known workspace prefixes in the source identity are
-    normalized. Until an actual producer emits records this cannot close a gate.
+    normalized; completeness is checked against every admitted invocation.
     """
     require(isinstance(records, list) and len(records) <= 4096, 'Diagnostic record capacity exceeded')
     normalized = []
@@ -645,10 +931,465 @@ def read_concurrency_probe(context, package, seeds, budget, seconds):
     return results
 
 
+def scaling_plan(path, expected, source_sha):
+    require(sha(expected) and bootstrap.digest(path) == expected, 'Scaling plan digest mismatch')
+    value = read_json(path)
+    require(value.get('schema') == 'flat.dogfood.scaling-plan.v1'
+            and value.get('source_manifest_sha256') == source_sha, 'Stale scaling plan')
+    tiers = value.get('tiers')
+    require(isinstance(tiers, list) and 3 <= len(tiers) <= 8
+            and len({tier.get('package') for tier in tiers}) == len(tiers), 'Three distinct production tiers required')
+    for tier in tiers:
+        require(tier.get('package') in ('Flat-Core',) + SUITES, 'Unknown production scaling package')
+        for name in ('min_source_bytes', 'min_sources', 'max_rss_bytes'):
+            require(type(tier.get(name)) is int and tier[name] > 0, 'Explicit positive scaling budgets required')
+    for name in ('max_rss_growth_numerator', 'max_rss_growth_denominator', 'min_input_growth_factor'):
+        require(type(value.get(name)) is int and value[name] > 0, 'Explicit scaling growth budget required')
+    require(value['min_input_growth_factor'] >= 2, 'Scaling input tiers must materially grow')
+    timer = value.get('timer', {})
+    require(timer.get('kind') in ('bsd-time', 'gnu-time') and isinstance(timer.get('path'), str)
+            and Path(timer['path']).is_absolute() and sha(timer.get('sha256')), 'Pinned RSS timer required')
+    return value
+
+
+def rss_bytes(path, kind):
+    require(path.is_file() and not path.is_symlink() and path.stat().st_size <= 65536, 'Missing/oversized RSS observation')
+    text = path.read_text()
+    matches = re.findall(r'^\s*(\d+)\s+maximum resident set size\s*$', text, re.M) if kind == 'bsd-time' else re.findall(r'^flat-maxrss-kib=(\d+)\s*$', text, re.M)
+    require(len(matches) == 1 and int(matches[0]) > 0, 'Missing/ambiguous measured maximum RSS')
+    return int(matches[0]) * (1024 if kind == 'gnu-time' else 1)
+
+
+def driver_source_inputs(log, workspace, package, root):
+    result = {}
+    for event in schema_log_records(log, 'flat.compiler.source-read-event.v1'):
+        if event['transition'] != 'admitted':
+            continue
+        source = Path(event['source'])
+        if not source.is_absolute():
+            source = workspace / 'packages' / package / source
+        require(source.is_file() and not source.is_symlink() and workspace in source.resolve().parents,
+                'Driver source outside production workspace')
+        result[source.relative_to(workspace).as_posix()] = {'sha256': bootstrap.digest(source),
+            'bytes': source.stat().st_size, 'reference': {
+                'path': source.relative_to(root).as_posix(), 'sha256': bootstrap.digest(source)}}
+    return result
+
+
+def run_scaling(context, driver, contexts, seeds, budget, seconds, plan_path, plan_sha, source_sha):
+    plan = scaling_plan(plan_path, plan_sha, source_sha)
+    root, workspace = context['directory'].parent, context['workspace']
+    # Pin the reviewed plan before the first measurement; never derive budgets
+    # from measured peaks. Package choices are actual admitted production builds.
+    saved = context['directory'] / 'scaling-plan.json'
+    shutil.copyfile(plan_path, saved)
+    reference = lambda path: {'path': path.relative_to(root).as_posix(), 'sha256': bootstrap.digest(path)}
+    result = {'plan': reference(saved), 'compiler_sha256': context['policy']['seedSha256'], 'tiers': []}
+    timer = Path(plan['timer']['path'])
+    for index, tier in enumerate(plan['tiers']):
+        require(not timer.is_symlink() and bootstrap.digest(timer) == plan['timer']['sha256'], 'RSS timer identity changed')
+        package = tier['package']
+        # Materialize the ordinary local dependency closure through pinned
+        # Airship, not copied/missing generated dependencies from another root.
+        ordinary = execute_production(context, package, seeds, budget, seconds)
+        arguments = observed_compiler_arguments(context)
+        require(bootstrap.digest(driver) == context['driver_sha256']
+                and bootstrap.digest(seeds['node'][0]) == seeds['node'][1], 'Scaling tool identity changed')
+        destination = workspace / 'packages' / package / 'dist' / f'scaling-{index}/test.js'
+        require(not destination.exists(), 'Scaling destination is not cold')
+        arguments = driver_arguments(arguments, destination)
+        log = context['directory'] / f'logs/scaling-{index}.log'
+        rss = context['directory'] / f'logs/scaling-{index}.rss'
+        timer_args = ['-l', '-o', str(rss)] if plan['timer']['kind'] == 'bsd-time' else ['-f', 'flat-maxrss-kib=%M', '-o', str(rss)]
+        bootstrap.run_command([str(timer)] + timer_args + [str(seeds['node'][0]), str(driver), 'forward', '3'] + arguments,
+                              workspace / 'packages' / package, context['env'], log, context['journal'],
+                              timeout=seconds, budget=budget)
+        admission_records(context['journal'])
+        report = production_read_records(log, arguments, 'forward', 3, bootstrap.digest(driver), destination)
+        # Record actual admitted file bytes, not nominal package size. The input
+        # fingerprint independently binds their content/options/tool.
+        inputs = {}
+        for event in schema_log_records(log, 'flat.compiler.source-read-event.v1'):
+            if event['transition'] != 'admitted':
+                continue
+            source = Path(event['source'])
+            if not source.is_absolute():
+                source = workspace / 'packages' / package / source
+            require(source.is_file() and not source.is_symlink() and workspace in source.resolve().parents,
+                    'Scaling source outside production workspace')
+            inputs[source.relative_to(workspace).as_posix()] = {'sha256': bootstrap.digest(source),
+                'bytes': source.stat().st_size, 'reference': reference(source)}
+        result['tiers'].append({'package': package, 'arguments': arguments, 'destination': str(destination),
+            'log': reference(log), 'rss': reference(rss), 'rss_bytes': rss_bytes(rss, plan['timer']['kind']),
+            'ordinary': ordinary,
+            'inputs': inputs, 'report': report, 'artifact': reference(destination)})
+    return result
+
+
+def validate_scaling(root, value, source_sha, baseline, driver_sha):
+    require(isinstance(value, dict), 'Missing measured production scaling')
+    file_reference(root, value['plan'])
+    plan = scaling_plan(root / value['plan']['path'], value['plan']['sha256'], source_sha)
+    tiers = value.get('tiers')
+    require(isinstance(tiers, list) and len(tiers) == len(plan['tiers']), 'Incomplete scaling tier matrix')
+    sizes, peaks = [], []
+    for expected, tier in zip(plan['tiers'], tiers):
+        require(tier.get('package') == expected['package'], 'Scaling tier selection mismatch')
+        for name in ('log', 'rss', 'artifact'):
+            file_reference(root, tier[name])
+        destination = Path(tier['destination'])
+        require(destination.is_absolute() and str(root / tier['artifact']['path']) == str(destination),
+                'Scaling artifact reference does not identify tier destination')
+        ordinary = tier.get('ordinary')
+        require(isinstance(ordinary, dict) and ordinary.get('package') == expected['package'],
+                'Missing corresponding ordinary production baseline')
+        require(validate_production_run(root, ordinary, value.get('compiler_sha256')) == baseline,
+                'Scaling baseline source snapshot mismatch')
+        workspace = root / ordinary['workspace']
+        require(workspace / 'packages' / expected['package'] / 'dist' in destination.parents,
+                'Scaling destination outside tier workspace')
+        command = ordinary['commands'][0]
+        compiler_argv = command.get('compiler_argv')
+        require(isinstance(compiler_argv, list) and len(compiler_argv) > 2
+                and driver_arguments(compiler_argv[2:], destination) == tier['arguments'],
+                'Scaling arguments differ from ordinary production baseline')
+        candidates = [digest for name, digest in ordinary['artifacts'].items()
+                      if PurePosixPath(name).name == destination.name]
+        require(len(candidates) == 1 and candidates[0] == tier['artifact']['sha256'],
+                'Scaling artifact bytes differ from ordinary production baseline')
+        report = production_read_records(root / tier['log']['path'], tier['arguments'], 'forward', 3,
+                                         driver_sha, destination)
+        require(report == tier.get('report'), 'Changed scaling producer observations')
+        ordinary_diagnostics = semantic_diagnostics(ordinary['commands'])
+        batches = schema_log_records(root / tier['log']['path'], 'flat.compiler.diagnostics.v1')
+        require(ordinary_diagnostics['complete'] and len(batches) == 1 and batches[0].get('complete') is True,
+                'Incomplete scaling/baseline diagnostics')
+        require(normalize_diagnostics(batches[0].get('records'), workspace) == ordinary_diagnostics['records'],
+                'Scaling diagnostics differ from ordinary production baseline')
+        inputs = tier.get('inputs')
+        require(isinstance(inputs, dict) and len(inputs) == report['admitted'], 'Incomplete scaling source inventory')
+        for name, entry in inputs.items():
+            require(file_reference(root, entry['reference']) == entry.get('sha256')
+                    and (root / entry['reference']['path']).stat().st_size == entry.get('bytes'),
+                    'Scaling input size/content changed')
+            require(baseline.get(name) == entry.get('sha256') and type(entry.get('bytes')) is int and entry['bytes'] > 0,
+                    'Scaling input not in admitted production snapshot')
+        size = sum(entry['bytes'] for entry in inputs.values())
+        peak = rss_bytes(root / tier['rss']['path'], plan['timer']['kind'])
+        require(size >= expected['min_source_bytes'] and len(inputs) >= expected['min_sources'],
+                'Scaling workload below predeclared size')
+        require(peak == tier.get('rss_bytes') and peak <= expected['max_rss_bytes'], 'Scaling RSS budget exceeded')
+        sizes.append(size)
+        peaks.append(peak)
+    require(all(right >= left * plan['min_input_growth_factor'] for left, right in zip(sizes, sizes[1:])),
+            'Production scaling tiers do not materially grow')
+    require(all(right * plan['max_rss_growth_denominator'] <= left * plan['max_rss_growth_numerator']
+                for left, right in zip(peaks, peaks[1:])), 'Production memory growth budget exceeded')
+    return True
+
+
+def driver_arguments(arguments, destination, main=None):
+    """Keep admitted inputs/dependencies; replace only executable selection/output."""
+    result = []
+    index = 0
+    while index < len(arguments):
+        option = arguments[index]
+        if option in ('-threads', '-parallel', '-o', '-d') or (main and option == '-main'):
+            index += 1 if option == '-parallel' else 2
+        elif option == '-library':
+            if not main:
+                result.append(option)
+            index += 1
+        elif main and not option.startswith('-'):
+            index += 1  # suite-only source roots cannot select the production entrypoint
+        else:
+            result.append(option)
+            index += 1
+            if option.startswith('-'):
+                require(index < len(arguments), 'Missing admitted compiler option value')
+                result.append(arguments[index])
+                index += 1
+    if main:
+        result.insert(0, 'src')
+        if '-x' not in result:
+            result += ['-x', '**/*_Test*.flat']
+        result += ['-main', main]
+    return result + ['-d', str(destination.parent), '-o', destination.name]
+
+
+def production_read_records(log, arguments, scenario, capacity, tool_sha, destination):
+    """Verify bounded producer transitions against its terminal digest and inputs."""
+    reports = schema_log_records(log, 'flat.compiler.source-reads.v1')
+    require(len(reports) == 1, 'Missing/duplicate production source-read report')
+    report = reports[0]
+    require(report.get('scenario') == scenario and type(report.get('capacity')) is int and report['capacity'] == capacity
+            and report.get('destination') == str(destination), 'Production driver selection mismatch')
+    options_digest = hashlib.sha256(json.dumps(arguments + ['-threads', str(capacity)],
+        ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
+    require(report.get('optionsFingerprint') == 'sha256:' + options_digest,
+            'Production driver options fingerprint mismatch')
+    admitted = report.get('input', {})
+    require(admitted.get('schema') == 'flat.compiler.incremental.v1'
+            and admitted.get('toolFingerprint') == 'sha256:' + tool_sha
+            and admitted.get('inputFingerprint') == report.get('revision')
+            and admitted.get('reused') is False, 'Unbound/warm production driver input')
+    require(isinstance(report.get('revision'), str) and report['revision'].startswith('sha256:')
+            and sha(report['revision'][7:]), 'Missing production input revision')
+    events = schema_log_records(log, 'flat.compiler.source-read-event.v1')
+    require(events, 'Missing production source-read events')
+    digest = hashlib.sha256()
+    window, settled, active = [], [], set()
+    admitted_count = settled_count = 0
+    cancellation_readiness = []
+    for sequence, event in enumerate(events, 1):
+        require(event.get('sequence') == sequence and event.get('revision') == report['revision']
+                and event.get('destination') == str(destination) and event.get('capacity') == capacity,
+                'Stale/out-of-order production source-read event')
+        identity, transition = event.get('source'), event.get('transition')
+        require(isinstance(identity, str) and identity, 'Missing observed source identity')
+        for name in ('admitted', 'settled', 'active', 'retained'):
+            require(type(event.get(name)) is int and event[name] >= 0, 'Invalid source-read event count')
+        require(event['active'] <= capacity and event['retained'] <= capacity,
+                'Production read capacity exceeded')
+        if transition == 'admitted':
+            if len(settled) == len(window) and window:
+                window, settled = [], []
+            require(len(window) < capacity and identity not in window, 'Unbounded/duplicate read window')
+            window.append(identity)
+            admitted_count += 1
+        elif transition == 'started':
+            require(identity in window and identity not in active, 'Read started without admission')
+            active.add(identity)
+        elif transition == 'settled':
+            require(identity in active and identity not in settled, 'Read settled without active work')
+            active.remove(identity)
+            settled.append(identity)
+            settled_count += 1
+            if not scenario.startswith('cancel-'):
+                order = list(reversed(window)) if scenario == 'reverse' else window
+                require(settled == order[:len(settled)], 'Production settlement order mismatch')
+        elif transition == 'consumed':
+            require(identity in window, 'Read consumed without admission')
+        elif transition in ('cancel-readiness-after-read', 'cancel-readiness-after-stage'):
+            cancellation_readiness.append(transition)
+        else:
+            raise ValueError('Unknown production read transition')
+        require(event['admitted'] == admitted_count and event['settled'] == settled_count
+                and event['active'] == len(active), 'Inconsistent production event counters')
+        digest.update(json.dumps([transition, identity], ensure_ascii=False, separators=(',', ':')).encode() + b'\n')
+    require(report.get('eventDigest') == 'sha256:' + digest.hexdigest(), 'Production event digest mismatch')
+    for name in ('admitted', 'settled', 'activeAfter', 'retainedAfter', 'peakActive', 'peakRetained', 'exitCode'):
+        require(type(report.get(name)) is int and report[name] >= 0, 'Invalid terminal read measurement')
+    require(report['admitted'] == admitted_count == report['settled'] == settled_count
+            and admitted_count > 0 and not active and report['activeAfter'] == report['retainedAfter'] == 0
+            and 0 < report['peakActive'] <= capacity and 0 < report['peakRetained'] <= capacity,
+            'Production reads incomplete or capacity exceeded')
+    cancelled = scenario.startswith('cancel-')
+    require(report.get('cancellationRequested') is cancelled
+            and report['exitCode'] == (1 if cancelled else 0), 'Production cancellation/exit mismatch')
+    if cancelled:
+        transition = 'cancel-readiness-after-read' if scenario == 'cancel-after-read' else 'cancel-readiness-after-stage'
+        require(cancellation_readiness == [transition], 'Missing actual production cancellation readiness')
+    else:
+        require(not cancellation_readiness, 'Unexpected production cancellation readiness')
+        require(report['peakActive'] == capacity and admitted_count >= capacity,
+                'Production schedule did not exercise selected capacity')
+    summary = report.get('session', {})
+    require(type(report.get('artifactDeliveryFailures')) is int and report['artifactDeliveryFailures'] == 0,
+            'Artifact observation delivery incomplete')
+    require(summary.get('schema') == 'flat.compiler.session.v1'
+            and summary.get('cancelled') is cancelled and summary.get('cleanupSettled') is True,
+            'Production session cleanup incomplete')
+    batches = schema_log_records(log, 'flat.compiler.diagnostics.v1')
+    require(len(batches) == 1 and batches[0].get('revision') == report['revision'],
+            'Missing production diagnostic revision')
+    if not cancelled:
+        require(batches[0].get('complete') is True, 'Incomplete production schedule diagnostics')
+    return report
+
+
+def observed_compiler_arguments(context):
+    commands = admission_records(context['journal'])
+    values = [record['args'][1:] for record in commands
+              if record.get('args') and record['args'][0] == str(context['compiler'])]
+    require(values, 'No admitted compiler argv for production driver')
+    return values[-1]
+
+
+def run_production_driver(context, seeds, budget, seconds):
+    """Build through stage2 and run the real driver over admitted production inputs."""
+    directory, workspace = context['directory'], context['workspace']
+    evidence_root = directory.parent
+    execute_production(context, 'Flat-Compiler', seeds, budget, seconds)
+    arguments = observed_compiler_arguments(context)
+    driver = workspace / 'packages/Flat-Compiler/dist/es6/production-driver.js'
+    build_args = driver_arguments(arguments, driver,
+                                  'flat/compiler/CompilerProductionDriver')
+    log = directory / 'logs/driver-build.log'
+    require(bootstrap.digest(context['compiler']) == context['policy']['seedSha256']
+            and bootstrap.digest(seeds['node'][0]) == seeds['node'][1], 'Production driver builder input changed')
+    bootstrap.run_command([str(seeds['node'][0]), str(context['compiler'])] + build_args,
+                          workspace / 'packages/Flat-Compiler', context['env'], log,
+                          context['journal'], timeout=seconds, budget=budget)
+    admission_records(context['journal'])
+    require(driver.is_file() and not driver.is_symlink(), 'Production driver artifact missing')
+    driver_sha = bootstrap.digest(driver)
+    context['driver_sha256'] = driver_sha
+    reference = lambda path: {'path': path.relative_to(evidence_root).as_posix(), 'sha256': bootstrap.digest(path)}
+    result = {'driver': reference(driver), 'compiler': reference(context['compiler']),
+              'build_log': reference(log), 'build_argv': build_args,
+              'compiler_sha256': context['policy']['seedSha256'],
+            'build_source_manifest': scenario_sources(None, workspace),
+              'source_manifest_sha256': fingerprint(scenario_sources(None, workspace)), 'runs': []}
+    execute_production(context, 'Flat-Core', seeds, budget, seconds)
+    package_args = observed_compiler_arguments(context)
+    for scenario in ('forward', 'reverse', 'cancel-after-read', 'cancel-after-stage'):
+        for capacity in (1, 3):
+            require(bootstrap.digest(driver) == driver_sha and bootstrap.digest(seeds['node'][0]) == seeds['node'][1],
+                    'Production driver input tool changed')
+            destination = workspace / 'packages/Flat-Core/dist/production-driver' / f'{scenario}-{capacity}/test.js'
+            require(not destination.exists(), 'Controlled driver destination is not cold')
+            argv = driver_arguments(package_args, destination)
+            log = directory / f'logs/driver-{scenario}-{capacity}.log'
+            cleanup = {}
+            try:
+                bootstrap.run_command([str(seeds['node'][0]), str(driver), scenario, str(capacity)] + argv,
+                                      workspace / 'packages/Flat-Core', context['env'], log, context['journal'],
+                                      timeout=seconds, budget=budget, cleanup_observation=cleanup)
+            except bootstrap.CommandFailure as error:
+                if not scenario.startswith('cancel-') or error.exit_code != 1:
+                    raise
+            admission_records(context['journal'])
+            report = production_read_records(log, argv, scenario, capacity, driver_sha, destination)
+            outputs = {}
+            if not scenario.startswith('cancel-'):
+                require(destination.is_file(), 'Production schedule did not publish output')
+                outputs[destination.name] = reference(destination)
+            artifact_lifecycle(log, report, scenario != 'cancel-after-read')
+            manifest_records = manifest_lifecycle(log, report)
+            result['runs'].append({'scenario': scenario, 'capacity': capacity, 'arguments': argv,
+                'manifest_lifecycle': manifest_records,
+                'inputs': driver_source_inputs(log, workspace, 'Flat-Core', evidence_root),
+                'artifact_lifecycle': schema_log_records(log, 'flat.compiler.artifact-lifecycle.v1'),
+                'destination': str(destination), 'log': reference(log), 'report': report,
+                'process_cleanup': cleanup, 'temporary_outputs_after': temporary_output_inventory(workspace),
+                'artifacts': outputs})
+            bootstrap.write_json(directory / 'driver-evidence.json', result)
+    require(result['source_manifest_sha256'] == fingerprint(scenario_sources(None, workspace)),
+            'Production driver changed source inputs')
+    return result
+
+
+def artifact_lifecycle(log, report, require_temporary):
+    require(report.get('artifactDeliveryFailures') == 0, 'Artifact observation delivery incomplete')
+    records = schema_log_records(log, 'flat.compiler.artifact-lifecycle.v1')
+    return temporary_lifecycle(records, report['revision'], report['destination'], require_temporary)
+
+
+def manifest_lifecycle(log, report):
+    require(type(report.get('manifestDeliveryFailures')) is int and report['manifestDeliveryFailures'] == 0,
+            'Manifest observation delivery incomplete')
+    records = schema_log_records(log, 'flat.compiler.manifest-lifecycle.v1')
+    destination = report['destination'] + '.flat-incremental.json'
+    require_temporary = not report['scenario'].startswith('cancel-')
+    temporary_lifecycle(records, report['revision'], destination, require_temporary)
+    if require_temporary:
+        require(sum(record['transition'] == 'published' for record in records) == 1,
+                'Manifest publication not observed')
+    else:
+        require(not any(record['transition'] == 'published' for record in records),
+                'Cancelled production invocation published a manifest')
+    return records
+
+
+def temporary_lifecycle(records, revision, destination, require_temporary):
+    """Validate owner events without substituting terminal absence for ownership."""
+    created, removed, finalized = set(), set(), set()
+    for sequence, record in enumerate(records, 1):
+        require(record.get('sequence') == sequence and record.get('revision') == revision
+                and record.get('destination') == destination
+                and isinstance(record.get('identity'), str) and record['identity'],
+                'Unbound artifact lifecycle event')
+        transition, path = record.get('transition'), record.get('path')
+        require(record.get('failure') is None and type(record.get('removed')) is bool,
+                'Artifact finalization failure')
+        if transition == 'published':
+            require(path is None, 'Unexpected publication path')
+            continue
+        require(isinstance(path, str) and Path(path).is_absolute(), 'Missing owned temporary path')
+        require(Path(destination).parent in Path(path).parents, 'Temporary outside invocation destination')
+        if transition == 'temporary-created':
+            require(path not in created, 'Duplicate temporary creation')
+            created.add(path)
+        elif transition == 'temporary-removed':
+            require(path in created and path not in removed and record['removed'], 'Removal without owned creation')
+            removed.add(path)
+        elif transition == 'finalized':
+            require(path in created and record['removed'], 'Unsettled artifact finalization')
+            finalized.add(path)
+        else:
+            raise ValueError('Unknown artifact lifecycle transition')
+    require(not require_temporary or created, 'No actual temporary lifecycle observed')
+    require(created == removed and all(any(path == owner or Path(owner) in Path(path).parents
+            for owner in finalized) for path in created), 'Incomplete artifact temporary cleanup')
+    return True
+
+
+def validate_driver_evidence(root, value, sources_sha, compiler_sha):
+    require(isinstance(value, dict) and value.get('source_manifest_sha256') == sources_sha
+            and value.get('compiler_sha256') == compiler_sha, 'Stale production driver source/tool identity')
+    require(value.get('build_source_manifest') and fingerprint(value['build_source_manifest']) == sources_sha,
+            'Production driver build source identity mismatch')
+    driver_sha = file_reference(root, value['driver'])
+    require(file_reference(root, value['compiler']) == compiler_sha, 'Production driver builder bytes changed')
+    file_reference(root, value['build_log'])
+    runs = value.get('runs')
+    expected = {(scenario, capacity) for scenario in ('forward', 'reverse', 'cancel-after-read', 'cancel-after-stage')
+                for capacity in (1, 3)}
+    require(isinstance(runs, list) and len(runs) == len(expected)
+            and {(run.get('scenario'), run.get('capacity')) for run in runs} == expected,
+            'Incomplete production driver scenario matrix')
+    outputs, diagnostics = [], []
+    for run in runs:
+        file_reference(root, run['log'])
+        report = production_read_records(root / run['log']['path'], run['arguments'], run['scenario'],
+                                         run['capacity'], driver_sha, Path(run['destination']))
+        require(report == run.get('report'), 'Changed production driver report')
+        inputs = run.get('inputs')
+        require(isinstance(inputs, dict) and len(inputs) == report['admitted'], 'Missing production driver source identities')
+        for name, entry in inputs.items():
+            require(value['build_source_manifest'].get(name) == entry.get('sha256')
+                    and file_reference(root, entry['reference']) == entry['sha256'], 'Stale production driver source content')
+        process = run.get('process_cleanup', {})
+        require(type(process.get('pid')) is int and process['pid'] > 0
+                and process.get('exit_code') == report['exitCode']
+                and all(process.get(name) is True for name in ('wait_completed', 'child_reaped', 'process_group_absent')),
+                'Production driver process cleanup incomplete')
+        require(run.get('temporary_outputs_after') == [], 'Production driver left temporary outputs')
+        require(run.get('manifest_lifecycle') == manifest_lifecycle(root / run['log']['path'], report),
+                'Changed manifest lifecycle observations')
+        artifact_lifecycle(root / run['log']['path'], report, run['scenario'] != 'cancel-after-read')
+        require(run.get('artifact_lifecycle') == schema_log_records(root / run['log']['path'],
+                    'flat.compiler.artifact-lifecycle.v1'), 'Changed artifact lifecycle observations')
+        for reference in run.get('artifacts', {}).values():
+            file_reference(root, reference)
+        if run['scenario'] in ('forward', 'reverse'):
+            require(run.get('artifacts'), 'Missing scheduled production artifacts')
+            outputs.append({name: reference['sha256'] for name, reference in run['artifacts'].items()})
+            batch = schema_log_records(root / run['log']['path'], 'flat.compiler.diagnostics.v1')[0]
+            workspace = Path(run['destination']).parents[5]
+            diagnostics.append(normalize_diagnostics(batch['records'], workspace))
+    require(all(output == outputs[0] for output in outputs), 'Production schedule-dependent artifact bytes')
+    require(all(records == diagnostics[0] for records in diagnostics), 'Production schedule-dependent diagnostics')
+    return True
+
+
 def produce_evidence(repo, output, stages, seeds_file, review_file, review_sha, changed, removed,
-                     seconds=600, run_seconds=10800):
+                     seconds=600, run_seconds=10800, scaling_plan_path=None, scaling_plan_sha=None):
     """Execute supported production paths; never manufacture unavailable summary observations."""
     tools = validate_bootstrap(stages)
+    if scaling_plan_path is not None:
+        scaling_plan(scaling_plan_path, scaling_plan_sha, bootstrap.digest(stages / 'sources.json'))
     review = bootstrap.reviewed_seeds(seeds_file, review_file, review_sha)
     require(review == read_json(stages / 'review.json')
             and read_json(seeds_file) == read_json(stages / 'seeds.json'), 'Reviewed bootstrap inputs differ')
@@ -666,7 +1407,7 @@ def produce_evidence(repo, output, stages, seeds_file, review_file, review_sha, 
     receipt = {'schema': 2, 'producer': 'dogfood_acceptance.py', 'status': 'running',
                'source_manifest_sha256': bootstrap.digest(stages / 'sources.json'), 'tools': tools,
                'options': {'target': 'es6', 'flatc_runtime': 'flat'}, 'workloads': {},
-               'blockers': list(CONTRACT_BLOCKERS), 'full_acceptance': False}
+               'blockers': [], 'full_acceptance': False}
     try:
         bootstrap.observe_subprocess_cleanup(output / 'watchdog-capability')
         receipt['watchdog_capability'] = watchdog_capability(output / 'watchdog-capability/subprocess-cleanup.json')
@@ -718,8 +1459,10 @@ def produce_evidence(repo, output, stages, seeds_file, review_file, review_sha, 
                                          for value in command.get('lifecycle', [])]
         if not receipt['compiler_lifecycle']:
             receipt['blockers'].append('Generated compiler suite emitted no measured lifecycle records.')
-        receipt['subprocess_cleanup'] = {'children_reaped': None, 'temporary_outputs_removed': None,
-            'reason': 'Guarded process runner terminates groups but exports no measured cleanup receipt; memory lifecycle tests do not prove it'}
+        receipt['subprocess_cleanup'] = {'scope': 'per-production-command',
+            'observations': 'commands[].cleanup_reference',
+            'unobserved': ['production-cancellation', 'temporary-output-created-then-removed'],
+            'reason': 'Terminal process waits and staging absence are measured; owner readiness/cancellation and temporary lifecycle events are not exported'}
         receipt['compiler_sessions'] = emitted
         receipt['compiler_session_log_sha256'] = {
             command['log']: command['log_sha256'] for command in compiler_context['commands']}
@@ -732,16 +1475,30 @@ def produce_evidence(repo, output, stages, seeds_file, review_file, review_sha, 
                 'in_process_reuse_records': sum(value['reuse']['reused'] for value in emitted),
                 'scope': 'actual emitted sessions; no inferred workload identity or persistent cache acceptance'}
             require(all(value['cleanupSettled'] for value in emitted), 'Compiler session cleanup did not settle')
+        suite_contexts = {'Flat-Compiler': compiler_context}
         receipt['stage2_suites'] = {'Flat-Compiler': receipt['compiler_suite']}
         for suite in SUITES:
             if suite == 'Flat-Compiler':
                 continue
             suite_context = create_production_workspace(repo, output / ('suite-' + suite), sources, seeds,
                                                         tools, stages / 'stage2', budget)
+            suite_contexts[suite] = suite_context
             receipt['stage2_suites'][suite] = execute_production(suite_context, suite, seeds, budget, seconds)
             bootstrap.write_json(output / 'production-evidence.json', receipt)
         require(scenario_sources(None, repo) == sources, 'Live source inputs changed during production run')
-        receipt['status'] = 'blocked'
+        driver_context = create_production_workspace(repo, output / 'production-driver', sources, seeds,
+                                                      tools, stages / 'stage2', budget)
+        receipt['production_driver'] = run_production_driver(driver_context, seeds, budget, seconds)
+        if scaling_plan_path is not None:
+            suite_contexts['Flat-Core'] = driver_context
+            driver_path = output / receipt['production_driver']['driver']['path']
+            receipt['scaling'] = run_scaling(driver_context, driver_path, suite_contexts, seeds, budget, seconds,
+                                              scaling_plan_path, scaling_plan_sha,
+                                              bootstrap.digest(stages / 'sources.json'))
+        receipt.update(production_gates(receipt))
+        bootstrap.write_json(output / 'production-evidence.json', receipt)
+        verdict = validate_production_evidence(output / 'production-evidence.json', receipt, stages)
+        receipt.update({key: verdict[key] for key in ('gates', 'blockers', 'full_acceptance', 'status')})
         return receipt
     except BaseException as error:
         receipt.update(status='failed', error=str(error))
@@ -757,6 +1514,8 @@ def main():
     parser.add_argument('--evidence', type=Path)
     parser.add_argument('--produce', action='store_true',
                         help='Execute actual production workloads; emits blocked receipt for unavailable contracts')
+    parser.add_argument('--scaling-plan', type=Path, help='Predeclared production tiers and pinned RSS timer/budgets')
+    parser.add_argument('--scaling-plan-sha256', help='Independent reviewed scaling plan digest')
     parser.add_argument('--changed-input', help='Existing Flat-Core production source for controlled byte change')
     parser.add_argument('--removed-input', help='Reviewed removable Flat-Core production source')
     parser.add_argument('--bootstrap-output', type=Path,
@@ -769,13 +1528,17 @@ def main():
     repo, output = args.repo.resolve(), args.output.resolve()
     require(repo not in output.parents and output != repo, 'Output must be outside checkout')
     bootstrap.execution_limits(args.run_seconds, args.command_seconds)
+    require(args.scaling_plan is None or args.scaling_plan_sha256, 'Scaling plan requires independent digest')
     if args.produce:
         require(args.bootstrap_output is not None and args.changed_input and args.removed_input,
                 '--produce requires --bootstrap-output, --changed-input, and --removed-input')
-        produce_evidence(repo, output, args.bootstrap_output.resolve(), args.seeds.resolve(),
+        receipt = produce_evidence(repo, output, args.bootstrap_output.resolve(), args.seeds.resolve(),
                          args.review.resolve(), args.review_sha256, args.changed_input, args.removed_input,
-                         args.command_seconds, args.run_seconds)
-        raise SystemExit('Production workloads completed, but full acceptance is blocked; see production-evidence.json')
+                         args.command_seconds, args.run_seconds,
+                         scaling_plan_path=args.scaling_plan, scaling_plan_sha=args.scaling_plan_sha256)
+        if receipt['status'] != 'passed':
+            raise SystemExit('Production workloads completed with unobserved gates; see production-evidence.json')
+        return
     require(args.evidence is not None and args.evidence_sha256,
             'Validation requires --evidence and --evidence-sha256')
     # Reject missing evidence up front, rather than spend hours then discover provisioning is absent.

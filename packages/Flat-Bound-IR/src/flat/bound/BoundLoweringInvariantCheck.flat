@@ -1,0 +1,33 @@
+package flat/bound
+
+/** Structural invariant audit using the same exhaustive child contract as lowering.
+ * Records no tree or replay backlog; fails at the first forbidden rich wrapper.
+ */
+class extends BoundTreeLoweringPass {
+    String invariant
+    public construct(String invariant) { this.invariant = invariant }
+    override public name() => "bound-lowering-invariant-check"
+    override public inputInvariant() => invariant
+    override public outputInvariant() => invariant
+
+    override public lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (expression && (
+            (invariant == "core" && (expression.class.isOfType(BoundRichCallExpression.class) ||
+                expression.class.isOfType(BoundNamedCallExpression.class))) ||
+            (invariant == "collection" && expression.class.isOfType(BoundRichCollectionExpression.class)) ||
+            (invariant == "deferred" && expression.class.isOfType(BoundDeferredExpression.class)) ||
+            (invariant == "native" && expression.class.isOfType(BoundExternalExpression.class)))) {
+            throw Exception("Unlowered #invariant expression: #{expression.expressionKind()}")
+        }
+        return super.lowerExpression(expression)
+    }
+
+    override public lowerStatement(BoundStatement statement, BoundStatement[] output) {
+        if ((invariant == "core" && statement.class.isOfType(BoundConstructorInitializationStatement.class)) ||
+            (invariant == "collection" && statement.class.isOfType(BoundForEachStatement.class)) ||
+            (invariant == "deferred" && statement.class.isOfType(BoundStaticInitializationStatement.class))) {
+            throw Exception("Unlowered #invariant statement: #{statement.unitKind()}")
+        }
+        super.lowerStatement(statement, output)
+    }
+}

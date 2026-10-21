@@ -17,6 +17,8 @@ class {
         var String outputFile
         var String outputDirectory
         var Int concurrency = 1
+        var Bool parallel
+        var Bool explicitConcurrency
         var Int index
 
         while (index < arguments.count) {
@@ -56,9 +58,10 @@ class {
             } else if (argument == "-threads") {
                 index++
                 let concurrencyText = requireValue(arguments, index)
+                explicitConcurrency = true
                 concurrency = AirshipCompilerArguments.parsePositiveCapacity(concurrencyText)
             } else if (argument == "-parallel") {
-                concurrency = Math.max(2, concurrency)
+                parallel = true
             } else if (argument.startsWith("-")) {
                 throw Exception("Unsupported compiler argument '#argument'")
             } else {
@@ -67,6 +70,8 @@ class {
             index++
         }
 
+        // Explicit capacity wins over the scheduling hint regardless of token order.
+        if (parallel && !explicitConcurrency) concurrency = 2
         let options = CompilerOptions(
             target,
             runtime: runtime,
@@ -105,7 +110,8 @@ class {
     }
 
     requireValue(String[] arguments, Int index) -> String {
-        if (index >= arguments.count || arguments[index].startsWith("-")) {
+        if (index >= arguments.count || !arguments[index] || arguments[index].trim().count == 0 ||
+            arguments[index].startsWith("-")) {
             throw Exception("Compiler argument requires a value")
         }
         return arguments[index]
@@ -115,7 +121,9 @@ class {
         for (entry in value.split(',')) {
             let separator = entry.indexOf("=")
             if (separator <= 0) throw Exception("Application properties must use key=value entries")
-            properties[entry.substring(end: separator).trim()] = entry.substring(separator + 1).trim()
+            let key = entry.substring(end: separator).trim()
+            if (key.count == 0) throw Exception("Application property key cannot be empty")
+            properties[key] = entry.substring(separator + 1).trim()
         }
     }
 }

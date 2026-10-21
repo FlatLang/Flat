@@ -122,8 +122,9 @@ class {
     }
 
     protected remember(CompilerPackageSnapshot input, CompilationSummary summary) {
-        if (input.ticket != generation || summary.cancelled || summary.diagnosticCount != 0 ||
-            summary.artifactCount != 1 || input.code == null) return
+        if (!summary || input.ticket != generation || summary.cancelled || !summary.cleanupSettled ||
+            summary.diagnosticCount != 0 || summary.packageDiagnostic != null || summary.bindingDiagnostic != null ||
+            summary.sourceCount != input.identities().count || summary.artifactCount != 1 || input.code == null) return
         let code = input.code
         Long codeBytes = code.count
         codeBytes *= 4

@@ -15,8 +15,11 @@ class CompilerCli {
         System.exit(run(invocation))
     }
 
-    public static async run(String[] args) -> Int {
+    public static async run(String[] args, CompilerInvocationObserver observer = null,
+        CompilerSourceReadSchedule sourceReadSchedule = null) -> Int {
         var Bool diagnosticBatchEmitted
+        var CompilationSummary terminalSummary
+        var String diagnosticRevision = "unavailable-before-terminal-session"
         try {
             let tokens = args.skip(1)
             if (tokens.count > 0 && (tokens.first == "help" || tokens.first == "--help")) {
@@ -83,46 +86,64 @@ class CompilerCli {
             let slash = location.lastIndexOf("/")
             let parent = slash >= 0 ? location.substring(0, slash) : "."
             let root = File(parent.count > 0 ? parent : "/")
-            let incremental = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
-                tokens, output.destination, maxArtifactBytes, linker.maxSourceCharacters)
+            let incremental = CompilerIncrementalState(FilesystemCompilerSourceProvider(files,
+                maxSourceBytes: linker.maxSourceCharacters * 4), files,
+                tokens, output.destination, maxArtifactBytes, linker.maxSourceCharacters,
+                manifestObserver: observer ? observer.manifestLifecycleObserver() : null)
+            var String terminalBatch
+            var String publicationMessage
+            var String persistentEvidence
             try {
+                diagnosticRevision = incremental.revision()
+                if (observer) observer.invocationAdmitted(diagnosticRevision,
+                    output.destination.normalizedLocation, CompilerEvidence.renderPersistent(incremental))
                 if (incremental.reused) {
                     validateClosure(package, files, maxSources)
                     incremental.validate()
-                    Console.log(incremental.cachedDiagnostics())
-                    diagnosticBatchEmitted = true
-                    Console.log(CompilerEvidence.renderPersistent(incremental))
-                    if (!quiet) Console.log("Unchanged #{output.destination.normalizedLocation}")
-                    return 0
+                    terminalBatch = incremental.cachedDiagnostics()
+                    persistentEvidence = CompilerEvidence.renderPersistent(incremental)
+                    publicationMessage = "Unchanged #{output.destination.normalizedLocation}"
+                } else {
+                    let lifecycle = observer ? observer.artifactLifecycleObserver() : null
+                    let destination = FilesystemCompilerArtifactSink(root, 1,
+                        revision: diagnosticRevision, observer: lifecycle)
+                    let spool = SpooledCompilerArtifactSink(root, 1, maxArtifactBytes,
+                        revision: diagnosticRevision, destination: root, observer: lifecycle)
+                    var Exception failure
+                    var CompilationSummary summary
+                    try {
+                        let compiler = Compiler(CompilerEngine(packageLinker: linker, maxActiveSources: compilerConcurrency,
+                            sourceReadSchedule: sourceReadSchedule, sourceReadObserver: observer, invocationObserver: observer))
+                        let session = compiler.compilePackage(incremental, spool, output.destination.name,
+                            options.mainClass, defaultImports: defaultImports)
+                        summary = session.completion.get()
+                        terminalSummary = summary
+                        Console.log(CompilerEvidence.render(summary, "cli-package"))
+                        if (summary.cancelled || summary.diagnosticCount > 0 || summary.artifactCount != 1) {
+                            throw Exception(summary.packageDiagnostic ?: "Package compilation failed; output unchanged")
+                        }
+                        validateClosure(package, files, maxSources)
+                        incremental.preparePublication(spool.stagedFile(), summary)
+                    } catch (Exception error) { failure = error }
+                    publishArtifacts(spool, destination, failure)
+                    incremental.commit(summary)
+                    persistentEvidence = CompilerEvidence.renderPersistent(incremental)
+                    terminalBatch = CompilerEvidence.renderDiagnostics(summary, diagnosticRevision)
+                    publicationMessage = "Compiled #{options.library ? "library" : "executable"} #{output.destination.normalizedLocation}"
                 }
-                let destination = FilesystemCompilerArtifactSink(root, 1)
-                let spool = SpooledCompilerArtifactSink(root, 1, maxArtifactBytes)
-                var Exception failure
-                var CompilationSummary summary
-                try {
-                    let compiler = Compiler(CompilerEngine(packageLinker: linker, maxActiveSources: compilerConcurrency))
-                    let session = compiler.compilePackage(incremental, spool, output.destination.name,
-                        options.mainClass, defaultImports: defaultImports)
-                    summary = session.completion.get()
-                    Console.log(CompilerEvidence.render(summary, "cli-package"))
-                    Console.log(CompilerEvidence.renderDiagnostics(summary, incremental.revision()))
-                    diagnosticBatchEmitted = true
-                    if (summary.cancelled || summary.diagnosticCount > 0 || summary.artifactCount != 1) {
-                        throw Exception(summary.packageDiagnostic ?: "Package compilation failed; output unchanged")
-                    }
-                    validateClosure(package, files, maxSources)
-                    incremental.validate()
-                } catch (Exception error) { failure = error }
-                publishArtifacts(spool, destination, failure)
-                incremental.commit(summary)
-                Console.log(CompilerEvidence.renderPersistent(incremental))
-                if (!quiet) Console.log("Compiled #{options.library ? "library" : "executable"} #{output.destination.normalizedLocation}")
-                return 0
             } finally { incremental.dispose() }
+            // Success is observable only after artifact, manifest and owned lock
+            // cleanup settle. A failed finalizer instead reaches the failure batch.
+            Console.log(persistentEvidence)
+            Console.log(terminalBatch)
+            diagnosticBatchEmitted = true
+            if (!quiet) Console.log(publicationMessage)
+            return 0
         } catch (Exception error) {
             if (!diagnosticBatchEmitted) {
                 Console.log(CompilerEvidence.renderDiagnostics(
-                    CompilationSummary(0, 0, 1, false), "unavailable-before-terminal-session"))
+                    terminalSummary ?: CompilationSummary(0, 0, 1, false), diagnosticRevision,
+                    terminalSummary && terminalSummary.packageDiagnostic == error.message ? null : error.message))
             }
             Console.log("flatc: #{error.message}")
             return 1

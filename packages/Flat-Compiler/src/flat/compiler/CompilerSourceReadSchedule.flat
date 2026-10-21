@@ -1,0 +1,68 @@
+package flat/compiler
+
+import flat/future
+
+/**
+ * Opt-in controlled read schedule for production-source acceptance. Each finite
+ * lookahead window is sealed by PackageCompilerSourceProvider before release;
+ * forward/reverse selects actual read-work settlement, not provider enumeration.
+ * Native loads are admitted normally; their completed work awaits release.
+ * Windows contain at most capacity gates. Only controlled runs wait for the
+ * entire window: that named local barrier proves schedule independence, not a
+ * production phase barrier. The ordinary engine path has no scheduler/barrier.
+ * A schedule is single-use and owned by one package session. No sleeps, task
+ * cancellation pretending to reap reads, or retained project event arrays.
+ */
+class CompilerSourceReadSchedule {
+    visible Int capacity
+    visible String completionOrder
+    var Future.CompletableFuture<Bool>[] gates = Future.CompletableFuture<Bool>[]
+    var Int remaining
+    var Int released
+    var Bool sealed
+    var Bool claimed
+    var Future.CompletableFuture<Bool> drained = Future.create<Bool>()
+
+    private construct(Int capacity, String order) {
+        if (capacity <= 0 || capacity > 256) throw Exception("Controlled read capacity must be from 1 to 256")
+        this.capacity = capacity
+        completionOrder = order
+    }
+    public static forward(Int capacity) -> CompilerSourceReadSchedule => CompilerSourceReadSchedule(capacity, "forward")
+    public static reverse(Int capacity) -> CompilerSourceReadSchedule => CompilerSourceReadSchedule(capacity, "reverse")
+
+    protected claim() {
+        if (claimed) throw Exception("Controlled read schedule is single-use")
+        claimed = true
+    }
+
+    protected admit() -> Future<Bool> {
+        if (sealed && remaining == 0) {
+            gates.clear()
+            sealed = false
+            drained = Future.create<Bool>()
+        }
+        if (sealed || gates.count >= capacity) throw Exception("Controlled read window exceeds capacity or is sealed")
+        let gate = Future.create<Bool>()
+        gates.add(gate)
+        remaining++
+        return gate
+    }
+
+    protected seal() {
+        if (sealed || gates.isEmpty) return
+        sealed = true
+        released = completionOrder == "forward" ? 0 : gates.count - 1
+        gates[released].complete(true)
+    }
+
+    protected settle() {
+        remaining--
+        if (remaining == 0) drained.complete(true)
+        else {
+            released += completionOrder == "forward" ? 1 : -1
+            gates[released].complete(true)
+        }
+    }
+    protected async awaitSettlement() { if (sealed) drained.get() }
+}

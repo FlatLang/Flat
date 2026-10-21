@@ -1208,6 +1208,33 @@ class {
         range, type, "this", SymbolIdentity(typeIdentity, "receiver")
     )
 
+    /** Only admitted canonical scalar declarations may bridge native receiver storage.
+     * Construct the source wrapper once; member dispatch remains an ordinary typed call.
+     */
+    canonicalScalarOwner(SemanticType type) -> UserClassSemanticType {
+        if (!declarationContext || type.kind() != "primitive" || type.value() == "primitive:Bool") return null
+        let name = type.value().substring("primitive:".count)
+        let declarations = declarationContext.candidates("flat/primitive/number/#name")
+        if (declarations.isEmpty) return null
+        if (declarations.count != 1) throw Exception("Native receiver requires one canonical #name declaration")
+        return UserClassSemanticType(declarations.first)
+    }
+
+    scalarReceiver(BoundExpression value) -> BoundExpression {
+        let owner = canonicalScalarOwner(value.semanticType)
+        if (!owner) return value
+        let targets = constructors.filter((candidate) => candidate.callableKind.value == "constructor" &&
+            candidate.ownerType.value() == owner.value() && candidate.returnType.value() == owner.value() &&
+            candidate.parameterTypes().count == 1 && candidate.optionalParameterCount == 0 &&
+            candidate.parameterTypes().first.value() == value.semanticType.value())
+        if (targets.count != 1) throw Exception("Native receiver requires one canonical scalar storage constructor")
+        let checked = CallTypeChecker.check(targets.first, null, [value.semanticType], value.range,
+            hierarchy: typeHierarchy)
+        if (!checked.valid) throw Exception(checked.diagnostic.message)
+        return BoundCallExpression(value.range, checked.semanticType, checked.target,
+            [value], checked.argumentConversions())
+    }
+
     public bindScopedExpression(
         PrimitiveExpressionSyntax syntax,
         BoundReferenceExpression receiver,
@@ -1266,6 +1293,26 @@ class {
     }
 
     /** Member-bearing callback bodies use the same published contracts as ordinary expressions. */
+    /** Recover pre-substitution callback ABI evidence by stable declaration identity.
+     * Explicit type arguments and receiver instantiation must not erase this contract.
+     */
+    callbackDeclaration(CallableSignature selected, Int index) -> FunctionSemanticType {
+        let original = constructors.firstOrNull({ _.identity.value == selected.identity.value }) ?: selected
+        let type = original.parameterTypes()[index]
+        return type.kind() == "function" ? (FunctionSemanticType)type : null
+    }
+
+    callbackArguments(CallableSignature target, BoundExpression[] arguments) -> BoundExpression[] {
+        let result = BoundExpression[]
+        var Int index
+        for (argument in arguments) {
+            result.add(PrimitiveExpressionBinder.adaptCallbackReference(argument,
+                callbackDeclaration(target, index), declarationContext, constructors))
+            index++
+        }
+        return result
+    }
+
     bindCallback(PrimitiveLambdaSyntax syntax, FunctionSemanticType context,
         LocalBinding[] locals, CallableSignature[] callables,
         TypeHierarchyComponent hierarchy = null,
@@ -1312,7 +1359,13 @@ class {
             let capturedReceiver = locals.reverse().firstOrNull({ _.name == "this" })
             let receiver = capturedReceiver ? BoundReferenceExpression(syntax.range,
                 capturedReceiver.semanticType, "this", capturedReceiver.identity) : null
-            let body = expression(syntax.body, receiver, publishedFields, scoped)
+            var BoundExpression body = expression(syntax.body, receiver, publishedFields, scoped)
+            if (context.returnType.kind() != "generic-parameter" && context.returnType.kind() != "unknown" &&
+                context.returnType.value() != body.semanticType.value()) {
+                let conversion = TypeConversions.classify(body.semanticType, context.returnType, hierarchy: hierarchy)
+                if (!conversion.applicable) throw Exception("Callback return type mismatch")
+                body = BoundConversionExpression(body.range, context.returnType, body, conversion)
+            }
             let captures = BoundReferenceExpression[]
             for (local in locals) {
                 let selected = locals.reverse().firstOrNull({ _.name == local.name })
@@ -1324,7 +1377,10 @@ class {
             }
             return PrimitiveExpressionBindingResult(expression: BoundLambdaExpression(syntax.range,
                 FunctionSemanticType(parameters.map({ _.semanticType }), body.semanticType,
-                    context.asyncFunction), parameters, captures, body))
+                    context.asyncFunction), parameters, captures, body,
+                declarationContract: originalContract ?: context,
+                resultBoxingConstructor: PrimitiveExpressionBinder.callbackBoxingConstructor(
+                    body.semanticType, originalContract ?: context, declarationContext, callables)))
         } catch (Exception error) {
             return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
                 "semantic.primitive-expression", error.message, syntax.range))
@@ -1365,7 +1421,17 @@ class {
         SemanticType requiredType = null,
         FunctionSemanticType originalCallbackContract = null
     ) -> BoundExpression {
-        let value = expressionValue(syntax, receiver, fields, locals, requiredType, originalCallbackContract)
+        var BoundExpression value = expressionValue(syntax, receiver, fields, locals, requiredType, originalCallbackContract)
+        if (value.class.isOfType(BoundCallExpression.class)) {
+            let call = (BoundCallExpression)value
+            let arguments = callbackArguments(call.target, call.argumentValues())
+            value = BoundCallExpression(call.range, call.semanticType, call.target, call.receiver,
+                arguments, call.argumentConversions(), safeAccess: call.safeAccess,
+                receiverConversion: call.receiverConversion, suppressAwait: call.suppressAwait)
+        } else if (requiredType && requiredType.kind() == "function") {
+            value = PrimitiveExpressionBinder.adaptCallbackReference(value,
+                originalCallbackContract ?: (FunctionSemanticType)requiredType, declarationContext, constructors)
+        }
         return adaptText(value, requiredType)
     }
 
@@ -1546,7 +1612,7 @@ class {
                 throw Exception("Explicit member type arguments require a positional static call")
             }
             if (value.namedArgumentValues().isNotEmpty) {
-                let owner = expression(value.receiver, receiver, fields, locals)
+                let owner = scalarReceiver(expression(value.receiver, receiver, fields, locals))
                 let declaredString = owner.semanticType.value() ==
                     SemanticTypes.stringType().value() ? constructors.firstOrNull((candidate) =>
                         candidate.callableKind.value == "instance-method" &&
@@ -1732,6 +1798,7 @@ class {
                             let candidates = staticCandidates.filter({ _.parameterTypes().count == value.argumentValues().count })
                             let checks = CallCheckResult[]
                             let boundCalls = BoundCallExpression[]
+                            var String contextualFailure
                             for (candidate in candidates) {
                             try {
                             let formals = SemanticType[]
@@ -1766,7 +1833,8 @@ class {
                                         genericParameter ? GenericInstanceSemanticType(boundType, [genericParameter]) : receiver.semanticType))
                                     let bound = bindCallback(
                                         (PrimitiveLambdaSyntax)argument, (FunctionSemanticType)context,
-                                        callbackLocals, constructors, typeHierarchy
+                                        callbackLocals, constructors, typeHierarchy,
+                                        originalContract: callbackDeclaration(candidate, index)
                                     )
                                     if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                                     arguments[index] = bound.expression
@@ -1782,10 +1850,16 @@ class {
                             }
                             } catch (Exception error) {
                                 // Invalid contextual bodies reject only their owning candidate.
+                                // Keep one source-ordered cause without retaining a candidate backlog.
+                                if (!contextualFailure) contextualFailure = error.message
                             }
                             }
                             let resolution = OverloadResolver.resolveChecked(value.memberName, candidates, checks, value.range)
-                            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+                            if (!resolution.resolved) {
+                                if (checks.isEmpty && contextualFailure) throw Exception(
+                                    resolution.diagnostic.message + ": " + contextualFailure)
+                                throw Exception(resolution.diagnostic.message)
+                            }
                             return boundCalls.firstOrNull({ _.target.identity.value == resolution.selected.identity.value })
                         }
                         let arguments = BoundExpression[]
@@ -1855,7 +1929,11 @@ class {
                     }
                 }
             }
-            let owner = expression(value.receiver, receiver, fields, locals)
+            let rawOwner = expression(value.receiver, receiver, fields, locals)
+            // Retain the established native Char case-conversion intrinsic contract.
+            let nativeCharCase = rawOwner.semanticType.value() == "primitive:Char" &&
+                (value.memberName == "toLowerCase" || value.memberName == "toUpperCase")
+            let owner = nativeCharCase ? rawOwner : scalarReceiver(rawOwner)
             let contextOwner = value.safeAccess && owner.semanticType.kind() == "nullable" ?
                 ((NullableSemanticType)owner.semanticType).underlyingType : owner.semanticType
             if (value.safeAccess && (value.namedArgumentValues().isNotEmpty || value.typeArgumentNames().isNotEmpty))
@@ -1906,7 +1984,8 @@ class {
                                     genericParameter ? GenericInstanceSemanticType(boundType, [genericParameter]) : receiver.semanticType))
                                 let bound = bindCallback(
                                     (PrimitiveLambdaSyntax)argument, (FunctionSemanticType)context,
-                                    callbackLocals, constructors, typeHierarchy)
+                                    callbackLocals, constructors, typeHierarchy,
+                                    originalContract: callbackDeclaration(candidate, index))
                                 if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                                 arguments[index] = bound.expression
                             }
@@ -2223,9 +2302,12 @@ class {
             let value = (PrimitiveCastSyntax)syntax
             let operand = expression(value.value, receiver, fields, locals)
             var SemanticType target
-            if (boundType && value.typeName == boundType.declarationIdentity.name) {
+            let namedTarget = typeOf(value.typeName)
+            let canonicalTarget = canonicalScalarOwner(namedTarget)
+            if (boundType && value.typeName == boundType.declarationIdentity.name &&
+                (!canonicalTarget || canonicalTarget.value() != boundType.value())) {
                 target = boundType
-            } else target = typeOf(value.typeName)
+            } else target = namedTarget
             let conversion = TypeConversions.classify(
                 operand.semanticType, target, explicit: true, hierarchy: typeHierarchy
             )
@@ -2235,13 +2317,8 @@ class {
                 )
             }
             if (conversion.conversionKind == "numeric-unboxing") {
-                if (target.value() != "primitive:Double") {
-                    throw PrimitiveContextBindingException(BindingDiagnostic(
-                        "binding.numeric-unboxing-target-unsupported",
-                        "Numeric unboxing currently supports only Double targets",
-                        SyntaxIslandIdentity(value.range.snapshot, "numeric-unboxing", value.range.startTokenIndex),
-                        value.range))
-                }
+                // Project through the canonical virtual Number getter, then apply
+                // explicit numeric narrowing; never coerce the source Object itself.
                 if (!declarationContext) {
                     throw PrimitiveContextBindingException(BindingDiagnostic(
                         "binding.numeric-unboxing-projection-unsupported",
@@ -2254,11 +2331,13 @@ class {
                 let projections = constructors.filter((candidate) =>
                     candidate.ownerType && candidate.ownerType.value() == number.value() &&
                     candidate.name == "realValue" && candidate.callableKind.value == "instance-method" &&
-                    candidate.parameterTypes().isEmpty && candidate.returnType.value() == "primitive:Double")
+                    candidate.parameterTypes().isEmpty && !candidate.asyncFunction &&
+                    candidate.returnType.value() == "primitive:Double")
                 if (projections.count != 1) throw Exception("Numeric unboxing requires resolved Number.realValue getter")
                 let projection = projections.first
                 let projected = TypeConversions.classify(projection.returnType, target, explicit: true,
                     hierarchy: typeHierarchy)
+                if (!projected.applicable) throw Exception("Numeric unboxing requires explicit projection conversion")
                 return BoundNumericUnboxExpression(value.range, target, operand, number,
                     projection, conversion, projected)
             }
@@ -2657,7 +2736,8 @@ class {
                                     let scoped = LocalBinding[]:addAll(locals)
                                     if (receiver) scoped.add(LocalBinding("this", receiver.symbolIdentity, receiver.semanticType))
                                     let callback = bindCallback((PrimitiveLambdaSyntax)argument,
-                                        (FunctionSemanticType)context, scoped, constructors, typeHierarchy)
+                                        (FunctionSemanticType)context, scoped, constructors, typeHierarchy,
+                                        originalContract: callbackDeclaration(candidate, index))
                                     if (!callback.succeeded) throw Exception(callback.diagnostic.message)
                                     arguments[index] = callback.expression
                                 }
@@ -3016,9 +3096,9 @@ class {
                     )
                 }
             }
-            let projectedReceiver = expression(
+            let projectedReceiver = scalarReceiver(expression(
                 access.receiver, receiver, fields, locals
-            )
+            ))
             if (projectedReceiver.semanticType.kind() == "array") {
                 if (access.memberName == "data") {
                     return BoundNativeArrayDataExpression(access.range, projectedReceiver)

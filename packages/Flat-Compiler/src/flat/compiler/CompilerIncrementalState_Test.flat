@@ -7,6 +7,261 @@ import flat/writer/es6/bound
 
 /** Persistent admission is reopened for each operation, just like separate CLI processes. */
 testable class {
+    /** Bounded recorder: two paths and terminal counters, never a replay backlog. */
+    class ManifestRecorder extends CompilerArtifactLifecycleObserver {
+        visible String revision
+        visible String destination
+        visible String directory
+        visible String payload
+        visible Int created
+        visible Int removed
+        visible Int publishedCount
+        visible Int finalizedCount
+        visible Bool invalid
+        visible Bool lastRemoved
+        visible Bool lastFailed
+        visible Bool throwCallbacks
+
+        check(CompilerArtifactLifecycleBinding binding) {
+            if (binding.revision != revision || binding.destination != destination ||
+                binding.identity != File(destination).name) invalid = true
+        }
+        override public temporaryCreated(CompilerArtifactLifecycleBinding binding, String path) {
+            check(binding)
+            created++
+            if (!File(path).exists || created > 2) invalid = true
+            if (created == 1) directory = path
+            else payload = path
+            if (throwCallbacks) throw Exception("controlled observer failure")
+        }
+        override public temporaryRemoved(CompilerArtifactLifecycleBinding binding, String path) {
+            check(binding)
+            removed++
+            if (File(path).exists || (path != directory && path != payload)) invalid = true
+            if (throwCallbacks) throw Exception("controlled observer failure")
+        }
+        override public published(CompilerArtifactLifecycleBinding binding) {
+            check(binding)
+            publishedCount++
+            if (!File(destination).isFile || File(payload).exists) invalid = true
+            if (throwCallbacks) throw Exception("controlled observer failure")
+        }
+        override public finalized(CompilerArtifactLifecycleBinding binding, String path, Bool removed, Exception failure) {
+            check(binding)
+            finalizedCount++
+            lastRemoved = removed
+            lastFailed = failure != null
+            if (path != directory || removed == File(path).exists) invalid = true
+            if (throwCallbacks) throw Exception("controlled observer failure")
+        }
+    }
+
+    test `manifest lifecycle observes actual create rename remove and finalization despite callback failure`() {
+        manifestLifecycle(0)
+    }
+    test `manifest rename failure observes payload removal without publication`() {
+        manifestLifecycle(1)
+    }
+    test `manifest cleanup failure retains paths binding lock and retry ownership`() {
+        manifestLifecycle(2)
+    }
+    test `manifest cleanup no op never fabricates removal or successful finalization`() {
+        manifestLifecycle(3)
+    }
+    test `manifest partial write is observed and finalized without publication`() {
+        manifestLifecycle(4)
+    }
+
+    test `manifest temporary creation failure emits no fabricated lifecycle`() {
+        manifestLifecycle(5)
+    }
+
+    // Faults are restricted to the manifest operations; all hooks are restored in finally.
+    manifestLifecycle(Int mode) {
+        let root = File(".flat-incremental-lifecycle-#mode-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+        Es6ArtifactFiles.write(source, "class Main {}")
+        Es6ArtifactFiles.write(tool, "// tool")
+        Es6ArtifactFiles.write(output, "program")
+        let observer = ManifestRecorder()
+        observer.destination = manifest.normalizedLocation
+        observer.throwCallbacks = mode == 0
+        let files = [source]
+        try {
+            let transaction = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation, manifestObserver: observer)
+            observer.revision = transaction.revision()
+            try {
+                let summary = CompilationSummary(1, 1, 0, false)
+                transaction.preparePublication(output, summary)
+                native var Object hooks
+                external js {
+                    const fs = #{File.FileGlobal.fs};
+                    #{hooks} = {remove:fs.rmSync, rename:fs.renameSync, write:fs.writeFileSync, mkdir:fs.mkdtempSync};
+                    const mode = #{mode};
+                    if (mode === 5) fs.mkdtempSync = () => { throw new Error('controlled manifest creation failure'); };
+                    if (mode === 1) fs.renameSync = () => { throw new Error('controlled manifest rename failure'); };
+                    if (mode === 2) fs.rmSync = () => { throw new Error('controlled manifest cleanup failure'); };
+                    if (mode === 3) fs.rmSync = () => {};
+                    if (mode === 4) fs.writeFileSync = (fd,contents) => {
+                        #{hooks}.write(fd,contents.slice(0,9));
+                        throw new Error('controlled manifest partial write failure');
+                    };
+                }
+                try {
+                    var Bool rejected
+                    try { transaction.commit(summary) } catch (Exception error) { rejected = true }
+                    expect(rejected).toBe(mode != 0)
+                    if (mode == 5) {
+                        expect(observer.created).toBe(0)
+                        expect(observer.removed).toBe(0)
+                        expect(observer.publishedCount).toBe(0)
+                        expect(observer.finalizedCount).toBe(0)
+                        expect(manifest.isFile).toBe(false)
+                        return
+                    }
+                    expect(observer.created).toBe(2)
+                    expect(observer.publishedCount).toBe(mode == 1 || mode == 4 ? 0 : 1)
+                    expect(observer.finalizedCount).toBe(1)
+                    expect(observer.invalid).toBe(false)
+                    if (mode == 2 || mode == 3) {
+                        expect(observer.removed).toBe(1) // payload moved, directory still owned
+                        expect(observer.lastRemoved).toBe(false)
+                        expect(observer.lastFailed).toBe(true)
+                        expect(File(observer.directory).exists).toBe(true)
+                        rejected = false
+                        try { transaction.dispose() } catch (Exception error) { rejected = true }
+                        expect(rejected).toBe(true)
+                        expect(File(manifest.normalizedLocation + ".lock").exists).toBe(true)
+                        expect(observer.finalizedCount).toBe(2)
+                        expect(observer.removed).toBe(1)
+                    } else {
+                        expect(observer.removed).toBe(2)
+                        expect(observer.lastRemoved).toBe(true)
+                        expect(observer.lastFailed).toBe(false)
+                    }
+                } finally {
+                    external js {
+                        const fs = #{File.FileGlobal.fs};
+                        fs.rmSync = #{hooks}.remove;
+                        fs.renameSync = #{hooks}.rename;
+                        fs.writeFileSync = #{hooks}.write;
+                        fs.mkdtempSync = #{hooks}.mkdir;
+                    }
+                }
+                transaction.dispose()
+                expect(observer.removed).toBe(2)
+                expect(observer.finalizedCount).toBe(mode == 2 || mode == 3 ? 3 : 1)
+                expect(observer.lastRemoved).toBe(true)
+                expect(observer.lastFailed).toBe(false)
+                expect(observer.invalid).toBe(false)
+                expect(File(observer.directory).exists).toBe(false)
+                expect(File(manifest.normalizedLocation + ".lock").exists).toBe(false)
+                expect(manifest.isFile).toBe(mode != 1 && mode != 4)
+                if (mode == 0) {
+                    let warmObserver = ManifestRecorder()
+                    warmObserver.destination = manifest.normalizedLocation
+                    let warm = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                        ["library"], output, 1048576, toolLocation: tool.normalizedLocation,
+                        manifestObserver: warmObserver)
+                    warmObserver.revision = warm.revision()
+                    try {
+                        expect(warm.reused).toBe(true)
+                        expect(warm.cachedDiagnostics().contains("\"complete\":true")).toBe(true)
+                    } finally { warm.dispose() }
+                    // A hit without manifest publication creates no temporary and
+                    // cannot manufacture a removal/finalization observation.
+                    expect(warmObserver.created).toBe(0)
+                    expect(warmObserver.removed).toBe(0)
+                    expect(warmObserver.publishedCount).toBe(0)
+                    expect(warmObserver.finalizedCount).toBe(0)
+                }
+            } finally { transaction.dispose() }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    test `lock release retries rmdir after successful owner unlink without deleting replacement owner`() {
+        let root = File(".flat-incremental-lock-release-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        let lock = File(output.normalizedLocation + ".flat-incremental.json.lock")
+        let owner = File(lock, "owner.json")
+        Es6ArtifactFiles.write(source, "class Main {}")
+        Es6ArtifactFiles.write(tool, "// tool")
+        let files = [source]
+        try {
+            let transaction = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                native var Object hooks
+                external js {
+                    const fs = #{File.FileGlobal.fs};
+                    const lock = #{lock.normalizedLocation.chars.data};
+                    const owner = #{owner.normalizedLocation.chars.data};
+                    #{hooks} = {unlink:fs.unlinkSync, rmdir:fs.rmdirSync, unlinks:0, rmdirs:0};
+                    fs.unlinkSync = location => {
+                        if (location === owner) #{hooks}.unlinks++;
+                        return #{hooks}.unlink(location);
+                    };
+                    fs.rmdirSync = location => {
+                        if (location === lock) {
+                            #{hooks}.rmdirs++;
+                            if (#{hooks}.rmdirs === 1) throw new Error('controlled lock rmdir failure after unlink');
+                        }
+                        return #{hooks}.rmdir(location);
+                    };
+                }
+                try {
+                    var Bool rejected
+                    try { transaction.dispose() } catch (Exception error) { rejected = true }
+                    expect(rejected).toBe(true)
+                    expect(owner.exists).toBe(false)
+                    expect(lock.exists).toBe(true)
+                    // Admission still conflicts during partially completed release.
+                    rejected = false
+                    try {
+                        CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                            ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+                    } catch (Exception error) { rejected = true }
+                    expect(rejected).toBe(true)
+                    // Never unlink a replacement owner just because this transaction
+                    // previously owned the directory and removed its own owner file.
+                    Es6ArtifactFiles.write(owner, "replacement owner")
+                    rejected = false
+                    try { transaction.dispose() } catch (Exception error) { rejected = true }
+                    expect(rejected).toBe(true)
+                    expect(Es6ArtifactFiles.read(owner)).toBe("replacement owner")
+                    external js { #{hooks}.unlink(#{owner.normalizedLocation.chars.data}); }
+                    transaction.dispose()
+                    transaction.dispose()
+                    expect(lock.exists).toBe(false)
+                    var Int unlinks
+                    var Int rmdirs
+                    external js {
+                        #{unlinks} = #{hooks}.unlinks;
+                        #{rmdirs} = #{hooks}.rmdirs;
+                    }
+                    expect(unlinks).toBe(1)
+                    expect(rmdirs).toBe(2)
+                } finally {
+                    external js {
+                        #{File.FileGlobal.fs}.unlinkSync = #{hooks}.unlink;
+                        #{File.FileGlobal.fs}.rmdirSync = #{hooks}.rmdir;
+                    }
+                }
+            } finally { transaction.dispose() }
+            let next = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            next.dispose()
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     class CancellingProvider extends CompilerSourceProvider {
         public construct(visible CompilerSourceProvider source, visible CompilerSession session) {}
         override public identities() -> String[] => source.identities()
@@ -15,6 +270,79 @@ testable class {
             session.cancel()
             return value
         }
+    }
+
+    test `publication receipt rejects stale destination incomplete summaries and repeated commit`() {
+        let root = File(".flat-incremental-receipt-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        let staged = File(root, "staged.js")
+        let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+        let files = [source]
+        Es6ArtifactFiles.write(source, "class Main {}")
+        Es6ArtifactFiles.write(tool, "// tool")
+        Es6ArtifactFiles.write(output, "old program")
+        Es6ArtifactFiles.write(staged, "new program")
+        try {
+            let state = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                let summary = CompilationSummary(1, 1, 0, false)
+                var Bool rejected
+                try { state.commit(summary) } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(manifest.isFile).toBe(false)
+                expect(state.evidence().contains("\"complete\":false")).toBe(true)
+                rejected = false
+                try { state.preparePublication(staged, CompilationSummary(0, 1, 0, false)) }
+                catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                rejected = false
+                try { state.preparePublication(staged, CompilationSummary(1, 1, 0, false, "failure")) }
+                catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                state.preparePublication(staged, summary)
+                rejected = false
+                try { state.commit(summary) } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(manifest.isFile).toBe(false)
+                Es6ArtifactFiles.write(output, Es6ArtifactFiles.read(staged))
+                state.commit(summary)
+                expect(state.evidence().contains("\"manifestPublished\":true")).toBe(true)
+                let published = Es6ArtifactFiles.read(manifest)
+                rejected = false
+                try { state.commit(summary) } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(Es6ArtifactFiles.read(manifest)).toBe(published)
+            } finally { state.dispose() }
+            let mismatched = CompilerIncrementalState(FilesystemCompilerSourceProvider([]), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                var Bool rejected
+                try { mismatched.identities() } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                rejected = false
+                try { mismatched.preparePublication(staged, CompilationSummary(1, 1, 0, false)) }
+                catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+            } finally { mismatched.dispose() }
+            native_array native var Char[] corruptManifest
+            let originalManifest = Es6ArtifactFiles.read(manifest)
+            external js {
+                const value = JSON.parse(#{originalManifest.chars.data});
+                value.entries[0].digest = '0'.repeat(64);
+                #{corruptManifest} = JSON.stringify(value);
+            }
+            Es6ArtifactFiles.write(manifest, String(corruptManifest))
+            let corrupt = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                expect(corrupt.reused).toBe(false)
+                expect(corrupt.evidence().contains("\"complete\":false")).toBe(true)
+            } finally { corrupt.dispose() }
+        } finally { Es6ArtifactFiles.remove(root) }
     }
 
     async test `cancellation does not replace prior valid persistent manifest or artifact`() {
@@ -31,7 +359,10 @@ testable class {
         try {
             let initial = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
                 ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
-            try { initial.commit(CompilationSummary(1, 1, 0, false)) } finally { initial.dispose() }
+            try {
+                initial.preparePublication(output, CompilationSummary(1, 1, 0, false))
+                initial.commit(CompilationSummary(1, 1, 0, false))
+            } finally { initial.dispose() }
             let original = Es6ArtifactFiles.read(manifest)
             let session = CompilerSession()
             let selected = CancellingProvider(FilesystemCompilerSourceProvider(files), session)
@@ -65,9 +396,15 @@ testable class {
         let removed = File(sources, "Unused.flat")
         let output = File(root, "program.js")
         let clean = File(root, "clean.js")
+        let launcher = File(root, "compiler-launcher.js")
+        native_array native var Char[] launcherText
+        external js {
+            #{launcherText} = 'require(' + JSON.stringify(require('path').resolve(#{compiler.normalizedLocation.chars.data})) + ');\n';
+        }
+        Es6ArtifactFiles.write(launcher, String(launcherText))
         Es6ArtifactFiles.write(source, "package app\nclass Main { public static main() { external js { console.log('cold'); } } }")
         Es6ArtifactFiles.write(removed, "class Unused {}")
-        let command = ["node", compiler.normalizedLocation, sources.normalizedLocation, "-target", "es6",
+        let command = ["node", launcher.normalizedLocation, sources.normalizedLocation, "-target", "es6",
             "-main", "app/Main", "-o", output.normalizedLocation]
         try {
             let cold = System.execute(command, silent: true, shell: false)
@@ -89,6 +426,33 @@ testable class {
                 "-target", "es6", "-main", "app/Main", "-o", clean.normalizedLocation], silent: true, shell: false)
             expect(rebuilt.exitCode).toBe(0)
             expect(Es6ArtifactFiles.read(output)).toBe(Es6ArtifactFiles.read(clean))
+            let toolCommand = command.copy()
+            // Both processes execute the same generated compiler; only the actual
+            // launcher bytes change, and therefore the executing-tool fingerprint.
+            Es6ArtifactFiles.write(launcher, String(launcherText) + "// changed executing tool\n")
+            let toolChanged = System.execute(toolCommand, silent: true, shell: false)
+            expect(toolChanged.exitCode).toBe(0)
+            expect(toolChanged.stdout.join("").contains("\"reason\":\"configuration-changed\"")).toBe(true)
+            let toolWarm = System.execute(toolCommand, silent: true, shell: false)
+            expect(toolWarm.exitCode).toBe(0)
+            expect(toolWarm.stdout.join("").contains("\"reused\":true")).toBe(true)
+            let configured = command.copy()
+            configured.addAll(["--max-sources", "2048"])
+            let configuration = System.execute(configured, silent: true, shell: false)
+            expect(configuration.exitCode).toBe(0)
+            expect(configuration.stdout.join("").contains("\"reason\":\"configuration-changed\"")).toBe(true)
+            let configuredWarm = System.execute(configured, silent: true, shell: false)
+            expect(configuredWarm.exitCode).toBe(0)
+            expect(configuredWarm.stdout.join("").contains("\"reused\":true")).toBe(true)
+            let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+            let priorManifest = Es6ArtifactFiles.read(manifest)
+            let priorOutput = Es6ArtifactFiles.read(output)
+            Es6ArtifactFiles.write(source, "class Main { public static main( {")
+            let failed = System.execute(configured, silent: true, shell: false)
+            expect(failed.exitCode == 0).toBe(false)
+            expect(failed.stdout.join("").contains("\"reused\":true")).toBe(false)
+            expect(Es6ArtifactFiles.read(output)).toBe(priorOutput)
+            expect(Es6ArtifactFiles.read(manifest)).toBe(priorManifest)
         } finally { Es6ArtifactFiles.remove(root) }
     }
 
@@ -111,6 +475,7 @@ testable class {
                 expect(cold.reused).toBe(false)
                 expect(cold.evidence().contains("\"reason\":\"cold\"")).toBe(true)
                 Es6ArtifactFiles.write(output, "first")
+                cold.preparePublication(output, CompilationSummary(2, 1, 0, false))
                 cold.commit(CompilationSummary(2, 1, 0, false))
             } finally { cold.dispose() }
             let warm = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
@@ -120,6 +485,14 @@ testable class {
                 expect(warm.cachedDiagnostics().contains("\"complete\":true,\"records\":[]")).toBe(true)
                 expect(warm.cachedDiagnostics().contains("\"revision\":\"sha256:")).toBe(true)
                 expect(warm.evidence().contains("\"unchangedSources\":2")).toBe(true)
+                Es6ArtifactFiles.write(output, "tampered after admission")
+                var Bool rejected
+                try { warm.cachedDiagnostics() } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                rejected = false
+                try { warm.evidence() } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                Es6ArtifactFiles.write(output, "first")
             } finally { warm.dispose() }
             Es6ArtifactFiles.write(source, "class Main { static changed() -> Int { return 2; } }")
             let changed = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
@@ -128,6 +501,7 @@ testable class {
                 expect(changed.reused).toBe(false)
                 expect(changed.evidence().contains("\"changedSources\":1")).toBe(true)
                 Es6ArtifactFiles.write(output, "second")
+                changed.preparePublication(output, CompilationSummary(2, 1, 0, false))
                 changed.commit(CompilationSummary(2, 1, 0, false))
             } finally { changed.dispose() }
             let removed = CompilerIncrementalState(FilesystemCompilerSourceProvider([source]), [source],
@@ -135,6 +509,7 @@ testable class {
             try {
                 expect(removed.reused).toBe(false)
                 expect(removed.evidence().contains("\"removedSources\":1")).toBe(true)
+                removed.preparePublication(output, CompilationSummary(1, 1, 0, false))
                 removed.commit(CompilationSummary(1, 1, 0, false))
             } finally { removed.dispose() }
             Es6ArtifactFiles.write(output, "tampered")
@@ -209,7 +584,10 @@ testable class {
         try {
             let initial = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
                 ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
-            try { initial.commit(CompilationSummary(1, 1, 0, false)) } finally { initial.dispose() }
+            try {
+                initial.preparePublication(output, CompilationSummary(1, 1, 0, false))
+                initial.commit(CompilationSummary(1, 1, 0, false))
+            } finally { initial.dispose() }
             let previous = Es6ArtifactFiles.read(manifest)
             let aborted = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
                 ["changed-options"], output, 1048576, toolLocation: tool.normalizedLocation)

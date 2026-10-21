@@ -10,6 +10,16 @@ import flat/io/File
 import flat/io/FileReader
 
 testable class {
+    /** Generic callback fixtures admit the same canonical storage contract as production. */
+    async admitCallbackScalar(PrimitiveSourceBindingContext[] contexts, String name) {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-scalar:#{name}"), "one")
+        let stream = Lexer().lex("class #{name} { public construct(public #{name} value) {} }")
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let syntax = PrimitiveClassParser().parse(tokens, snapshot)
+        let namespaceName = name == "Bool" ? "flat/primitive" : "flat/primitive/number"
+        contexts.add(PrimitiveSourceBindingContext(namespaceName, snapshot, [syntax]))
+    }
     async test `member lexical scopes keep configured defaults separate while canonical members remain shared`() {
         let baseSnapshot = SourceSnapshotIdentity(SourceIdentity("app/Owner.flat"), "one")
         let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("app/Owner.js.flat"), "one")
@@ -324,42 +334,166 @@ testable class {
             expect(failure.contains("Invalid reduced cast")).toBe(true)
         }
     }
-    async test `numeric family cast binds canonical Number virtual projection only for Double target`() {
+    async test `numeric family casts retain resolved projection and explicit target conversion`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:numeric-family"), "compiler-input")
         let numberStream = Lexer().lex("class Number { construct() {} visible Double realValue => 0.0\n } ")
         numberStream.emit("start")
         let number = PrimitiveClassParser().parse(numberStream.consumeAll<Token>("data"), snapshot)
         let numberContext = PrimitiveSourceBindingContext("flat/primitive/number", snapshot, [number])
-        let targets = ["Double", "Int"]
+        let targets = ["Double", "Float", "Long", "Int", "Short", "Byte", "Char"]
         for (target in targets) {
-            let sourceSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:numeric-cast-#target"), "compiler-input")
-            let stream = Lexer().lex("class Object { construct() {} public convert(Object other) -> #target { return (#target)other; } }")
+            let sourceSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:numeric-cast:#{target}"), "compiler-input")
+            let sourceText = "class Object { construct() {} public convert(Object other) -> #{target} { return (#{target})other; } }"
+            let stream = Lexer().lex(sourceText)
             stream.emit("start")
             let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), sourceSnapshot)
             let context = PrimitiveSourceBindingContext("flat", sourceSnapshot, [syntax])
-            if (target == "Double") {
-                let program = PrimitiveClassPartitionBinder().bindContexts([context, numberContext])
+            let completionOrders = [false, true]
+            for (reversed in completionOrders) {
+                let inputs = PrimitiveSourceBindingContext[]
+                if (reversed) {
+                    inputs.add(numberContext)
+                    inputs.add(context)
+                } else {
+                    inputs.add(context)
+                    inputs.add(numberContext)
+                }
+                let program = PrimitiveClassPartitionBinder().bindContexts(inputs)
                 let unit = program.typeUnits().firstOrNull({ _.identity.name == "Object" })
                 let method = unit.functionUnits().firstOrNull({ _.name == "convert" })
                 let statement = method.statements().first
-                let returned = (BoundReturnStatement)statement
+                Object returnedSource = statement
+                BoundReturnStatement returned = (BoundReturnStatement)returnedSource
                 let valueObject = (Object)returned.value
-                let unbox = (BoundNumericUnboxExpression)valueObject
+                BoundNumericUnboxExpression unbox = (BoundNumericUnboxExpression)valueObject
                 expect(unbox.expressionKind()).toBe("numeric-unbox")
                 expect(unbox.projection.name).toBe("realValue")
                 expect(unbox.numberType.declarationIdentity.value).toBe(unbox.projection.ownerType.declarationIdentity.value)
-                expect(unbox.projectionConversion.conversionKind).toBe("identity")
+                expect(unbox.projectionConversion.conversionKind).toBe(target == "Double" ? "identity" : "numeric-cast")
+                expect(unbox.projectionConversion.fromType.value()).toBe("primitive:Double")
+                expect(unbox.projectionConversion.toType.value()).toBe("primitive:#target")
+                expect(unbox.conversion.fromType.value()).toBe(unbox.value.semanticType.value())
                 expect(unbox.range.snapshot).toBe(sourceSnapshot)
-            } else {
-                var PrimitiveContextBindingException failure
-                try { PrimitiveClassPartitionBinder().bindContexts([context, numberContext]) }
-                catch (PrimitiveContextBindingException error) { failure = error }
-                if (!failure) throw Exception("Unsupported integral unboxing was accepted")
-                expect(failure.diagnostic.code).toBe("binding.numeric-unboxing-target-unsupported")
-                expect(failure.diagnostic.range.snapshot).toBe(sourceSnapshot)
             }
         }
     }
+    async test `native numeric receiver boxes once through canonical storage constructor`() {
+        let sources = [
+            "class Double { public construct(public Double value) {} public toFixed(Int precision = 1) -> Int { return precision; } }",
+            "class Double { public construct(public Double value) {} public toFixed(Int precision) -> Int { return 99; } }",
+            "class Caller { public read(Double current) -> Int { return current.toFixed(1); } public omitted(Double current) -> Int { return current.toFixed(); } public named(Double current) -> Int { return current.toFixed(precision: 1); } }"
+        ]
+        let namespaces = ["flat/primitive/number", "shadow", "app"]
+        let contexts = PrimitiveSourceBindingContext[]
+        for (index in 0..sources.count) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-toFixed:#index"), "one")
+            let stream = Lexer().lex(sources[index])
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            contexts.add(PrimitiveSourceBindingContext(namespaces[index], snapshot, [syntax]))
+        }
+        let completionOrders = [false, true]
+        for (reversed in completionOrders) {
+            let inputs = reversed ? contexts.reverse() : contexts
+            let program = PrimitiveClassPartitionBinder().bindContexts(inputs)
+            let units = program.typeUnits()
+            let caller = units.firstOrNull({ _.identity.name == "Caller" })
+            let canonical = units.firstOrNull({ _.range.snapshot == contexts.first.snapshot })
+            let callNames = ["read", "omitted", "named"]
+            for (name in callNames) {
+                let method = caller.functionUnits().firstOrNull({ _.name == name })
+                let methodStatements = method.statements()
+                Object returnedSource = methodStatements.first
+                BoundReturnStatement returned = (BoundReturnStatement)returnedSource
+                Object callObject = returned.value
+                BoundCallExpression call = (BoundCallExpression)callObject
+                expect(call.target.ownerType.value()).toBe(canonical.semanticType.value())
+                expect(call.target.name).toBe("toFixed")
+                let boxedObject = (Object)call.receiver
+                BoundCallExpression boxed = (BoundCallExpression)boxedObject
+                expect(boxed.target.callableKind.value).toBe("constructor")
+                expect(boxed.target.ownerType.value()).toBe(canonical.semanticType.value())
+                expect(boxed.argumentValues().count).toBe(1)
+                expect(boxed.argumentValues().first.expressionKind()).toBe("reference")
+                expect(boxed.argumentConversions().first.conversionKind).toBe("identity")
+                if (name != "named") expect(call.receiverConversion.conversionKind).toBe("identity")
+                expect(call.target.optionalParameterCount).toBe(1)
+            }
+        }
+    }
+
+    async test `numeric unboxing rejects missing and impostor projection evidence`() {
+        let sources = ["class Object { construct() {} public read(Object value) -> Int { return (Int)value; } }",
+            "class Number { construct() {} visible Double realValue => 0.0\n }",
+            "class Number { construct() {} visible Int realValue => 0\n }"]
+        for (mode in 0..3) {
+            let contexts = PrimitiveSourceBindingContext[]
+            for (index in 0..2) {
+                let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-numeric-projection:#{mode}:#{index}"), "one")
+                let sourceIndex = index == 0 ? 0 : (mode == 2 ? 2 : 1)
+                let stream = Lexer().lex(sources[sourceIndex])
+                stream.emit("start")
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                if (index == 0 || mode != 0) {
+                    let namespaceName = index == 0 ? "flat" : (mode == 1 ? "impostor" : "flat/primitive/number")
+                    contexts.add(PrimitiveSourceBindingContext(namespaceName, snapshot, [syntax]))
+                }
+            }
+            var String failure
+            try { PrimitiveClassPartitionBinder().bindContexts(contexts) }
+            catch (Exception error) { failure = error.message }
+            if (!failure) throw Exception("Unproven numeric projection was accepted")
+            expect(failure.contains(mode == 2 ? "Number.realValue" : "canonical Number")).toBe(true)
+        }
+    }
+
+    async test `native receiver rejects shadow only scalar declaration`() {
+        let sources = ["class Double { public construct(public Double value) {} public toFixed(Int precision) -> Int { return precision; } }",
+            "class Caller { public read(Double current) -> Int { return current.toFixed(1); } }"]
+        let contexts = PrimitiveSourceBindingContext[]
+        for (index in 0..sources.count) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:shadow-only-scalar:#index"), "one")
+            let stream = Lexer().lex(sources[index])
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            contexts.add(PrimitiveSourceBindingContext("shadow", snapshot, [syntax]))
+        }
+        var String failure
+        try { PrimitiveClassPartitionBinder().bindContexts(contexts) }
+        catch (Exception error) { failure = error.message }
+        if (!failure) throw Exception("Shadow scalar declaration acquired native receiver authority")
+        expect(failure.contains("toFixed")).toBe(true)
+    }
+
+    async test `same name casts in canonical numeric classes select primitive projection`() {
+        let targets = ["Double", "Float", "Long", "Int", "Short", "Byte", "Char"]
+        for (target in targets) {
+            let scalarSource = "class #{target} { public construct(public #{target} value) {} public convert(Object other) -> #{target} { return (#{target})other; } }"
+            let sources = ["class Object { construct() {} }",
+                "class Number { construct() {} visible Double realValue => 0.0\n }",
+                scalarSource]
+            let contexts = PrimitiveSourceBindingContext[]
+            for (index in 0..sources.count) {
+                let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:self-numeric-cast:#{target}:#{index}"), "one")
+                let stream = Lexer().lex(sources[index])
+                stream.emit("start")
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                contexts.add(PrimitiveSourceBindingContext(index == 0 ? "flat" : "flat/primitive/number", snapshot, [syntax]))
+            }
+            let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+            let owner = units.firstOrNull({ _.identity.name == target })
+            let method = owner.functionUnits().firstOrNull({ _.name == "convert" })
+            let methodStatements = method.statements()
+            Object returnedSource = methodStatements.first
+            BoundReturnStatement returned = (BoundReturnStatement)returnedSource
+            Object valueObject = returned.value
+            BoundNumericUnboxExpression unbox = (BoundNumericUnboxExpression)valueObject
+            expect(unbox.semanticType.value()).toBe("primitive:#target")
+            expect(unbox.projection.name).toBe("realValue")
+            expect(unbox.projectionConversion.toType.value()).toBe("primitive:#target")
+        }
+    }
+
     async test `mixed canonical text equality selects declared equals in both orders`() {
         let expressions = ["value == \"true\"", "\"true\" == value", "value != \"true\"", "\"true\" != value"]
         for (index in 0..expressions.count) {
@@ -3103,6 +3237,7 @@ testable class {
             }
             index++
         }
+        admitCallbackScalar(contexts, "Int")
         let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
         let range = units.firstOrNull({ _.identity.name == "Range" })
         expect(range.functionUnits().firstOrNull({ _.name == "inspect" }).returnType.value())
@@ -3227,8 +3362,44 @@ testable class {
         let stream = Lexer().lex("class Value { static async all<Out, In>(In value, async callback(In value) -> Out, Int limit, async after(Int count)) -> Out { return callback(value); } static async run() -> Bool { return Value.all<Bool>(1, { _ == 1 }, 2, {}); } }")
         stream.emit("start")
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
-        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let contexts = [PrimitiveSourceBindingContext("app", snapshot, [syntax])]
+        admitCallbackScalar(contexts, "Bool")
+        let program = PrimitiveClassPartitionBinder().bindContexts(contexts)
+        let unit = program.typeUnits().firstOrNull({ _.identity.name == "Value" })
         expect(unit.functionUnits().firstOrNull({ _.name == "run" }).returnType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `explicit generic prefix local input requires canonical callback boxing`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partial-explicit-local"), "one")
+        let stream = Lexer().lex("class Value { static async all<Out, In>(In value, async callback(In value) -> Out, Int limit, async after(Int count)) -> Out { return callback(value); } static async run(Int input) -> Bool { return Value.all<Bool>(input, { _ == 1 }, 2, {}); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
+        catch (Exception error) { failure = error.message }
+        if (!failure) throw Exception("Generic callback accepted without canonical Bool boxing evidence")
+        expect(failure.contains("canonical boxing declaration")).toBe(true)
+        let contexts = [PrimitiveSourceBindingContext("app", snapshot, [syntax])]
+        admitCallbackScalar(contexts, "Bool")
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let method = units.firstOrNull({ _.identity.name == "Value" }).functionUnits().firstOrNull({ _.name == "run" })
+        let statements = method.statements()
+        Object returnSource = statements.first
+        BoundReturnStatement returned = (BoundReturnStatement)returnSource
+        Object callSource = returned.value
+        BoundCallExpression call = (BoundCallExpression)callSource
+        expect(call.target.returnType.value()).toBe(SemanticTypes.boolType().value())
+        expect(call.target.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+        let arguments = call.argumentValues()
+        Object callbackSource = arguments[1]
+        BoundLambdaExpression callback = (BoundLambdaExpression)callbackSource
+        Object callbackTypeSource = callback.semanticType
+        FunctionSemanticType callbackType = (FunctionSemanticType)callbackTypeSource
+        expect(callbackType.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+        expect(callbackType.returnType.value()).toBe(SemanticTypes.boolType().value())
+        expect(callbackType.asyncFunction).toBe(true)
+        expect(callback.declarationContract.returnType.kind()).toBe("generic-parameter")
+        expect(callback.resultBoxingConstructor.ownerType.declarationIdentity.name).toBe("Bool")
     }
 
     async test `empty array local uses admitted declaration`() {
@@ -3263,7 +3434,10 @@ testable class {
         let stream = Lexer().lex("class Value { static async apply<Out>(async callback(Int value) -> Out) -> Out { return callback(1); } static async run() -> Int { return Value.apply({\n let result = 42\n return result\n }); } }")
         stream.emit("start")
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
-        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let contexts = [PrimitiveSourceBindingContext("app", snapshot, [syntax])]
+        admitCallbackScalar(contexts, "Int")
+        let program = PrimitiveClassPartitionBinder().bindContexts(contexts)
+        let unit = program.typeUnits().firstOrNull({ _.identity.name == "Value" })
         expect(unit.functionUnits().firstOrNull({ _.name == "run" }).returnType.value()).toBe(SemanticTypes.intType().value())
     }
 
@@ -4044,7 +4218,11 @@ testable class {
             stream.emit("start")
             syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
         }
-        let units = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
+        let contexts = PrimitiveSourceBindingContext[]
+        for (syntax in syntaxes) contexts.add(PrimitiveSourceBindingContext("app", snapshot, [syntax]))
+        admitCallbackScalar(contexts, "Int")
+        let program = PrimitiveClassPartitionBinder().bindContexts(contexts)
+        let units = program.typeUnits().filter({ _.identity.name != "Int" })
         expect(units.last.functionUnits().firstOrNull({ _.name == "run" }).returnType.value()).toBe(SemanticTypes.intType().value())
     }
 
@@ -4696,6 +4874,55 @@ testable class {
         }
     }
 
+    async test `generic factory callback preserves pre substitution return contract`() {
+        let typeArgumentModes = [false, true]
+        for (explicitTypeArgument in typeArgumentModes) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-factory:#explicitTypeArgument"), "one")
+            let typeArguments = explicitTypeArgument ? "<Int>" : ""
+            let sources = [
+                "class Future { public static from<T>(async func() -> T) -> Int { return 1; } }",
+                "class Caller { public run() -> Int { return Future.from#{typeArguments}({ return 0; }); } }"
+            ]
+            let syntaxes = PrimitiveClassSyntax[]
+            for (source in sources) {
+                let stream = Lexer().lex(source)
+                stream.emit("start")
+                syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
+            }
+            let contexts = PrimitiveSourceBindingContext[]
+            for (index in 0..syntaxes.count) contexts.add(PrimitiveSourceBindingContext("app", snapshot, [syntaxes[index]]))
+            let scalarSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-factory:Int"), "one")
+            let scalarStream = Lexer().lex("class Int { public construct(public Int value) {} }")
+            scalarStream.emit("start")
+            let scalar = PrimitiveClassParser().parse(scalarStream.consumeAll<Token>("data"), scalarSnapshot)
+            contexts.add(PrimitiveSourceBindingContext("flat/primitive/number", scalarSnapshot, [scalar]))
+            let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+            let caller = units.firstOrNull({ _.identity.name == "Caller" })
+            let method = caller.functionUnits().firstOrNull({ _.name == "run" })
+            let methodStatements = method.statements()
+            Object returnedSource = methodStatements.first
+            BoundReturnStatement returned = (BoundReturnStatement)returnedSource
+            Object callObject = returned.value
+            BoundCallExpression call = (BoundCallExpression)callObject
+            let callArguments = call.argumentValues()
+            Object callbackObject = callArguments.first
+            BoundLambdaExpression callback = (BoundLambdaExpression)callbackObject
+            expect(callback.resultBoxingConstructor.ownerType.declarationIdentity.name).toBe("Int")
+            expect(callback.resultBoxingConstructor.parameterTypes().first.value()).toBe("primitive:Int")
+            expect(callback.declarationContract.returnType.kind()).toBe("generic-parameter")
+            expect(callback.declarationContract.asyncFunction).toBe(true)
+            Object callbackTypeSource = callback.semanticType
+            FunctionSemanticType callbackType = (FunctionSemanticType)callbackTypeSource
+            expect(callbackType.returnType.value()).toBe("primitive:Int")
+            let callbackStatements = callback.statementValues()
+            Object callbackReturnSource = callbackStatements.first
+            BoundReturnStatement callbackReturn = (BoundReturnStatement)callbackReturnSource
+            expect(callbackReturn.requiredType.value()).toBe("primitive:Int")
+            expect(callbackReturn.value.semanticType.value()).toBe("primitive:Int")
+            expect(callbackReturn.conversion.conversionKind).toBe("identity")
+        }
+    }
+
     async test `static generic callback infers output and retains async function context`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-generic-callback"), "one")
         let sources = [
@@ -4708,8 +4935,15 @@ testable class {
             stream.emit("start")
             syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
         }
-        let types = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
-        let method = types.last.functionUnits().firstOrNull({ _.name == "run" })
+        let contexts = PrimitiveSourceBindingContext[]
+        for (syntax in syntaxes) contexts.add(PrimitiveSourceBindingContext("app", snapshot, [syntax]))
+        let boxingSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-callback:Long"), "one")
+        let boxingStream = Lexer().lex("class Long { public construct(public Long value) {} }")
+        boxingStream.emit("start")
+        let boxingSyntax = PrimitiveClassParser().parse(boxingStream.consumeAll<Token>("data"), boxingSnapshot)
+        contexts.add(PrimitiveSourceBindingContext("flat/primitive/number", boxingSnapshot, [boxingSyntax]))
+        let types = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let method = types.firstOrNull({ _.identity.name == "Use" }).functionUnits().firstOrNull({ _.name == "run" })
         let statements = method.statements()
         var BoundReturnStatement returned
         returned = (BoundReturnStatement)statements.first
@@ -4717,7 +4951,8 @@ testable class {
         call = (BoundCallExpression)returned.value
         expect(call.target.returnType.value()).toBe(ArraySemanticType(SemanticTypes.longType()).value())
         let arguments = call.argumentValues()
-        let callbackType = (FunctionSemanticType)arguments.last.semanticType
+        Object evidenceSource1 = arguments.last.semanticType
+        FunctionSemanticType callbackType = (FunctionSemanticType)evidenceSource1
         expect(callbackType.asyncFunction).toBe(true)
         expect(callbackType.returnType.value()).toBe(SemanticTypes.longType().value())
     }

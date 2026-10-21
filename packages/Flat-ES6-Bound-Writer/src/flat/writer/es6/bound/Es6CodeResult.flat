@@ -1,10 +1,14 @@
 package flat/writer/es6/bound
 
-/** Immutable result of emitting one reduced Bound IR node. */
+/** Immutable syntax plus enclosing-statement setup. Consumers must execute setup
+ * at this exact operand's evaluation point, never hoist it across selection or
+ * an earlier operand. It is not an independently executable fragment.
+ */
 data class {
     public construct(
         visible String code = null,
-        visible Es6BackendDiagnostic diagnostic = null
+        visible Es6BackendDiagnostic diagnostic = null,
+        visible String setup = ""
     ) {
         if ((code == null && !diagnostic) || (code != null && diagnostic)) {
             throw Exception("ES6 code result requires exactly one code or diagnostic value")

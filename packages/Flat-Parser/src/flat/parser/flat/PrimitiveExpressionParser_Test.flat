@@ -4,6 +4,129 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    test `interpolation binary operands retain local locations within one source token`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:binary-interpolation"), "one")
+        var String source = "\"prefix "
+        source += '#'
+        source += "{a + b * c}\""
+        let parsed = PrimitiveExpressionParser().parse([
+            token(source, Token.Type.STRING, 1)
+        ], snapshot, 70)
+        let interpolation = (PrimitiveInterpolatedStringSyntax)parsed
+        let binary = (PrimitiveBinarySyntax)interpolation.segmentValues()[1].expression
+        let product = (PrimitiveBinarySyntax)binary.right
+        expect(binary.operator).toBe("+")
+        expect(product.operator).toBe("*")
+        expect(binary.range.startTokenIndex).toBe(70)
+        expect(binary.range.endTokenIndex).toBe(71)
+        expect(product.range.startTokenIndex).toBe(70)
+        expect(product.range.endTokenIndex).toBe(71)
+        expect(binary.range.start.column).toBe(11)
+        expect(binary.range.end.column).toBe(20)
+        expect(product.range.start.column).toBe(15)
+        expect(product.range.end.column).toBe(20)
+    }
+
+    test `production Core conditional and Airship substring interpolation preserve branch ranges`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:production-interpolation"), "one")
+        // Flat-Core Long.toTime and Airship CreateService use these expression forms.
+        let expressions = [
+            "str.isNotEmpty ? delimiter + str : \"\"",
+            "testSuiteContents.substring(classInsertIndex + 1)"
+        ]
+        for (expression in expressions) {
+            var String source = "\""
+            source += '#'
+            source += "{" + expression + "}\""
+            let parsed = PrimitiveExpressionParser().parse([
+                token(source, Token.Type.STRING, 1)
+            ], snapshot, 100)
+            let interpolation = (PrimitiveInterpolatedStringSyntax)parsed
+            let body = interpolation.segmentValues()[0].expression
+            var PrimitiveBinarySyntax binary
+            if (body.class.isOfType(PrimitiveConditionalSyntax.class)) {
+                let conditional = (PrimitiveConditionalSyntax)body
+                let branch = conditional.whenTrue
+                binary = (PrimitiveBinarySyntax)branch
+            } else {
+                let call = (PrimitiveMemberCallSyntax)body
+                let argument = call.argumentValues()[0]
+                binary = (PrimitiveBinarySyntax)argument
+            }
+            expect(binary.range.startTokenIndex).toBe(100)
+            expect(binary.range.endTokenIndex).toBe(101)
+            expect(binary.range.start.column > body.range.start.column).toBe(true)
+            expect(binary.operator).toBe("+")
+        }
+    }
+
+    test `quoted braces do not terminate braced interpolation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:quoted-braces"), "one")
+        let braces = ["{", "}"]
+        for (brace in braces) {
+            var String source = "\""
+            source += '#'
+            source += "{value == '" + brace + "'}\""
+            let parsed = PrimitiveExpressionParser().parse([
+                token(source, Token.Type.STRING, 1)
+            ], snapshot, 20)
+            let interpolation = (PrimitiveInterpolatedStringSyntax)parsed
+            let expression = interpolation.segmentValues()[0].expression
+            let binary = (PrimitiveBinarySyntax)expression
+            expect(binary.operator).toBe("==")
+            let literal = (PrimitiveLiteralSyntax)binary.right
+            expect(literal.sourceValue).toBe("'" + brace + "'")
+            expect(binary.range.startTokenIndex).toBe(20)
+            expect(binary.range.endTokenIndex).toBe(21)
+            expect(binary.range.start.column).toBe(4)
+            expect(binary.range.end.column).toBe(16)
+        }
+    }
+
+    test `quoted brace still requires the outer interpolation terminator`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-interpolation-close"), "one")
+        var String source = "\""
+        source += '#'
+        source += "{value == '}'\""
+        var String message
+        let parser = PrimitiveExpressionParser()
+        try {
+            parser.parse([token(source, Token.Type.STRING, 1)], snapshot)
+        } catch (Exception error) { message = error.message }
+        expect(message.contains("Unterminated braced string interpolation")).toBe(true)
+        // A malformed source must not poison a later independent parse.
+        let valid = parser.parse([token("1", Token.Type.INTEGER, 1)], snapshot, 9)
+        expect(valid.expressionKind()).toBe("literal")
+        expect(valid.range.startTokenIndex).toBe(9)
+    }
+
+    test `escaped quotes keep braces inside interpolation literals`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:escaped-interpolation-quote"), "one")
+        var String source = "\""
+        source += '#'
+        source += "{value == \""
+        source += '\\'
+        source += "\"}\"}\""
+        let parsed = PrimitiveExpressionParser().parse([token(source, Token.Type.STRING, 1)], snapshot)
+        let interpolation = (PrimitiveInterpolatedStringSyntax)parsed
+        let expression = interpolation.segmentValues()[0].expression
+        let binary = (PrimitiveBinarySyntax)expression
+        expect(binary.operator).toBe("==")
+        expect(binary.right.expressionKind()).toBe("literal")
+    }
+
+    test `unterminated interpolation literal reports the literal diagnostic`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:open-interpolation-quote"), "one")
+        var String source = "\""
+        source += '#'
+        source += "{value == '}\""
+        var String message
+        try {
+            PrimitiveExpressionParser().parse([token(source, Token.Type.STRING, 1)], snapshot)
+        } catch (Exception error) { message = error.message }
+        expect(message.contains("Unterminated literal in string interpolation")).toBe(true)
+    }
+
     async test `generic and array casts reuse signature type grammar and retain ranges`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:structural-cast"), "one")
         let types = ["Array<Field>", "Array<Array<Field>>", "Field[]", "Array<Field[]>[]"]

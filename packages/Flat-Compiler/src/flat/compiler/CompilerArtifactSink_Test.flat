@@ -522,6 +522,261 @@ testable class {
         }
     }
 
+    class LifecycleRecorder extends CompilerArtifactLifecycleObserver {
+        visible var Int created
+        visible var Int removed
+        visible var Int publications
+        visible var Int finalizers
+        visible var Int failedFinalizers
+        visible var Bool invalidObservation
+        visible var Bool throwOnDelivery
+        visible var String expectedDestination
+
+        public construct(String expectedDestination) { this.expectedDestination = expectedDestination }
+
+        check(CompilerArtifactLifecycleBinding binding) {
+            if (!binding || binding.revision != "revision-1" || binding.identity != "a.js" ||
+                binding.destination != expectedDestination) invalidObservation = true
+        }
+        override public temporaryCreated(CompilerArtifactLifecycleBinding binding, String path) {
+            check(binding)
+            if (!File(path).exists) invalidObservation = true
+            created++
+            if (throwOnDelivery) throw Exception("observer delivery failure")
+        }
+        override public temporaryRemoved(CompilerArtifactLifecycleBinding binding, String path) {
+            check(binding)
+            if (File(path).exists) invalidObservation = true
+            removed++
+            if (throwOnDelivery) throw Exception("observer delivery failure")
+        }
+        override public published(CompilerArtifactLifecycleBinding binding) {
+            check(binding)
+            if (!File(binding.destination).exists) invalidObservation = true
+            publications++
+            if (throwOnDelivery) throw Exception("observer delivery failure")
+        }
+        override public finalized(CompilerArtifactLifecycleBinding binding, String path, Bool removed, Exception failure) {
+            check(binding)
+            if (removed == File(path).exists) invalidObservation = true
+            finalizers++
+            if (failure) failedFinalizers++
+            if (throwOnDelivery) throw Exception("observer delivery failure")
+        }
+    }
+
+    test `lifecycle observations bind staged and published files and disposal is idempotent`() {
+        let root = File(".flat-artifact-lifecycle-test-#{Time.currentTimeMillis}")
+        let output = File(root, "output")
+        let observer = LifecycleRecorder(File(output, "a.js").normalizedLocation)
+        let files = FilesystemCompilerArtifactSink(output, 1, "revision-1", observer)
+        let spool = SpooledCompilerArtifactSink(File(root, "spool"), 1, 1024,
+            "revision-1", output, observer)
+        try {
+            spool.write(CompilerArtifact("a.js", "A"))
+            expect(spool.stagedFile().exists).toBe(true)
+            expect(observer.created).toBe(2)
+            expect(observer.removed).toBe(0)
+            spool.commitTo(files)
+            expect(observer.publications).toBe(1)
+            expect(observer.created).toBe(4)
+            expect(observer.removed).toBe(4)
+            expect(observer.finalizers).toBe(3)
+            expect(observer.failedFinalizers).toBe(0)
+            expect(observer.invalidObservation).toBe(false)
+            spool.dispose()
+            spool.dispose()
+            files.retryCleanup()
+            expect(observer.finalizers).toBe(3)
+            expect(Es6ArtifactFiles.read(File(output, "a.js"))).toBe("A")
+        } finally {
+            spool.dispose()
+            files.retryCleanup()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `cancellation disposal observes removal without claiming publication`() {
+        let root = File(".flat-artifact-abort-observation-test-#{Time.currentTimeMillis}")
+        let output = File(root, "output")
+        let observer = LifecycleRecorder(File(output, "a.js").normalizedLocation)
+        let spool = SpooledCompilerArtifactSink(root, 1, 1024, "revision-1", output, observer)
+        try {
+            spool.write(CompilerArtifact("a.js", "A"))
+            let staged = spool.stagedFile()
+            spool.dispose()
+            expect(staged.exists).toBe(false)
+            expect(observer.created).toBe(2)
+            expect(observer.removed).toBe(2)
+            expect(observer.finalizers).toBe(2)
+            expect(observer.publications).toBe(0)
+            expect(observer.invalidObservation).toBe(false)
+        } finally { spool.dispose(); Es6ArtifactFiles.remove(root) }
+    }
+
+    test `failed publication retains bounded cleanup ownership and original failure`() {
+        let root = File(".flat-artifact-failed-publication-test-#{Time.currentTimeMillis}")
+        let output = File(root, "output")
+        let destination = File(output, "a.js")
+        let observer = LifecycleRecorder(destination.normalizedLocation)
+        let files = FilesystemCompilerArtifactSink(output, 1, "revision-1", observer)
+        native var Object originalRename
+        native var Object originalRemove
+        try {
+            Es6ArtifactFiles.write(destination, "old")
+            external {
+                #{originalRename} = #{File.FileGlobal.fs}.renameSync;
+                #{originalRemove} = #{File.FileGlobal.fs}.rmSync;
+                #{File.FileGlobal.fs}.renameSync = () => { throw new Error('controlled rename'); };
+                #{File.FileGlobal.fs}.rmSync = () => { throw new Error('controlled cleanup'); };
+            }
+            try {
+                var String failure
+                try { files.write(CompilerArtifact("a.js", "new")) }
+                catch (Exception error) { failure = error.message }
+                expect(failure).toBe("controlled rename")
+                expect(files.pendingCleanupCount).toBe(1)
+                expect(files.cleanupError("a.js").message).toBe("controlled cleanup")
+                expect(files.artifacts().count).toBe(0)
+                expect(observer.created).toBe(2)
+                expect(observer.removed).toBe(0)
+                expect(observer.failedFinalizers).toBe(1)
+                expect(observer.publications).toBe(0)
+                var Bool rejected = false
+                try { files.write(CompilerArtifact("b.js", "B")) }
+                catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(observer.created).toBe(2)
+            } finally {
+                external {
+                    #{File.FileGlobal.fs}.renameSync = #{originalRename};
+                    #{File.FileGlobal.fs}.rmSync = #{originalRemove};
+                }
+            }
+            files.retryCleanup()
+            expect(files.pendingCleanupCount).toBe(0)
+            expect(observer.removed).toBe(2)
+            expect(observer.finalizers).toBe(2)
+            expect(observer.invalidObservation).toBe(false)
+            expect(Es6ArtifactFiles.read(destination)).toBe("old")
+        } finally { files.retryCleanup(); Es6ArtifactFiles.remove(root) }
+    }
+
+    test `spool disposal owns cleanup from a failed destination publication`() {
+        let root = File(".flat-artifact-abort-failed-publication-test-#{Time.currentTimeMillis}")
+        let files = FilesystemCompilerArtifactSink(File(root, "output"), 1)
+        let spool = SpooledCompilerArtifactSink(File(root, "spool"), 1)
+        native var Object originalRename
+        native var Object originalRemove
+        try {
+            spool.write(CompilerArtifact("a.js", "A"))
+            external {
+                #{originalRename} = #{File.FileGlobal.fs}.renameSync;
+                #{originalRemove} = #{File.FileGlobal.fs}.rmSync;
+                #{File.FileGlobal.fs}.renameSync = () => { throw new Error('controlled rename'); };
+                #{File.FileGlobal.fs}.rmSync = () => { throw new Error('controlled cleanup'); };
+            }
+            try {
+                var Bool rejected = false
+                try { spool.commitTo(files) } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(files.pendingCleanupCount).toBe(1)
+                expect(files.artifacts().count).toBe(0)
+                expect(spool.artifacts().count).toBe(1)
+            } finally {
+                external {
+                    #{File.FileGlobal.fs}.renameSync = #{originalRename};
+                    #{File.FileGlobal.fs}.rmSync = #{originalRemove};
+                }
+            }
+            spool.dispose()
+            spool.dispose()
+            expect(files.pendingCleanupCount).toBe(0)
+            expect(spool.artifacts().count).toBe(0)
+            expect(File(root, "output/a.js").exists).toBe(false)
+            expect(File(root, "spool").getChildFiles(includeDirectories: true).count).toBe(0)
+        } finally { spool.dispose(); files.retryCleanup(); Es6ArtifactFiles.remove(root) }
+    }
+
+    test `successful remove call with surviving temporary cannot claim cleanup`() {
+        let root = File(".flat-artifact-noop-cleanup-test-#{Time.currentTimeMillis}")
+        let output = File(root, "output")
+        let observer = LifecycleRecorder(File(output, "a.js").normalizedLocation)
+        let files = FilesystemCompilerArtifactSink(output, 1, "revision-1", observer)
+        let spool = SpooledCompilerArtifactSink(File(root, "spool"), 1, 1024,
+            "revision-1", output, observer)
+        native var Object originalRemove
+        try {
+            spool.write(CompilerArtifact("a.js", "A"))
+            external {
+                #{originalRemove} = #{File.FileGlobal.fs}.rmSync;
+                #{File.FileGlobal.fs}.rmSync = () => {};
+            }
+            try {
+                var Bool failed = false
+                try { spool.commitTo(files) } catch (Exception error) { failed = true }
+                expect(failed).toBe(true)
+                expect(files.pendingCleanupCount).toBe(1)
+                // Only the rename consumed its temporary payload. Neither directory
+                // nor the retained spool file has actually been removed.
+                expect(observer.removed).toBe(1)
+                expect(observer.publications).toBe(1)
+                try { spool.dispose() } catch (Exception error) {}
+                expect(observer.removed).toBe(1)
+                expect(observer.invalidObservation).toBe(false)
+            } finally {
+                external { #{File.FileGlobal.fs}.rmSync = #{originalRemove}; }
+            }
+            // dispose must retry the transferred destination receipt as well as
+            // spool storage; it must never publish the already committed output.
+            spool.dispose()
+            expect(files.pendingCleanupCount).toBe(0)
+            expect(observer.removed).toBe(4)
+            expect(observer.publications).toBe(1)
+            expect(observer.invalidObservation).toBe(false)
+            expect(Es6ArtifactFiles.read(File(output, "a.js"))).toBe("A")
+        } finally { spool.dispose(); files.retryCleanup(); Es6ArtifactFiles.remove(root) }
+    }
+
+    test `observer failure cannot lose cleanup ownership or cause republishing`() {
+        let root = File(".flat-artifact-observer-failure-test-#{Time.currentTimeMillis}")
+        let output = File(root, "output")
+        let observer = LifecycleRecorder(File(output, "a.js").normalizedLocation)
+        observer.throwOnDelivery = true
+        let files = FilesystemCompilerArtifactSink(output, 1, "revision-1", observer)
+        try {
+            files.write(CompilerArtifact("a.js", "A"))
+            files.retryCleanup()
+            expect(files.pendingCleanupCount).toBe(0)
+            expect(observer.publications).toBe(1)
+            expect(observer.created).toBe(2)
+            expect(observer.removed).toBe(2)
+            expect(observer.invalidObservation).toBe(false)
+            expect(Es6ArtifactFiles.read(File(output, "a.js"))).toBe("A")
+        } finally { files.retryCleanup(); Es6ArtifactFiles.remove(root) }
+    }
+
+    test `mismatched publication binding is rejected before destination writes`() {
+        let root = File(".flat-artifact-binding-test-#{Time.currentTimeMillis}")
+        let output = File(root, "output")
+        let observer = LifecycleRecorder(File(output, "a.js").normalizedLocation)
+        let spool = SpooledCompilerArtifactSink(File(root, "spool"), 1, 1024,
+            "revision-1", output, observer)
+        let wrongRoot = FilesystemCompilerArtifactSink(File(root, "other"))
+        let wrongRevision = FilesystemCompilerArtifactSink(output, 1, "revision-2", observer)
+        try {
+            spool.write(CompilerArtifact("a.js", "A"))
+            var Int rejected
+            try { spool.commitTo(wrongRoot) } catch (Exception error) { rejected++ }
+            try { spool.commitTo(wrongRevision) } catch (Exception error) { rejected++ }
+            expect(rejected).toBe(2)
+            expect(wrongRoot.artifacts().count).toBe(0)
+            expect(wrongRevision.artifacts().count).toBe(0)
+            expect(spool.stagedFile().exists).toBe(true)
+            expect(observer.publications).toBe(0)
+        } finally { spool.dispose(); Es6ArtifactFiles.remove(root) }
+    }
+
     test `normalized directory identities remain valid for source compiler artifacts`() {
         let root = File(".flat-artifact-nested-test-#{Time.currentTimeMillis}")
         let output = File(root, "output")

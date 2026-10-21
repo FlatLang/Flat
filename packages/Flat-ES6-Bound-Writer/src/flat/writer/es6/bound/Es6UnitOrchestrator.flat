@@ -12,17 +12,32 @@ class {
     }
 
     parameterNames(BoundFunctionUnit functionUnit) -> String[] {
-        return functionUnit.parameterValues().map((parameter) => {
-            let name = Es6NameMangler.mangle(parameter.identity.value)
-            if (!parameter.defaultValue) return name
+        return functionUnit.parameterValues().map((parameter) => Es6NameMangler.mangle(parameter.identity.value))
+    }
+
+    parameterDefaults(BoundFunctionUnit functionUnit) -> Es6CodeResult {
+        var String code = ""
+        for (parameter in functionUnit.parameterValues()) {
+            if (!parameter.defaultValue) continue
             let value = statements.expressions.emit(parameter.defaultValue)
-            if (!value.emitted) throw Exception(value.diagnostic.message)
-            return name + " = " + value.code
-        })
+            if (!value.emitted) return value
+            let name = Es6NameMangler.mangle(parameter.identity.value)
+            code += "if (" + name + " === undefined) {\n" + value.setup + name + " = " + value.code + ";\n}\n"
+        }
+        return Es6CodeResult(code: code)
+    }
+
+    emitBody(BoundFunctionUnit functionUnit) -> Es6CodeResult {
+        let defaults = parameterDefaults(functionUnit)
+        if (!defaults.emitted) return defaults
+        let body = statements.emitAll(functionUnit.statements())
+        if (!body.emitted) return body
+        return Es6CodeResult(code: defaults.code + body.code)
     }
 
     public emitFunction(BoundFunctionUnit functionUnit, Int ordinal) -> Es6EmissionResult {
         if (!functionUnit) throw Exception("ES6 function unit is required")
+        statements.expressions.resetOwner()
         if (functionUnit.abstractFunction) {
             return Es6EmissionResult(diagnostic: Es6BackendDiagnostic(
                 "es6.abstract-function-body", "Abstract declarations have no executable function body"))
@@ -32,7 +47,7 @@ class {
                 "es6.unlowered-lazy-property", "Lazy properties require type lowering before emission"))
         }
         let loweredFunction = CollectionControlLoweringPass().lower(functionUnit)
-        let body = statements.emitAll(loweredFunction.statements())
+        let body = emitBody(loweredFunction)
         if (!body.emitted) return Es6EmissionResult(diagnostic: body.diagnostic)
         let parameters = parameterNames(loweredFunction)
         let code = loweredFunction.constructorFunction ?
@@ -55,11 +70,12 @@ class {
         let target = Es6NameMangler.mangle(
             functionUnit.constructorDelegation.target.identity.declaration.value
         )
-        return Es6CodeResult(code: "this." + target + "(" + arguments.code + ");\n")
+        return Es6CodeResult(code: arguments.setup + "this." + target + "(" + arguments.code + ");\n")
     }
 
     public emitMethod(BoundFunctionUnit functionUnit) -> Es6CodeResult {
         if (!functionUnit) throw Exception("ES6 method unit is required")
+        statements.expressions.resetOwner()
         if (functionUnit.abstractFunction) {
             return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
                 "es6.abstract-function-body", "Abstract declarations have no executable method body"))
@@ -70,19 +86,21 @@ class {
         }
         var Es6CodeResult body = statements.emitAll(functionUnit.statements())
         if (!body.emitted) return body
+        let defaults = parameterDefaults(functionUnit)
+        if (!defaults.emitted) return defaults
         let delegation = emitConstructorDelegation(functionUnit)
         if (!delegation.emitted) return delegation
         let parameters = parameterNames(functionUnit)
         if (functionUnit.constructorFunction) {
             return Es6CodeResult(code: units.emitConstructor(
-                parameters, delegation.code + body.code
+                parameters, defaults.code + delegation.code + body.code
             ))
         }
         let name = functionUnit.dispatchIdentity ?: functionUnit.identity.value
         return Es6CodeResult(code: units.emitMethod(
             name,
             parameters,
-            body.code,
+            defaults.code + body.code,
             functionUnit.staticFunction,
             functionUnit.asyncFunction,
             functionUnit.externalName
@@ -93,27 +111,32 @@ class {
         BoundFunctionUnit functionUnit,
         BoundTypeUnit typeUnit
     ) -> Es6CodeResult {
+        statements.expressions.resetOwner()
         let body = statements.emitAll(functionUnit.statements())
         if (!body.emitted) return body
+        let defaults = parameterDefaults(functionUnit)
+        if (!defaults.emitted) return defaults
         let delegation = emitConstructorDelegation(functionUnit)
         if (!delegation.emitted) return delegation
         let parameters = parameterNames(functionUnit)
         let name = functionUnit.identity.value
         let initializer = units.emitConstructorInitializer(
-            name, parameters, delegation.code + body.code
+            name, parameters, defaults.code + delegation.code + body.code
         )
         var String parentArguments = ""
+        var String parentSetup = ""
         if (functionUnit.parentConstructorCall) {
             let emitted = statements.expressions.emitArguments(
                 functionUnit.parentConstructorCall.argumentValues()
             )
             if (!emitted.emitted) return emitted
             parentArguments = emitted.code
+            parentSetup = emitted.setup
         }
         let factory = units.emitConstructorFactory(
             name, typeUnit.identity.value,
             typeUnit.parentType ? typeUnit.parentType.declarationIdentity.value : null,
-            parameters, parentArguments
+            parameters, parentArguments, defaults.code + parentSetup
         )
         return Es6CodeResult(code: initializer + factory)
     }
@@ -123,6 +146,9 @@ class {
         BoundTypeUnit typeUnit
     ) -> Es6CodeResult {
         if (!functionUnit.constructorFunction || !typeUnit.parentType) return emitMethod(functionUnit)
+        statements.expressions.resetOwner()
+        let defaults = parameterDefaults(functionUnit)
+        if (!defaults.emitted) return defaults
         let body = statements.emitAll(functionUnit.statements())
         if (!body.emitted) return body
         let delegation = emitConstructorDelegation(functionUnit)
@@ -133,7 +159,7 @@ class {
         if (!parentArguments.emitted) return parentArguments
         let parameters = parameterNames(functionUnit)
         return Es6CodeResult(code: units.emitConstructor(
-            parameters, "super(" + parentArguments.code + ");\n" +
+            parameters, defaults.code + parentArguments.setup + "super(" + parentArguments.code + ");\n" +
                 delegation.code + body.code
         ))
     }
@@ -196,13 +222,14 @@ class {
         )
         let owner = Es6NameMangler.mangle(loweredType.identity.value)
         var String staticFields = ""
+        statements.expressions.setTemporaryPrefix(owner + "_evaluation")
         for (field in loweredType.fieldUnits().filter({ _.staticField })) {
             if (!field.initializer) continue
             let initializer = statements.expressions.emit(field.initializer)
             if (!initializer.emitted) {
                 return Es6EmissionResult(diagnostic: initializer.diagnostic)
             }
-            staticFields += owner + "." + Es6NameMangler.mangle(field.identity.value) +
+            staticFields += initializer.setup + owner + "." + Es6NameMangler.mangle(field.identity.value) +
                 " = " + initializer.code + ";\n"
         }
         return Es6EmissionResult(fragment: Es6ArtifactFragment(

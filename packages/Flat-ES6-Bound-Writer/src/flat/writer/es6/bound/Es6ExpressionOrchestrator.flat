@@ -1,7 +1,7 @@
 package flat/writer/es6/bound
 
 import flat/bound
-import flat/semantic/types/FunctionSemanticType
+import flat/semantic/types
 
 /** Recursive reduced-expression orchestration with diagnostic propagation. */
 class {
@@ -12,7 +12,52 @@ class {
         if (!expressions || !calls) throw Exception("ES6 expression orchestration requires emitters")
     }
 
+    visible var CallableSignature returnBoxingConstructor = null
+    public setReturnBoxingConstructor(CallableSignature target) { returnBoxingConstructor = target }
+    visible var SemanticType returnDeclaration = null
+    public setReturnDeclaration(SemanticType type) { returnDeclaration = type }
+    visible var String continueTarget = null
+    visible var String breakTarget = null
+    var Int temporaryOrdinal
+    var String temporaryPrefix = "__flatEvaluation"
+    public setTemporaryPrefix(String prefix) {
+        temporaryPrefix = prefix
+        temporaryOrdinal = 0
+    }
+    public setContinueTarget(String target) { continueTarget = target }
+    public setBreakTarget(String target) { breakTarget = target }
+    public resetOwner() {
+        temporaryOrdinal = 0
+        temporaryPrefix = "__flatEvaluation"
+        continueTarget = null
+        breakTarget = null
+        returnDeclaration = null
+        returnBoxingConstructor = null
+    }
+    public freshTemporary() -> String {
+        Int ordinal = temporaryOrdinal
+        temporaryOrdinal++
+        return temporaryPrefix + ordinal
+    }
+
     public emit(BoundExpression expression) -> Es6CodeResult {
+        if (!expression) throw Exception("ES6 expression orchestration requires expression")
+        let capability = Es6TargetCapabilities.diagnoseExpression(expression.expressionKind())
+        if (capability) return Es6CodeResult(diagnostic: capability)
+        let scan = Es6EvaluationScan()
+        scan.lowerExpression(expression)
+        if (scan.found) {
+            let plan = Es6EvaluationPlan(this)
+            let result = plan.lowerExpression(expression)
+            if (plan.diagnostic) return Es6CodeResult(diagnostic: plan.diagnostic)
+            let emitted = emit(result)
+            if (!emitted.emitted) return emitted
+            return Es6CodeResult(code: emitted.code, setup: plan.code)
+        }
+        return emitReduced(expression)
+    }
+
+    emitReduced(BoundExpression expression) -> Es6CodeResult {
         if (!expression) throw Exception("ES6 expression orchestration requires expression")
         let capability = Es6TargetCapabilities.diagnoseExpression(expression.expressionKind())
         if (capability) return Es6CodeResult(diagnostic: capability)
@@ -41,7 +86,8 @@ class {
             return expressions.emitReference(value)
         }
         if (expression.class.isOfType(BoundNativeArrayDataExpression.class)) {
-            return emit(((BoundNativeArrayDataExpression)expression).receiver)
+            BoundNativeArrayDataExpression data = (BoundNativeArrayDataExpression)expression
+            return emit(data.receiver)
         }
         if (expression.class.isOfType(BoundMemberAccessExpression.class)) {
             let value = (BoundMemberAccessExpression)expression
@@ -87,30 +133,41 @@ class {
         }
         if (expression.class.isOfType(BoundConversionExpression.class)) {
             let value = (BoundConversionExpression)expression
-            return expressions.emitConversion(value, emit(value.value))
+            return expressions.emitConversion(value, emit(value.value), returnBoxingConstructor)
         }
         if (expression.class.isOfType(BoundLambdaExpression.class)) {
             let value = (BoundLambdaExpression)expression
+            let nested = Es6ExpressionOrchestrator(expressions, calls)
+            nested.setReturnDeclaration(value.declarationContract ? value.declarationContract.returnType : null)
+            nested.setReturnBoxingConstructor(value.resultBoxingConstructor)
             let parameters = String[]
+            var String defaults = ""
             for (parameter in value.parameterValues()) {
-                var String name = Es6NameMangler.mangle(parameter.identity.value)
-                if (parameter.defaultValue) {
-                    let defaultValue = emit(parameter.defaultValue)
-                    if (!defaultValue.emitted) return defaultValue
-                    name += " = " + defaultValue.code
-                }
+                let name = Es6NameMangler.mangle(parameter.identity.value)
                 parameters.add(name)
+                if (parameter.defaultValue) {
+                    let selected = nested.emit(parameter.defaultValue)
+                    if (!selected.emitted) return selected
+                    defaults += "if (" + name + " === undefined) {\n" + selected.setup +
+                        name + " = " + selected.code + ";\n}\n"
+                }
             }
-            let body = emit(value.body)
-            if (!body.emitted) return body
             let functionType = (FunctionSemanticType)value.semanticType
             let prefix = functionType.asyncFunction ? "async " : ""
+            var String bodyCode = ""
             if (value.statementValues().isNotEmpty) {
-                let statements = Es6StatementOrchestrator(expressions: this).emitAll(value.statementValues())
-                if (!statements.emitted) return statements
-                return Es6CodeResult(code: prefix + "(" + parameters.join(", ") + ") => {\n" + statements.code + "}")
+                let body = Es6StatementOrchestrator(expressions: nested).emitAll(value.statementValues())
+                if (!body.emitted) return body
+                bodyCode = body.code
+            } else {
+                var Es6CodeResult body = nested.emit(value.body)
+                if (nested.returnDeclaration && nested.returnDeclaration.kind() == "generic-parameter") {
+                    body = expressions.emitGenericResult(functionType.returnType, body, value.resultBoxingConstructor)
+                }
+                if (!body.emitted) return body
+                bodyCode = body.setup + "return " + body.code + ";\n"
             }
-            return Es6CodeResult(code: prefix + "(" + parameters.join(", ") + ") => " + body.code)
+            return Es6CodeResult(code: prefix + "(" + parameters.join(", ") + ") => {\n" + defaults + bodyCode + "}")
         }
         if (expression.class.isOfType(BoundFunctionValue.class)) {
             let value = (BoundFunctionValue)expression
@@ -317,12 +374,17 @@ class {
     }
 
     public emitArguments(BoundExpression[] values) -> Es6CodeResult {
+        let scan = Es6EvaluationScan()
+        for (value in values) scan.lowerExpression(value)
+        let plan = Es6EvaluationPlan(this)
         let arguments = String[]
         for (value in values) {
-            let emitted = emit(value)
+            let selected = scan.found ? plan.lowerExpression(value) : value
+            if (plan.diagnostic) return Es6CodeResult(diagnostic: plan.diagnostic)
+            let emitted = emit(selected)
             if (!emitted.emitted) return emitted
             arguments.add(emitted.code)
         }
-        return Es6CodeResult(code: calls.joinArguments(arguments))
+        return Es6CodeResult(code: calls.joinArguments(arguments), setup: plan.code)
     }
 }

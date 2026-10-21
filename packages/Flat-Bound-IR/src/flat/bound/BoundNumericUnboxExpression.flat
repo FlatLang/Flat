@@ -6,6 +6,10 @@ import flat/semantic/types
 /** Checked numeric-family projection. Evaluate value once, reject null/non-Number,
  * then invoke the resolved instance projection once using virtual dispatch.
  * Apply projectionConversion to that result; never coerce the source object.
+ * Projection selection stays upstream: realValue may serve any numeric target
+ * when projectionConversion proves the result conversion. Integral numeric casts
+ * truncate toward zero (including Long); Float/Double retain fractional values.
+ * Backends must use truncatesFractionalPart(), not infer policy from writer names.
  */
 data class extends BoundExpression {
     public construct(
@@ -37,5 +41,10 @@ data class extends BoundExpression {
         }
         super(range, semanticType)
     }
+    /** Apply only to the single resolved projection result, after runtime validation. */
+    public truncatesFractionalPart() -> Bool {
+        return BoundConversionExpression.requiresIntegralTruncation(projectionConversion)
+    }
+
     override public expressionKind() => "numeric-unbox"
 }

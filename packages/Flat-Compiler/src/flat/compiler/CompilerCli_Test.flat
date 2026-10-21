@@ -13,6 +13,108 @@ import flat/writer/es6/bound
 
 /** Public CLI library and executable acceptance; production sources are never rewritten. */
 testable class {
+    async test `cold and warm CLI diagnostic batches follow actual lock cleanup`() {
+        let root = File(".flat-cli-diagnostic-finalization-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let output = File(root, "program.js")
+        let lock = output.normalizedLocation + ".flat-incremental.json.lock"
+        Es6ArtifactFiles.write(source, "class Main {}")
+        native var Object observer
+        native var Object originalLog
+        external {
+            #{observer} = {batches:0, complete:true, lockAbsent:true, failures:0};
+            #{originalLog} = console.log;
+            console.log = (...args) => {
+                for (const text of args) {
+                    if (typeof text !== 'string' || !text.startsWith('{')) continue;
+                    let value;
+                    try { value = JSON.parse(text); } catch (_) { continue; }
+                    if (value.schema !== 'flat.compiler.diagnostics.v1') continue;
+                    #{observer}.batches++;
+                    #{observer}.complete = #{observer}.complete && value.complete === true && value.records.length === 0;
+                    #{observer}.lockAbsent = #{observer}.lockAbsent && !#{File.FileGlobal.fs}.existsSync(#{lock});
+                    if (value.terminalFailure) #{observer}.failures++;
+                }
+            };
+        }
+        try {
+            let arguments = ["flatc", source.normalizedLocation, "-target", "es6", "-library", "-o", output.normalizedLocation]
+            expect(CompilerCli.run(arguments)).toBe(0)
+            expect(CompilerCli.run(arguments)).toBe(0)
+            Int batches
+            Bool complete
+            Bool lockAbsent
+            Int failures
+            external {
+                #{batches} = #{observer}.batches;
+                #{complete} = #{observer}.complete;
+                #{lockAbsent} = #{observer}.lockAbsent;
+                #{failures} = #{observer}.failures;
+            }
+            expect(batches).toBe(2)
+            expect(complete).toBe(true)
+            expect(lockAbsent).toBe(true)
+            expect(failures).toBe(0)
+            let previous = Es6ArtifactFiles.read(output)
+            Es6ArtifactFiles.write(source, "class Main { broken")
+            expect(CompilerCli.run(arguments)).toBe(1)
+            external {
+                #{batches} = #{observer}.batches;
+                #{complete} = #{observer}.complete;
+                #{lockAbsent} = #{observer}.lockAbsent;
+                #{failures} = #{observer}.failures;
+            }
+            expect(batches).toBe(3)
+            expect(complete).toBe(false)
+            expect(lockAbsent).toBe(true)
+            expect(failures).toBe(1)
+            expect(Es6ArtifactFiles.read(output)).toBe(previous)
+        } finally {
+            external { console.log = #{originalLog}; }
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    async test `filesystem provider bounds bytes before returning a source`() {
+        let root = File(".flat-compiler-bounded-read-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let file = File(root, "Main.flat")
+        try {
+            Es6ArtifactFiles.write(file, "é")
+            let identity = file.normalizedLocation
+            let exactProvider = FilesystemCompilerSourceProvider([file], maxSourceBytes: 2)
+            CompilerSource exactSource = exactProvider.load(identity)
+            expect(exactSource.text).toBe("é")
+            var Bool rejected
+            try { FilesystemCompilerSourceProvider([file], maxSourceBytes: 1).load(identity) }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            Es6ArtifactFiles.write(file, "")
+            let emptyProvider = FilesystemCompilerSourceProvider([file], maxSourceBytes: 0)
+            CompilerSource emptySource = emptyProvider.load(identity)
+            expect(emptySource.text).toBe("")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `compiler directory limit counts ignored and hidden entries before filtering`() {
+        let root = File(".flat-compiler-bounded-directory-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            Es6ArtifactFiles.write(File(root, "Main.flat"), "class Main {}")
+            Es6ArtifactFiles.write(File(root, ".hidden"), "ignored")
+            Es6ArtifactFiles.write(File(root, "notes.txt"), "ignored")
+            let package = ProjectPackage("bounded", [SourceRoot(root.normalizedLocation)])
+            var Bool rejected
+            try { CompilerSourceDiscovery(maxDirectoryEntries: 2).discover(package) }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            let selected = CompilerSourceDiscovery(maxDirectoryEntries: 3).discover(package)
+            expect(selected.count).toBe(1)
+            expect(selected.first.name).toBe("Main.flat")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     realArguments(File output) -> String[] {
         String[] values = [
             "flatc", "../Flat-Core/src/flat/primitive/number/Char.flat",

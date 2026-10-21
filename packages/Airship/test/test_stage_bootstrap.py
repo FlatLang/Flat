@@ -20,6 +20,41 @@ SPEC.loader.exec_module(bootstrap)
 
 
 class BootstrapTests(unittest.TestCase):
+    def test_setup_failure_retains_manifest_and_partial_workspace(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / 'output'
+            output.mkdir()
+
+            def partial_snapshot(repo, destination, sources, budget=None):
+                destination.mkdir()
+                (destination / 'partial').write_text('retained diagnostic input')
+                raise ValueError('source changed during snapshot')
+
+            with mock.patch.object(bootstrap, 'snapshot', side_effect=partial_snapshot):
+                with self.assertRaisesRegex(ValueError, 'source changed'):
+                    bootstrap.stage(0, root / 'repo', output, {}, {})
+            receipt = json.loads((output / 'stage0/manifest.json').read_text())
+            self.assertEqual(receipt['status'], 'failed')
+            self.assertEqual(receipt['stage'], 0)
+            self.assertEqual(receipt['commands'], [])
+            self.assertTrue((output / 'stage0/workspace/partial').is_file())
+            with self.assertRaises(FileExistsError):
+                bootstrap.stage(0, root / 'repo', output, {}, {})
+            self.assertEqual(json.loads((output / 'stage0/manifest.json').read_text()), receipt)
+
+    def test_reviewed_receipt_copy_preserves_exact_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'review.json'
+            raw = b'{ "schema": 1, "provenance": "reviewed bytes" }\n'
+            source.write_bytes(raw)
+            target = root / 'retained/review.json'
+            expected = hashlib.sha256(raw).hexdigest()
+            bootstrap.copy_seed(source, target, expected)
+            self.assertEqual(target.read_bytes(), raw)
+            self.assertEqual(bootstrap.digest(target), expected)
+
     def test_observed_watchdog_cleanup_uses_ready_gate_and_retains_receipt(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory).resolve() / 'observed'
@@ -480,12 +515,28 @@ class BootstrapTests(unittest.TestCase):
                     self.assertEqual(manifest['schema'], 2)
                     self.assertEqual(manifest['status'], 'passed')
                     self.assertEqual(manifest['runtime'], 'java' if number == 0 else 'flat')
+                    if number == 0:
+                        backend = output / 'stage0/workspace/packages/Flat-ES6/target/flat-es6.jar'
+                        self.assertEqual(manifest['policy']['javaBackendJar'], str(backend.resolve(strict=True)))
+                        self.assertEqual(manifest['policy']['javaBackendJarSha256'], seeds['java_backend'][1])
+                        self.assertEqual(bootstrap.digest(backend), seeds['java_backend'][1])
+                    else:
+                        self.assertIsNone(manifest['policy']['javaBackendJar'])
+                        self.assertIsNone(manifest['policy']['javaBackendJarSha256'])
                     self.assertEqual(manifest['admissions_sha256'], bootstrap.digest(output / f'stage{number}/admissions.jsonl'))
                     self.assertTrue(all(item['exit_code'] == 0 for item in manifest['commands']))
                     self.assertTrue(all(len(item['runner_sha256']) == 64 and len(item['compiler_sha256']) == 64
                                         for item in manifest['commands']))
                     self.assertEqual(manifest['source_origin'], 'git@github.com:FlatLang/Flat.git')
                     self.assertEqual(set(manifest['source_origin_metadata']), {'.git/HEAD', '.git/config'})
+                    self.assertEqual(manifest['guard_sha256'], bootstrap.digest(
+                        output / f'stage{number}/seeds/guard.cjs'))
+                    self.assertEqual(manifest['policy_sha256'], bootstrap.digest(
+                        output / f'stage{number}/policy.json'))
+                    for name, expected in manifest['retained_files'].items():
+                        self.assertEqual(expected, bootstrap.digest(output / f'stage{number}' / name))
+                    self.assertEqual(set(manifest['tool_sha256']),
+                                     set(seeds) if number == 0 else {'node', 'git'})
                     self.assertEqual(len(manifest['commands']), 16)
                     installed = [Path(item['argv'][item['argv'].index('-f') + 1]).name
                                  for item in manifest['commands']
@@ -505,6 +556,25 @@ class BootstrapTests(unittest.TestCase):
                                     origin='git@github.com:FlatLang/Flat.git')
             receipt = json.loads((failed / 'stage1/manifest.json').read_text())
             self.assertEqual(receipt['status'], 'failed')
+            self.assertEqual(receipt['commands'][-1]['status'], 'failed')
+            # Retain failed debug-command output, status and digest too.
+            failed_logs = root / 'failed-logs'
+            failed_logs.mkdir()
+
+            def failed_command(command, cwd, env, log, journal, **kwargs):
+                log.write_text('retained producer failure')
+                raise bootstrap.CommandFailure(command, 23, log)
+
+            with mock.patch.object(bootstrap, 'run_command', side_effect=failed_command):
+                with self.assertRaises(bootstrap.CommandFailure):
+                    bootstrap.stage(1, repo, failed_logs, sources, seeds, previous,
+                                    origin='git@github.com:FlatLang/Flat.git')
+            receipt = json.loads((failed_logs / 'stage1/manifest.json').read_text())
+            self.assertEqual(receipt['status'], 'failed')
+            self.assertEqual(receipt['commands'][-1]['exit_code'], 23)
+            log = failed_logs / 'stage1/logs/01-resolution.log'
+            self.assertEqual(receipt['commands'][-1]['resolution_log_sha256'], bootstrap.digest(log))
+            self.assertEqual(receipt['retained_files']['logs/01-resolution.log'], bootstrap.digest(log))
 
     def test_rejection_journal_overrides_zero_exit(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -563,6 +633,103 @@ class GuardTests(unittest.TestCase):
         probe.write_text(expression)
         return subprocess.run([str(self.node), str(probe)], env=self.env,
                               capture_output=True, text=True, timeout=10)
+
+    def test_stage0_revalidates_copied_backend_before_every_java_admission(self):
+        # Stub only the OS launch boundary, before loading the real guard. No JVM
+        # is launched; both admissions still exercise its full stage0 policy.
+        for mutation in ('unchanged', 'bytes', 'missing', 'symlink', 'missing-policy'):
+            with self.subTest(mutation=mutation):
+                self.journal.unlink(missing_ok=True)
+                stage = self.root / 'work'
+                backend = stage / 'packages/Flat-ES6/target/flat-es6.jar'
+                backend.parent.mkdir(parents=True, exist_ok=True)
+                backend.unlink(missing_ok=True)
+                bootstrap.copy_seed(self.seed, backend, bootstrap.digest(self.seed))
+                jar = stage / 'flatc.jar'
+                jar.write_text('reviewed compiler fixture')
+                java = self.root / 'java'
+                java.write_text('reviewed executable fixture; never executed')
+                policy = {
+                    'stage': 0, 'root': str(stage), 'java': str(java),
+                    'javaSha256': bootstrap.digest(java),
+                    'javaJar': str(jar), 'javaJarSha256': bootstrap.digest(jar),
+                    'javaBackendJar': str(backend), 'javaBackendJarSha256': bootstrap.digest(backend),
+                    'journal': str(self.journal),
+                }
+                self.policy.write_text(json.dumps(policy))
+                if mutation == 'bytes':
+                    change = "fs.chmodSync(backend, 0o644); fs.writeFileSync(backend, 'mutated after copy');"
+                elif mutation == 'missing':
+                    change = 'fs.unlinkSync(backend);'
+                elif mutation == 'symlink':
+                    change = 'fs.unlinkSync(backend); fs.symlinkSync(' + json.dumps(str(self.seed)) + ', backend);'
+                else:
+                    change = ''
+                if mutation == 'missing-policy':
+                    del policy['javaBackendJar']
+                    self.policy.write_text(json.dumps(policy))
+                expression = (
+                    "const fs = require('node:fs'), cp = require('node:child_process');"
+                    "let launches = 0; cp.spawnSync = () => { launches++; return {status:0}; };"
+                    'require(' + json.dumps(str(HERE / 'stage_subprocess_guard.cjs')) + ');'
+                    'const backend = ' + json.dumps(str(backend)) + ';'
+                    'const args = ["-jar", ' + json.dumps(str(jar)) + '];'
+                    "try { cp.spawnSync('java', args); } catch (_) {}" + change +
+                    "try { cp.spawnSync('java', args); } catch (_) {}"
+                    'console.log(JSON.stringify({launches}));')
+                result = subprocess.run([str(self.node), '-e', expression],
+                                        env={**self.env, 'NODE_OPTIONS': ''},
+                                        capture_output=True, text=True, timeout=10)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                expected = 2 if mutation == 'unchanged' else 0 if mutation == 'missing-policy' else 1
+                self.assertEqual(json.loads(result.stdout)['launches'], expected)
+                records = list(bootstrap.admission_records(self.journal))
+                self.assertEqual(records[-1]['decision'],
+                                 'allow' if mutation == 'unchanged' else 'reject')
+                self.assertEqual(sum(record['decision'] == 'allow' for record in records), expected)
+
+    def test_detached_children_and_identity_overrides_are_rejected(self):
+        for options in ({'detached': True}, {'argv0': 'java'}, {'uid': 0}, {'gid': 0}):
+            with self.subTest(options=options):
+                result = self.run_probe(
+                    "try { require('child_process').spawn('node', [" +
+                    json.dumps(str(self.compiler)) + '], ' + json.dumps(options) +
+                    "); } catch (_) {}")
+                self.assertEqual(result.returncode, 0, result.stderr)
+                records = list(bootstrap.admission_records(self.journal))
+                self.assertEqual(records[-1]['decision'], 'reject')
+                self.assertFalse(any(record['decision'] == 'allow' for record in records))
+
+    def test_symlinked_cwd_outside_stage_is_rejected(self):
+        link = self.root / 'work/escaped-cwd'
+        link.symlink_to(self.root, target_is_directory=True)
+        result = self.run_probe(
+            "try { require('child_process').spawnSync('node', [" +
+            json.dumps(str(self.compiler)) + '], {cwd:' + json.dumps(str(link)) +
+            "}); } catch (_) {}")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        records = list(bootstrap.admission_records(self.journal))
+        self.assertEqual(records[-1]['decision'], 'reject')
+        self.assertIn('cwd outside stage', records[-1]['reason'])
+
+    def test_child_environment_cannot_inject_tool_configuration(self):
+        child = self.root / 'work/environment.js'
+        child.write_text("console.log(JSON.stringify(process.env))")
+        options = {'env': {'NODE_PATH': '/unreviewed', 'JAVA_TOOL_OPTIONS': '-agentlib:bad',
+                           'DYLD_INSERT_LIBRARIES': '/unreviewed', 'GIT_CONFIG_COUNT': '1',
+                           'GIT_CONFIG_KEY_0': 'remote.origin.url', 'GIT_CONFIG_VALUE_0': 'bad',
+                           'FLAT_TEST_VALUE': 'preserved'}}
+        result = self.run_probe("require('child_process').spawnSync('node', [" +
+                                json.dumps(str(child)) + '], {...' + json.dumps(options) +
+                                ", stdio:'inherit'});")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        env = json.loads(result.stdout)
+        for name in ('NODE_PATH', 'JAVA_TOOL_OPTIONS', 'DYLD_INSERT_LIBRARIES',
+                     'GIT_CONFIG_COUNT', 'GIT_CONFIG_KEY_0', 'GIT_CONFIG_VALUE_0'):
+            self.assertNotIn(name, env)
+        self.assertEqual(env['GIT_CONFIG_NOSYSTEM'], '1')
+        self.assertEqual(env['FLAT_TEST_VALUE'], 'preserved')
+        self.assertIn('--require=', env['NODE_OPTIONS'])
 
     def test_compiler_is_mapped_to_verified_seed(self):
         result = self.run_probe("require('child_process').spawnSync('node', [" +

@@ -35,6 +35,17 @@ class File {
         File exitLog = File("log#Time.currentTimeMillis")
     }
 
+    // Immediate entries only, including hidden files and directories. Native
+    // enumeration order is unspecified; consumers must sort before publishing.
+    // At most maxEntries results are retained; one extra entry detects overflow.
+    // ES6 closes its private directory handle before returning or throwing.
+    public getChildFilesBounded(Int maxEntries) -> File[] {
+        if (maxEntries < 0) {
+            throw Exception("Directory entry limit must not be negative")
+        }
+        throw Exception("Bounded directory enumeration is not supported by this target")
+    }
+
     public getChildFiles(
         Bool recursive = false,
         Bool includeHidden = false,

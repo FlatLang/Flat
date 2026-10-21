@@ -1,10 +1,42 @@
 package flat/writer/es6/bound
 
 import flat/bound
-import flat/semantic/types/UserClassSemanticType
+import flat/semantic/types
 
 /** Emits literal/reference/member/conversion expressions for the first vertical slice. */
 class {
+    var CallableSignature[] boxingTargets
+
+    /** Targets must be canonical constructors resolved by the semantic owner.
+     * The writer never discovers wrappers from primitive names or runtime values.
+     */
+    public construct(CallableSignature[] boxingConstructors = CallableSignature[]) {
+        if (!boxingConstructors || boxingConstructors.any((constructor) => !constructor)) {
+            throw Exception("ES6 boxing requires resolved constructor evidence")
+        }
+        boxingTargets = CallableSignature[]:addAll(boxingConstructors)
+    }
+
+    public emitGenericResult(SemanticType concreteType, Es6CodeResult value,
+        CallableSignature resultBoxingConstructor = null) -> Es6CodeResult {
+        if (!value.emitted || concreteType.kind() != "primitive") return value
+        var CallableSignature[] candidates = boxingTargets
+        if (resultBoxingConstructor) {
+            candidates = CallableSignature[]
+            candidates.add(resultBoxingConstructor)
+        }
+        let selected = candidates.filter((candidate) => candidate.callableKind.value == "constructor" &&
+            !candidate.asyncFunction && candidate.optionalParameterCount == 0 && candidate.ownerType != null && candidate.parameterTypes().count == 1 &&
+            candidate.parameterTypes().first.value() == concreteType.value() &&
+            candidate.returnType.value() == candidate.ownerType.value())
+        if (selected.count != 1) return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+            "es6.generic-result-boxing-evidence", "Generic primitive result requires one resolved canonical boxing constructor"))
+        let target = selected.first
+        let owner = Es6NameMangler.mangle(target.ownerType.declarationIdentity.value)
+        let overload = target.identity.declaration.syntaxIdentity.kind == "constructor-overload"
+            ? Es6NameMangler.mangle(target.identity.declaration.value) : null
+        return Es6CodeResult(code: Es6CallEmitter().emitConstructorCall(owner, value.code, overload), setup: value.setup)
+    }
     public emitDeclarationValue(
         Es6CodeResult local,
         Es6CodeResult value
@@ -49,7 +81,12 @@ class {
         if (!expression || !segmentCode || segmentCode.count != expression.segmentValues().count) {
             throw Exception("ES6 interpolation emission requires every ordered segment")
         }
-        return Es6CodeResult(code: "(" + segmentCode.join(" + ") + ")")
+        // Interpolation is always a String, even with one expression or leading
+        // numeric segments. Seed concatenation before evaluating any segment so
+        // adjacent numbers cannot add before the first literal is encountered.
+        // The left-associated expression preserves source order and evaluates
+        // each segment once without a runtime array or materialization barrier.
+        return Es6CodeResult(code: "(\"\" + " + segmentCode.join(" + ") + ")")
     }
 
     public emitReference(BoundReferenceExpression expression) -> Es6CodeResult {
@@ -117,34 +154,42 @@ class {
         return Es6CodeResult(code: receiverCode + "." + member)
     }
 
-    /** Reduced backend subset: resolved numeric-family projection to Double only.
-     * No object coercion or narrowing policy; preserve the virtual getter result,
-     * including NaN, infinities and signed zero. Each source/getter executes once.
+    /** Consume resolved numeric-family projection and conversion evidence only.
+     * Never coerce the source object. Preserve virtual dispatch and evaluate the
+     * source/getter once; apply the same numeric representation as ordinary casts.
      */
     public emitNumericUnbox(BoundNumericUnboxExpression expression, Es6CodeResult value) -> Es6CodeResult {
         if (!expression || !value) throw Exception("ES6 numeric unbox requires expression and value")
         if (!value.emitted) return value
-        if (expression.semanticType.value() != "primitive:Double" ||
-            expression.projection.returnType.value() != "primitive:Double" ||
-            expression.projectionConversion.conversionKind != "identity") {
+        let conversion = expression.projectionConversion
+        let canonical = TypeConversions.classify(conversion.fromType, conversion.toType, explicit: true)
+        if (!canonical.applicable || canonical.conversionKind != conversion.conversionKind ||
+            (conversion.conversionKind != "identity" &&
+             conversion.conversionKind != "numeric-widening" && conversion.conversionKind != "numeric-cast")) {
             return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
-                "es6.numeric-unbox-unsupported", "ES6 numeric unbox supports only identity Double projection", expression.range))
+                "es6.numeric-unbox-unsupported", "ES6 numeric unbox requires supported numeric projection conversion evidence", expression.range))
         }
         let owner = Es6NameMangler.mangle(expression.numberType.declarationIdentity.value)
         let getter = expression.projection.externalName ?: Es6NameMangler.mangle(
             expression.projection.dispatchIdentity ?: expression.projection.identity.declaration.value)
         return Es6CodeResult(code: "((value) => { if (value === null || !(value instanceof " + owner +
-            ")) throw new TypeError('Invalid numeric unboxing cast'); return value." + getter + "(); })(" + value.code + ")")
+            ")) throw new TypeError('Invalid numeric unboxing cast'); return " +
+            numericConversionCode(conversion, "value." + getter + "()") + "; })(" + value.code + ")")
     }
 
     public emitConversion(
         BoundConversionExpression expression,
-        Es6CodeResult value
+        Es6CodeResult value,
+        CallableSignature resultBoxingConstructor = null
     ) -> Es6CodeResult {
         if (!expression || !value) {
             throw Exception("ES6 conversion emission requires expression and value")
         }
         if (!value.emitted) return value
+        if (expression.semanticType.kind() == "generic-parameter" &&
+            expression.value.semanticType.kind() == "primitive") {
+            return emitGenericResult(expression.value.semanticType, value, resultBoxingConstructor)
+        }
         if (expression.conversion.conversionKind == "checked-reference-cast") {
             if (expression.semanticType.kind() != "user-class") {
                 return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
@@ -158,9 +203,8 @@ class {
             return Es6CodeResult(code: "((value) => { if (value === null || value instanceof " + name +
                 ") return value; throw new TypeError('Invalid checked reference cast'); })(" + value.code + ")")
         }
-        if (expression.conversion.conversionKind == "numeric-cast" &&
-            expression.semanticType.value() == "primitive:Int") {
-            return Es6CodeResult(code: "Math.trunc(" + value.code + ")")
+        if (expression.conversion.conversionKind == "numeric-cast") {
+            return Es6CodeResult(code: numericConversionCode(expression.conversion, value.code))
         }
         if (expression.conversion.conversionKind == "numeric-unboxing") {
             return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
@@ -168,6 +212,17 @@ class {
                 "Numeric unboxing requires a resolved BoundNumericUnboxExpression projection",
                 expression.range
             ))
+        }
+        return value
+    }
+
+    /** ES6 numeric primitives use numbers; integral casts discard the fraction
+     * toward zero, not floor (including negative fractions and Long targets).
+     * Floating/identity conversions retain IEEE values without object coercion.
+     */
+    numericConversionCode(TypeConversion conversion, String value) -> String {
+        if (conversion.conversionKind == "numeric-cast" && TypeConversions.isIntegral(conversion.toType)) {
+            return "Math.trunc(" + value + ")"
         }
         return value
     }
