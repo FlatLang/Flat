@@ -757,6 +757,8 @@ class {
 
     syntax(String message, Int tokenIndex) {
         let sourceIndex = tokenIndex + tokenIndexOffset
-        throw Exception("Primitive expression syntax error at token #sourceIndex: #message")
+        throw ParseFailure.atTokens("invalid-expression-syntax",
+            "Primitive expression syntax error at token #sourceIndex: #message",
+            snapshot, tokens, tokenIndex, tokenIndexOffset, containingRange)
     }
 }

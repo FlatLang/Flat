@@ -43,6 +43,7 @@
     },
     "production-driver": {
       "mainClass": "flat/compiler/CompilerProductionDriver",
+      "outFile": "production-driver.js",
       "bin": "flatc-production-driver",
       "dependencies": {}
     },

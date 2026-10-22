@@ -36,7 +36,7 @@ testable class {
 
     async test `default package closure compiles more than 64 sources without truncation`() {
         let values = CompilerSource[]
-        for (index in 0..70) values.add(CompilerSource("Value#index.flat", "class Value#index {}"))
+        for (index in 0..70) values.add(CompilerSource("Value#{index}.flat", "class Value#index {}"))
         let sink = MemoryCompilerArtifactSink()
         let summary = CompilerEngine(maxActiveSources: 2).compilePackage(
             MemoryCompilerSourceProvider(values), sink, "closure.js").completion.get()
@@ -73,7 +73,10 @@ testable class {
         visible Future.CompletableFuture<Bool> gate = Future.create<Bool>()
         visible var Int reads
         visible var Bool secondSettled
-        override public identities() -> String[] => ["A.flat", "B.flat", "C.flat"]
+        override public identities() -> String[] {
+            String[] values = ["A.flat", "B.flat", "C.flat"]
+            return values
+        }
         override public async load(String identity) -> CompilerSource {
             reads++
             if (identity == "A.flat") throw Exception("controlled source read failure")
@@ -107,7 +110,10 @@ testable class {
         visible Future.CompletableFuture<Bool> secondGate = Future.create<Bool>()
         visible var Int reads
         visible var Int settled
-        override public identities() -> String[] => ["A.flat", "B.flat", "C.flat"]
+        override public identities() -> String[] {
+            String[] values = ["A.flat", "B.flat", "C.flat"]
+            return values
+        }
         override public async load(String identity) -> CompilerSource {
             reads++
             try {
@@ -119,7 +125,8 @@ testable class {
     }
 
     async test `package read overlap is bounded and cancellation completion awaits admitted reads`() {
-        for (capacity in [1, 2]) {
+        let Int[] capacities = [1, 2]
+        for (capacity in capacities) {
             let provider = GatedPackageProvider()
             let session = CompilerSession()
             let sink = MemoryCompilerArtifactSink()
@@ -145,7 +152,8 @@ testable class {
 
     async test `reverse read completion preserves package artifact across capacities`() {
         var String expected
-        for (capacity in [1, 2]) {
+        let Int[] capacities = [1, 2]
+        for (capacity in capacities) {
             let provider = GatedPackageProvider()
             let sink = MemoryCompilerArtifactSink()
             let engine = CompilerEngine(maxActiveSources: capacity)

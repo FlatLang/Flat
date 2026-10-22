@@ -811,6 +811,7 @@ class {
                 start + tokenIndexOffset
             ).functionValues()
         } catch (Exception error) {
+            if (error.class.isOfType(ParseFailure.class)) throw error
             let name = methodName(start, end)
             throw Exception(
                 "Primitive class #context '#name' at token #start failed: #{error.message}"
@@ -962,6 +963,8 @@ class {
     }
 
     syntax(String message, Int tokenIndex) {
-        throw Exception("Primitive class syntax error at token #tokenIndex: #message")
+        throw ParseFailure.atTokens("invalid-class-syntax",
+            "Primitive class syntax error at token #tokenIndex: #message",
+            snapshot, tokens, tokenIndex, tokenIndexOffset)
     }
 }

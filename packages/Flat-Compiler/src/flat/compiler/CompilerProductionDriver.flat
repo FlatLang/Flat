@@ -33,7 +33,7 @@ class CompilerProductionDriver {
         var String schema
         public construct(String schema = "flat.compiler.artifact-lifecycle.v1") { this.schema = schema }
         var Int sequence
-        visible Int deliveryFailures
+        visible var Int deliveryFailures
 
         emit(CompilerArtifactLifecycleBinding binding, String transition, String path = null,
             Bool removed = false, Exception failure = null) {

@@ -6,6 +6,51 @@ import flat/io/File
 import flat/io/FileReader
 
 testable class {
+    async test `incomplete suffix never returns prefix partitions and preserves typed source failure`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:incomplete-suffix"), "original")
+        let stream = Lexer().lex("class Valid {}\nclass DogfoodInvalidSyntax {\n")
+        stream.emit("start")
+        let values = stream.consumeAll<Token>("data")
+        let significant = values.filter({
+            let type = _.type
+            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
+        })
+        var Bool returned
+        var ParseFailure failure
+        try {
+            FlatSourceTypePartitioner().partition(values, snapshot)
+            returned = true
+        } catch (ParseFailure error) { failure = error }
+        expect(returned).toBe(false)
+        expect(failure).toNotBe(null)
+        expect(failure.diagnostic.code).toBe("incomplete-type-body")
+        expect(failure.diagnostic.snapshot).toBe(snapshot)
+        expect(failure.diagnostic.range.snapshot).toBe(snapshot)
+        expect(failure.diagnostic.range.startTokenIndex).toBe(significant.count - 1)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(significant.count)
+        expect(failure.diagnostic.range.start.lineNumber).toBe(significant.last.location.lineNumber)
+        expect(failure.diagnostic.range.start.column).toBe(significant.last.location.column)
+        expect(failure.diagnostic.range.end.lineNumber).toBe(significant.last.endLineNumber)
+        let subject = FlatSourceMilestoneScanner(snapshot, 16, 16)
+        var Int cursor
+        for (token in significant) {
+            subject.accept(token, cursor)
+            cursor++
+        }
+        var ParseFailure sourceFailure
+        try { subject.end() }
+        catch (ParseFailure error) { sourceFailure = error }
+        expect(sourceFailure.diagnostic.code).toBe(failure.diagnostic.code)
+        expect(sourceFailure.diagnostic.range.startTokenIndex).toBe(failure.diagnostic.range.startTokenIndex)
+        expect(sourceFailure.diagnostic.range.endTokenIndex).toBe(failure.diagnostic.range.endTokenIndex)
+        expect(subject.finished).toBe(true)
+        expect(subject.retainedTokenCount).toBe(0)
+        expect(subject.end().count).toBe(0)
+        subject.cancel()
+        expect(subject.end().count).toBe(0)
+        expect(failure.diagnostic.range.end.column).toBe(significant.last.endColumn)
+    }
+
     async test `partitions data declaration retaining modifier and token range`() {
         let stream = Lexer().lex("package flat/meta\ndata class Field { construct(visible String name) {} }")
         stream.emit("start")

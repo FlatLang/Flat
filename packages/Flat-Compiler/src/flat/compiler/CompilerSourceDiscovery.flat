@@ -31,7 +31,7 @@ class {
         directoryCount = 0
         for (root in package.sourceRoots) select(root.location, package.exclusions)
         for (dependency in package.dependencies) select(dependency.sourceLocation, package.exclusions)
-        return selected.sort({ Es6SourceSelection.compare(_a.normalizedLocation, _b.normalizedLocation) })
+        return selected.sort((first, second) => Es6SourceSelection.compare(first.normalizedLocation, second.normalizedLocation))
     }
 
     async select(String location, SourceExclusion[] exclusions) {

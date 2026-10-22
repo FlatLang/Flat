@@ -1,0 +1,261 @@
+package flat/compiler
+
+import flat/io
+import flat/time/Time
+import flat/writer/es6/bound
+
+testable class {
+    class Stream extends CompilerInvocationAdmissionStream {
+        visible var Int sources
+        visible var Bool sealed
+        visible var Bool rejectSource
+        visible var String revision
+        visible var String content
+        visible var String options
+        visible var String inventory
+        visible var String tool
+        override public source(String revision, Int sequence, String identity, String contentFingerprint) {
+            if (rejectSource) throw Exception("controlled admission delivery failure")
+            if (sequence != sources + 1 || sealed) throw Exception("Invalid source admission order")
+            this.revision = revision
+            content = contentFingerprint
+            sources++
+        }
+        override public seal(String revision, String destination, String toolFingerprint,
+            String optionsFingerprint, String configurationFingerprint,
+            String sourceInventoryFingerprint, Int sourceCount) {
+            if (sources != sourceCount || this.revision != revision) throw Exception("Unbound admission seal")
+            options = optionsFingerprint
+            inventory = sourceInventoryFingerprint
+            tool = toolFingerprint
+            sealed = true
+        }
+    }
+    class Observer extends CompilerInvocationObserver {
+        visible var Bool entered
+        public construct(private Stream stream) {}
+        override public invocationAdmitted(String revision, String destination, String persistentEvidence) {
+            if (!stream.sealed || stream.revision != revision) throw Exception("Work preceded admission seal")
+            entered = true
+        }
+    }
+
+    async test `ordinary invalid inputs seal admission before diagnostics and retain destination`() {
+        let root = File(".flat-admission-invalid-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let input = File(root, "Main.flat")
+        let output = File(root, "program.js")
+        try {
+            let String[] invalidSources = ["class Main { public invalid() -> Int => dogfoodMissingSymbol }", "class Main {"]
+            for (text in invalidSources) {
+                Es6ArtifactFiles.write(input, text)
+                Es6ArtifactFiles.write(output, "previous")
+                let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+                Es6ArtifactFiles.write(manifest, "previous-manifest")
+                let stream = Stream()
+                let observer = Observer(stream)
+                native var Object originalLog
+                native var Object captured
+                external js {
+                    #{originalLog} = console.log;
+                    #{captured} = {diagnostics:0, revision:null, sealedBefore:true, complete:false, records:0};
+                    console.log = (...args) => {
+                        for (const text of args) {
+                            if (typeof text !== 'string' || !text.startsWith('{')) continue;
+                            let value; try { value = JSON.parse(text); } catch (_) { continue; }
+                            if (value.schema === 'flat.compiler.diagnostics.v1') {
+                                #{captured}.diagnostics++;
+                                #{captured}.revision = value.revision;
+                                #{captured}.complete = value.complete;
+                                #{captured}.records = value.records.length;
+                                #{captured}.sealedBefore = #{captured}.sealedBefore && #{stream.sealed};
+                            }
+                        }
+                    };
+                }
+                var Int code
+                try {
+                    code = CompilerCli.run(["flatc", input.normalizedLocation, "-target", "es6", "-library",
+                        "-o", output.normalizedLocation], observer, admissionStream: stream)
+                } finally { external js { console.log = #{originalLog}; } }
+                Int batches
+                Bool bound
+                Bool complete
+                Int records
+                external js {
+                    #{batches} = #{captured}.diagnostics;
+                    #{complete} = #{captured}.complete;
+                    #{records} = #{captured}.records;
+                    #{bound} = #{captured}.sealedBefore && #{captured}.revision === #{stream.revision.chars.data};
+                }
+                expect(code).toBe(1)
+                expect(stream.sources).toBe(1)
+                expect(stream.sealed).toBe(true)
+                expect(observer.entered).toBe(true)
+                expect(batches).toBe(1)
+                expect(bound).toBe(true)
+                expect(complete).toBe(true)
+                expect(records).toBe(1)
+                expect(Es6ArtifactFiles.read(output)).toBe("previous")
+                expect(Es6ArtifactFiles.read(manifest)).toBe("previous-manifest")
+                expect(root.getChildFilesBounded(3).count).toBe(3)
+            }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `early invalid invocation emits no fabricated admission`() {
+        let stream = Stream()
+        let observer = Observer(stream)
+        expect(CompilerCli.run(["flatc", "-t"], observer, admissionStream: stream)).toBe(1)
+        expect(stream.sources).toBe(0)
+        expect(stream.sealed).toBe(false)
+        expect(observer.entered).toBe(false)
+    }
+
+    async test `interrupted admission starts no observer work and releases the lock`() {
+        let root = File(".flat-admission-delivery-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let input = File(root, "Main.flat")
+        let output = File(root, "program.js")
+        Es6ArtifactFiles.write(input, "class Main {}")
+        try {
+            let stream = Stream()
+            stream.rejectSource = true
+            let observer = Observer(stream)
+            expect(CompilerCli.run(["flatc", input.normalizedLocation, "-target", "es6", "-library",
+                "-o", output.normalizedLocation], observer, admissionStream: stream)).toBe(1)
+            expect(observer.entered).toBe(false)
+            expect(stream.sealed).toBe(false)
+            expect(output.exists).toBe(false)
+            expect(root.getChildFilesBounded(1).count).toBe(1)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    test `admission bindings change with actual source tool and options`() {
+        let root = File(".flat-admission-bindings-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let input = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        Es6ArtifactFiles.write(input, "class Main {}")
+        Es6ArtifactFiles.write(tool, "tool-one")
+        try {
+            let initial = capture(input, tool, output, ["-library"])
+            let repeated = capture(input, tool, output, ["-library"])
+            expect(initial.revision).toBe(repeated.revision)
+            Es6ArtifactFiles.write(input, "class Changed {}")
+            let sourceChanged = capture(input, tool, output, ["-library"])
+            expect(sourceChanged.content == initial.content).toBe(false)
+            expect(sourceChanged.inventory == initial.inventory).toBe(false)
+            expect(sourceChanged.revision == initial.revision).toBe(false)
+            let optionsChanged = capture(input, tool, output, ["-library", "-threads", "3"])
+            expect(optionsChanged.options == sourceChanged.options).toBe(false)
+            expect(optionsChanged.revision == sourceChanged.revision).toBe(false)
+            Es6ArtifactFiles.write(tool, "tool-two")
+            let toolChanged = capture(input, tool, output, ["-library", "-threads", "3"])
+            expect(toolChanged.tool == optionsChanged.tool).toBe(false)
+            expect(toolChanged.revision == optionsChanged.revision).toBe(false)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+    test `default admission JSON uses the admitted canonical hash representation`() {
+        let root = File(".flat-admission-json-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let input = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        Es6ArtifactFiles.write(input, "class Main {}")
+        Es6ArtifactFiles.write(tool, "selected-tool")
+        let files = [input]
+        let options = ["-library", "-threads", "3"]
+        let state = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+            options, output, 1048576, 65536, toolLocation: tool.normalizedLocation)
+        native var Object originalLog
+        native var Object observed
+        external js {
+            #{originalLog} = console.log;
+            #{observed} = {source:null, seal:null, records:0};
+            console.log = (text) => {
+                const record = JSON.parse(text);
+                #{observed}.records++;
+                if (record.schema === 'flat.compiler.invocation-source.v1') #{observed}.source = record;
+                if (record.schema === 'flat.compiler.invocation-admission.v1') #{observed}.seal = record;
+            };
+        }
+        try {
+            state.emitAdmission(CompilerInvocationAdmissionStream())
+            Bool valid
+            external js {
+                const crypto = require('crypto');
+                const hash = value => crypto.createHash('sha256').update(value).digest('hex');
+                const source = #{observed}.source, seal = #{observed}.seal;
+                const entries = [{identity:source.identity,digest:source.contentFingerprint.slice(7)}];
+                const args = #{options.map((option) => option.chars.data).data};
+                const config = {schema:'flat.compiler.incremental.v1',publication:'staged-sha256-v1',
+                    options:args,tool:hash('selected-tool'),node:process.versions.node,
+                    maxSourceBytes:65536*4,maxOutputBytes:1048576};
+                #{valid} = #{observed}.records === 2 && source.sequence === 1 && seal.sourceCount === 1 &&
+                    source.identity === require('path').resolve(#{input.normalizedLocation.chars.data}) &&
+                    seal.destination === require('path').resolve(#{output.normalizedLocation.chars.data}) &&
+                    source.contentFingerprint === 'sha256:'+hash('class Main {}') &&
+                    seal.toolFingerprint === 'sha256:'+hash('selected-tool') &&
+                    seal.optionsFingerprint === 'sha256:'+hash(JSON.stringify(args)) &&
+                    seal.configurationFingerprint === 'sha256:'+hash(JSON.stringify(config)) &&
+                    seal.sourceInventoryFingerprint === 'sha256:'+hash(JSON.stringify(entries)) &&
+                    source.revision === seal.revision && seal.revision === 'sha256:'+hash(JSON.stringify({
+                        configuration:seal.configurationFingerprint.slice(7),entries}));
+            }
+            expect(valid).toBe(true)
+        } finally {
+            external js { console.log = #{originalLog}; }
+            state.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    class MutatingStream extends Stream {
+        public construct(private File input) {}
+        override public source(String revision, Int sequence, String identity, String contentFingerprint) {
+            super.source(revision, sequence, identity, contentFingerprint)
+            Es6ArtifactFiles.write(input, "class ChangedDuringDelivery {}")
+        }
+    }
+
+    test `source mutation during delivery cannot receive an admission seal`() {
+        let root = File(".flat-admission-race-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let input = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        Es6ArtifactFiles.write(input, "class Main {}")
+        Es6ArtifactFiles.write(tool, "tool")
+        let files = [input]
+        let state = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+            ["-library"], output, 1048576, 65536, toolLocation: tool.normalizedLocation)
+        try {
+            let stream = MutatingStream(input)
+            var Bool rejected
+            try { state.emitAdmission(stream) } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            expect(stream.sources).toBe(1)
+            expect(stream.sealed).toBe(false)
+            expect(output.exists).toBe(false)
+        } finally {
+            state.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    capture(File input, File tool, File output, String[] options) -> Stream {
+        let files = [input]
+        let state = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+            options, output, 1048576, 65536, toolLocation: tool.normalizedLocation)
+        try {
+            let stream = Stream()
+            state.emitAdmission(stream)
+            var Bool rejected
+            try { state.emitAdmission(Stream()) } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            return stream
+        } finally { state.dispose() }
+    }
+}

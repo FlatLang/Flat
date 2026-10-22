@@ -1,0 +1,44 @@
+package flat/airship
+
+/** Mandatory companion outside an external stage scope. These real-process
+ * cases are never counted as passing merely because a stage owns cancellation.
+ */
+testable class {
+    static assertOrdinaryOwnership() {
+        external js {
+            if (globalThis[Symbol.for('flat.stage.processScope.v1')] !== undefined) {
+                throw Error('Ordinary process companion must run without an external command scope');
+            }
+        }
+    }
+
+    test async `real private groups clean descendants after interrupt and leader close`() {
+        assertOrdinaryOwnership()
+        Airship_Test().assertOwnedPosixDescendantCleanup()
+    }
+
+    test async `real direct child negative control reproduces surviving descendant`() {
+        assertOrdinaryOwnership()
+        Airship_Test().assertDirectChildOrphanNegativeControl()
+    }
+
+    test async `private process lifecycle controlled schedules`() {
+        assertOrdinaryOwnership()
+        Airship_Test().assertControlledPrivateProcessLifecycle()
+    }
+
+    test async `real process argv signal and exit statuses`() {
+        assertOrdinaryOwnership()
+        Airship_Test().assertRuntimeProcessExitStatuses()
+    }
+
+    test async `real parent cancellation closes child and releases listeners`() {
+        assertOrdinaryOwnership()
+        Airship_Test().assertRuntimeParentCancellation()
+    }
+
+    test async `real deliberate shell and ignored large output`() {
+        assertOrdinaryOwnership()
+        Airship_Test().assertRuntimeShellAndLargeOutput()
+    }
+}

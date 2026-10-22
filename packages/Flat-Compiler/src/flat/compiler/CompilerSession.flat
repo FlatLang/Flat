@@ -1,5 +1,6 @@
 package flat/compiler
 
+import flat/parser/ParserDiagnostic
 import flat/semantic/binding/BindingDiagnostic
 import flat/eventstream
 import flat/future
@@ -32,6 +33,8 @@ class {
     var Int sourceCount
     var Int artifactCount
     var Int diagnosticCount
+    var ParserDiagnostic parserDiagnostic
+    protected recordParserDiagnostic(ParserDiagnostic diagnostic) { parserDiagnostic = diagnostic }
     var BindingDiagnostic bindingDiagnostic
     protected recordBindingDiagnostic(BindingDiagnostic diagnostic) { bindingDiagnostic = diagnostic }
     var String terminalDiagnostic
@@ -374,7 +377,7 @@ class {
         terminal.complete(CompilationSummary(
             sourceCount, artifactCount, diagnosticCount, cancelled, terminalDiagnostic,
             reuseEvidence, peakActiveSources, peakRetainedSources, true,
-            packagePeakActiveReads, packagePeakRetainedReads, bindingDiagnostic
+            packagePeakActiveReads, packagePeakRetainedReads, bindingDiagnostic, parserDiagnostic
         ))
     }
 

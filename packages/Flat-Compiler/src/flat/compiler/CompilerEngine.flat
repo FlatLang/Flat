@@ -1,5 +1,6 @@
 package flat/compiler
 
+import flat/parser/flat/ParseFailure
 import flat/project/Es6SourceSelection
 import flat/eventstream
 import flat/future
@@ -114,7 +115,7 @@ class {
             identities.any((identity) => !identity || identity.trim().count == 0)) {
             throw Exception("Package compilation requires nonempty bounded source identities")
         }
-        let ordered = identities.sort({ Es6SourceSelection.compare(_a, _b) })
+        let ordered = identities.sort((first, second) => Es6SourceSelection.compare(first, second))
         var Int index = 1
         while (index < ordered.count) {
             if (ordered[index - 1] == ordered[index]) {
@@ -257,6 +258,10 @@ class {
         } catch (Exception error) {
             if (!session.cancelled) {
                 var String message = error.message
+                if (error.class.isOfType(ParseFailure.class)) {
+                    let failure = (ParseFailure)error
+                    session.recordParserDiagnostic(failure.diagnostic)
+                }
                 if (error.class.isOfType(PrimitiveContextBindingException.class)) {
                     let diagnostic = ((PrimitiveContextBindingException)error).diagnostic
                     session.recordBindingDiagnostic(diagnostic)

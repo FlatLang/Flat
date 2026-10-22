@@ -239,6 +239,8 @@ def production_gates(receipt):
     than production artifacts and operating-system cleanup.
     """
     gates = {}
+    gates['ordinary-production-products'] = bool(receipt.get('ordinary_products', {}).get('products'))
+    gates['invalid-production-controls'] = set(receipt.get('ordinary_products', {}).get('controls', {})) == set(INVALID_CONTROLS)
     workloads = receipt.get('workloads', {})
     for name in SCENARIOS:
         workload = workloads.get(name, {})
@@ -405,6 +407,9 @@ def validate_production_evidence(path, value, stages):
         require(run.get('package') == suite, 'Production suite identity mismatch')
         require(validate_production_run(root, run, tools[bootstrap.PRODUCTS[0]]) == baseline,
                 'Suite source snapshot mismatch')
+    if value.get('ordinary_products') is not None:
+        validate_ordinary_products(root, value['ordinary_products'], baseline, tools,
+                                   read_json(stages / 'seeds.json')['node'])
     driver = value.get('production_driver')
     if driver is not None:
         validate_driver_evidence(root, driver, fingerprint(baseline), tools[bootstrap.PRODUCTS[0]])
@@ -1384,6 +1389,414 @@ def validate_driver_evidence(root, value, sources_sha, compiler_sha):
     return True
 
 
+def node_json_digest(value):
+    """Node JSON.stringify-compatible contract values: ordered keys, UTF-8."""
+    return hashlib.sha256(json.dumps(value, ensure_ascii=False, separators=(',', ':'),
+                                    allow_nan=False).encode()).hexdigest()
+
+
+def invocation_admission(log, expected):
+    require(isinstance(expected, dict), 'Missing actual invalid invocation admission bindings')
+    schemas = {'flat.compiler.invocation-source.v1', 'flat.compiler.invocation-admission.v1',
+               'flat.compiler.diagnostics.v1'}
+    # Read all three schemas in physical log order. Separate schema scans would
+    # accept a seal before its sources or admission emitted after diagnostics.
+    ordered = []
+    require(log.is_file() and not log.is_symlink() and log.stat().st_size <= 100 * 1024 * 1024,
+            'Missing/oversized invocation log')
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            require(key not in result, 'Duplicate invocation record key')
+            result[key] = value
+        return result
+    with log.open() as stream:
+        while True:
+            line = stream.readline(1024 * 1024 + 1)
+            if not line:
+                break
+            require(len(line) <= 1024 * 1024, 'Invocation line capacity exceeded')
+            if not line.lstrip().startswith('{'):
+                continue
+            try:
+                value = json.loads(line, object_pairs_hook=unique)
+            except json.JSONDecodeError:
+                require(not any(schema in line for schema in schemas), 'Malformed invocation record')
+                continue
+            if isinstance(value, dict) and value.get('schema') in schemas:
+                require(len(ordered) < MAX_REFERENCES, 'Invocation stream capacity exceeded')
+                ordered.append(value)
+    seals = [index for index, value in enumerate(ordered)
+             if value['schema'] == 'flat.compiler.invocation-admission.v1']
+    require(len(seals) == 1, 'Missing actual invalid invocation admission or duplicate seal')
+    index = seals[0]
+    sources, seal, batches = ordered[:index], ordered[index], ordered[index + 1:]
+    require(sources and len(batches) == 1 and batches[0]['schema'] == 'flat.compiler.diagnostics.v1',
+            'Incomplete/reordered invocation admission and diagnostics')
+    revision = seal.get('revision')
+    entries, previous = [], None
+    expected_sources = expected['sources']
+    for identity, digest in expected_sources.items():
+        retained = Path(expected.get('retained_sources', {}).get(identity, identity))
+        require(retained.is_file() and not retained.is_symlink() and bootstrap.digest(retained) == digest,
+                'Invocation retained source bytes changed')
+    for sequence, source in enumerate(sources, 1):
+        require(set(source) == {'schema', 'revision', 'sequence', 'identity', 'contentFingerprint'}
+                and source['schema'] == 'flat.compiler.invocation-source.v1'
+                and type(source['sequence']) is int and source['sequence'] == sequence
+                and source['revision'] == revision, 'Reordered/foreign invocation source')
+        identity = source['identity']
+        require(isinstance(identity, str) and Path(identity).is_absolute()
+                and str(Path(identity)) == identity and '..' not in Path(identity).parts,
+                'Invalid invocation source identity')
+        # JS compares UTF-16 code units, not Unicode scalar values or locale.
+        key = identity.encode('utf-16-be', errors='surrogatepass')
+        require(previous is None or previous < key, 'Unordered/duplicate invocation source identity')
+        previous = key
+        digest = expected_sources.get(identity)
+        require(sha(digest) and source['contentFingerprint'] == 'sha256:' + digest,
+                'Invocation source bytes differ from retained inputs')
+        entries.append({'identity': identity, 'digest': digest})
+    require(set(expected_sources) == {entry['identity'] for entry in entries}, 'Incomplete invocation source inventory')
+    require(set(seal) == {'schema', 'revision', 'destination', 'toolFingerprint', 'optionsFingerprint',
+                         'configurationFingerprint', 'sourceInventoryFingerprint', 'sourceCount'},
+            'Invalid invocation admission seal fields')
+    options, tool = expected['options'], expected['tool_sha256']
+    require(sha(tool) and isinstance(options, list) and all(isinstance(value, str) for value in options),
+            'Missing selected invocation options/tool')
+    output_budget = 67108864
+    for offset, token in enumerate(options):
+        if token == '--max-artifact-bytes':
+            require(offset + 1 < len(options) and options[offset + 1].isascii()
+                    and options[offset + 1].isdecimal(), 'Invalid selected artifact budget')
+            output_budget = int(options[offset + 1])
+            require(1 <= output_budget <= 2147483647, 'Invalid selected artifact budget')
+    configuration = node_json_digest({'schema': 'flat.compiler.incremental.v1', 'publication': 'staged-sha256-v1',
+        'options': options, 'tool': tool, 'node': expected['node_version'], 'maxSourceBytes': 4194304,
+        'maxOutputBytes': output_budget})
+    computed_revision = 'sha256:' + node_json_digest({'configuration': configuration, 'entries': entries})
+    require(type(seal['sourceCount']) is int and seal['sourceCount'] == len(entries)
+            and seal['destination'] == expected['destination']
+            and seal['toolFingerprint'] == 'sha256:' + tool
+            and seal['optionsFingerprint'] == 'sha256:' + node_json_digest(options)
+            and seal['configurationFingerprint'] == 'sha256:' + configuration
+            and seal['sourceInventoryFingerprint'] == 'sha256:' + node_json_digest(entries)
+            and revision == computed_revision and batches[0].get('revision') == revision,
+            'Altered invocation seal/configuration/diagnostic revision')
+    return batches
+
+
+def invalid_diagnostics(log, workspace, expected=None):
+    batches = schema_log_records(log, 'flat.compiler.diagnostics.v1')
+    require(len(batches) == 1, 'Invalid control requires one terminal diagnostic batch')
+    batch = batches[0]
+    revision = batch.get('revision', '')
+    require(isinstance(revision, str) and revision.startswith('sha256:') and sha(revision[7:])
+            and batch.get('complete') is True and bool(batch.get('records')),
+            'Invalid control requires complete nonempty revision-bound diagnostics')
+    batch['records'] = normalize_diagnostics(batch['records'], workspace)
+    require(expected is not None, 'Missing actual invalid invocation admission bindings')
+    admitted = invocation_admission(log, expected)
+    require(admitted[0]['revision'] == revision, 'Changed invocation diagnostic revision')
+    for record in batch['records']:
+        require(str(workspace / record['source']) in expected['sources'],
+                'Diagnostic source outside actual invocation closure')
+    return batches
+
+
+INVALID_CONTROLS = {
+    'syntax': '\nclass DogfoodInvalidSyntax {\n',
+    'name': '\nclass DogfoodInvalidName { public invalid() -> Int => dogfoodMissingSymbol }\n',
+}
+
+
+def product_command(context, argv, cwd, seeds, budget, seconds, expected_exit=0):
+    """Retain real top-level execution, including deliberately failed compilation."""
+    directory, root = context['directory'], context['directory'].parent
+    ordinal = len(context.setdefault('product_commands', [])) + 1
+    log = directory / f'logs/product-{ordinal}.log'
+    offset = context['journal'].stat().st_size if context['journal'].exists() else 0
+    cleanup = {}
+    require(argv[0] == str(seeds['node'][0]), 'Product command must select reviewed Node path')
+    require(bootstrap.digest(seeds['node'][0]) == seeds['node'][1], 'Product Node identity changed')
+    tool = Path(argv[1])
+    require(tool.is_file() and not tool.is_symlink(), 'Missing ordinary product executable')
+    tool_sha = bootstrap.digest(tool)
+    code = 0
+    try:
+        bootstrap.run_command(argv, cwd, context['env'], log, context['journal'], timeout=seconds,
+                              budget=budget, cleanup_observation=cleanup)
+    except bootstrap.CommandFailure as error:
+        code = error.exit_code
+    if context['journal'].exists():
+        admission_records(context['journal'], offset)
+    journal = log.with_suffix('.admissions.jsonl')
+    if context['journal'].exists():
+        shutil.copyfile(context['journal'], journal)
+    else:
+        journal.write_text('')
+    reference = lambda path: {'path': path.relative_to(root).as_posix(), 'sha256': bootstrap.digest(path)}
+    command = {'argv': argv, 'cwd': str(cwd), 'exit_status': code, 'log': reference(log),
+               'journal': reference(journal), 'admission_offset': offset,
+               'tool': reference(tool), 'node_sha256': seeds['node'][1], 'process_cleanup': cleanup,
+               'temporary_outputs_after': temporary_output_inventory(context['workspace'])}
+    context['product_commands'].append(command)
+    bootstrap.write_json(directory / 'product-commands.json', context['product_commands'])
+    require(bootstrap.digest(tool) == tool_sha, 'Executed ordinary product bytes changed')
+    return command
+
+
+NODE_VERSION_PROBE = "console.log(JSON.stringify({schema:'flat.dogfood.node-version.v1',version:process.versions.node}));\n"
+
+
+def observe_node_version(context, seeds, budget, seconds):
+    probe = context['directory'] / 'node-version.cjs'
+    probe.write_text(NODE_VERSION_PROBE)
+    command = product_command(context, [str(seeds['node'][0]), str(probe)],
+                              context['workspace'], seeds, budget, seconds)
+    require(command['exit_status'] == 0, 'Node version probe failed')
+    return {'command': command, 'version': measured_node_version(context['directory'].parent, command)}
+
+
+def measured_node_version(root, command):
+    file_reference(root, command['tool'])
+    require((root / command['tool']['path']).read_text() == NODE_VERSION_PROBE,
+            'Changed Node version probe')
+    file_reference(root, command['log'])
+    records = schema_log_records(root / command['log']['path'], 'flat.dogfood.node-version.v1')
+    require(len(records) == 1 and set(records[0]) == {'schema', 'version'}, 'Missing Node version observation')
+    version = records[0]['version']
+    require(isinstance(version, str) and len(version) < 100 and len(version.split('.')) == 3
+            and all(part.isascii() and part.isdecimal() for part in version.split('.')),
+            'Invalid measured Node version')
+    return version
+
+
+def ordinary_source_closure(log, workspace, baseline):
+    """Last successful Core invocation defines the actual public source closure.
+
+    Bind its complete ordered source stream to the independently pinned workspace
+    manifest, never to source digests asserted by the invalid invocation itself.
+    """
+    sources = schema_log_records(log, 'flat.compiler.invocation-source.v1')
+    seals = schema_log_records(log, 'flat.compiler.invocation-admission.v1')
+    require(seals, 'Missing successful Core invocation admission')
+    seal = seals[-1]
+    require(type(seal.get('sourceCount')) is int and 0 < seal['sourceCount'] <= MAX_REFERENCES,
+            'Invalid successful Core source count')
+    selected = [value for value in sources if value.get('revision') == seal.get('revision')]
+    require(len(selected) == seal['sourceCount'], 'Incomplete/duplicate successful Core admission')
+    result = {}
+    for sequence, value in enumerate(selected, 1):
+        require(value.get('sequence') == sequence and type(value.get('sequence')) is int,
+                'Unordered successful Core source stream')
+        identity = value.get('identity')
+        require(isinstance(identity, str) and Path(identity).is_absolute(), 'Invalid Core source identity')
+        try:
+            relative = Path(identity).relative_to(workspace).as_posix()
+        except ValueError:
+            raise ValueError('Core source outside retained workspace')
+        digest = baseline.get(relative)
+        require(sha(digest) and value.get('contentFingerprint') == 'sha256:' + digest
+                and identity not in result, 'Core closure differs from pinned workload')
+        result[identity] = digest
+    entries = [{'identity': identity, 'digest': result[identity]} for identity in result]
+    require(seal.get('sourceInventoryFingerprint') == 'sha256:' + node_json_digest(entries),
+            'Changed Core source inventory seal')
+    return result
+
+
+def invalid_bindings(command, destination, closure, node_version, mutation_identity, retained, digest):
+    require(mutation_identity in closure, 'Invalid mutation was not in actual Core source closure')
+    sources = dict(closure)
+    sources[mutation_identity] = digest
+    return {'options': command['argv'][2:], 'tool_sha256': command['tool']['sha256'],
+            'node_version': node_version, 'destination': str(destination), 'sources': sources,
+            'retained_sources': {mutation_identity: str(retained)}}
+
+
+def run_ordinary_products(context, seeds, budget, seconds, mutation):
+    workspace, root = context['workspace'], context['directory'].parent
+    node, compiler, runner = str(seeds['node'][0]), context['compiler'], context['runner']
+    reference = lambda path: {'path': path.relative_to(root).as_posix(), 'sha256': bootstrap.digest(path)}
+    result = {'workspace': workspace.relative_to(root).as_posix(),
+              'sources': scenario_sources(None, workspace), 'products': {}}
+    for package, group in (('Airship', None), ('Flat-Compiler', 'flatc')):
+        relative = bootstrap.PRODUCTS[1 if package == 'Airship' else 0]
+        destination = workspace / relative
+        require(not destination.exists(), 'Ordinary product destination is not fresh')
+        argv = [node, str(runner), '--use-links', '-f', str(workspace / 'packages' / package),
+                '--flatc-runtime', 'flat', 'install'] + ([group] if group else []) + [
+                '-t', 'es6', '--flatc-script', str(compiler)]
+        command = product_command(context, argv, workspace, seeds, budget, seconds)
+        require(command['exit_status'] == 0, 'Ordinary main build failed')
+        require(destination.is_file(), 'Ordinary main product not generated')
+        result['products'][package] = {'artifact': reference(destination), 'build': command}
+    fresh_airship = workspace / bootstrap.PRODUCTS[1]
+    fresh_compiler = workspace / bootstrap.PRODUCTS[0]
+    # Invoke the generated ordinary Airship, not its test entrypoint, and make
+    # it select the generated ordinary compiler through the public interface.
+    argv = [node, str(fresh_airship), '--use-links', '-f', str(workspace / 'packages/Flat-Core'),
+            '--flatc-runtime', 'flat', 'install', 'test', '-t', 'es6', '--flatc-script', str(fresh_compiler)]
+    # Explicitly admit the freshly built compiler as an immutable compiler input
+    # in this private policy only; never change the stage2 tool receipt.
+    context['policy'].update(compiler=str(fresh_compiler), seed=str(fresh_compiler),
+                            seedSha256=bootstrap.digest(fresh_compiler))
+    bootstrap.write_json(context['directory'] / 'policy.json', context['policy'])
+    result['core_install'] = product_command(context, argv, workspace, seeds, budget, seconds)
+    require(result['core_install']['exit_status'] == 0, 'Ordinary Core install failed')
+    admissions = admission_records(root / result['core_install']['journal']['path'],
+                                   result['core_install']['admission_offset'])
+    invocations = [entry['args'][1:] for entry in admissions
+                   if entry.get('args') and entry['args'][0] == str(fresh_compiler)]
+    require(invocations, 'Generated Airship did not execute generated ordinary compiler')
+    closure = ordinary_source_closure(root / result['core_install']['log']['path'], workspace, result['sources'])
+    result['node_runtime'] = observe_node_version(context, seeds, budget, seconds)
+    result['core_run'] = product_command(context, [node, str(fresh_airship), '--use-links', '-f',
+        str(workspace / 'packages/Flat-Core'), '--flatc-runtime', 'flat', 'run', 'test', '-t', 'es6'],
+        workspace, seeds, budget, seconds)
+    require(result['core_run']['exit_status'] == 0, 'Ordinary Core execution failed')
+    core_dist = workspace / 'packages/Flat-Core/dist'
+    tests = sorted(core_dist.rglob('test.js'))
+    require(len(tests) == 1, 'Ambiguous ordinary Core test artifact')
+    result['core_artifact'] = reference(tests[0])
+    result['controls'] = {}
+    original = (workspace / mutation).read_bytes()
+    for name, suffix in INVALID_CONTROLS.items():
+        (workspace / mutation).write_bytes(original + suffix.encode())
+        control_sources = scenario_sources(None, workspace)
+        destination = core_dist / ('invalid-' + name) / 'test.js'
+        args = driver_arguments(invocations[-1], destination)
+        try:
+            command = product_command(context, [node, str(fresh_compiler)] + args,
+                                      workspace / 'packages/Flat-Core', seeds, budget, seconds, expected_exit=1)
+            # Retain actual invalid bytes and execution before interpreting the
+            # diagnostic contract, including unsupported/incomplete failures.
+            retained = context['directory'] / ('invalid-' + name + '.flat')
+            shutil.copyfile(workspace / mutation, retained)
+            result['controls'][name] = {'command': command,
+                'mutation': mutation, 'source': reference(retained), 'sources': control_sources,
+                'destination': str(destination), 'output_exists': destination.exists(),
+                'output': reference(destination) if destination.is_file() else None}
+            bootstrap.write_json(context['directory'] / 'ordinary-products.json', result)
+            require(command['exit_status'] == 1, 'Invalid control unexpectedly succeeded')
+            require(not destination.exists(), 'Invalid control published executable output')
+            bindings = invalid_bindings(command, destination, closure, result['node_runtime']['version'],
+                str(workspace / mutation), retained, bootstrap.digest(retained))
+            result['controls'][name]['diagnostics'] = invalid_diagnostics(root / command['log']['path'], workspace, bindings)
+        finally:
+            (workspace / mutation).write_bytes(original)
+    require(scenario_sources(None, workspace) == result['sources'], 'Ordinary product workload changed source inputs')
+    return result
+
+
+def validate_product_command(root, command, expected_exit, node_seed):
+    node = Path(node_seed['path'])
+    require(command.get('argv', [None])[0] == str(node)
+            and command.get('node_sha256') == node_seed['sha256']
+            and node.is_file() and bootstrap.digest(node) == node_seed['sha256'],
+            'Ordinary command must select reviewed Node path and bytes')
+    for name in ('log', 'journal', 'tool'):
+        file_reference(root, command[name])
+    argv = command.get('argv', [])
+    require(type(command.get('admission_offset')) is int and command['admission_offset'] >= 0,
+            'Invalid ordinary command admission boundary')
+    require(len(argv) >= 2 and str(root / command['tool']['path']) == argv[1]
+            and command.get('exit_status') == expected_exit and sha(command.get('node_sha256')),
+            'Unbound ordinary product execution')
+    cleanup = command.get('process_cleanup', {})
+    require(type(cleanup.get('pid')) is int and cleanup['pid'] > 0 and cleanup.get('exit_code') == expected_exit
+            and all(cleanup.get(name) is True for name in ('wait_completed', 'child_reaped', 'process_group_absent'))
+            and command.get('temporary_outputs_after') == [], 'Ordinary product cleanup incomplete')
+    return admission_records(root / command['journal']['path'], command['admission_offset'])
+
+
+def validate_ordinary_products(root, value, baseline, tools, node_seed):
+    require(isinstance(value, dict) and value.get('sources') == baseline, 'Missing/stale ordinary production products')
+    workspace = root / value['workspace']
+    require(root.resolve() in workspace.resolve().parents, 'Ordinary workspace escapes evidence root')
+    require(scenario_sources(None, workspace) == baseline, 'Ordinary production sources changed')
+    products = value.get('products', {})
+    require(set(products) == {'Airship', 'Flat-Compiler'}, 'Missing ordinary main products')
+    for package, group in (('Airship', None), ('Flat-Compiler', 'flatc')):
+        relative = bootstrap.PRODUCTS[1 if package == 'Airship' else 0]
+        product = products[package]
+        file_reference(root, product['artifact'])
+        require(str(root / product['artifact']['path']) == str(workspace / relative), 'Wrong ordinary product destination')
+        command = product['build']
+        admissions = validate_product_command(root, command, 0, node_seed)
+        argv = command['argv']
+        require(command['tool']['sha256'] == tools[bootstrap.PRODUCTS[1]]
+                and '--flatc-script' in argv and '--flatc-runtime' in argv
+                and argv[argv.index('--flatc-runtime') + 1] == 'flat'
+                and argv[argv.index('-f') + 1] == str(workspace / 'packages' / package)
+                and argv[argv.index('install') + 1:] == ([group] if group else []) + [
+                    '-t', 'es6', '--flatc-script', argv[argv.index('--flatc-script') + 1]],
+                'Ordinary main build selection mismatch')
+        selected = Path(argv[argv.index('--flatc-script') + 1])
+        require(bootstrap.digest(selected) == tools[bootstrap.PRODUCTS[0]]
+                and any(str(selected) in entry.get('args', []) for entry in admissions),
+                'Ordinary main build did not use pinned stage2 compiler')
+    install = value['core_install']
+    admissions = validate_product_command(root, install, 0, node_seed)
+    fresh_compiler = products['Flat-Compiler']['artifact']
+    fresh_airship = products['Airship']['artifact']
+    compiler = str(root / fresh_compiler['path'])
+    require(install['tool'] == fresh_airship and '--flatc-script' in install['argv']
+            and install['argv'][install['argv'].index('-f') + 1] == str(workspace / 'packages/Flat-Core')
+            and install['argv'][install['argv'].index('--flatc-runtime') + 1] == 'flat'
+            and install['argv'][install['argv'].index('install') + 1] == 'test'
+            and install['argv'][install['argv'].index('--flatc-script') + 1] == compiler,
+            'Core build did not select fresh ordinary products')
+    invocations = [entry['args'][1:] for entry in admissions if entry.get('args') and entry['args'][0] == compiler]
+    require(invocations, 'No fresh ordinary compiler execution')
+    closure = ordinary_source_closure(root / install['log']['path'], workspace, baseline)
+    runtime = value['node_runtime']
+    validate_product_command(root, runtime['command'], 0, node_seed)
+    require(runtime['command']['argv'] == [install['argv'][0], str(root / runtime['command']['tool']['path'])],
+            'Changed Node runtime probe argv')
+    node_version = measured_node_version(root, runtime['command'])
+    require(runtime.get('version') == node_version, 'Changed measured Node version')
+    batches = diagnostic_batches(root / install['log']['path'], workspace,
+                                  persistent_records(root / install['log']['path'], fresh_compiler['sha256']))
+    require(len(batches) == len(invocations) and all(batch['complete'] for batch in batches),
+            'Ordinary Core compilation diagnostics incomplete')
+    run = value['core_run']
+    executed = validate_product_command(root, run, 0, node_seed)
+    file_reference(root, value['core_artifact'])
+    require(workspace / 'packages/Flat-Core/dist' in (root / value['core_artifact']['path']).parents
+            and Path(value['core_artifact']['path']).name == 'test.js'
+            and run['tool'] == fresh_airship
+            and run['argv'][run['argv'].index('-f') + 1] == str(workspace / 'packages/Flat-Core')
+            and run['argv'][run['argv'].index('run') + 1] == 'test'
+            and any(entry.get('args') and entry['args'][0] == str(root / value['core_artifact']['path'])
+            for entry in executed), 'Ordinary Airship did not execute generated Core artifact')
+    require(set(value.get('controls', {})) == set(INVALID_CONTROLS), 'Missing invalid production controls')
+    for name, control in value['controls'].items():
+        command = control['command']
+        require(command.get('node_sha256') == install.get('node_sha256')
+                and command['argv'][0] == install['argv'][0], 'Invalid control changed Node identity')
+        validate_product_command(root, command, 1, node_seed)
+        require(command['tool'] == fresh_compiler, 'Invalid control selected different compiler')
+        mutation = mutation_path(control['mutation'], 'Flat-Core', baseline)
+        file_reference(root, control['source'])
+        expected = (workspace / mutation).read_bytes() + INVALID_CONTROLS[name].encode()
+        require((root / control['source']['path']).read_bytes() == expected, 'Invalid source bytes do not match control')
+        sources = dict(baseline, **{mutation: control['source']['sha256']})
+        require(control.get('sources') == sources, 'Invalid control changed unrelated production inputs')
+        destination = Path(control['destination'])
+        require(control.get('output_exists') is False and control.get('output') is None,
+                'Invalid control output was observed')
+        require(workspace / 'packages/Flat-Core/dist' in destination.parents and not destination.exists()
+                and command['argv'][2:] == driver_arguments(invocations[-1], destination),
+                'Invalid control destination/arguments mismatch')
+        bindings = invalid_bindings(command, destination, closure, node_version, str(workspace / mutation),
+                                    root / control['source']['path'], control['source']['sha256'])
+        require(control.get('diagnostics') == invalid_diagnostics(root / command['log']['path'], workspace, bindings),
+                'Changed invalid-control diagnostic evidence')
+    return True
+
+
 def produce_evidence(repo, output, stages, seeds_file, review_file, review_sha, changed, removed,
                      seconds=600, run_seconds=10800, scaling_plan_path=None, scaling_plan_sha=None):
     """Execute supported production paths; never manufacture unavailable summary observations."""
@@ -1412,6 +1825,10 @@ def produce_evidence(repo, output, stages, seeds_file, review_file, review_sha, 
         bootstrap.observe_subprocess_cleanup(output / 'watchdog-capability')
         receipt['watchdog_capability'] = watchdog_capability(output / 'watchdog-capability/subprocess-cleanup.json')
         receipt['watchdog_capability']['harness_sha256'] = bootstrap.digest(Path(bootstrap.__file__))
+        ordinary_context = create_production_workspace(repo, output / 'ordinary-products', sources, seeds,
+                                                         tools, stages / 'stage2', budget)
+        receipt['ordinary_products'] = run_ordinary_products(ordinary_context, seeds, budget, seconds, changed)
+        bootstrap.write_json(output / 'production-evidence.json', receipt)
         live = create_production_workspace(repo, output / 'incremental', sources, seeds, tools, stages / 'stage2', budget)
         # Full production Core compilation/execution, never a source-trimmed fixture.
         for name in SCENARIOS:

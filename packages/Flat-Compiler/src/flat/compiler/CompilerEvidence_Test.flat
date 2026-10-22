@@ -1,7 +1,77 @@
 package flat/compiler
 
+import flat/lexer
+import flat/parser/flat
+import flat/parser/ParserDiagnostic
+import flat/compiler/models
+import flat/io
+import flat/time/Time
+import flat/writer/es6/bound
+import flat/future
+
 /** Evidence is a report of observations, never a substitute for acceptance. */
 testable class {
+    async test `package scanner failure retains actual parser range in terminal evidence`() {
+        let text = "class DogfoodInvalidSyntax {\n"
+        let identity = "Invalid.flat"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let lexer = Lexer().lexInterpolated(text)
+        lexer.emit("start")
+        let tokens = lexer.consumeAll<Token>("data")
+        var ParseFailure expected
+        try { FlatSourceTypePartitioner().partition(tokens, snapshot, "js") }
+        catch (Exception error) {
+            if (error.class.isOfType(ParseFailure.class)) expected = (ParseFailure)error
+            else throw error
+        }
+        expect(expected != null).toBe(true)
+        let sink = MemoryCompilerArtifactSink()
+        let session = CompilerEngine().compilePackage(
+            MemoryCompilerSourceProvider([CompilerSource(identity, text)]), sink, "invalid.js")
+        let summary = session.completion.get()
+        expect(summary.diagnosticCount).toBe(1)
+        expect(summary.bindingDiagnostic == null).toBe(true)
+        expect(summary.parserDiagnostic.code).toBe("incomplete-type-body")
+        let range = summary.parserDiagnostic.range
+        let expectedRange = expected.diagnostic.range
+        expect(range.snapshot.source.value).toBe(identity)
+        expect(range.startTokenIndex).toBe(expectedRange.startTokenIndex)
+        expect(range.endTokenIndex).toBe(expectedRange.endTokenIndex)
+        expect(range.start.lineNumber).toBe(expectedRange.start.lineNumber)
+        expect(range.start.column).toBe(expectedRange.start.column)
+        expect(range.end.lineNumber).toBe(expectedRange.end.lineNumber)
+        expect(range.end.column).toBe(expectedRange.end.column)
+        expect(sink.artifacts().count).toBe(0)
+        let batch = CompilerEvidence.renderDiagnostics(summary, "sha256:admitted-input")
+        expect(batch.contains("\"complete\":true")).toBe(true)
+        expect(batch.contains("\"code\":\"incomplete-type-body\"")).toBe(true)
+    }
+
+    async test `primitive parser failure is not replaced by linker presentation text`() {
+        let text = "class Main { public broken( }"
+        let sink = MemoryCompilerArtifactSink()
+        let session = CompilerEngine().compilePackage(
+            MemoryCompilerSourceProvider([CompilerSource("Broken.flat", text)]), sink, "invalid.js")
+        let summary = session.completion.get()
+        expect(summary.diagnosticCount).toBe(1)
+        expect(summary.parserDiagnostic != null).toBe(true)
+        expect(summary.bindingDiagnostic == null).toBe(true)
+        expect(summary.parserDiagnostic.range != null).toBe(true)
+        expect(sink.artifacts().count).toBe(0)
+        let batch = CompilerEvidence.renderDiagnostics(summary, "sha256:input")
+        expect(batch.contains("\"complete\":true")).toBe(true)
+    }
+
+    test `unranged and multiple parser failures remain incomplete`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("Invalid.flat"), "input")
+        let diagnostic = ParserDiagnostic("syntax-error", "invalid syntax", snapshot)
+        let summary = CompilationSummary(1, 0, 1, false, parserDiagnostic: diagnostic)
+        let batch = CompilerEvidence.renderDiagnostics(summary, "sha256:input")
+        expect(batch.contains("\"complete\":false,\"records\":[]")).toBe(true)
+        let multiple = CompilationSummary(1, 0, 2, false, parserDiagnostic: diagnostic)
+        let multipleBatch = CompilerEvidence.renderDiagnostics(multiple, "sha256:input")
+        expect(multipleBatch.contains("\"complete\":false,\"records\":[]")).toBe(true)
+    }
     test `terminal failure is distinct from source diagnostics`() {
         let summary = CompilationSummary(1, 1, 0, false)
         let batch = CompilerEvidence.renderDiagnostics(summary, "sha256:input", "Output published; cleanup failed: controlled\nerror")

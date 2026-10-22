@@ -125,6 +125,70 @@ filtering/sorting with `maxDirectoryEntries` (default 16384), counting hidden an
 ignored entries too. Hidden source exclusion is preserved after enumeration.
 Overflow throws instead of retaining/accepting a prefix.
 
+## Ordinary invocation admission (including failed compilation)
+
+`CompilerIncrementalState.emitAdmission(CompilerInvocationAdmissionStream)` emits
+synchronously, once per state, after bounded input admission/revalidation and
+before the existing invocation observer or compiler work. CLI uses the ordinary
+JSON-line stream by default; its final optional `admissionStream:` parameter is a
+typed delivery seam for in-process tests. Delivery exceptions propagate to CLI
+failure/finalization. A partial source stream without a seal is NOT admitted
+execution evidence. No event replay or duplicate project metadata array is kept.
+
+Exact fields:
+
+- `flat.compiler.invocation-source.v1`: `schema`, `revision`, `sequence` (1-based
+  contiguous integer), `identity`, `contentFingerprint`.
+- `flat.compiler.invocation-admission.v1`: `schema`, `revision`, `destination`,
+  `toolFingerprint`, `optionsFingerprint`, `configurationFingerprint`,
+  `sourceInventoryFingerprint`, `sourceCount` (integer).
+
+All fingerprints are `sha256:` plus lowercase hex. Identity is the absolute
+`path.resolve` compiler-visible admitted filename (not a substituted realpath).
+Content fingerprint hashes actual file bytes with SHA-256. Physical-source aliases
+are rejected during admission. Stream order is the existing JS UTF-16 lexical
+identity order (`a.identity < b.identity`), not locale/Python Unicode ordering.
+
+Consumer hash algorithm (Node compact `JSON.stringify`, UTF-8, no newline; object
+key insertion order exactly as shown):
+
+1. `optionsFingerprint = SHA256(JSON.stringify(options))`; `options` is the exact
+   user token array after the executable token, before CLI alias/capacity-option
+   rewriting. Do not substitute normalized compiler arguments.
+2. Reconstruct `entries` from ordered source records as
+   `{identity: record.identity, digest: record.contentFingerprint.slice(7)}`.
+   `sourceInventoryFingerprint = SHA256(JSON.stringify(entries))`.
+3. Existing configuration hash is SHA256 of JSON object
+   `{schema:'flat.compiler.incremental.v1', publication:'staged-sha256-v1',
+   options, tool:toolDigest, node:process.versions.node, maxSourceBytes,
+   maxOutputBytes}`. `toolDigest` is raw hex SHA-256 of the actual selected
+   compiler file; CLI uses `process.argv[1]`. `maxSourceBytes` is four times the
+   linker character capacity; `maxOutputBytes` is the selected artifact budget.
+   The seal exposes that existing hash as `configurationFingerprint`.
+4. Diagnostic/admission `revision` remains the existing SHA256 of JSON object
+   `{configuration: configurationFingerprint.slice(7), entries}`. Do NOT
+   manufacture a revision by hashing diagnostic text or replacing source bytes.
+5. Destination is the exact absolute normalized output path; the existing
+   revision representation does not add destination independently (argv normally
+   contains the output selection). Bind destination separately to actual argv.
+
+A consumer must verify the complete contiguous source stream, seal/count,
+configuration/tool/options/source byte bindings and diagnostic revision in the
+same actual invocation log. No success/pass flag is emitted. Syntax/semantic
+failures AFTER admission receive the same stream as successful compilation.
+Argument/discovery/fingerprint failures BEFORE admission have no fabricated seal
+and keep the existing explicitly unavailable diagnostic revision. This contract
+proves input identity, not diagnostic completeness. The compiler now separately
+retains the parser-owned `ParseFailure.diagnostic` as `ParserDiagnostic`, without
+converting it to a semantic diagnostic or parsing exception text. A single ranged
+parser failure uses the same exact diagnostic-record shape as binding failures;
+its actual code/message/range pass through unchanged. The incomplete-type-body
+record spans the parser-observed opening brace through its observed EOF boundary.
+Typed primitive parser failures survive linker presentation catches. Untyped or
+unranged failures, multiple recorded failures, mixed retained diagnostic kinds,
+cancellation and unsettled cleanup remain incomplete. Admission never upgrades
+those cases to a pass.
+
 ## Deferred validation
 
 ```

@@ -40,7 +40,7 @@ class {
         if (!sourceValues || sourceValues.any({ !_ }) || sourceValues.count > maxSources) {
             throw Exception("Flat ES6 package linking requires bounded sources")
         }
-        let ordered = sourceValues.sort({ Es6SourceSelection.compare(_a.identity, _b.identity) })
+        let ordered = sourceValues.sort((first, second) => Es6SourceSelection.compare(first.identity, second.identity))
         return linkSelected(MemoryCompilerSourceProvider(ordered),
             ordered.map({ _.identity }), arrayDeclaration, ordered, defaultImports: defaultImports)
     }
@@ -62,7 +62,7 @@ class {
             identities.any((identity) => !identity || identity.trim().count == 0)) {
             throw Exception("Flat ES6 package linking requires bounded source identities")
         }
-        let ordered = identities.sort({ Es6SourceSelection.compare(_a, _b) })
+        let ordered = identities.sort((first, second) => Es6SourceSelection.compare(first, second))
         var Int identityIndex = 1
         while (identityIndex < ordered.count) {
             if (ordered[identityIndex - 1] == ordered[identityIndex]) {
@@ -163,6 +163,7 @@ class {
                             implicitName(source.identity, partition.name)
                         ))
                     } catch (Exception error) {
+                        if (error.class.isOfType(ParseFailure.class)) throw error
                         throw Exception(
                             "Flat package interface '#{source.identity}' failed: #{error.message}"
                         )
@@ -176,6 +177,7 @@ class {
                         implicitName(source.identity, partition.name)
                     )
                 } catch (Exception error) {
+                    if (error.class.isOfType(ParseFailure.class)) throw error
                     throw Exception(
                         "Flat package source '#{source.identity}' failed: #{error.message}"
                     )

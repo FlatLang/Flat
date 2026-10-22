@@ -154,7 +154,7 @@ class CompilerPackageSnapshot extends CompilerSourceProvider {
         var PrimitiveDefaultImport[] defaults
         visible String toolFingerprint
         public defaultImportValues() -> PrimitiveDefaultImport[] {
-            return defaults.map({ PrimitiveDefaultImport(_.location, _.staticImport) })
+            return defaults.map((value) => PrimitiveDefaultImport(value.location, value.staticImport))
         }
 
         protected construct(CompilerSource[] values, String mainClass, FlatEs6PackageLinker linker,
@@ -168,7 +168,7 @@ class CompilerPackageSnapshot extends CompilerSourceProvider {
             this.linker = linker
             ownedOptions = options.concat("")
             this.bytes = bytes
-            this.defaults = defaults.map({ PrimitiveDefaultImport(_.location, _.staticImport) })
+            this.defaults = defaults.map((value) => PrimitiveDefaultImport(value.location, value.staticImport))
             this.toolFingerprint = toolFingerprint.concat("")
             this.ticket = ticket
         }

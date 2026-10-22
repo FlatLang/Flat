@@ -1,7 +1,11 @@
 package flat/airship
 
-/** Airship's Node subprocess boundary. Streams are inherited (no retained output
- * backlog), argv is exact, and completion includes child/stdio closure. */
+/** Exact argv and inherited/ignored streams (no retained output backlog).
+ * Ordinary POSIX commands own a private process group, including descendants
+ * surviving direct-child close. Settlement includes bounded group cleanup.
+ * Windows currently owns only the direct child. A validated host preload may
+ * supply external-command-group ownership; only that host claims tree cleanup.
+ */
 class AirshipProcess {
     public static async executeShell(String command, String workingDirectory = null, Bool: silent = false) -> Int {
         if (System.OS_INT == System.WINDOWS) {
@@ -12,58 +16,140 @@ class AirshipProcess {
         return execute(arguments, workingDirectory, silent)
     }
 
+    // Package-visible native boundary permits isolated runtime-model tests with
+    // their own global scope; no test can replace the real host capability.
+    visible static native Object executeInProcessScope
+
+    static {
+        external js {
+            #{executeInProcessScope} = function(childProcess, argv, workingDirectory, silent) {
+                return new Promise((resolve, reject) => {
+                    const scopeKey = Symbol.for('flat.stage.processScope.v1');
+                    const scope = globalThis[scopeKey];
+                    if (scope !== undefined) {
+                        const descriptor = Object.getOwnPropertyDescriptor(globalThis, scopeKey);
+                        if (!scope || !Object.isFrozen(scope) || scope.version !== 1 ||
+                            scope.ownership !== 'external-command-group' ||
+                            typeof scope.requestCancellation !== 'function' ||
+                            typeof scope.subscribeCancellation !== 'function' ||
+                            !descriptor || descriptor.writable !== false || descriptor.configurable !== false) {
+                            reject(Error('Invalid external command process-scope capability'));
+                            return;
+                        }
+                    }
+                    const ownsGroup = scope === undefined && process.platform !== 'win32';
+                    let unsubscribe;
+                    let cancellationRequested = false;
+                    let child, escalation, deadline, observation, failure;
+                    let cancelled = false, closing = false, closed = false, settled = false;
+                    let exitCode, exitSignal;
+                    const cleanup = () => {
+                        process.removeListener('SIGINT', interrupt);
+                        process.removeListener('SIGTERM', terminate);
+                        if (typeof unsubscribe === 'function') { const release = unsubscribe; unsubscribe = undefined; release(); }
+                        for (const timer of [escalation, deadline, observation]) {
+                            if (timer !== undefined) clearTimeout(timer);
+                        }
+                    };
+                    const finish = () => {
+                        if (settled) return;
+                        settled = true;
+                        cleanup();
+                        if (failure) reject(failure);
+                        else resolve(cancelled || exitSignal || exitCode === null ? -1 : exitCode);
+                    };
+                    const alive = () => {
+                        if (!child || !child.pid) return false; // Spawn failed: no owned group.
+                        if (!ownsGroup) return !closed;
+                        try { process.kill(-child.pid, 0); return true; }
+                        catch (error) {
+                            if (error.code === 'ESRCH') return false;
+                            failure = error;
+                            return true; // Unknown is not proof of cleanup.
+                        }
+                    };
+                    const kill = (signal) => {
+                        if (!child || !child.pid) return;
+                        try {
+                            // Never signal the caller's shared group, and never
+                            // relinquish a private group merely because its leader exited.
+                            if (ownsGroup) process.kill(-child.pid, signal);
+                            else if (!closed && child.exitCode === null && child.signalCode === null) child.kill(signal);
+                        } catch (error) { if (error.code !== 'ESRCH') failure = error; }
+                    };
+                    const observe = () => {
+                        observation = undefined;
+                        if (closed && !alive()) { finish(); return; }
+                        observation = setTimeout(observe, 25);
+                    };
+                    const beginCleanup = (signal) => {
+                        if (closing) { kill('SIGKILL'); return; }
+                        closing = true;
+                        kill(signal);
+                        // Scope: one command's owned group. Direct-child close
+                        // cannot cancel escalation while descendants still live.
+                        escalation = setTimeout(() => { escalation = undefined; kill('SIGKILL'); }, 5000);
+                        deadline = setTimeout(() => {
+                            deadline = undefined;
+                            kill('SIGKILL');
+                            failure = failure || Error('Subprocess cleanup not confirmed within 7000ms');
+                            finish(); // Failure, never a descendant-cleanup success claim.
+                        }, 7000);
+                        observe();
+                    };
+                    const forward = (signal) => {
+                        cancelled = true;
+                        if (scope) {
+                            // The host cancels the entire command, not this
+                            // operation. Never forward a second signal or claim
+                            // descendant cleanup from the direct child's close.
+                            if (!cancellationRequested) {
+                                cancellationRequested = true;
+                                try { scope.requestCancellation('Airship subprocess interrupted: ' + signal); }
+                                catch (error) { failure = error; finish(); }
+                            }
+                        } else beginCleanup(signal);
+                    };
+                    const interrupt = () => forward('SIGINT');
+                    const terminate = () => forward('SIGTERM');
+                    try {
+                        if (scope) {
+                            unsubscribe = scope.subscribeCancellation(() => { cancelled = true; });
+                            if (typeof unsubscribe !== 'function') throw Error('Process-scope subscription must return unsubscribe');
+                            // A latched subscription may notify synchronously.
+                            if (cancelled) { exitCode = -1; finish(); return; }
+                        }
+                        child = childProcess.spawn(argv[0], argv.slice(1), {
+                            cwd: workingDirectory,
+                            shell: false,
+                            detached: ownsGroup,
+                            stdio: ['inherit', silent ? 'ignore' : 'inherit', silent ? 'ignore' : 'inherit']
+                        });
+                        process.on('SIGINT', interrupt);
+                        process.on('SIGTERM', terminate);
+                        child.once('error', (error) => { failure = error; });
+                        child.once('close', (code, signal) => {
+                            closed = true;
+                            exitCode = code;
+                            exitSignal = signal;
+                            if (scope || !alive()) finish();
+                            else if (!closing) beginCleanup('SIGTERM');
+                        });
+                    } catch (error) { failure = error; finish(); }
+                });
+            };
+        }
+    }
+
     public static async execute(String[] arguments, String workingDirectory = null, Bool: silent = false) -> Int {
         native var Int status = -1
         native_array native var Char[] message
         external js {
-            const childProcess = await import('node:child_process');
-            const argv = #{arguments.map({ _.chars.data }).data};
+            const childProcess = (await import('node:child_process')).default;
             try {
-                #{status} = await new Promise((resolve, reject) => {
-                    let child;
-                    let cancelled = false;
-                    let escalation;
-                    const kill = (signal) => {
-                        try {
-                            if (process.platform === 'win32') child.kill(signal);
-                            else process.kill(-child.pid, signal);
-                        } catch (error) {
-                            if (error.code !== 'ESRCH') child.kill(signal);
-                        }
-                    };
-                    const forward = (signal) => {
-                        cancelled = true;
-                        if (child && child.exitCode === null && child.signalCode === null) {
-                            kill(signal);
-                            // One bounded timer per live child; a second signal
-                            // also escalates. Never report cancellation as success.
-                            if (escalation) kill('SIGKILL');
-                            else escalation = setTimeout(() => kill('SIGKILL'), 5000);
-                        }
-                    };
-                    const interrupt = () => forward('SIGINT');
-                    const terminate = () => forward('SIGTERM');
-                    const cleanup = () => {
-                        process.removeListener('SIGINT', interrupt);
-                        process.removeListener('SIGTERM', terminate);
-                        if (escalation) clearTimeout(escalation);
-                    };
-                    try {
-                        child = childProcess.spawn(argv[0], argv.slice(1), {
-                            cwd: #{workingDirectory ? workingDirectory.chars.data : ".".chars.data},
-                            shell: false,
-                            detached: process.platform !== 'win32',
-                            stdio: ['inherit', #{silent} ? 'ignore' : 'inherit', #{silent} ? 'ignore' : 'inherit']
-                        });
-                        process.on('SIGINT', interrupt);
-                        process.on('SIGTERM', terminate);
-                        child.once('error', (error) => { cleanup(); reject(error); });
-                        child.once('close', (code, signal) => {
-                            cleanup();
-                            resolve(cancelled || signal || code === null ? -1 : code);
-                        });
-                    } catch (error) { cleanup(); reject(error); }
-                });
+                #{status} = await #{executeInProcessScope}(childProcess,
+                    #{arguments.map({ _.chars.data }).data},
+                    #{workingDirectory ? workingDirectory.chars.data : ".".chars.data}, #{silent});
             } catch (error) {
                 #{message} = String(error);
                 throw #{ExecutionFailureException(String(message))};

@@ -1,5 +1,7 @@
 package flat/compiler
 
+import flat/compiler/models/SourceRange
+
 /**
  * Machine-readable terminal evidence for an in-process lifecycle harness. This is
  * a producer, not an acceptance verdict. The caller owns workload selection, tool
@@ -29,15 +31,31 @@ class CompilerEvidence {
     }
 
     static diagnosticsComplete(CompilationSummary summary) -> Bool {
-        return summary.cleanupSettled && !summary.cancelled && (summary.diagnosticCount == 0 ||
-            (summary.diagnosticCount == 1 && summary.bindingDiagnostic != null))
+        if (!summary.cleanupSettled || summary.cancelled) return false
+        if (summary.diagnosticCount == 0) return !summary.bindingDiagnostic && !summary.parserDiagnostic
+        if (summary.diagnosticCount != 1) return false
+        if (summary.bindingDiagnostic && !summary.parserDiagnostic) return true
+        return summary.parserDiagnostic != null && summary.parserDiagnostic.range != null && !summary.bindingDiagnostic
     }
 
     static diagnosticRecords(CompilationSummary summary) -> String {
-        if (summary.diagnosticCount != 1 || !summary.bindingDiagnostic) return "[]"
-        let diagnostic = summary.bindingDiagnostic
-        let range = diagnostic.range
-        return "[{\"code\":#{quote(diagnostic.code)},\"message\":#{quote(diagnostic.name)}," +
+        if (summary.diagnosticCount != 1) return "[]"
+        var String code
+        var String message
+        var SourceRange range
+        if (summary.parserDiagnostic && !summary.bindingDiagnostic) {
+            let diagnostic = summary.parserDiagnostic
+            code = diagnostic.code
+            message = diagnostic.message
+            range = diagnostic.range
+        } else if (summary.bindingDiagnostic && !summary.parserDiagnostic) {
+            let diagnostic = summary.bindingDiagnostic
+            code = diagnostic.code
+            message = diagnostic.name
+            range = diagnostic.range
+        } else return "[]"
+        if (!range) return "[]"
+        return "[{\"code\":#{quote(code)},\"message\":#{quote(message)}," +
             "\"source\":#{quote(range.snapshot.source.value)},\"range\":{" +
             "\"startLine\":#{range.start.lineNumber},\"startColumn\":#{range.start.column}," +
             "\"endLine\":#{range.end.lineNumber},\"endColumn\":#{range.end.column}," +

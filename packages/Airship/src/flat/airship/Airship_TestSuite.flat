@@ -6,7 +6,8 @@ import flat/io/FancyOutputStream
 import flat/test/TestResult
 
 [TestSuite [
-    Airship_Test
+    Airship_Test,
+    AirshipProcessScope_Test
 ]]
 class {
     public static async main(String[] args) {

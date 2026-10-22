@@ -40,6 +40,14 @@
         "https://github.com/FlatLang/Flat-ES6-Bound-Writer.git": "master"
       }
     },
+    "owned-process-test": {
+      "mainClass": "flat/airship/AirshipOwnedProcess_TestSuite",
+      "source": "src/**/*_Test*.flat",
+      "outFile": "owned-process-test.js",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master"
+      }
+    },
     "test": {
       "mainClass": "flat/airship/Airship_TestSuite",
       "source": "src/**/*_Test*.flat",

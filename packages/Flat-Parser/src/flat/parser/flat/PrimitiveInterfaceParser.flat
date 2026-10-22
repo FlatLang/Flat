@@ -390,7 +390,11 @@ class {
     }
 
     syntax(String message, Int tokenIndex = -1) {
-        let errorIndex = (tokenIndex < 0 ? index : tokenIndex) + tokenIndexOffset
-        throw Exception("Primitive interface syntax error at token #errorIndex: #message")
+        let localIndex = tokenIndex < 0 ? index : tokenIndex
+        let errorIndex = localIndex + tokenIndexOffset
+        ParseFailure failure = ParseFailure.atTokens("invalid-interface-syntax",
+            "Primitive interface syntax error at token #errorIndex: #message",
+            snapshot, tokens, localIndex, tokenIndexOffset)
+        throw failure
     }
 }

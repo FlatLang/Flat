@@ -56,6 +56,132 @@ import select
 import sys
 import tempfile
 import time
+import secrets
+
+
+class ScopeChannel:
+    """Per-command inherited pipes; <=4096 atomic bounded frames per command."""
+    def __init__(self, env):
+        policy = json.loads(Path(env['FLAT_BOOTSTRAP_POLICY']).read_text())
+        fixtures = policy.get('fixtures', [])
+        if not isinstance(fixtures, list) or len(fixtures) > 128:
+            raise ValueError('Invalid fixture declaration capacity')
+        self.expected = {entry['id']: entry for entry in fixtures}
+        if len(self.expected) != len(fixtures):
+            raise ValueError('Duplicate fixture declaration')
+        for entry in fixtures:
+            if type(entry.get('count')) is not int or not 0 < entry['count'] <= 128:
+                raise ValueError('Invalid fixture invocation count')
+        self.read, self.write = os.pipe()
+        self.ack_read, self.ack_write = os.pipe()
+        os.set_blocking(self.read, False)
+        os.set_blocking(self.ack_read, False)
+        os.set_blocking(self.ack_write, False)
+        os.set_blocking(self.write, False)
+        self.scope = secrets.token_hex(16)
+        self.buffer = b''
+        self.frames = 0
+        self.events = []
+        self.cancelled = False
+        self.hellos = 0
+        self.started = {}
+        self.finished = set()
+        self.counts = {key: 0 for key in self.expected}
+        self.env = dict(env)
+        self.env['FLAT_PROCESS_SCOPE'] = json.dumps({
+            'id': self.scope, 'requestFd': self.write, 'ackFd': self.ack_read,
+            'policySha256': digest(Path(env['FLAT_BOOTSTRAP_POLICY']))})
+
+    def drain(self):
+        while True:
+            try:
+                block = os.read(self.read, 4096)
+            except BlockingIOError:
+                break
+            if not block:
+                break
+            self.buffer += block
+            if len(self.buffer) > 8192:
+                raise ValueError('Process scope frame capacity exceeded')
+            while b'\n' in self.buffer:
+                line, self.buffer = self.buffer.split(b'\n', 1)
+                self.frames += 1
+                if len(line) > 1024 or self.frames > 4096:
+                    raise ValueError('Process scope frame capacity exceeded')
+                frame = json.loads(line)
+                self.events.append(frame)
+                if (frame.get('scope') != self.scope or frame.get('kind') not in
+                        ('hello', 'cancel', 'fixture-start', 'fixture-end')
+                        or type(frame.get('pid')) is not int or frame['pid'] <= 0):
+                    raise ValueError('Invalid process scope frame')
+                if frame['kind'] == 'hello':
+                    self.hellos += 1
+                    os.write(self.ack_write, b'A')
+                elif frame['kind'] == 'cancel':
+                    self.cancelled = True
+                else:
+                    identity = (frame['pid'], frame.get('invocation'))
+                    key = frame.get('fixture')
+                    if key not in self.expected or type(identity[1]) is not int:
+                        raise ValueError('Unknown fixture outcome identity')
+                    if frame['kind'] == 'fixture-start':
+                        if identity in self.started:
+                            raise ValueError('Duplicate fixture invocation')
+                        self.started[identity] = key
+                        self.counts[key] += 1
+                        if self.counts[key] > self.expected[key]['count']:
+                            raise ValueError('Extra fixture invocation')
+                    else:
+                        if self.started.get(identity) != key or identity in self.finished:
+                            raise ValueError('Unmatched fixture terminal outcome')
+                        self.finished.add(identity)
+                        if frame.get('outcome') != self.expected[key]['outcome']:
+                            raise ValueError('Unexpected fixture terminal outcome')
+        if self.cancelled:
+            raise ValueError('Process scope cancellation requested')
+
+    def close(self):
+        for fd in (self.read, self.write, self.ack_read, self.ack_write):
+            os.close(fd)
+
+
+def settle_process_group(process, observation=None):
+    """Never equate leader close or kill delivery with descendant absence."""
+    def present():
+        try:
+            os.killpg(process.pid, 0)
+            return True
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            # macOS may expose a dying/orphaned group as EPERM. This is not
+            # evidence of absence; keep observing and fail if unconfirmed.
+            return True
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    deadline = time.monotonic() + 2
+    while time.monotonic() < deadline:
+        process.poll()
+        if not present():
+            break
+        time.sleep(0.01)
+    if present():
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    process.wait(timeout=2)
+    deadline = time.monotonic() + 2
+    while present() and time.monotonic() < deadline:
+        time.sleep(0.01)
+    absent = not present()
+    if observation is not None:
+        observation.update(pid=process.pid, exit_code=process.returncode,
+                           wait_completed=True, child_reaped=True, process_group_absent=absent)
+    if not absent:
+        raise ValueError('Process scope cleanup unconfirmed: process group still present')
 
 HERE = Path(__file__).resolve().parent
 PRODUCTS = ("packages/Flat-Compiler/dist/es6/index.js", "packages/Airship/dist/airship.js")
@@ -301,51 +427,67 @@ def run_command(command, cwd, env, log, journal, timeout=600, budget=None,
     if budget:
         budget.check()
         timeout = min(timeout, max(0, budget.deadline - time.monotonic()))
+    channel = ScopeChannel(env) if env.get('FLAT_BOOTSTRAP_POLICY') else None
+    previous_handlers = {}
+    def interrupted(signum, frame):
+        raise ValueError(f'Process scope cancelled by host signal {signum}')
+    observation = cleanup_observation if cleanup_observation is not None else {}
+    try:
+        for signum in (signal.SIGINT, signal.SIGTERM):
+            previous_handlers[signum] = signal.signal(signum, interrupted)
+        return _run_command(command, cwd, channel.env if channel else env, log, journal,
+                            timeout, budget, ready_gate, observation, channel)
+    finally:
+        for signum, handler in previous_handlers.items():
+            signal.signal(signum, handler)
+        if channel:
+            write_json(log.with_suffix(log.suffix + '.scope.json'), {
+                'schema': 'flat.stage.process-scope.v1', 'scope': channel.scope,
+                'ownership': 'external-command-group', 'scope_cancelled': channel.cancelled,
+                'hello_count': channel.hellos, 'frame_count': channel.frames,
+                'events': channel.events,
+                'fixtures_started': len(channel.started), 'fixtures_finished': len(channel.finished),
+                'cleanup': observation,
+                'claim': 'command-scope only; not per-operation descendant cleanup'})
+            channel.close()
+
+
+def _run_command(command, cwd, env, log, journal, timeout, budget, ready_gate,
+                 cleanup_observation, channel):
     with log.open("xb") as output:
         process = subprocess.Popen(command, cwd=cwd, env=env, stdout=output,
-                                   stderr=subprocess.STDOUT, start_new_session=True)
+                                   stderr=subprocess.STDOUT, start_new_session=True,
+                                   pass_fds=(channel.write, channel.ack_read) if channel else ())
         deadline = time.monotonic() + timeout
         try:
             if ready_gate:
                 ready_gate(process)
             while process.poll() is None:
+                if channel:
+                    channel.drain()
                 if budget:
                     budget.check()
                 if time.monotonic() > deadline or log.stat().st_size > 100 * 1024 * 1024 or (
                         journal.exists() and journal.stat().st_size > 16 * 1024 * 1024):
                     raise ValueError(f"Command exceeded time/log capacity: {log}")
                 time.sleep(0.05)
+            if channel:
+                channel.drain()
             if process.returncode:
                 raise CommandFailure(command, process.returncode, log)
         finally:
-            # Also terminate surviving descendants of a parent that already exited.
+            # Cleanup must not be interrupted by a repeated caller signal.
+            saved = {s: signal.signal(s, signal.SIG_IGN) for s in (signal.SIGINT, signal.SIGTERM)}
             try:
-                os.killpg(process.pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            try:
-                process.wait(timeout=2)
-            except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGKILL)
-                process.wait(timeout=2)
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-            if cleanup_observation is not None:
-                try:
-                    os.waitpid(process.pid, os.WNOHANG)
-                    reaped = False
-                except ChildProcessError:
-                    reaped = True
-                try:
-                    os.killpg(process.pid, 0)
-                    group_absent = False
-                except ProcessLookupError:
-                    group_absent = True
-                cleanup_observation.update(pid=process.pid, exit_code=process.returncode,
-                                           wait_completed=process.returncode is not None,
-                                           child_reaped=reaped, process_group_absent=group_absent)
+                settle_process_group(process, cleanup_observation)
+            finally:
+                for s, handler in saved.items():
+                    signal.signal(s, handler)
+    if channel:
+        channel.drain()
+        if (not channel.hellos or channel.buffer or len(channel.finished) != len(channel.started)
+                or any(channel.counts[key] != entry['count'] for key, entry in channel.expected.items())):
+            raise ValueError('Process scope startup/terminal fixture accounting incomplete')
     if log.stat().st_size > 100 * 1024 * 1024:
         raise ValueError(f"Command exceeded log capacity: {log}")
     if journal.exists() and journal.stat().st_size > 16 * 1024 * 1024:
@@ -484,6 +626,132 @@ def verify_resolution(log, expected, runtime='flat'):
     if len(matches) != 1 or matches[0][:len(prefix)] != prefix:
         raise ValueError("Real Airship debug compiler lookup does not match explicit seed")
     return matches[0]
+
+
+LIFECYCLE_SOURCE = 'packages/Airship/src/flat/airship/Airship_Test.flat'
+# Frozen consumer source reviewed for these three literal compiler probes. A
+# source change requires an explicit inventory review, never automatic discovery.
+LIFECYCLE_SOURCE_SHA256 = '1221b785ea5d530d888341ac683e4a77c21d4f140b9fc054372f4d371d1b95a8'
+LIFECYCLE_SCRIPTS = (
+    'process.exit(0);',
+    "const fs=require('fs'); if(fs.readFileSync(process.argv[2],'utf8')!=='committed') process.exit(9); process.exit(7);",
+    "const fs=require('fs'); if(fs.readFileSync(process.argv[2],'utf8')!=='committed') process.exit(9);",
+)
+
+
+def companion_contract(workspace):
+    group = json.loads((workspace / 'packages/Airship/flat.json').read_text()).get(
+        'sources', {}).get('owned-process-test', {})
+    expected = {'mainClass': 'flat/airship/AirshipOwnedProcess_TestSuite',
+                'source': 'src/**/*_Test*.flat', 'outFile': 'owned-process-test.js'}
+    if (any(group.get(key) != value for key, value in expected.items()) or
+            group.get('dependencies', {}).get('https://github.com/FlatLang/Test.git') != 'master'):
+        raise ValueError('Mandatory Airship owned-process-test source group is missing/incompatible')
+
+
+def lifecycle_inventory(workspace, runner):
+    source = workspace / LIFECYCLE_SOURCE
+    if not source.is_file() or digest(source) != LIFECYCLE_SOURCE_SHA256:
+        raise ValueError('Airship source differs from reviewed lifecycle fixture inventory')
+    owner = workspace / 'packages/Airship'
+    return [{'id': f'airship-lifecycle-{index}', 'command': 'node',
+             'args': ['{lifecycle}/compiler.cjs'] + ([] if index == 0 else ['{lifecycle}/selected.js']),
+             'lifecycleStep': index,
+             'scriptSha256': hashlib.sha256(script.encode()).hexdigest(),
+             'runner': str(runner), 'runnerSha256': digest(runner), 'cwd': str(owner),
+             'files': [{'path': str(source), 'sha256': LIFECYCLE_SOURCE_SHA256}],
+             'count': 1, 'outcome': {'exit': 7 if index == 1 else 0, 'signal': None}}
+            for index, script in enumerate(LIFECYCLE_SCRIPTS)]
+
+
+def process_companion_gates(workspace, directory, env, policy, node, execute,
+                            budget=None, command_seconds=600):
+    """Extra mandatory gates; never replace any of the seven package suites."""
+    dist = workspace / 'packages/Airship/dist'
+    if dist.exists() and any(dist.rglob('owned-process-test.js')):
+        raise ValueError('Ordinary companion output already exists before build')
+    execute('Airship', 'install', 'owned-process-test', runner=workspace / PRODUCTS[1])
+    candidates = list(dist.rglob('owned-process-test.js'))
+    if len(candidates) != 1:
+        raise ValueError('Expected exactly one fresh ordinary companion output')
+    companion = candidates[0]
+    if companion.is_symlink() or companion.resolve() != companion or not companion.stat().st_size:
+        raise ValueError('Missing fresh ordinary companion output')
+    expected = digest(companion)
+    ordinary_env = {key: value for key, value in env.items()
+                    if key not in ('NODE_OPTIONS', 'FLAT_BOOTSTRAP_POLICY', 'FLAT_PROCESS_SCOPE')}
+    log = directory / 'logs/ordinary-companion.log'
+    run_command([str(node), str(companion)], workspace / 'packages/Airship', ordinary_env,
+                log, directory / 'ordinary-journal.jsonl', budget=budget, timeout=command_seconds)
+    # The output assertion prevents an empty/wrong entrypoint from greenwashing
+    # the private-group companion. Read a bounded summary, never a whole log.
+    with log.open('rb') as stream:
+        stream.seek(max(0, log.stat().st_size - 4096))
+        if b'Ordinary process companion: 6 cases, 0 failures' not in stream.read(4096):
+            raise ValueError('Ordinary companion did not report all six cases')
+    if digest(companion) != expected:
+        raise ValueError('Ordinary companion output mutated')
+    cancellations = []
+    for signum in ('SIGINT', 'SIGTERM'):
+        cancellations.append(external_cancellation_gate(workspace, directory, env, policy,
+                                                       node, signum, budget, command_seconds))
+    return {'ordinary_companion_sha256': expected, 'ordinary_log_sha256': digest(log),
+            'external_cancellations': cancellations}
+
+
+def external_cancellation_gate(workspace, directory, env, policy, node, signum,
+                               budget=None, command_seconds=600):
+    if signum not in ('SIGINT', 'SIGTERM'):
+        raise ValueError('Unsupported cancellation signal')
+    generated = workspace / PRODUCTS[1]
+    # Load the fresh generated bundle, preserving initialization and its actual
+    # consumer implementation, but replace only the CLI-main invocation. This
+    # is a dedicated consumer probe, not a claim that the CLI command succeeded.
+    marker = 'Airship.main(flat_main_args);'
+    # Single generated-program boundary: the VM must compile one complete
+    # bundle. Cap materialization at 100 MiB; never collect project sources.
+    if generated.stat().st_size > 100 * 1024 * 1024:
+        raise ValueError('Generated consumer exceeds probe byte capacity')
+    if generated.read_text().count(marker) != 1:
+        raise ValueError('Generated Airship main contract changed')
+    wrapper = workspace / f'packages/Airship/dist/es6/external-cancellation-{signum}.js'
+    child = "process.on('SIGTERM',()=>process.exit(0));process.kill(process.ppid," + json.dumps(signum) + ");setInterval(()=>{},1000);"
+    replacement = ('await AirshipProcess.execute(FlatArray.jsStringArrayToFlatArray(' +
+                   json.dumps(['node', '-e', child]) + '), flat_null, true);' +
+                   "throw Error('External cancellation unexpectedly returned');")
+    wrapper.parent.mkdir(parents=True, exist_ok=True)
+    wrapper.write_text("const fs=require('node:fs'),vm=require('node:vm');\n" +
+                      'const source=fs.readFileSync(' + json.dumps(str(generated)) + ", 'utf8');\n" +
+                      'vm.compileFunction(source.replace(' + json.dumps(marker) + ',' +
+                      json.dumps(replacement) + "),['require','__filename','__dirname'],{importModuleDynamically:vm.constants.USE_MAIN_CONTEXT_DEFAULT_LOADER,filename:" +
+                      json.dumps(str(generated)) + '})(require(' + json.dumps('node:module') +
+                      ').createRequire(' + json.dumps(str(generated)) + '),' +
+                      json.dumps(str(generated)) + ',' + json.dumps(str(generated.parent)) + ');\n')
+    entry = {'id': f'external-{signum}', 'command': 'node', 'args': ['-e', child],
+             'runner': str(wrapper), 'runnerSha256': digest(wrapper), 'cwd': str(workspace),
+             'files': [{'path': str(generated), 'sha256': digest(generated)}],
+             'count': 1, 'outcome': {'exit': 0, 'signal': None}}
+    selected = directory / f'external-{signum}-policy.json'
+    write_json(selected, {**policy, 'fixtures': [entry]})
+    log = directory / f'logs/external-{signum}.log'
+    try:
+        run_command([str(node), str(wrapper)], workspace,
+                    {**env, 'FLAT_BOOTSTRAP_POLICY': str(selected)}, log,
+                    Path(policy['journal']), budget=budget, timeout=command_seconds)
+    except ValueError as error:
+        if 'Process scope cancellation requested' not in str(error):
+            raise
+    else:
+        raise ValueError('External cancellation command unexpectedly succeeded')
+    receipt = json.loads(log.with_suffix('.log.scope.json').read_text())
+    if (not receipt['scope_cancelled'] or receipt['fixtures_started'] != 1 or
+            sum(event['kind'] == 'cancel' for event in receipt['events']) != 1 or
+            not receipt['cleanup'].get('process_group_absent') or
+            not receipt['cleanup'].get('child_reaped')):
+        raise ValueError('External cancellation missing request or confirmed cleanup')
+    return {'signal': signum, 'generated_airship_sha256': digest(generated),
+            'probe_sha256': digest(wrapper), 'policy_sha256': digest(selected),
+            'log_sha256': digest(log), 'scope_sha256': digest(log.with_suffix('.log.scope.json'))}
 
 
 def stage_command(node, runner, workspace, number, package, operation, source=None,
@@ -639,7 +907,18 @@ def _stage(number, repo, output, sources, seeds, previous=None, budget=None, com
                 runtime='java' if number == 0 else 'flat')
             manifest['commands'][-1]['resolution_log_sha256'] = digest(resolution_log)
             write_json(manifest_file, manifest)
-        exit_code = run_command(command, workspace / "packages" / package, env,
+        command_env = env
+        if operation == 'run' and package == 'Airship':
+            candidates = fresh_tests.get('Airship', {})
+            if len(candidates) != 1:
+                raise ValueError('Expected exactly one fresh Airship test runner for fixture inventory')
+            selected_runner = Path(next(iter(candidates)))
+            fixture_policy = {**policy, 'fixtures': lifecycle_inventory(workspace, selected_runner)}
+            fixture_policy_file = directory / 'airship-test-policy.json'
+            write_json(fixture_policy_file, fixture_policy)
+            command_env = {**env, 'FLAT_BOOTSTRAP_POLICY': str(fixture_policy_file)}
+            manifest['commands'][-1]['fixture_policy_sha256'] = digest(fixture_policy_file)
+        exit_code = run_command(command, workspace / "packages" / package, command_env,
                                 logs / f"{len(manifest['commands']):02d}.log", journal, budget=budget,
                                 timeout=command_seconds)
         if operation == "install":
@@ -670,6 +949,7 @@ def _stage(number, repo, output, sources, seeds, previous=None, budget=None, com
         write_json(manifest_file, manifest)
 
     try:
+        companion_contract(workspace)
         execute("Flat-Compiler", "install", "flatc")
         execute("Airship", "install")
         products = artifacts(workspace)
@@ -679,6 +959,8 @@ def _stage(number, repo, output, sources, seeds, previous=None, budget=None, com
         for package in REQUIRED_SUITES:
             execute(package, "install", "test", runner=workspace / PRODUCTS[1])
             execute(package, "run", "test", runner=workspace / PRODUCTS[1])
+        manifest['process_companion_gates'] = process_companion_gates(
+            workspace, directory, env, policy, seeds['node'][0], execute, budget, command_seconds)
         if artifacts(workspace) != products:
             raise ValueError("Acceptance tests changed stage tool outputs")
         if snapshot_origin_manifest(workspace) != origin_metadata:
@@ -700,9 +982,15 @@ def _stage(number, repo, output, sources, seeds, previous=None, budget=None, com
     finally:
         # Bounded by the fixed stage command count. Keep evidence for failures,
         # not only successful commands, without collecting log contents in RAM.
-        retained = [logs / f'{index:02d}{suffix}.log'
-                    for index in range(1, len(manifest['commands']) + 1)
-                    for suffix in ('', '-resolution')]
+        retained = [path for index in range(1, len(manifest['commands']) + 1)
+                    for suffix in ('', '-resolution')
+                    for path in (logs / f'{index:02d}{suffix}.log',
+                                 logs / f'{index:02d}{suffix}.log.scope.json')]
+        retained += [logs / 'ordinary-companion.log']
+        for signum in ('SIGINT', 'SIGTERM'):
+            retained += [logs / f'external-{signum}.log', logs / f'external-{signum}.log.scope.json',
+                         directory / f'external-{signum}-policy.json']
+        retained += [directory / 'airship-test-policy.json']
         manifest['retained_files'] = {
             path.relative_to(directory).as_posix(): digest(path)
             for path in retained if path.is_file() and not path.is_symlink()}

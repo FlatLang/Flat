@@ -21,6 +21,71 @@ const hash = file => {
   } finally { fs.closeSync(fd); }
   return value.digest('hex');
 };
+let scopeTransport;
+let scopeSend;
+let fixtureSequence = 0;
+if (process.env.FLAT_PROCESS_SCOPE) {
+  const scope = JSON.parse(process.env.FLAT_PROCESS_SCOPE);
+  if (!/^[a-f0-9]{32}$/.test(scope.id) || scope.policySha256 !== hash(policyFile) ||
+      !Number.isInteger(scope.requestFd) || !Number.isInteger(scope.ackFd) ||
+      scope.requestFd < 3 || scope.ackFd < 3 || scope.requestFd > 256 || scope.ackFd > 256 ||
+      scope.requestFd === scope.ackFd ||
+      ![0, 1, 2].includes(policy.stage) || fs.realpathSync(policy.root) !== policy.root ||
+      process.execPath !== policy.node || hash(policy.node) !== policy.nodeSha256) {
+    throw Error('Invalid process scope policy/channel');
+  }
+    const descriptor = fs.fstatSync(scope.requestFd);
+    const acknowledgement = fs.fstatSync(scope.ackFd);
+    if (!descriptor.isFIFO() || !acknowledgement.isFIFO()) throw Error('Process scope requires inherited pipes');
+  const send = (kind, fields = {}) => {
+    const frame = Buffer.from(JSON.stringify({kind, scope: scope.id, pid: process.pid, ...fields}) + '\n');
+    if (frame.length > 1024 || fs.writeSync(scope.requestFd, frame) !== frame.length) {
+      throw Error('Process scope channel failed');
+    }
+  };
+  send('hello');
+  const ack = Buffer.alloc(1);
+  const startupDeadline = Date.now() + 5000;
+  while (true) {
+    try {
+      if (fs.readSync(scope.ackFd, ack, 0, 1, null) !== 1 || ack[0] !== 65) {
+        throw Error('Process scope handshake failed');
+      }
+      break;
+    } catch (error) {
+      if (error.code !== 'EAGAIN' || Date.now() >= startupDeadline) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10);
+    }
+  }
+  let cancelled = false;
+  const listeners = new Set();
+  const cancel = reason => {
+    if (cancelled) return;
+    cancelled = true;
+    send('cancel'); // Host owns all group signals; never forward them here.
+    for (const listener of listeners) {
+      try { listener(reason); } catch (_) { /* cancellation is already fatal */ }
+    }
+    listeners.clear();
+  };
+  const capability = Object.freeze({version: 1, ownership: 'external-command-group',
+    requestCancellation(reason) { cancel(String(reason).slice(0, 256)); },
+    subscribeCancellation(callback) {
+      if (typeof callback !== 'function') throw TypeError('Cancellation callback required');
+      if (cancelled) callback('cancelled');
+      else {
+        if (listeners.size >= 128) throw Error('Cancellation subscriber capacity exceeded');
+        listeners.add(callback);
+      }
+      return () => { listeners.delete(callback); };
+    }});
+  Object.defineProperty(globalThis, Symbol.for('flat.stage.processScope.v1'),
+    {value: capability, writable: false, configurable: false});
+  process.on('SIGINT', () => cancel('SIGINT'));
+  process.on('SIGTERM', () => cancel('SIGTERM'));
+  scopeTransport = scope;
+  scopeSend = send;
+}
 function record(decision, command, args, reason) {
   if (fs.existsSync(policy.journal) && fs.statSync(policy.journal).size > 16 * 1024 * 1024) {
     throw Error('Bootstrap admission journal capacity exceeded');
@@ -42,10 +107,37 @@ function unquote(value) {
   if (value.startsWith("'") && value.endsWith("'")) return value.slice(1, -1).replace(/\\'/g, "'");
   return value;
 }
+let lifecycleDirectory;
+let lifecycleStep = 0;
+function lifecycleMatch(entry, args, options) {
+  if (!Number.isInteger(entry.lifecycleStep) || entry.lifecycleStep !== lifecycleStep ||
+      args.length !== (lifecycleStep === 0 ? 1 : 2)) return false;
+  const owner = path.join(policy.root, 'packages/Airship');
+  const selected = path.resolve(options.cwd || process.cwd(), args[0]);
+  const directory = path.dirname(selected);
+  if (!new RegExp('^\\.airship-generated-lifecycle-[0-9]{1,16}$').test(path.basename(directory)) ||
+      path.dirname(directory) !== owner || path.basename(selected) !== 'compiler.cjs' ||
+      (lifecycleDirectory && lifecycleDirectory !== directory) ||
+      fs.realpathSync(selected) !== selected ||
+      (args.length === 2 && path.resolve(owner, args[1]) !== path.join(directory, 'selected.js'))) return false;
+  verify(selected, entry.scriptSha256);
+  if (lifecycleStep > 0) {
+    const committed = path.join(directory, 'selected.js');
+    if (fs.realpathSync(committed) !== committed || !fs.statSync(committed).isFile() ||
+        fs.statSync(committed).size !== 9 || fs.readFileSync(committed, 'utf8') !== 'committed') {
+      throw Error('Lifecycle fixture committed output changed');
+    }
+  }
+  lifecycleDirectory = directory;
+  lifecycleStep++;
+  return true;
+}
+
 function admit(command, args = [], options = {}) {
   const original = command;
   let expectedExit = 0;
   let nodeProbe = false;
+  let fixture;
   try {
     command = unquote(command);
     args = args.map(unquote);
@@ -57,6 +149,31 @@ function admit(command, args = [], options = {}) {
       command = words[0]; args = words.slice(1);
     }
     const name = path.basename(command);
+    // Explicit immutable test exceptions only; never infer from package name or
+    // accept arbitrary eval/shell/nonzero status. Host verifies cardinality too.
+    const fixtures = policy.fixtures || [];
+    if (fixtures.length > 128) throw Error('Fixture declaration capacity exceeded');
+    fixture = fixtures.find(entry => entry.command === command &&
+      (entry.lifecycleStep === undefined ? JSON.stringify(entry.args) === JSON.stringify(args) :
+        lifecycleMatch(entry, args, options)) &&
+      entry.cwd === fs.realpathSync(options.cwd || process.cwd()) &&
+      process.argv[1] && entry.runner === fs.realpathSync(process.argv[1]));
+    if (fixture) {
+      if (!fixture.runner.startsWith(policy.root + path.sep) ||
+          fs.realpathSync(fixture.runner) !== fixture.runner) throw Error('Fixture runner outside canonical workspace');
+      if (!scopeSend || options.shell || !Number.isInteger(fixture.count) || fixture.count <= 0 ||
+          fixture.count > 128 || !/^[a-zA-Z0-9_-]{1,64}$/.test(fixture.id)) {
+        throw Error('Invalid immutable fixture declaration');
+      }
+      verify(fixture.runner, fixture.runnerSha256);
+      if (!Array.isArray(fixture.files) || fixture.files.length > 16) throw Error('Fixture file capacity exceeded');
+      for (const file of fixture.files) {
+        if (fs.realpathSync(file.path) !== file.path || !file.path.startsWith(policy.root + path.sep)) {
+          throw Error('Fixture file outside canonical workspace');
+        }
+        verify(file.path, file.sha256);
+      }
+    }
     if (policy.debugOnly && name !== 'git') throw Error('debug-only policy prohibits executable launches');
     if (options.detached) throw Error('Detached subprocess escapes stage process-group ownership');
     if (options.argv0 || options.uid !== undefined || options.gid !== undefined) {
@@ -68,7 +185,22 @@ function admit(command, args = [], options = {}) {
         throw Error('Subprocess cwd outside stage');
       }
     }
-    if (name === 'node' || command === policy.node) {
+    if (fixture) {
+      if (command === 'node' || command === policy.node) {
+        verify(policy.node, policy.nodeSha256);
+        command = policy.node;
+      } else {
+        if (command !== '/bin/sh' && !(fixture.outcome && fixture.outcome.error === 'ENOENT')) {
+          throw Error('Only pinned POSIX shell or absent workspace fixture is admitted');
+        }
+        if (!path.isAbsolute(command)) throw Error('Fixture executable must be absolute');
+        if (fixture.outcome && fixture.outcome.error === 'ENOENT') {
+          if (!command.startsWith(policy.root + path.sep) || fs.existsSync(command)) {
+            throw Error('Missing-executable fixture must be absent inside workspace');
+          }
+        } else verify(command, fixture.commandSha256);
+      }
+    } else if (name === 'node' || command === policy.node) {
       if (command !== 'node' && command !== policy.node) throw Error('Unpinned Node executable');
       if (args.length && args[0].startsWith('-')) {
         const owner = path.join(policy.root, 'packages/Flat-ES6-Bound-Writer');
@@ -157,13 +289,26 @@ function admit(command, args = [], options = {}) {
   }
   childEnv.GIT_CONFIG_NOSYSTEM = '1';
   childEnv.GIT_CONFIG_GLOBAL = process.platform === 'win32' ? 'NUL' : '/dev/null';
-  return [command, args, {...options, shell: false, detached: false, env: {
+  let stdio = options.stdio;
+  if (scopeTransport && (command === policy.node || fixture)) {
+    if (stdio === undefined) stdio = ['pipe', 'pipe', 'pipe'];
+    else if (typeof stdio === 'string' && ['inherit', 'ignore', 'pipe'].includes(stdio)) stdio = [stdio, stdio, stdio];
+    else if (Array.isArray(stdio)) stdio = [...stdio];
+    else return reject(command, args, 'Unsupported scope stdio');
+    for (const fd of [scopeTransport.requestFd, scopeTransport.ackFd]) {
+      while (stdio.length <= fd) stdio.push('ignore');
+      if (stdio[fd] !== 'ignore' && stdio[fd] !== fd) return reject(command, args, 'Reserved scope descriptor');
+      stdio[fd] = fd;
+    }
+  }
+  return [command, args, {...options, ...(stdio ? {stdio} : {}), shell: false, detached: false, env: {
     ...childEnv,
+    FLAT_PROCESS_SCOPE: scopeTransport ? JSON.stringify(scopeTransport) : '',
     FLAT_BOOTSTRAP_POLICY: policyFile,
     NODE_OPTIONS: '--require=' + __filename,
     FLAT_HOME: process.env.FLAT_HOME, HOME: process.env.HOME,
     PATH: process.env.PATH,
-  }}, expectedExit];
+  }}, expectedExit, fixture];
 }
 for (const method of ['spawn', 'spawnSync', 'execFile', 'execFileSync']) {
   const original = cp[method];
@@ -174,15 +319,36 @@ for (const method of ['spawn', 'spawnSync', 'execFile', 'execFileSync']) {
     }
     if (typeof options === 'function') { callback = options; options = {}; }
     const admitted = admit(command, args, options || {});
+    const fixture = admitted.pop();
     const expectedExit = admitted.pop();
+    const invocation = ++fixtureSequence;
+    let terminal = false;
+    const outcome = value => {
+      if (!fixture || terminal) return;
+      terminal = true;
+      scopeSend('fixture-end', {fixture: fixture.id, invocation, outcome: value});
+    };
+    if (fixture) scopeSend('fixture-start', {fixture: fixture.id, invocation});
     let result;
     try {
       result = original.call(cp, ...admitted, ...(callback ? [callback] : []));
     } catch (error) {
-      record('reject', admitted[0], admitted[1], 'Subprocess execution failed');
+      if (fixture) outcome(error.status !== undefined ? {exit: error.status, signal: error.signal || null} :
+        {error: error.code || 'UNKNOWN'});
+      else record('reject', admitted[0], admitted[1], 'Subprocess execution failed');
       throw error;
     }
-    const compilerOrNode = admitted[0] === policy.node || admitted[0] === policy.java;
+    if (fixture) {
+      if (method.endsWith('Sync')) {
+        outcome(result && result.error ? {error: result.error.code || 'UNKNOWN'} :
+          {exit: result && typeof result === 'object' ? result.status : 0,
+           signal: result && typeof result === 'object' ? result.signal : null});
+      } else {
+        result.once('error', error => outcome({error: error.code || 'UNKNOWN'}));
+        result.once('close', (code, signal) => outcome({exit: code, signal}));
+      }
+    }
+    const compilerOrNode = !fixture && (admitted[0] === policy.node || admitted[0] === policy.java);
     if (compilerOrNode) {
       if (method.endsWith('Sync')) {
         if (result && typeof result === 'object' && (result.error || result.signal || result.status !== expectedExit)) {

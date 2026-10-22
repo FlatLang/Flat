@@ -13,6 +13,362 @@ import flat/extensions/SyntaxStringFunctions
 import flat/regex/RegexStringExtensions
 
 testable class {
+    // Mandatory ordinary-process companion cases, not silently passed under a
+    // stage owner. AirshipOwnedProcess_TestSuite runs these outside that scope.
+    public async assertOwnedPosixDescendantCleanup() {
+        if (System.OS_INT == System.WINDOWS) return
+        let String[] modes = ["interrupt", "leader-close", "force"]
+        for (mode in modes) {
+            let script = installOwnedProcessFixture(mode)
+            try {
+                let status = AirshipProcess.execute(["node", "-e", script], silent: mode != "leader-close")
+                expect(status).toBe(mode == "leader-close" ? 0 : -1)
+                assertOwnedProcessFixture()
+            } finally { restoreOwnedProcessFixture() }
+        }
+    }
+
+    public async assertDirectChildOrphanNegativeControl() {
+        if (System.OS_INT == System.WINDOWS) return
+        let script = installOwnedProcessFixture("negative")
+        try {
+            external js {
+                const s = globalThis.__airshipOwnedFixture;
+                const child = s.spawn(process.execPath, ['-e', #{script.chars.data}], {
+                    detached: true, stdio: ['ignore', 'ignore', 'ignore', 'ipc']
+                });
+                s.pid = child.pid;
+                const closed = new Promise(resolve => child.once('close', resolve));
+                await new Promise((resolve, reject) => {
+                    s.readyDeadline = setTimeout(() => reject(Error('Negative control readiness deadline')), 10000);
+                    child.once('error', reject);
+                    child.once('message', () => { clearTimeout(s.readyDeadline); resolve(); });
+                });
+                child.kill('SIGTERM'); // Intentionally broken direct-child-only control.
+                await Promise.race([closed, new Promise((_, reject) => {
+                    s.deadline = setTimeout(() => reject(Error('Negative control close deadline')), 10000);
+                })]);
+                clearTimeout(s.deadline);
+                const receipt = JSON.parse(s.fs.readFileSync(s.file, 'utf8'));
+                process.kill(receipt.pid, 0); // Must still be alive: demonstrate the regression.
+            }
+        } finally { restoreOwnedProcessFixture() }
+    }
+
+    // Real processes and IPC readiness, not mocked kills/events. The descendant
+    // retains inherited stdio; direct-child close must not release group ownership.
+    installOwnedProcessFixture(String mode) -> String {
+        native_array native var Char[] source
+        external js {
+            const fs = require('node:fs');
+            const cp = require('node:child_process');
+            const directory = fs.mkdtempSync(require('node:path').join(require('node:os').tmpdir(), 'airship-owned-'));
+            const s = globalThis.__airshipOwnedFixture = {
+                fs, directory, file: directory + '/ready.json', mode: #{mode.chars.data},
+                spawn: cp.spawn, kill: process.kill, signals: [], closed: false
+            };
+            s.watchdog = setTimeout(() => {
+                s.failure = 'Real-process fixture exceeded its readiness/cleanup budget';
+                if (s.pid) {
+                    try { s.kill(-s.pid, 'SIGKILL'); }
+                    catch (error) { if (error.code !== 'ESRCH') s.failure += ': ' + error; }
+                }
+            }, 15000);
+            const descendant = `
+                const fs = require('node:fs');
+                const file = process.argv[1];
+                const mode = process.argv[2];
+                const stop = () => { if (mode !== 'force') process.exit(0); };
+                process.on('SIGTERM', stop); process.on('SIGINT', stop);
+                setInterval(() => {}, 1000);
+                process.send('ready');
+            `;
+            #{source} = `
+                const cp = require('node:child_process');
+                const fs = require('node:fs');
+                const file = ${JSON.stringify(s.file)};
+                const mode = ${JSON.stringify(s.mode)};
+                process.on('SIGINT', () => {
+                    fs.appendFileSync(file + '.interrupts', 'I'); process.exit(0);
+                });
+                process.on('SIGTERM', () => process.exit(0));
+                const worker = cp.spawn(process.execPath, ['-e', ${JSON.stringify(descendant)}, file, mode], {
+                    stdio: ['ignore', 'inherit', 'inherit', 'ipc']
+                });
+                worker.once('message', () => {
+                    fs.writeFileSync(file, JSON.stringify({pid: worker.pid}));
+                    if (mode === 'negative') process.send('ready');
+                    else if (mode === 'leader-close') process.exit(0);
+                    else process.kill(process.ppid, mode === 'interrupt' ? 'SIGINT' : 'SIGTERM');
+                });
+                setInterval(() => {}, 1000);
+            `;
+            cp.spawn = (...args) => {
+                const child = s.spawn(...args);
+                s.pid = child.pid;
+                if (!args[2].detached) throw Error('Ordinary POSIX child must own its group');
+                child.once('close', () => { s.closed = true; });
+                return child;
+            };
+            process.kill = (pid, signal) => {
+                if (pid === -s.pid && signal !== 0) s.signals.push(signal);
+                return s.kill(pid, signal);
+            };
+        }
+        return String(source)
+    }
+
+    assertOwnedProcessFixture() {
+        external js {
+            const s = globalThis.__airshipOwnedFixture;
+            if (s.failure) throw Error(s.failure);
+            if (!s.closed) throw Error('Settled before direct-child close');
+            try { s.kill(-s.pid, 0); throw Error('Owned group survived settlement'); }
+            catch (error) { if (error.code !== 'ESRCH') throw error; }
+            if (s.mode === 'interrupt' &&
+                (s.fs.readFileSync(s.file + '.interrupts', 'utf8') !== 'I' ||
+                 s.signals.filter(signal => signal === 'SIGINT').length !== 1)) {
+                throw Error('One interrupt must be delivered exactly once');
+            }
+            if (s.mode === 'force' && !s.signals.includes('SIGKILL')) throw Error('No forced escalation');
+            if (s.mode === 'leader-close' && !s.signals.includes('SIGTERM')) throw Error('Leader close leaked descendants');
+        }
+    }
+
+    async restoreOwnedProcessFixture() {
+        external js {
+            const s = globalThis.__airshipOwnedFixture;
+            require('node:child_process').spawn = s.spawn;
+            process.kill = s.kill;
+            if (s.deadline) clearTimeout(s.deadline);
+            if (s.readyDeadline) clearTimeout(s.readyDeadline);
+            clearTimeout(s.watchdog);
+            try {
+                if (s.pid) {
+                    try { s.kill(-s.pid, 'SIGKILL'); }
+                    catch (error) { if (error.code !== 'ESRCH') throw error; }
+                    const deadline = Date.now() + 2000;
+                    while (true) {
+                        try { s.kill(-s.pid, 0); }
+                        catch (error) { if (error.code === 'ESRCH') break; throw error; }
+                        if (Date.now() >= deadline) throw Error('Test emergency group cleanup did not settle');
+                        await new Promise(resolve => setTimeout(resolve, 25));
+                    }
+                }
+            } finally {
+                s.fs.rmSync(s.directory, {recursive: true});
+                delete globalThis.__airshipOwnedFixture;
+            }
+        }
+    }
+
+    test async `ordinary run test uses exact argv with literal forwarded arguments`() {
+        let airship = Airship(["--use-links", "-t", "es6", "--", "literal ; $HOME"])
+        let previous = airship.package.scripts["test"]
+        airship.package.scripts["test"] = "node dist/test.js"
+        installProcessFixture("success")
+        try {
+            airship.runScriptService.runScript("test")
+            native Bool valid
+            external js {
+                const s = globalThis.__airshipProcessFixture;
+                #{valid} = s.command === 'node' && s.args.join('|') === 'dist/test.js|literal ; $HOME';
+            }
+            expect(valid).toBe(true)
+            assertProcessFixture()
+        } finally {
+            restoreProcessFixture()
+            airship.package.scripts["test"] = previous
+        }
+    }
+
+    public async assertControlledPrivateProcessLifecycle() {
+        let String[] schedules = ["success", "signal", "cancel", "escalate", "repeat", "exit-cancel", "cleanup-timeout", "error", "throw"]
+        for (schedule in schedules) {
+            if (schedule == "cleanup-timeout" && System.OS_INT == System.WINDOWS) continue
+            installProcessFixture(schedule)
+            try {
+                if (schedule == "error" || schedule == "throw" || schedule == "cleanup-timeout") {
+                    assertAsyncThrows(async { AirshipProcess.execute(["node", "fixture.js"], silent: true) }, ExecutionFailureException.class)
+                } else {
+                    let status = AirshipProcess.execute(["node", "fixture.js"], silent: true)
+                    expect(status).toBe(schedule == "success" ? 0 : -1)
+                }
+                assertProcessFixture()
+            } finally { restoreProcessFixture() }
+        }
+    }
+
+    // Controlled child events and timers: no sleeps, real signals or descendants.
+    installProcessFixture(String schedule) {
+        external js {
+            const cp = require('node:child_process');
+            const events = require('node:events');
+            const mode = #{schedule.chars.data};
+            const state = globalThis.__airshipProcessFixture = {
+                externalScope: globalThis[Symbol.for('flat.stage.processScope.v1')],
+                spawn: cp.spawn, kill: process.kill, timeout: globalThis.setTimeout, clear: globalThis.clearTimeout,
+                kills: [], closed: false, timers: new Set(), nextTimer: 1,
+                before: process.listenerCount('SIGINT') + process.listenerCount('SIGTERM')
+            };
+            if (!state.externalScope) globalThis.setTimeout = (callback, delay) => {
+                const timer = state.nextTimer++;
+                state.timers.add(timer);
+                if (delay === 5000) state.escalate = () => { state.timers.delete(timer); callback(); };
+                if (delay === 7000) state.deadline = () => { state.timers.delete(timer); callback(); };
+                return timer;
+            };
+            if (!state.externalScope) globalThis.clearTimeout = (timer) => { state.timers.delete(timer); };
+            if (!state.externalScope) process.kill = (pid, signal) => {
+                if (pid !== -424242) throw Error('Must only address owned child group');
+                if (signal === 0) {
+                    if (!state.closed || mode === 'cleanup-timeout') return true;
+                    const error = Error('Group absent'); error.code = 'ESRCH'; throw error;
+                }
+                state.kills.push(signal); return true;
+            };
+            cp.spawn = (command, args, options) => {
+                state.command = command; state.args = args;
+                if (options.detached !== (!state.externalScope && process.platform !== 'win32') || options.shell !== false) throw Error('Incorrect child ownership');
+                if (options.stdio[1] !== 'ignore' && options.stdio[1] !== 'inherit') throw Error('Unexpected output capture');
+                if (mode === 'throw') throw Error('controlled synchronous spawn failure');
+                const child = new events.EventEmitter();
+                child.pid = 424242; child.exitCode = null; child.signalCode = null;
+                child.kill = (signal) => { state.kills.push(signal); return true; };
+                queueMicrotask(() => {
+                    if (mode === 'error') child.emit('error', Error('controlled spawn error'));
+                    if (mode === 'cancel' || mode === 'escalate' || mode === 'repeat') process.emit('SIGTERM');
+                    if (mode === 'repeat') process.emit('SIGINT');
+                    if (mode === 'escalate') state.escalate();
+                    child.exitCode = 0;
+                    child.emit('exit', 0, null);
+                    if (mode === 'exit-cancel') process.emit('SIGTERM');
+                    // Error and exit are not settlement: cleanup belongs to close.
+                    if (process.listenerCount('SIGTERM') + process.listenerCount('SIGINT') !== state.before + 2) {
+                        state.failure = 'Settled before close';
+                    }
+                    state.closed = true;
+                    child.emit('close', mode === 'signal' ? null : 0, mode === 'signal' ? 'SIGTERM' : null);
+                    if (mode === 'cleanup-timeout') { state.escalate(); state.deadline(); }
+                });
+                return child;
+            };
+            state.mode = mode;
+        }
+    }
+
+    assertProcessFixture() {
+        native Bool valid
+        external js {
+            const s = globalThis.__airshipProcessFixture;
+            const expected = s.mode === 'escalate' ? 'SIGTERM,SIGKILL' : s.mode === 'repeat' ? 'SIGTERM,SIGKILL' : s.mode === 'cancel' ? 'SIGTERM' : s.mode === 'cleanup-timeout' ? 'SIGTERM,SIGKILL,SIGKILL' : s.mode === 'exit-cancel' && process.platform !== 'win32' ? 'SIGTERM' : '';
+            #{valid} = !s.failure && (s.mode === 'throw' || s.closed) && s.kills.join(',') === expected &&
+                s.timers.size === 0 &&
+                process.listenerCount('SIGINT') + process.listenerCount('SIGTERM') === s.before;
+        }
+        expect(valid).toBe(true)
+    }
+
+    restoreProcessFixture() {
+        external js {
+            const s = globalThis.__airshipProcessFixture;
+            require('node:child_process').spawn = s.spawn;
+            if (!s.externalScope) {
+                process.kill = s.kill;
+                globalThis.setTimeout = s.timeout; globalThis.clearTimeout = s.clear;
+            }
+            delete globalThis.__airshipProcessFixture;
+        }
+    }
+
+    test `ordinary node script strings have a narrow exact argv contract`() {
+        let service = Airship(["--use-links", "-t", "es6"]).runScriptService
+        let String[] conventional = service.getNodeScriptArguments("node dist/test.js")
+        let String[] relative = service.getNodeScriptArguments("node ./dist/es6/test.js")
+        // Convert typed Flat values explicitly at the native test boundary.
+        native Bool valid
+        external js {
+            const conventionalValues = #{conventional};
+            const relativeValues = #{relative};
+            #{valid} = conventionalValues && Array.isArray(conventionalValues.data) &&
+                conventionalValues.data.map(value => value.chars.data).join('|') === 'node|dist/test.js' &&
+                relativeValues && Array.isArray(relativeValues.data) &&
+                relativeValues.data.map(value => value.chars.data).join('|') === 'node|./dist/es6/test.js';
+        }
+        expect(valid).toBe(true)
+        let String[] accepted = ["node azAZ09/Build_Test-1.js", "node zZ9.js"]
+        for (script in accepted) {
+            let String[] selected = service.getNodeScriptArguments(script)
+            expect(selected == null).toBe(false)
+            expect(selected[0]).toBe("node")
+            expect(selected[1]).toBe(script.substring(5))
+        }
+        let String[] shellScripts = ["node dist/test.js && echo done", "node -e code", "node dist/$TEST.js",
+            "node dist/*.js", "node 'dist/test.js'", "echo node dist/test.js", "node ../outside.js", "node --bad.js",
+            "node dist/@test.js", "node dist/[test].js", "node dist/test!.js", "node dist/a:b.js",
+            "node dist/é.js", "node dist/test.js;echo"]
+        for (script in shellScripts) {
+            expect(service.getNodeScriptArguments(script)).toBe(null)
+        }
+    }
+
+    test async `source argument identity preserves globs and canonicalizes only their literal base`() {
+        let airship = Airship(["--use-links", "-t", "es6"])
+        let service = airship.installService
+        let root = File(".").getCanonicalPath()
+        let src = File("src").getCanonicalPath()
+        expect(service.getCanonicalSourceLocation("src/**/*_Test*.flat"))
+            .toBe(src + "/**/*_Test*.flat")
+        expect(service.getCanonicalSourceLocation("./src/../src/**/*_Test*.flat"))
+            .toBe(src + "/**/*_Test*.flat")
+        expect(service.getCanonicalSourceLocation("src\\**\\*_Test*.flat"))
+            .toBe(src + "/**/*_Test*.flat")
+        expect(service.getCanonicalSourceLocation("*_Test*.flat")).toBe(root + "/*_Test*.flat")
+        expect(service.getCanonicalSourceLocation("src/NotCreated?/nested/*.flat"))
+            .toBe(src + "/NotCreated?/nested/*.flat")
+        expect(service.getCanonicalSourceLocation("src/[ab]/{one,two}/*.flat"))
+            .toBe(src + "/[ab]/{one,two}/*.flat")
+        expect(service.getCanonicalSourceLocation(src + "/**/*_Test*.flat"))
+            .toBe(src + "/**/*_Test*.flat")
+        expect(service.getCanonicalSourceLocation("src")).toBe(src)
+        expect(service.getCanonicalSourceLocation("flat.json")).toBe(File("flat.json").getCanonicalPath())
+        assertAsyncThrows(async { service.getCanonicalSourceLocation(".airship-missing-source-base/**/*.flat") }, Exception.class)
+        assertAsyncThrows(async { service.getCanonicalSourceLocation(".airship-missing-source-file.flat") }, Exception.class)
+        if (System.OS_INT != System.WINDOWS) {
+            expect(service.getCanonicalSourceLocation("/**/*.flat")).toBe("/**/*.flat")
+        }
+    }
+
+    test async `source selector identity resolves symlink bases without resolving pattern suffixes`() {
+        let airship = Airship(["--use-links", "-t", "es6"])
+        let directory = File(".airship-source-selector-#{Time.currentTimeMillis}")
+        let target = File(directory, "target")
+        let nested = File(target, "nested")
+        let link = File(directory, "link")
+        nested.mkdirs()
+        try {
+            link.symbolicLinkTo(File(nested.getCanonicalPath()))
+            let canonical = target.getCanonicalPath()
+            expect(airship.installService.getCanonicalSourceLocation(link.normalizedLocation + "/../**/*_Test*.flat"))
+                .toBe(canonical + "/**/*_Test*.flat")
+            expect(airship.installService.getCanonicalSourceLocation(link.normalizedLocation + "/**/../*.flat"))
+                .toBe(nested.getCanonicalPath() + "/**/../*.flat")
+        } finally {
+            directory.delete(recursive: true)
+        }
+    }
+
+    test async `legacy test argument resolution preserves the declared test glob`() {
+        let airship = Airship(["--use-links", "-t", "es6"])
+        let source = airship.getSourceForPackage("test")
+        let args = airship.installService.getLegacyInstallArguments("test", source)
+        let pattern = airship.packageLocation.normalizedLocation + "/" + source.source
+        expect(source.source).toBe("src/**/*_Test*.flat")
+        expect(args.contains(InstallService.sanitizeFileLocation(pattern))).toBe(true)
+        expect(args.contains("-main")).toBe(true)
+        expect(args[args.indexOf("-main") + 1]).toBe(source.mainClass)
+    }
+
     // TestAsync.toThrowWithMessage's second argument is a custom failure label,
     // not an expected message. Keep the exact-message assertion explicit here.
     async assertAsyncThrows(async action(), Class exceptionType, String expectedMessage = null) {
@@ -62,14 +418,14 @@ testable class {
         } finally { directory.delete(recursive: true) }
     }
 
-    test async `Airship subprocess uses exact argv and reports signal termination as failure`() {
+    public async assertRuntimeProcessExitStatuses() {
         expect(AirshipProcess.execute(["node", "-e",
             "if(process.argv[1] !== 'spaces ; $HOME *') process.exit(9);", "spaces ; $HOME *"], silent: true)).toBe(0)
         expect(AirshipProcess.execute(["node", "-e", "process.kill(process.pid, 'SIGTERM');"], silent: true)).toBe(-1)
         expect(AirshipProcess.execute(["node", "-e", "process.exit(7);"], silent: true)).toBe(7)
     }
 
-    test async `Airship cancellation waits for child closure and never reports a zero exit as success`() {
+    public async assertRuntimeParentCancellation() {
         if (System.OS_INT == System.WINDOWS) return
         native var Int before
         native var Int after
@@ -93,7 +449,7 @@ testable class {
         expect(after).toBe(before)
     }
 
-    test async `Airship script boundary retains deliberate shell syntax and large output does not require capture`() {
+    public async assertRuntimeShellAndLargeOutput() {
         expect(AirshipProcess.executeShell("node -e \"process.exit(0)\" && node -e \"process.exit(7)\"", silent: true)).toBe(7)
         expect(AirshipProcess.execute(["node", "-e",
             "const b=Buffer.alloc(65536,120); for(let i=0;i<128;i++) { process.stdout.write(b); process.stderr.write(b); }"], silent: true)).toBe(0)

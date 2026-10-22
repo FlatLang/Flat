@@ -19,6 +19,268 @@ bootstrap = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(bootstrap)
 
 
+class ProcessScopeTests(unittest.TestCase):
+    def test_reviewed_lifecycle_inventory_real_children(self):
+        for variant in ('exact', 'changed', 'wrong-path', 'missing-step'):
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                owner = root / 'packages/Airship'
+                owner.mkdir(parents=True)
+                original = HERE.parent / 'src/flat/airship/Airship_Test.flat'
+                source = root / bootstrap.LIFECYCLE_SOURCE
+                source.parent.mkdir(parents=True)
+                shutil.copyfile(original, source)
+                runner = owner / 'runner.js'
+                scripts = list(bootstrap.LIFECYCLE_SCRIPTS)
+                if variant == 'changed':
+                    scripts[0] = 'process.exit(9);'
+                prefix = '.other-' if variant == 'wrong-path' else '.airship-generated-lifecycle-'
+                runner.write_text("const fs=require('fs'),cp=require('child_process');" +
+                    'const d=' + json.dumps(prefix + '123') + ';fs.mkdirSync(d);' +
+                    'const scripts=' + json.dumps(scripts) + ';' +
+                    'for(let i=0;i<' + ('2' if variant == 'missing-step' else '3') + ';i++){' +
+                    "fs.writeFileSync(d+'/compiler.cjs',scripts[i]);" +
+                    "if(i)fs.writeFileSync(d+'/selected.js','committed');" +
+                    "try{cp.spawnSync('node',[d+'/compiler.cjs',...(i?[d+'/selected.js']:[])]);}catch(e){} }")
+                node = Path(shutil.which('node')).resolve()
+                policy = root / 'policy.json'
+                journal = root / 'journal'
+                policy.write_text(json.dumps({'stage': 1, 'root': str(root), 'node': str(node),
+                    'nodeSha256': bootstrap.digest(node), 'journal': str(journal),
+                    'fixtures': bootstrap.lifecycle_inventory(root, runner)}))
+                env = {**os.environ, 'FLAT_BOOTSTRAP_POLICY': str(policy),
+                       'NODE_OPTIONS': '--require=' + str(HERE / 'stage_subprocess_guard.cjs')}
+                invoke = lambda: bootstrap.run_command([str(node), str(runner)], owner, env,
+                                                       root / 'log', journal, timeout=10)
+                if variant == 'exact':
+                    self.assertEqual(invoke(), 0)
+                else:
+                    with self.assertRaises(ValueError):
+                        invoke()
+
+    def test_external_gate_uses_actual_frozen_consumer_and_requires_cancellation(self):
+        source = (HERE.parent / 'src/flat/airship/AirshipProcess.flat').read_text()
+        implementation = source.split('#{executeInProcessScope} = ', 1)[1].split('\n            };', 1)[0] + '\n};'
+        for variant in ('real', 'no-request', 'bad-main'):
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                generated = root / bootstrap.PRODUCTS[1]
+                generated.parent.mkdir(parents=True)
+                execute = implementation if variant == 'real' else 'async function(){return 0;};'
+                generated.write_text('const execute=' + execute +
+                    "const AirshipProcess={execute: a=>execute(require('child_process'),a,'.',true)};" +
+                    'const FlatArray={jsStringArrayToFlatArray:a=>a},flat_null=null,flat_main_args=[];' +
+                    "process.on('unhandledRejection',()=>process.exit(1));" +
+                    '(async()=>{' + ('Airship.main(flat_main_args);' if variant != 'bad-main' else '') + '})();')
+                node = Path(shutil.which('node')).resolve()
+                journal = root / 'journal'
+                policy = {'stage': 1, 'root': str(root), 'node': str(node),
+                          'nodeSha256': bootstrap.digest(node), 'journal': str(journal)}
+                (root / 'logs').mkdir()
+                env = {**os.environ, 'NODE_OPTIONS': '--require=' + str(HERE / 'stage_subprocess_guard.cjs')}
+                if variant == 'real':
+                    for signum in ('SIGINT', 'SIGTERM'):
+                        receipt = bootstrap.external_cancellation_gate(root, root, env, policy, node,
+                                                                        signum, command_seconds=10)
+                        self.assertEqual(receipt['signal'], signum)
+                else:
+                    with self.assertRaises(ValueError):
+                        bootstrap.external_cancellation_gate(root, root, env, policy, node,
+                                                             'SIGTERM', command_seconds=10)
+
+    def test_environment_spoof_cannot_publish_capability(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            policy = root / 'policy.json'
+            policy.write_text('{}')
+            env = {**os.environ, 'FLAT_BOOTSTRAP_POLICY': str(policy),
+                   'FLAT_PROCESS_SCOPE': json.dumps({'id': 'a' * 32, 'requestFd': 3,
+                       'ackFd': 4, 'policySha256': '0' * 64})}
+            result = subprocess.run([shutil.which('node'), '--require',
+                str(HERE / 'stage_subprocess_guard.cjs'), '-e', 'process.exit(0)'],
+                env=env, capture_output=True, text=True, timeout=10)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('Invalid process scope', result.stderr)
+
+    def test_cleanup_requires_group_absence_even_after_leader_exit(self):
+        process = mock.Mock(pid=12345, returncode=0)
+        # Leader already exited; a descendant survives TERM until KILL.
+        killed = False
+        def kill(pid, sig):
+            nonlocal killed
+            if sig == bootstrap.signal.SIGKILL:
+                killed = True
+            if sig == 0 and killed:
+                raise ProcessLookupError()
+        with mock.patch.object(bootstrap.os, 'killpg', side_effect=kill) as calls, \
+                mock.patch.object(bootstrap.time, 'monotonic', side_effect=range(100)), \
+                mock.patch.object(bootstrap.time, 'sleep'):
+            observed = {}
+            bootstrap.settle_process_group(process, observed)
+            calls.assert_any_call(12345, bootstrap.signal.SIGTERM)
+            calls.assert_any_call(12345, bootstrap.signal.SIGKILL)
+            self.assertTrue(observed['process_group_absent'])
+        with mock.patch.object(bootstrap.os, 'killpg'), \
+                mock.patch.object(bootstrap.time, 'monotonic', side_effect=range(100)), \
+                mock.patch.object(bootstrap.time, 'sleep'):
+            with self.assertRaisesRegex(ValueError, 'cleanup unconfirmed'):
+                bootstrap.settle_process_group(process)
+
+    def test_scope_frames_reject_wrong_identity_and_capacity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            p = Path(directory) / 'policy'
+            p.write_text('{}')
+            channel = bootstrap.ScopeChannel({'FLAT_BOOTSTRAP_POLICY': str(p)})
+            try:
+                os.write(channel.write, b'{"kind":"cancel","scope":"wrong","pid":1}\n')
+                with self.assertRaisesRegex(ValueError, 'Invalid process scope'):
+                    channel.drain()
+                os.write(channel.write, b'x' * 1025 + b'\n')
+                with self.assertRaisesRegex(ValueError, 'capacity'):
+                    channel.drain()
+            finally:
+                channel.close()
+
+    def test_exact_fixture_outcome_accounting_and_detached_rejection(self):
+        for variant in ('exact', 'wrong-exit', 'unconsumed', 'detached', 'mutated-runner'):
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                node = Path(shutil.which('node')).resolve()
+                script = 'process.exit(7)'
+                runner = root / 'runner.js'
+                runner.write_text("try { require('child_process').spawnSync('node',['-e'," +
+                    json.dumps(script) + '], {detached:' + ('true' if variant == 'detached' else 'false') +
+                    "}); } catch (_) {}")
+                entry = {'id': 'expected-seven', 'command': 'node', 'args': ['-e', script],
+                         'runner': str(runner), 'runnerSha256': bootstrap.digest(runner),
+                         'cwd': str(root), 'count': 1, 'files': [],
+                         'outcome': {'exit': 0 if variant == 'wrong-exit' else 7, 'signal': None}}
+                if variant == 'unconsumed':
+                    entry['args'] = ['-e', 'not invoked']
+                    runner.write_text('')
+                    entry['runnerSha256'] = bootstrap.digest(runner)
+                if variant == 'mutated-runner':
+                    runner.write_text(runner.read_text() + '\n// changed')
+                policy = root / 'policy.json'
+                journal = root / 'journal'
+                policy.write_text(json.dumps({'stage': 1, 'root': str(root), 'node': str(node),
+                    'nodeSha256': bootstrap.digest(node), 'journal': str(journal), 'fixtures': [entry]}))
+                env = {**os.environ, 'FLAT_BOOTSTRAP_POLICY': str(policy),
+                       'NODE_OPTIONS': '--require=' + str(HERE / 'stage_subprocess_guard.cjs')}
+                if variant == 'exact':
+                    self.assertEqual(bootstrap.run_command([str(node), str(runner)], root, env,
+                        root / 'log', journal, timeout=10), 0)
+                else:
+                    with self.assertRaises(ValueError):
+                        bootstrap.run_command([str(node), str(runner)], root, env,
+                                              root / 'log', journal, timeout=10)
+
+    def test_real_leader_exit_with_term_resistant_descendant(self):
+        if not hasattr(os, 'fork'):
+            self.skipTest('POSIX process-group fixture')
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pid_file = root / 'descendant.pid'
+            fixture = ("import os,signal,sys\n"
+                "r,w=os.pipe()\n"
+                "pid=os.fork()\n"
+                "if pid==0:\n"
+                " os.close(r); signal.signal(signal.SIGTERM,signal.SIG_IGN)\n"
+                " open(sys.argv[1],'w').write(str(os.getpid()))\n"
+                " os.write(w,b'R'); os.close(w)\n"
+                " while True: signal.pause()\n"
+                "os.close(w); assert os.read(r,1)==b'R'; os.close(r)\n")
+            observed = {}
+            self.assertEqual(bootstrap.run_command([sys.executable, '-I', '-c', fixture, str(pid_file)],
+                root, os.environ.copy(), root / 'log', root / 'journal', timeout=10,
+                cleanup_observation=observed), 0)
+            self.assertTrue(observed['process_group_absent'])
+            self.assertTrue(observed['child_reaped'])
+            with self.assertRaises(ProcessLookupError):
+                os.kill(int(pid_file.read_text()), 0)
+
+    def test_guarded_startup_success_and_actual_signal_cancellation(self):
+        for cancelled in (False, True):
+            with self.subTest(cancelled=cancelled), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                node = Path(shutil.which('node')).resolve()
+                main = root / 'main.js'
+                main.write_text("const k=Symbol.for('flat.stage.processScope.v1'),s=globalThis[k];"
+                    "if(!Object.isFrozen(s)||Object.keys(s).length!==4) throw Error('shape');"
+                    "if(Object.getOwnPropertyDescriptor(globalThis,k).writable) throw Error('mutable');"
+                    "let seen=0; const off=s.subscribeCancellation(()=>seen++); off();"
+                    + ("s.subscribeCancellation(()=>console.log('cancel-observed'));"
+                       "process.kill(process.pid,'SIGTERM'); setInterval(()=>{},1000);" if cancelled else
+                       "console.log('capability-ready');"))
+                policy = root / 'policy.json'
+                journal = root / 'journal'
+                policy.write_text(json.dumps({'stage': 1, 'root': str(root), 'node': str(node),
+                    'nodeSha256': bootstrap.digest(node), 'journal': str(journal)}))
+                env = {**os.environ, 'FLAT_BOOTSTRAP_POLICY': str(policy),
+                       'NODE_OPTIONS': '--require=' + str(HERE / 'stage_subprocess_guard.cjs')}
+                if cancelled:
+                    with self.assertRaisesRegex(ValueError, 'cancellation'):
+                        bootstrap.run_command([str(node), str(main)], root, env, root / 'log', journal, timeout=10)
+                    self.assertIn('cancel-observed', (root / 'log').read_text())
+                else:
+                    self.assertEqual(bootstrap.run_command([str(node), str(main)], root, env,
+                        root / 'log', journal, timeout=10), 0)
+                receipt = json.loads((root / 'log.scope.json').read_text())
+                self.assertEqual(receipt['scope_cancelled'], cancelled)
+                self.assertTrue(receipt['cleanup']['process_group_absent'])
+
+    def test_pinned_shell_and_missing_executable_fixture_outcomes(self):
+        for missing in (False, True):
+            with self.subTest(missing=missing), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                node = Path(shutil.which('node')).resolve()
+                command = str(root / 'absent-executable') if missing else '/bin/sh'
+                args = [] if missing else ['-c', 'exit 7']
+                runner = root / 'runner.js'
+                runner.write_text("require('child_process').spawnSync(" + json.dumps(command) +
+                                  ',' + json.dumps(args) + ');')
+                entry = {'id': 'exact-fixture', 'command': command, 'args': args,
+                         'runner': str(runner), 'runnerSha256': bootstrap.digest(runner),
+                         'cwd': str(root), 'files': [], 'count': 1,
+                         'outcome': {'error': 'ENOENT'} if missing else {'exit': 7, 'signal': None}}
+                if not missing:
+                    entry['commandSha256'] = bootstrap.digest(Path(command))
+                policy = root / 'policy.json'
+                journal = root / 'journal'
+                policy.write_text(json.dumps({'stage': 1, 'root': str(root), 'node': str(node),
+                    'nodeSha256': bootstrap.digest(node), 'journal': str(journal), 'fixtures': [entry]}))
+                env = {**os.environ, 'FLAT_BOOTSTRAP_POLICY': str(policy),
+                       'NODE_OPTIONS': '--require=' + str(HERE / 'stage_subprocess_guard.cjs')}
+                self.assertEqual(bootstrap.run_command([str(node), str(runner)], root, env,
+                    root / 'log', journal, timeout=10), 0)
+                receipt = json.loads((root / 'log.scope.json').read_text())
+                self.assertEqual(receipt['fixtures_started'], 1)
+                self.assertEqual(receipt['fixtures_finished'], 1)
+
+    def test_guarded_startup_and_nested_cancellation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            node = Path(shutil.which('node')).resolve()
+            child = root / 'child.js'
+            child.write_text("globalThis[Symbol.for('flat.stage.processScope.v1')].requestCancellation('nested');")
+            main = root / 'main.js'
+            main.write_text("const s=globalThis[Symbol.for('flat.stage.processScope.v1')];"
+                            "if(!Object.isFrozen(s)||s.version!==1) throw Error('missing capability');"
+                            "require('child_process').spawnSync('node',[" + json.dumps(str(child)) + "]); ")
+            policy = root / 'policy.json'
+            journal = root / 'journal'
+            policy.write_text(json.dumps({'stage': 1, 'root': str(root), 'node': str(node),
+                'nodeSha256': bootstrap.digest(node), 'journal': str(journal)}))
+            env = {**os.environ, 'FLAT_BOOTSTRAP_POLICY': str(policy),
+                   'NODE_OPTIONS': '--require=' + str(HERE / 'stage_subprocess_guard.cjs')}
+            observed = {}
+            with self.assertRaisesRegex(ValueError, 'cancel'):
+                bootstrap.run_command([str(node), str(main)], root, env, root / 'log', journal,
+                                      timeout=10, cleanup_observation=observed)
+            self.assertTrue(observed['process_group_absent'])
+            self.assertTrue(observed['child_reaped'])
+
+
 class BootstrapTests(unittest.TestCase):
     def test_setup_failure_retains_manifest_and_partial_workspace(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -239,8 +501,15 @@ class BootstrapTests(unittest.TestCase):
             process.poll.return_value = None
             budget = mock.Mock(deadline=bootstrap.time.monotonic() + 100)
             budget.check.side_effect = [None, ValueError('Aggregate run storage capacity exceeded')]
+            killed = False
+            def kill_group(pid, sig):
+                nonlocal killed
+                if sig == bootstrap.signal.SIGKILL:
+                    killed = True
+                if sig == 0 and killed:
+                    raise ProcessLookupError()
             with mock.patch.object(bootstrap.subprocess, 'Popen', return_value=process), \
-                    mock.patch.object(bootstrap.os, 'killpg') as kill:
+                    mock.patch.object(bootstrap.os, 'killpg', side_effect=kill_group) as kill:
                 with self.assertRaisesRegex(ValueError, 'storage'):
                     bootstrap.run_command(['not-executed'], root, {}, root / 'log',
                                           root / 'journal', budget=budget)
@@ -429,6 +698,92 @@ class BootstrapTests(unittest.TestCase):
                 bootstrap.stage_command('/node', '/airship.js', workspace, number,
                                         'Airship', 'install', **options)
 
+    def test_companion_gate_requires_fresh_output_six_cases_and_two_scopes(self):
+        for variant in ('exact', 'missing-output', 'wrong-summary', 'cancel-failure'):
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory).resolve()
+                (root / 'logs').mkdir()
+                output = root / 'packages/Airship/dist/owned-process-test.js'
+                def install(*args, **kwargs):
+                    self.assertEqual(args, ('Airship', 'install', 'owned-process-test'))
+                    if variant != 'missing-output':
+                        output.parent.mkdir(parents=True)
+                        output.write_text('fresh companion')
+                def ordinary(command, cwd, env, log, journal, **kwargs):
+                    self.assertNotIn('NODE_OPTIONS', env)
+                    self.assertNotIn('FLAT_BOOTSTRAP_POLICY', env)
+                    self.assertNotIn('FLAT_PROCESS_SCOPE', env)
+                    log.write_text('Ordinary process companion: ' +
+                                   ('5' if variant == 'wrong-summary' else '6') + ' cases, 0 failures')
+                    return 0
+                with mock.patch.object(bootstrap, 'run_command', side_effect=ordinary), \
+                        mock.patch.object(bootstrap, 'external_cancellation_gate',
+                            side_effect=ValueError('missing cancellation') if variant == 'cancel-failure'
+                            else lambda *a: {'signal': a[5]}) as cancellation:
+                    env = {'NODE_OPTIONS': 'guard', 'FLAT_BOOTSTRAP_POLICY': 'policy', 'FLAT_PROCESS_SCOPE': 'scope'}
+                    if variant == 'exact':
+                        result = bootstrap.process_companion_gates(root, root, env, {}, Path('/node'), install)
+                        self.assertEqual([item['signal'] for item in result['external_cancellations']],
+                                         ['SIGINT', 'SIGTERM'])
+                        self.assertEqual(cancellation.call_count, 2)
+                    else:
+                        with self.assertRaises(ValueError):
+                            bootstrap.process_companion_gates(root, root, env, {}, Path('/node'), install)
+
+    def test_companion_manifest_contract_is_mandatory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = root / 'packages/Airship/flat.json'
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(json.dumps({'sources': {}}))
+            with self.assertRaisesRegex(ValueError, 'owned-process-test'):
+                bootstrap.companion_contract(root)
+            value = {'mainClass': 'flat/airship/AirshipOwnedProcess_TestSuite',
+                     'source': 'src/**/*_Test*.flat', 'outFile': 'owned-process-test.js',
+                     'dependencies': {'https://github.com/FlatLang/Test.git': 'master'}}
+            manifest.write_text(json.dumps({'sources': {'owned-process-test': value}}))
+            bootstrap.companion_contract(root)
+            value['mainClass'] = 'flat/airship/Airship_TestSuite'
+            manifest.write_text(json.dumps({'sources': {'owned-process-test': value}}))
+            with self.assertRaises(ValueError):
+                bootstrap.companion_contract(root)
+
+    def test_reviewed_lifecycle_inventory_requires_exact_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            source = root / 'packages/Airship/src/flat/airship/Airship_Test.flat'
+            source.parent.mkdir(parents=True)
+            source.write_text('unreviewed source')
+            runner = root / 'test.js'
+            runner.write_text('runner')
+            with self.assertRaisesRegex(ValueError, 'reviewed lifecycle'):
+                bootstrap.lifecycle_inventory(root, runner)
+
+    def test_frozen_lifecycle_inventory_exact_contract(self):
+        root = HERE.parents[2]
+        source = root / bootstrap.LIFECYCLE_SOURCE
+        self.assertEqual(bootstrap.digest(source),
+                         '1221b785ea5d530d888341ac683e4a77c21d4f140b9fc054372f4d371d1b95a8')
+        scripts = (
+            'process.exit(0);',
+            "const fs=require('fs'); if(fs.readFileSync(process.argv[2],'utf8')!=='committed') process.exit(9); process.exit(7);",
+            "const fs=require('fs'); if(fs.readFileSync(process.argv[2],'utf8')!=='committed') process.exit(9);",
+        )
+        self.assertEqual(bootstrap.LIFECYCLE_SCRIPTS, scripts)
+        entries = bootstrap.lifecycle_inventory(root, source)
+        self.assertEqual(len(entries), 3)
+        for index, entry in enumerate(entries):
+            self.assertEqual(entry['id'], f'airship-lifecycle-{index}')
+            self.assertEqual(entry['command'], 'node')
+            self.assertEqual(entry['args'], ['{lifecycle}/compiler.cjs'] +
+                             ([] if index == 0 else ['{lifecycle}/selected.js']))
+            self.assertEqual(entry['lifecycleStep'], index)
+            self.assertEqual(entry['count'], 1)
+            self.assertEqual(entry['outcome'], {'exit': 7 if index == 1 else 0, 'signal': None})
+            self.assertEqual(entry['scriptSha256'], hashlib.sha256(scripts[index].encode()).hexdigest())
+            self.assertEqual(entry['runnerSha256'], bootstrap.digest(source))
+            self.assertEqual(entry['files'], [{'path': str(source), 'sha256': bootstrap.digest(source)}])
+
     def test_stage_chain_isolated_explicit_and_missing_gate_fails(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
@@ -506,7 +861,10 @@ class BootstrapTests(unittest.TestCase):
                     stream.write(json.dumps(record) + '\n')
                 return 0
 
-            with mock.patch.object(bootstrap, 'run_command', side_effect=fake_command):
+            with mock.patch.object(bootstrap, 'run_command', side_effect=fake_command), \
+                    mock.patch.object(bootstrap, 'companion_contract'), \
+                    mock.patch.object(bootstrap, 'lifecycle_inventory', return_value=[]), \
+                    mock.patch.object(bootstrap, 'process_companion_gates', return_value={'mock': True}) as gates:
                 previous = None
                 for number in range(3):
                     previous = bootstrap.stage(number, repo, output, sources, seeds, previous,
@@ -544,13 +902,14 @@ class BootstrapTests(unittest.TestCase):
                     self.assertEqual(installed, ['Airship', 'Flat-Project-Loading', 'Flat-Parser',
                                                 'Flat-Name-Binding', 'Flat-Bound-IR',
                                                 'Flat-ES6-Bound-Writer', 'Flat-Compiler'])
+            self.assertEqual(gates.call_count, 3)
             self.assertEqual([number for number, _ in calls], [0] * 16 + [1] * 16 + [2] * 16)
             self.assertFalse((repo / bootstrap.PRODUCTS[0]).exists())
             # A zero-exit no-op producer cannot green the stage, even if supplied
             # with an old compiler seed at Airship's existence-check location.
             failed = root / 'failed'
             failed.mkdir()
-            with mock.patch.object(bootstrap, 'run_command'):
+            with mock.patch.object(bootstrap, 'run_command'), mock.patch.object(bootstrap, 'companion_contract'):
                 with self.assertRaises(ValueError):
                     bootstrap.stage(1, repo, failed, sources, seeds, previous,
                                     origin='git@github.com:FlatLang/Flat.git')
@@ -565,7 +924,8 @@ class BootstrapTests(unittest.TestCase):
                 log.write_text('retained producer failure')
                 raise bootstrap.CommandFailure(command, 23, log)
 
-            with mock.patch.object(bootstrap, 'run_command', side_effect=failed_command):
+            with mock.patch.object(bootstrap, 'run_command', side_effect=failed_command), \
+                    mock.patch.object(bootstrap, 'companion_contract'):
                 with self.assertRaises(bootstrap.CommandFailure):
                     bootstrap.stage(1, repo, failed_logs, sources, seeds, previous,
                                     origin='git@github.com:FlatLang/Flat.git')

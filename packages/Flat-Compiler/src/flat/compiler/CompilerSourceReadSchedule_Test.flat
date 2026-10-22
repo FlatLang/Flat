@@ -7,11 +7,11 @@ import flat/writer/es6/bound
 /** Controlled source-read transitions, backed by the real filesystem provider. */
 testable class {
     class ArtifactObservation extends CompilerArtifactLifecycleObserver {
-        visible Int createdCount
-        visible Int removedCount
-        visible Int finalizedCount
-        visible Int publicationCount
-        visible Bool invalid
+        visible var Int createdCount
+        visible var Int removedCount
+        visible var Int finalizedCount
+        visible var Int publicationCount
+        visible var Bool invalid
         visible var String revision
         visible var String destination
         check(CompilerArtifactLifecycleBinding binding) {
@@ -47,15 +47,15 @@ testable class {
             lifecycle.destination = destination
         }
         visible String[] order = String[]
-        visible Int admittedCount
-        visible Int settledCount
-        visible Int peakActive
-        visible Int peakRetained
-        visible Bool drainedReads
+        visible var Int admittedCount
+        visible var Int settledCount
+        visible var Int peakActive
+        visible var Int peakRetained
+        visible var Bool drainedReads
         visible var Bool cancelAtRead
         visible var Bool cancelAtStage
-        visible Bool readReady
-        visible Bool stageReady
+        visible var Bool readReady
+        visible var Bool stageReady
         override public admitted(String identity, Int admitted, Int retained, Int peakRetained) {
             admittedCount = admitted
             this.peakRetained = peakRetained
@@ -87,14 +87,17 @@ testable class {
         Es6ArtifactFiles.ensureDirectory(root)
         try {
             let files = File[]
-            for (name in ["A", "B", "C"]) {
-                let file = File(root, "#name.flat")
+            let String[] names = ["A", "B", "C"]
+            for (name in names) {
+                let file = File(root, "#{name}.flat")
                 Es6ArtifactFiles.write(file, "class #name {}")
                 files.add(file)
             }
             var String reference
-            for (capacity in [1, 3]) {
-                for (reverse in [false, true]) {
+            let Int[] capacities = [1, 3]
+            let Bool[] completionOrders = [false, true]
+            for (capacity in capacities) {
+                for (reverse in completionOrders) {
                     let observer = Observation()
                     let schedule = reverse ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
                     let sink = MemoryCompilerArtifactSink()
@@ -123,8 +126,10 @@ testable class {
             files.add(File(File("../Flat-Core/src"), source.identity))
         }
         var String reference
-        for (capacity in [1, 3]) {
-            for (reverse in [false, true]) {
+        let Int[] capacities = [1, 3]
+        let Bool[] completionOrders = [false, true]
+        for (capacity in capacities) {
+            for (reverse in completionOrders) {
                 let observer = Observation()
                 let schedule = reverse ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
                 let sink = MemoryCompilerArtifactSink()
@@ -175,7 +180,8 @@ testable class {
         Es6ArtifactFiles.write(file, "class Main {}")
         Es6ArtifactFiles.write(output, "previous")
         try {
-            for (afterStage in [false, true]) {
+            let Bool[] cancellationStages = [false, true]
+            for (afterStage in cancellationStages) {
                 let observer = Observation()
                 observer.cancelAtRead = !afterStage
                 observer.cancelAtStage = afterStage
@@ -205,7 +211,8 @@ testable class {
         let file = File(root, "Main.flat")
         Es6ArtifactFiles.write(file, "class Main {}")
         try {
-            for (afterStage in [false, true]) {
+            let Bool[] cancellationStages = [false, true]
+            for (afterStage in cancellationStages) {
                 let observer = Observation()
                 observer.cancelAtRead = !afterStage
                 observer.cancelAtStage = afterStage

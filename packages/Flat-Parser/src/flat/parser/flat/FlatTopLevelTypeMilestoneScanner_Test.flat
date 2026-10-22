@@ -5,6 +5,36 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `valid prefix incomplete type suffix fails with original snapshot and observed brace to EOF range`() {
+        let source = "class Valid {}\nclass DogfoodInvalidSyntax {\n"
+        let values = lex(source)
+        let subject = scanner(16)
+        var Int opening = -1
+        var Int index
+        for (token in values) {
+            if (token.value == "{") opening = index
+            subject.accept(token, index)
+            index++
+        }
+        var ParseFailure failure
+        try { subject.end() }
+        catch (ParseFailure error) { failure = error }
+        expect(failure).toNotBe(null)
+        expect(failure.diagnostic.code).toBe("incomplete-type-body")
+        expect(failure.diagnostic.snapshot).toBe(subject.snapshot)
+        expect(failure.diagnostic.range.startTokenIndex).toBe(opening)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(values.count)
+        expect(failure.diagnostic.range.start.lineNumber).toBe(values[opening].location.lineNumber)
+        expect(failure.diagnostic.range.start.column).toBe(values[opening].location.column)
+        expect(failure.diagnostic.range.end.lineNumber).toBe(values.last.endLineNumber)
+        expect(failure.diagnostic.range.end.column).toBe(values.last.endColumn)
+        expect(subject.finished).toBe(true)
+        expect(subject.retainedHeaderTokenCount).toBe(0)
+        expect(subject.end().count).toBe(0)
+        subject.cancel()
+        expect(subject.end().count).toBe(0)
+    }
+
     async test `publishes complex top level header before body completion`() {
         let source = "class Example implements Comparable<String>, PlusOperator<String>, EqualsOperator, MultiplyOperator<Int, String> { value() { nested() } }"
         let tokens = lex(source)

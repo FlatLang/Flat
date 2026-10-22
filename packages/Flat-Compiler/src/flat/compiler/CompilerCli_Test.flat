@@ -196,7 +196,7 @@ testable class {
         let root = File(".flat-discovery-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         try {
-            for (index in 0..70) Es6ArtifactFiles.write(File(root, "Value#index.flat"), "class Value#index {}")
+            for (index in 0..70) Es6ArtifactFiles.write(File(root, "Value#{index}.flat"), "class Value#index {}")
             Es6ArtifactFiles.write(File(root, "Foreign.java.flat"), "invalid")
             Es6ArtifactFiles.write(File(root, "Ignored_Test.flat"), "invalid")
             Es6ArtifactFiles.write(File(root, "Value0.js.flat"), "class Value0 {}")
@@ -245,8 +245,9 @@ testable class {
         Es6ArtifactFiles.write(second, "package app\nclass Other {}")
         var String previous
         try {
-            for (capacity in [1, 2]) {
-                let output = File(root, "program#capacity.js")
+            let Int[] capacities = [1, 2]
+            for (capacity in capacities) {
+                let output = File(root, "program#{capacity}.js")
                 expect(CompilerCli.run(["flatc", input.normalizedLocation, second.normalizedLocation,
                     "-target", "es6", "-main", "app/Main", "--threads", "#capacity",
                     "-o", output.normalizedLocation])).toBe(0)

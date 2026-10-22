@@ -20,10 +20,11 @@ import flat/io
  */
 class extends CompilerSourceProvider {
     native var Object state
+    private var Bool admissionEmissionStarted
     private CompilerSourceProvider provider
     private CompilerArtifactLifecycleObserver manifestObserver
-    private CompilerArtifactLifecycleStorage manifestTemporary
-    private CompilerArtifactLifecycleBinding manifestBinding
+    private var CompilerArtifactLifecycleStorage manifestTemporary
+    private var CompilerArtifactLifecycleBinding manifestBinding
     visible Bool reused
 
     public construct(CompilerSourceProvider provider, File[] files, String[] arguments,
@@ -148,23 +149,26 @@ class extends CompilerSourceProvider {
                     old.delete(value.identity);
                 }
                 removed = old.size;
-                let hit = false;
+                let nativeReuseHit = false;
                 if (previous && previous.key === key && fs.existsSync(destinationPath)) {
-                    try { hit = digestFile(destinationPath,maxOutputBytes) === previous.output; }
-                    catch (_) { hit = false; }
+                    try { nativeReuseHit = digestFile(destinationPath,maxOutputBytes) === previous.output; }
+                    catch (_) { nativeReuseHit = false; }
                 }
-                const reason = hit ? 'exact-hit' : !previous ? 'cold' :
+                const reason = nativeReuseHit ? 'exact-hit' : !previous ? 'cold' :
                     previous.configuration !== configuration ? 'configuration-changed' :
                     previous.key !== key ? 'closure-changed' : 'output-changed';
                 #{state} = {fs, crypto, digestFile, manifest, lock, lockIdentity, ownerIdentity, ownerRemoved:false, destinationPath, entries,
-                    expected, configuration, key, toolDigest, maxSourceBytes, maxOutputBytes,
-                    tool:path.resolve(tool), owned:true, hit, previousOutput:previous ? previous.output : null,
+                    expected, configuration, key, toolDigest,
+                    optionsFingerprint:crypto.createHash('sha256').update(JSON.stringify(options)).digest('hex'),
+                    sourceInventoryFingerprint:crypto.createHash('sha256').update(JSON.stringify(entries)).digest('hex'),
+                    maxSourceBytes, maxOutputBytes,
+                    tool:path.resolve(tool), owned:true, hit:nativeReuseHit, previousOutput:previous ? previous.output : null,
                     evidence:{schema:'flat.compiler.incremental.v1', scope:'persistent-cli-package',
-                        reused:hit, reason, unchangedSources:unchanged, changedSources:changed,
+                        reused:nativeReuseHit, reason, unchangedSources:unchanged, changedSources:changed,
                         addedSources:added, removedSources:removed, toolFingerprint:'sha256:'+toolDigest,
                         inputFingerprint:'sha256:'+key, manifestPublished:false,
-                        diagnostics:{complete:hit, records:hit ? [] : null}}};
-                #{hit} = hit;
+                        diagnostics:{complete:nativeReuseHit, records:nativeReuseHit ? [] : null}}};
+                #{hit} = nativeReuseHit;
             } catch (error) {
                 let message = error.message;
                 if (owned) {
@@ -185,9 +189,9 @@ class extends CompilerSourceProvider {
         native_array native var Char[] errorMessage
         external js {
             const expected = #{state}.expected;
-            const values = #{values.map({ _.chars.data }).data};
-            if (values.length !== expected.size || new Set(values).size !== values.length ||
-                values.some(identity => !expected.has(identity))) {
+            const admittedIdentityStrings = #{values.map({ _.chars.data }).data};
+            if (admittedIdentityStrings.length !== expected.size || new Set(admittedIdentityStrings).size !== admittedIdentityStrings.length ||
+                admittedIdentityStrings.some(identity => !expected.has(identity))) {
                 #{errorMessage} = 'Provider closure differs from incremental admission';
             }
         }
@@ -254,7 +258,7 @@ class extends CompilerSourceProvider {
     private requireSuccessfulSummary(CompilationSummary summary) {
         identities()
         if (!summary || summary.cancelled || !summary.cleanupSettled || summary.diagnosticCount != 0 ||
-            summary.packageDiagnostic != null || summary.bindingDiagnostic != null ||
+            summary.packageDiagnostic != null || summary.bindingDiagnostic != null || summary.parserDiagnostic != null ||
             summary.artifactCount != 1) throw Exception("Persistent publication requires successful settled compilation")
         var Int sourceCount
         external js { #{sourceCount} = #{state}.entries.length; }
@@ -292,10 +296,10 @@ class extends CompilerSourceProvider {
         let destination = File(String(manifestPath))
         manifestBinding = CompilerArtifactLifecycleBinding(revision(), destination.name, destination.normalizedLocation)
         external js {
-            const s = #{state};
-            try { #{temporaryPath} = s.fs.mkdtempSync(s.manifest+'.tmp-'); }
+            const manifestCreationState = #{state};
+            try { #{temporaryPath} = manifestCreationState.fs.mkdtempSync(manifestCreationState.manifest+'.tmp-'); }
             catch (error) {
-                delete s.manifestContents;
+                delete manifestCreationState.manifestContents;
                 #{errorMessage} = error.message;
             }
         }
@@ -307,24 +311,24 @@ class extends CompilerSourceProvider {
         var Exception failure
         try {
             external js {
-                const s = #{state};
+                const manifestWriteState = #{state};
                 try {
-                    const fd = s.fs.openSync(#{staged.normalizedLocation.chars.data},'wx');
-                    try { s.fs.writeFileSync(fd,s.manifestContents); s.fs.fsyncSync(fd); }
-                    finally { s.fs.closeSync(fd); }
+                    const fd = manifestWriteState.fs.openSync(#{staged.normalizedLocation.chars.data},'wx');
+                    try { manifestWriteState.fs.writeFileSync(fd,manifestWriteState.manifestContents); manifestWriteState.fs.fsyncSync(fd); }
+                    finally { manifestWriteState.fs.closeSync(fd); }
                 } catch (error) { #{errorMessage} = error.message; }
-                finally { delete s.manifestContents; }
+                finally { delete manifestWriteState.manifestContents; }
             }
             // Observe even a partially written payload before any removal attempt.
             manifestTemporary.observeCreated()
             if (errorMessage) throw Exception(String(errorMessage))
             external js {
-                const s = #{state};
+                const manifestPublicationState = #{state};
                 try {
-                    s.fs.renameSync(#{staged.normalizedLocation.chars.data},s.manifest);
-                    s.published = true;
-                    s.evidence.manifestPublished = true;
-                    s.evidence.diagnostics = {complete:true, records:[]};
+                    manifestPublicationState.fs.renameSync(#{staged.normalizedLocation.chars.data},manifestPublicationState.manifest);
+                    manifestPublicationState.published = true;
+                    manifestPublicationState.evidence.manifestPublished = true;
+                    manifestPublicationState.evidence.diagnostics = {complete:true, records:[]};
                 } catch (error) { #{errorMessage} = error.message; }
             }
             if (errorMessage) throw Exception(String(errorMessage))
@@ -344,6 +348,47 @@ class extends CompilerSourceProvider {
             manifestTemporary.remove()
             manifestTemporary = null
         }
+    }
+
+    // Emit the already admitted immutable bounded metadata, one source at a time.
+    // Set the one-shot latch before callbacks: interrupted streams cannot be retried
+    // into an apparently complete admission or used to start compiler work.
+    public emitAdmission(CompilerInvocationAdmissionStream stream) {
+        if (!stream || admissionEmissionStarted) throw Exception("Invocation admission requires a fresh stream")
+        admissionEmissionStarted = true
+        validate()
+        let admittedRevision = revision()
+        var Int count
+        native_array native var Char[] destination
+        native_array native var Char[] tool
+        native_array native var Char[] options
+        native_array native var Char[] configuration
+        native_array native var Char[] inventory
+        external js {
+            const s = #{state};
+            #{count} = s.entries.length;
+            #{destination} = s.destinationPath;
+            #{tool} = 'sha256:' + s.toolDigest;
+            #{options} = 'sha256:' + s.optionsFingerprint;
+            #{configuration} = 'sha256:' + s.configuration;
+            #{inventory} = 'sha256:' + s.sourceInventoryFingerprint;
+        }
+        var Int index
+        while (index < count) {
+            native_array native var Char[] identity
+            native_array native var Char[] content
+            external js {
+                const entry = #{state}.entries[#{index}];
+                #{identity} = entry.identity;
+                #{content} = 'sha256:' + entry.digest;
+            }
+            stream.source(admittedRevision, index + 1, String(identity), String(content))
+            index++
+        }
+        // Delivery callbacks can be user code; never seal bytes changed during it.
+        validate()
+        stream.seal(admittedRevision, String(destination), String(tool), String(options),
+            String(configuration), String(inventory), count)
     }
 
     public revision() -> String {

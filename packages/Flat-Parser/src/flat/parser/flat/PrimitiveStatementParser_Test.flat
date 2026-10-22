@@ -4,6 +4,39 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    test `primitive syntax failures retain typed diagnostic snapshot token offset and observed EOF`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:typed-primitive-failure"), "one")
+        let values = [token("return", Token.Type.IDENTIFIER, 3),
+            token("call", Token.Type.IDENTIFIER, 10), token("(", Token.Type.SYMBOL, 14)]
+        var ParseFailure failure
+        try { PrimitiveStatementParser().parse(values, snapshot, 80) }
+        catch (ParseFailure error) { failure = error }
+        expect(failure.diagnostic.code).toBe("invalid-statement-syntax")
+        expect(failure.diagnostic.snapshot).toBe(snapshot)
+        expect(failure.diagnostic.range.startTokenIndex).toBe(83)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(83)
+        expect(failure.diagnostic.range.start.column).toBe(values.last.endColumn)
+        expect(failure.diagnostic.range.end.column).toBe(values.last.endColumn)
+        var ParseFailure expressionFailure
+        try { PrimitiveExpressionParser().parse([
+            token("1", Token.Type.INTEGER, 3), token("+", Token.Type.SYMBOL, 5)
+        ], snapshot, 90) }
+        catch (ParseFailure error) { expressionFailure = error }
+        expect(expressionFailure.diagnostic.code).toBe("invalid-expression-syntax")
+        expect(expressionFailure.diagnostic.snapshot).toBe(snapshot)
+        expect(expressionFailure.diagnostic.range.startTokenIndex).toBe(92)
+        expect(expressionFailure.diagnostic.range.endTokenIndex).toBe(92)
+        expect(expressionFailure.diagnostic.range.end.column).toBe(6)
+        // Preconditions are infrastructure/API misuse, not malformed source.
+        var Bool converted
+        try { PrimitiveStatementParser().parse(null, snapshot) }
+        catch (Exception error) {
+            if (error.class.isOfType(ParseFailure.class)) converted = true
+            else expect(error.message.contains("requires tokens")).toBe(true)
+        }
+        expect(converted).toBe(false)
+    }
+
     async test `outer returns preserve nested statement lambda semicolons and generic member calls`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-return-boundary"), "one")
         let variants = ["", "<Int>"]
@@ -15,16 +48,16 @@ testable class {
             let shift = typeArguments.isEmpty ? 0 : 3
             let statements = PrimitiveStatementParser().parse(values, snapshot, 40).statements()
             expect(statements.count).toBe(2)
-            let returned = (PrimitiveReturnSyntax)statements[0]
-            let callObject = (Object)returned.value
-            let call = (PrimitiveMemberCallSyntax)callObject
+            PrimitiveReturnSyntax returned = (PrimitiveReturnSyntax)statements[0]
+            Object callObject = returned.value
+            PrimitiveMemberCallSyntax call = (PrimitiveMemberCallSyntax)callObject
             let argument = call.argumentValues()[0]
-            let lambda = (PrimitiveLambdaSyntax)argument
+            PrimitiveLambdaSyntax lambda = (PrimitiveLambdaSyntax)argument
             let innerStatements = lambda.statementValues()
             expect(innerStatements.count).toBe(1)
-            let innerReturn = (PrimitiveReturnSyntax)innerStatements[0]
-            let literalObject = (Object)innerReturn.value
-            let literal = (PrimitiveLiteralSyntax)literalObject
+            PrimitiveReturnSyntax innerReturn = (PrimitiveReturnSyntax)innerStatements[0]
+            Object literalObject = innerReturn.value
+            PrimitiveLiteralSyntax literal = (PrimitiveLiteralSyntax)literalObject
             expect(literal.sourceValue).toBe("0")
             expect(call.memberName).toBe("from")
             expect(call.typeArgumentNames().count).toBe(typeArguments.isEmpty ? 0 : 1)
@@ -42,11 +75,11 @@ testable class {
             // Exercise the delegating entry point used by class/body parsing too.
             let delegated = PrimitiveControlStatementParser().parse(values, snapshot, 40).statements()
             expect(delegated.count).toBe(2)
-            let delegatedReturn = (PrimitiveReturnSyntax)delegated[0]
-            let delegatedCallObject = (Object)delegatedReturn.value
-            let delegatedCall = (PrimitiveMemberCallSyntax)delegatedCallObject
+            PrimitiveReturnSyntax delegatedReturn = (PrimitiveReturnSyntax)delegated[0]
+            Object delegatedCallObject = delegatedReturn.value
+            PrimitiveMemberCallSyntax delegatedCall = (PrimitiveMemberCallSyntax)delegatedCallObject
             let delegatedArgument = delegatedCall.argumentValues()[0]
-            let delegatedLambda = (PrimitiveLambdaSyntax)delegatedArgument
+            PrimitiveLambdaSyntax delegatedLambda = (PrimitiveLambdaSyntax)delegatedArgument
             expect(delegatedLambda.statementValues().count).toBe(1)
             expect(delegatedLambda.range.startTokenIndex).toBe(45 + shift)
         }
@@ -59,14 +92,14 @@ testable class {
         stream.emit("start")
         let statements = PrimitiveStatementParser().parse(stream.consumeAll<Token>("data"), snapshot).statements()
         expect(statements.count).toBe(2)
-        let returned = (PrimitiveReturnSyntax)statements[0]
-        let callObject = (Object)returned.value
-        let call = (PrimitiveMemberCallSyntax)callObject
+        PrimitiveReturnSyntax returned = (PrimitiveReturnSyntax)statements[0]
+        Object callObject = returned.value
+        PrimitiveMemberCallSyntax call = (PrimitiveMemberCallSyntax)callObject
         let argument = call.argumentValues()[0]
-        let lambda = (PrimitiveLambdaSyntax)argument
+        PrimitiveLambdaSyntax lambda = (PrimitiveLambdaSyntax)argument
         expect(lambda.statementValues().count).toBe(1)
         let innerStatement = lambda.statementValues()[0]
-        let inner = (PrimitiveReturnSyntax)innerStatement
+        PrimitiveReturnSyntax inner = (PrimitiveReturnSyntax)innerStatement
         expect(inner.value.expressionKind()).toBe("array")
     }
 
@@ -79,15 +112,15 @@ testable class {
         stream.emit("start")
         let statements = PrimitiveStatementParser().parse(stream.consumeAll<Token>("data"), snapshot).statements()
         expect(statements.count).toBe(2)
-        let returned = (PrimitiveReturnSyntax)statements[0]
-        let callObject = (Object)returned.value
-        let call = (PrimitiveMemberCallSyntax)callObject
+        PrimitiveReturnSyntax returned = (PrimitiveReturnSyntax)statements[0]
+        Object callObject = returned.value
+        PrimitiveMemberCallSyntax call = (PrimitiveMemberCallSyntax)callObject
         let argument = call.argumentValues()[0]
-        let lambda = (PrimitiveLambdaSyntax)argument
+        PrimitiveLambdaSyntax lambda = (PrimitiveLambdaSyntax)argument
         let innerStatements = lambda.statementValues()
         expect(innerStatements.count).toBe(1)
-        let innerReturn = (PrimitiveReturnSyntax)innerStatements[0]
-        let innerValue = innerReturn.value
+        PrimitiveReturnSyntax innerReturn = (PrimitiveReturnSyntax)innerStatements[0]
+        PrimitiveExpressionSyntax innerValue = innerReturn.value
         expect(innerValue.expressionKind()).toBe("interpolated-string")
     }
 
@@ -107,8 +140,8 @@ testable class {
         ]
         let statements = PrimitiveStatementParser().parse(values, snapshot, 10).statements()
         expect(statements.count).toBe(3)
-        let last = (PrimitiveReturnSyntax)statements[2]
-        let lastValue = last.value
+        PrimitiveReturnSyntax last = (PrimitiveReturnSyntax)statements[2]
+        PrimitiveExpressionSyntax lastValue = last.value
         expect(lastValue.expressionKind()).toBe("interpolated-string")
         expect(last.range.startTokenIndex).toBe(16)
         expect(last.range.endTokenIndex).toBe(18)

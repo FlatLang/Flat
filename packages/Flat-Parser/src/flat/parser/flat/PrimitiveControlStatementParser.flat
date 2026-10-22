@@ -463,6 +463,8 @@ class {
     }
 
     syntax(String message, Int tokenIndex) {
-        throw Exception("Primitive control syntax error at token #tokenIndex: #message")
+        throw ParseFailure.atTokens("invalid-control-syntax",
+            "Primitive control syntax error at token #tokenIndex: #message",
+            snapshot, tokens, tokenIndex, tokenIndexOffset)
     }
 }

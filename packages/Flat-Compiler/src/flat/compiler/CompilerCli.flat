@@ -9,14 +9,15 @@ import flat/semantic/binding/primitive/PrimitiveDefaultImport
 /** CLI presentation and filesystem composition; semantic work belongs to Compiler. */
 class CompilerCli {
     public static async main(String[] args) {
-        // Generated Node entrypoints supply user argv only, unlike run's harness API.
+        // Generated Node entrypoints supply user argv only, unlike the run harness API.
         let invocation = ["flatc"]
         invocation.addAll(args)
         System.exit(run(invocation))
     }
 
     public static async run(String[] args, CompilerInvocationObserver observer = null,
-        CompilerSourceReadSchedule sourceReadSchedule = null) -> Int {
+        CompilerSourceReadSchedule sourceReadSchedule = null,
+        CompilerInvocationAdmissionStream admissionStream = null) -> Int {
         var Bool diagnosticBatchEmitted
         var CompilationSummary terminalSummary
         var String diagnosticRevision = "unavailable-before-terminal-session"
@@ -95,6 +96,8 @@ class CompilerCli {
             var String persistentEvidence
             try {
                 diagnosticRevision = incremental.revision()
+                let stream = admissionStream ?: CompilerInvocationAdmissionStream()
+                incremental.emitAdmission(stream)
                 if (observer) observer.invocationAdmitted(diagnosticRevision,
                     output.destination.normalizedLocation, CompilerEvidence.renderPersistent(incremental))
                 if (incremental.reused) {

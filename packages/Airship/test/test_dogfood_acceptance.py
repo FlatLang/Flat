@@ -407,6 +407,12 @@ class AcceptanceTests(unittest.TestCase):
         write()
         return log, arguments, destination, events, report, batch, write
 
+    def test_production_driver_manifest_declares_acceptance_output_filename(self):
+        manifest = Path(__file__).resolve().parents[2] / 'Flat-Compiler/flat.json'
+        value = json.loads(manifest.read_text())
+        self.assertEqual(value['sources']['production-driver'].get('outFile'), 'production-driver.js',
+                         'Ordinary Airship production-driver install must match the acceptance driver destination')
+
     def test_production_driver_launches_pinned_builder_and_all_real_scenarios(self):
         directory = self.root / 'driver-launch'
         workspace = directory / 'workspace'
@@ -705,6 +711,349 @@ class AcceptanceTests(unittest.TestCase):
             value['plan'] = reference(plan_path)
             with self.assertRaisesRegex(ValueError, 'memory growth'):
                 gate.validate_scaling(self.root, value, source_sha, baseline, 'c' * 64)
+
+    def test_ordinary_products_and_invalid_controls_are_mandatory(self):
+        verdict = gate.production_gates({})
+        self.assertFalse(verdict['gates']['ordinary-production-products'])
+        self.assertFalse(verdict['gates']['invalid-production-controls'])
+
+    def test_invalid_control_requires_complete_nonempty_diagnostics(self):
+        batch = {'schema': 'flat.compiler.diagnostics.v1', 'revision': 'sha256:' + 'a' * 64,
+                 'complete': True, 'records': [{'code': 'syntax.invalid', 'message': 'invalid input',
+                                             'source': 'src/Input.flat', 'range': None}]}
+        log = self.root / 'invalid.log'
+        log.write_text(json.dumps(batch) + '\n')
+        with self.assertRaisesRegex(ValueError, 'Missing actual invalid invocation admission'):
+            gate.invalid_diagnostics(log, self.root)
+        for change in ({'complete': False}, {'records': []}, {'revision': ''}):
+            invalid = dict(batch, **change)
+            log.write_text(json.dumps(invalid) + '\n')
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                gate.invalid_diagnostics(log, self.root)
+
+    def test_ordinary_products_execute_fresh_products_and_retain_invalid_controls(self):
+        directory = self.root / 'ordinary'
+        workspace = directory / 'workspace'
+        (directory / 'logs').mkdir(parents=True)
+        for package in ('Flat-Core', 'Airship', 'Flat-Compiler'):
+            (workspace / 'packages' / package / 'src').mkdir(parents=True)
+        mutation = 'packages/Flat-Core/src/Input.flat'
+        (workspace / mutation).write_text('class Input {}\n')
+        compiler = directory / 'stage2-compiler.js'
+        runner = directory / 'stage2-airship.js'
+        for path in (compiler, runner):
+            path.write_text('stage2 ' + path.name)
+        context = {'workspace': workspace, 'directory': directory, 'compiler': compiler, 'runner': runner,
+            'policy': {}, 'journal': directory / 'journal.jsonl'}
+        node = directory / 'node'
+        node.write_text('reviewed Node')
+        node_seed = {'path': str(node), 'sha256': gate.bootstrap.digest(node)}
+        seeds = {'node': (node, node_seed['sha256'])}
+        for package in ('Airship', 'Flat-Compiler'):
+            self.write(workspace / 'packages' / package / 'flat.json', {'sources': {'main': {}, 'flatc': {}}})
+        tools = {gate.bootstrap.PRODUCTS[0]: gate.bootstrap.digest(compiler),
+                 gate.bootstrap.PRODUCTS[1]: gate.bootstrap.digest(runner)}
+        fresh_compiler = workspace / gate.bootstrap.PRODUCTS[0]
+        fresh_airship = workspace / gate.bootstrap.PRODUCTS[1]
+        core_test = workspace / 'packages/Flat-Core/dist/es6/test.js'
+        calls = []
+        def reference(path):
+            return {'path': path.relative_to(self.root).as_posix(), 'sha256': gate.bootstrap.digest(path)}
+        def execute(ctx, argv, cwd, seeds, budget, seconds, expected_exit=0):
+            calls.append(argv)
+            journal = directory / f'journal-{len(calls)}.jsonl'
+            log = directory / f'command-{len(calls)}.log'
+            entries = []
+            if argv[1] == str(runner):
+                package = Path(argv[argv.index('-f') + 1]).name
+                destination = fresh_airship if package == 'Airship' else fresh_compiler
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_text('fresh ordinary ' + package)
+                entries = [{'decision': 'allow', 'command': '/pinned/node', 'args': [str(compiler), 'src']}]
+            elif argv[1] == str(fresh_airship):
+                if 'install' in argv:
+                    core_test.parent.mkdir(parents=True, exist_ok=True)
+                    core_test.write_text('ordinary Core runtime')
+                    entries = [{'decision': 'allow', 'command': '/pinned/node',
+                        'args': [str(fresh_compiler), 'src', '-d', str(core_test.parent), '-o', 'test.js']}]
+                else:
+                    entries = [{'decision': 'allow', 'command': '/pinned/node', 'args': [str(core_test)]}]
+            else:
+                self.assertEqual(argv[1], str(fresh_compiler))
+                self.assertEqual(expected_exit, 1)
+                self.assertNotEqual((workspace / mutation).read_text(), 'class Input {}\n')
+            journal.write_text(''.join(json.dumps(entry) + '\n' for entry in entries))
+            log.write_text(json.dumps({'schema': 'flat.compiler.diagnostics.v1', 'revision': 'sha256:' + 'b' * 64,
+                'complete': True, 'records': [{'code': 'invalid', 'message': 'invalid input',
+                    'source': mutation, 'range': None}] if expected_exit else []}) + '\n')
+            return {'argv': argv, 'cwd': str(cwd), 'exit_status': expected_exit,
+                'log': reference(log), 'journal': reference(journal), 'admission_offset': 0,
+                'tool': reference(Path(argv[1])), 'node_sha256': node_seed['sha256'],
+                'process_cleanup': {'pid': 42, 'exit_code': expected_exit, 'wait_completed': True,
+                                    'child_reaped': True, 'process_group_absent': True}, 'temporary_outputs_after': []}
+        baseline = gate.scenario_sources(None, workspace)
+        # Orchestration-only seams; admission/hash rejection is exercised below.
+        closure = {str(workspace / mutation): baseline[mutation]}
+        def parsed(log, workspace, bindings):
+            self.assertEqual(bindings['sources'][str(workspace / mutation)],
+                             gate.bootstrap.digest(Path(bindings['retained_sources'][str(workspace / mutation)])))
+            return gate.schema_log_records(log, 'flat.compiler.diagnostics.v1')
+        with mock.patch.object(gate, 'product_command', side_effect=execute), \
+             mock.patch.object(gate, 'ordinary_source_closure', return_value=closure), \
+             mock.patch.object(gate, 'observe_node_version', return_value={'version': '24.18.0'}), \
+             mock.patch.object(gate, 'invalid_diagnostics', side_effect=parsed):
+            result = gate.run_ordinary_products(context, seeds, None, 20, mutation)
+        self.assertEqual(len(calls), 6)
+        self.assertEqual(calls[0][calls[0].index('install') + 1], '-t')
+        self.assertEqual(calls[1][calls[1].index('install') + 1], 'flatc')
+        self.assertEqual(gate.scenario_sources(None, workspace), baseline)
+        probe = directory / 'node-version.cjs'
+        probe.write_text(gate.NODE_VERSION_PROBE)
+        result['node_runtime']['command'] = dict(result['core_run'], tool=reference(probe),
+                                               argv=[str(node), str(probe)])
+        with mock.patch.object(gate, 'ordinary_source_closure', return_value=closure), \
+             mock.patch.object(gate, 'measured_node_version', return_value='24.18.0'), \
+             mock.patch.object(gate, 'persistent_records', return_value=[{'inputFingerprint': 'sha256:' + 'b' * 64}]), \
+             mock.patch.object(gate, 'invalid_diagnostics', side_effect=parsed):
+            self.assertTrue(gate.validate_ordinary_products(self.root, result, baseline, tools, node_seed))
+            result['controls']['syntax']['diagnostics'][0]['complete'] = False
+            with self.assertRaisesRegex(ValueError, 'Changed invalid-control'):
+                gate.validate_ordinary_products(self.root, result, baseline, tools, node_seed)
+            result['controls']['syntax']['diagnostics'][0]['complete'] = True
+            saved_command = result['controls']['name']['command']['argv']
+            result['controls']['name']['command']['argv'] = saved_command + ['--java-fallback']
+            with self.assertRaisesRegex(ValueError, 'arguments mismatch'):
+                gate.validate_ordinary_products(self.root, result, baseline, tools, node_seed)
+            result['controls']['name']['command']['argv'] = saved_command
+            result['products']['Flat-Compiler']['build']['tool']['sha256'] = '0' * 64
+            with self.assertRaises(ValueError):
+                gate.validate_ordinary_products(self.root, result, baseline, tools, node_seed)
+
+        def unexpected(ctx, argv, cwd, seeds, budget, seconds, expected_exit=0):
+            command = execute(ctx, argv, cwd, seeds, budget, seconds, expected_exit)
+            if expected_exit:
+                destination = Path(argv[argv.index('-d') + 1]) / argv[argv.index('-o') + 1]
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_text('unexpected executable')
+                command['exit_status'] = 0
+            return command
+        # A separate fresh workspace would normally be used. Clear only the
+        # stand-in artifacts owned by this unit test before replaying builds.
+        fresh_airship.unlink()
+        fresh_compiler.unlink()
+        with mock.patch.object(gate, 'product_command', side_effect=unexpected), \
+             mock.patch.object(gate, 'ordinary_source_closure', return_value=closure), \
+             mock.patch.object(gate, 'observe_node_version', return_value={'version': '24.18.0'}):
+            with self.assertRaisesRegex(ValueError, 'unexpectedly succeeded'):
+                gate.run_ordinary_products(context, seeds, None, 20, mutation)
+        retained = gate.read_json(directory / 'ordinary-products.json')['controls']['syntax']
+        self.assertEqual(retained['command']['exit_status'], 0)
+        self.assertTrue(retained['output_exists'])
+        self.assertIsNotNone(retained['output'])
+        self.assertEqual((self.root / retained['source']['path']).read_bytes(),
+                         b'class Input {}\n' + gate.INVALID_CONTROLS['syntax'].encode())
+        self.assertEqual((workspace / mutation).read_text(), 'class Input {}\n')
+
+    def test_ordinary_airship_overlay_matches_canonical_stage_product(self):
+        repo = Path(__file__).resolve().parents[3]
+        package = repo / 'packages/Airship'
+        base = json.loads((package / 'flat.json').read_text())
+        overlay = json.loads((package / 'flat.js.json').read_text())
+        # Airship selects js overrides for es6 and merges scalar source fields.
+        main = dict(base['sources']['main'], **overlay['sources']['main'])
+        path = f"packages/Airship/{main['outDirectory']}/{main['outFile']}"
+        self.assertEqual(path, 'packages/Airship/dist/airship.js')
+        self.assertEqual(path, gate.bootstrap.PRODUCTS[1])
+        self.assertEqual(overlay['sources']['test']['outFile'], 'test.js')
+
+    def test_invalid_diagnostics_reject_stale_captured_invocation(self):
+        log = self.root / 'invalid-admission.log'
+        batch = {'schema': 'flat.compiler.diagnostics.v1', 'revision': 'sha256:' + 'a' * 64,
+                 'complete': True, 'records': [{'code': 'invalid', 'message': 'invalid',
+                                              'source': 'src/Input.flat', 'range': None}]}
+        log.write_text(json.dumps(batch) + '\n')
+        with self.assertRaisesRegex(ValueError, 'Missing actual invalid invocation admission'):
+            gate.invalid_diagnostics(log, self.root)
+
+    def test_product_command_retains_unexpected_exit_before_rejection(self):
+        directory = self.root / 'unexpected'
+        (directory / 'logs').mkdir(parents=True)
+        workspace = directory / 'workspace'
+        (workspace / 'packages').mkdir(parents=True)
+        node, tool = directory / 'node', directory / 'compiler.js'
+        node.write_text('pinned node')
+        tool.write_text('pinned compiler')
+        context = {'directory': directory, 'workspace': workspace, 'env': {}, 'journal': directory / 'journal'}
+        def execute(argv, cwd, env, log, journal, **kwargs):
+            log.write_text('unexpected successful compile')
+            kwargs['cleanup_observation'].update(pid=42, exit_code=0, wait_completed=True,
+                                                 child_reaped=True, process_group_absent=True)
+        with mock.patch.object(gate.bootstrap, 'run_command', side_effect=execute):
+            command = gate.product_command(context, [str(node), str(tool)], workspace,
+                {'node': (node, gate.bootstrap.digest(node))}, None, 20, expected_exit=1)
+        self.assertEqual(command['exit_status'], 0)
+        self.assertEqual(gate.read_json(directory / 'product-commands.json')[0], command)
+
+    def test_product_validator_binds_reviewed_node_path_and_hash(self):
+        node = self.root / 'node'
+        tool = self.root / 'executed.js'
+        node.write_text('reviewed node')
+        tool.write_text('executed')
+        log = self.root / 'executed.log'
+        log.write_text('executed')
+        journal = self.root / 'executed.journal'
+        journal.write_text('')
+        ref = lambda path: {'path': path.name, 'sha256': gate.bootstrap.digest(path)}
+        command = {'argv': [str(node), str(tool)], 'tool': ref(tool), 'log': ref(log), 'journal': ref(journal),
+            'admission_offset': 0, 'exit_status': 0, 'node_sha256': gate.bootstrap.digest(node),
+            'process_cleanup': {'pid': 42, 'exit_code': 0, 'wait_completed': True, 'child_reaped': True,
+                                'process_group_absent': True}, 'temporary_outputs_after': []}
+        seed = {'path': str(node), 'sha256': gate.bootstrap.digest(node)}
+        self.assertEqual(gate.validate_product_command(self.root, command, 0, seed), [])
+        command['node_sha256'] = '0' * 64
+        with self.assertRaisesRegex(ValueError, 'reviewed Node'):
+            gate.validate_product_command(self.root, command, 0, seed)
+        command['node_sha256'] = seed['sha256']
+        command['argv'][0] = '/unreviewed/node'
+        with self.assertRaisesRegex(ValueError, 'reviewed Node'):
+            gate.validate_product_command(self.root, command, 0, seed)
+
+    def admission_fixture(self):
+        workspace = self.root / 'admitted-workspace'
+        workspace.mkdir()
+        source = workspace / 'Input.flat'
+        source.write_text('invalid production bytes')
+        options = ['Input.flat', '-o', 'output.js']
+        tool = 'a' * 64
+        entries = [{'identity': str(source), 'digest': gate.bootstrap.digest(source)}]
+        digest = lambda value: gate.hashlib.sha256(json.dumps(value, ensure_ascii=False,
+            separators=(',', ':')).encode()).hexdigest()
+        configuration = digest({'schema': 'flat.compiler.incremental.v1', 'publication': 'staged-sha256-v1',
+            'options': options, 'tool': tool, 'node': '24.18.0', 'maxSourceBytes': 4194304,
+            'maxOutputBytes': 67108864})
+        revision = 'sha256:' + digest({'configuration': configuration, 'entries': entries})
+        records = [{'schema': 'flat.compiler.invocation-source.v1', 'revision': revision, 'sequence': 1,
+            'identity': str(source), 'contentFingerprint': 'sha256:' + entries[0]['digest']},
+            {'schema': 'flat.compiler.invocation-admission.v1', 'revision': revision,
+             'destination': str(workspace / 'output.js'), 'toolFingerprint': 'sha256:' + tool,
+             'optionsFingerprint': 'sha256:' + digest(options), 'configurationFingerprint': 'sha256:' + configuration,
+             'sourceInventoryFingerprint': 'sha256:' + digest(entries), 'sourceCount': 1},
+            {'schema': 'flat.compiler.diagnostics.v1', 'revision': revision, 'complete': True,
+             'records': [{'code': 'invalid', 'message': 'invalid source', 'source': str(source), 'range': None}]}]
+        context = {'options': options, 'tool_sha256': tool, 'node_version': '24.18.0',
+            'destination': str(workspace / 'output.js'), 'sources': {str(source): gate.bootstrap.digest(source)}}
+        log = self.root / 'admitted.log'
+        def write():
+            log.write_text(''.join(json.dumps(value) + '\n' for value in records))
+        write()
+        return log, workspace, records, context, write
+
+    def test_invalid_admission_binds_real_source_seal_options_and_diagnostic_revision(self):
+        log, workspace, records, context, write = self.admission_fixture()
+        batches = gate.invalid_diagnostics(log, workspace, context)
+        self.assertEqual(batches[0]['records'][0]['source'], 'Input.flat')
+        for index, field, bad in ((0, 'sequence', 2), (0, 'revision', 'sha256:' + 'b' * 64),
+                (0, 'identity', '/foreign/Input.flat'), (0, 'contentFingerprint', 'sha256:' + 'b' * 64),
+                (1, 'sourceCount', 2), (1, 'sourceInventoryFingerprint', 'sha256:' + 'b' * 64),
+                (1, 'optionsFingerprint', 'sha256:' + 'b' * 64), (1, 'configurationFingerprint', 'sha256:' + 'b' * 64),
+                (1, 'toolFingerprint', 'sha256:' + 'b' * 64), (1, 'destination', '/foreign/output.js'),
+                (2, 'revision', 'sha256:' + 'b' * 64), (2, 'complete', False)):
+            original = records[index][field]
+            records[index][field] = bad
+            write()
+            with self.subTest(index=index, field=field), self.assertRaises(ValueError):
+                gate.invalid_diagnostics(log, workspace, context)
+            records[index][field] = original
+        write()
+        for changed in (records[1:], records[:1] + records[2:], records + [records[1]],
+                        [records[1], records[0], records[2]], [records[0], records[0], records[1], records[2]],
+                        [records[0], records[2], records[1]]):
+            log.write_text(''.join(json.dumps(value) + '\n' for value in changed))
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                gate.invalid_diagnostics(log, workspace, context)
+        write()
+        (workspace / 'Input.flat').write_text('changed after admission')
+        with self.assertRaises(ValueError):
+            gate.invalid_diagnostics(log, workspace, context)
+
+    def test_invocation_sources_use_js_utf16_order_and_reject_reordering(self):
+        log, workspace, records, context, write = self.admission_fixture()
+        # Python scalar ordering differs from JS UTF-16 ordering here.
+        identities = [str(workspace / (name + '.flat')) for name in ('\U00010000', '\ue000')]
+        for identity in identities:
+            Path(identity).write_text(identity)
+        context['sources'] = {identity: gate.bootstrap.digest(Path(identity)) for identity in identities}
+        entries = [{'identity': identity, 'digest': context['sources'][identity]} for identity in identities]
+        configuration = records[1]['configurationFingerprint'][7:]
+        revision = 'sha256:' + gate.node_json_digest({'configuration': configuration, 'entries': entries})
+        seal = dict(records[1], revision=revision, sourceCount=2,
+                    sourceInventoryFingerprint='sha256:' + gate.node_json_digest(entries))
+        batch = dict(records[2], revision=revision,
+                     records=[dict(records[2]['records'][0], source=identities[0])])
+        sources = [{'schema': 'flat.compiler.invocation-source.v1', 'revision': revision, 'sequence': index,
+                    'identity': entry['identity'], 'contentFingerprint': 'sha256:' + entry['digest']}
+                   for index, entry in enumerate(entries, 1)]
+        records[:] = sources + [seal, batch]
+        write()
+        self.assertEqual(len(gate.invalid_diagnostics(log, workspace, context)), 1)
+        # Re-numbering the reordered records must not hide the ordering defect.
+        records[0], records[1] = dict(sources[1], sequence=1), dict(sources[0], sequence=2)
+        write()
+        with self.assertRaisesRegex(ValueError, 'Unordered/duplicate invocation source identity'):
+            gate.invalid_diagnostics(log, workspace, context)
+
+    def test_invalid_admission_binds_retained_invalid_bytes_after_source_restore(self):
+        log, workspace, records, context, write = self.admission_fixture()
+        source = workspace / 'Input.flat'
+        retained = self.root / 'actual-invalid.flat'
+        retained.write_bytes(source.read_bytes())
+        context['retained_sources'] = {str(source): str(retained)}
+        source.write_text('restored baseline')
+        self.assertEqual(len(gate.invalid_diagnostics(log, workspace, context)), 1)
+        for key, bad in (('options', ['foreign.flat']), ('tool_sha256', 'b' * 64),
+                         ('node_version', '24.17.0'), ('destination', str(workspace / 'foreign.js'))):
+            changed = dict(context, **{key: bad})
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                gate.invalid_diagnostics(log, workspace, changed)
+        records[2]['records'][0]['source'] = str(workspace / 'foreign.flat')
+        write()
+        with self.assertRaisesRegex(ValueError, 'outside actual invocation closure'):
+            gate.invalid_diagnostics(log, workspace, context)
+        records[2]['records'][0]['source'] = str(source)
+        write()
+        retained.write_text('tampered retained bytes')
+        with self.assertRaisesRegex(ValueError, 'retained source bytes changed'):
+            gate.invalid_diagnostics(log, workspace, context)
+
+    def test_measured_node_version_requires_exact_probe_bytes_and_log(self):
+        probe = self.root / 'probe.cjs'
+        probe.write_text(gate.NODE_VERSION_PROBE)
+        log = self.root / 'probe.log'
+        log.write_text(json.dumps({'schema': 'flat.dogfood.node-version.v1', 'version': '24.18.0'}) + '\n')
+        reference = lambda path: {'path': path.name, 'sha256': gate.bootstrap.digest(path)}
+        command = {'tool': reference(probe), 'log': reference(log)}
+        self.assertEqual(gate.measured_node_version(self.root, command), '24.18.0')
+        log.write_text(log.read_text() * 2)
+        command['log'] = reference(log)
+        with self.assertRaisesRegex(ValueError, 'Missing Node version observation'):
+            gate.measured_node_version(self.root, command)
+        probe.write_text('console.log("24.18.0")')
+        command['tool'] = reference(probe)
+        with self.assertRaisesRegex(ValueError, 'Changed Node version probe'):
+            gate.measured_node_version(self.root, command)
+
+    def test_successful_core_closure_is_bound_to_pinned_workload(self):
+        log, workspace, records, context, write = self.admission_fixture()
+        baseline = {'Input.flat': context['sources'][str(workspace / 'Input.flat')]}
+        self.assertEqual(gate.ordinary_source_closure(log, workspace, baseline), context['sources'])
+        for index, field, bad in ((0, 'sequence', 2), (0, 'contentFingerprint', 'sha256:' + 'b' * 64),
+                                  (1, 'sourceCount', 2), (1, 'sourceInventoryFingerprint', 'sha256:' + 'b' * 64)):
+            original = records[index][field]
+            records[index][field] = bad
+            write()
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                gate.ordinary_source_closure(log, workspace, baseline)
+            records[index][field] = original
 
     def test_manifest_lifecycle_uses_manifest_binding_and_real_owned_events(self):
         log = self.root / 'manifest.log'

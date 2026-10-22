@@ -458,6 +458,8 @@ class {
     }
 
     syntax(String message, Int tokenIndex) {
-        throw Exception("Primitive function syntax error at token #tokenIndex: #message")
+        throw ParseFailure.atTokens("invalid-function-syntax",
+            "Primitive function syntax error at token #tokenIndex: #message",
+            snapshot, tokens, tokenIndex, tokenIndexOffset)
     }
 }

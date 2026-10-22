@@ -15,6 +15,7 @@ import flat/compiler/Compiler
     CompilerArtifactSink_Test,
     CompilerCli_Test,
     CompilerEvidence_Test,
+    CompilerInvocationAdmission_Test,
     CompilerSourceReadSchedule_Test,
     FlatEs6SourceCompiler_Test
 ]]

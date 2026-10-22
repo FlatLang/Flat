@@ -30,6 +30,8 @@ class {
     var String activeName
     var Int bodyStartTokenIndex
     var Location bodyStart
+    // One extra location scalar tracks the observed end without retaining body tokens.
+    var Location observedEnd
 
     visible var Bool finished
     visible Int retainedHeaderTokenCount =>
@@ -55,6 +57,7 @@ class {
             reject("Top-level type milestone token indexes must be non-negative and strictly increasing")
         }
         lastTokenIndex = tokenIndex
+        observedEnd = endLocation(token)
 
         if (state == BODY) return acceptBody(token, tokenIndex)
         if (token.type == Token.Type.COMMENT || token.type == Token.Type.WS) {
@@ -93,7 +96,7 @@ class {
             state = BODY
             bodyDepth = 1
             bodyStartTokenIndex = tokenIndex + 1
-            bodyStart = endLocation(token)
+            bodyStart = token.location
             activeMembers = FlatTypeBodyMilestoneScanner(
                 snapshot,
                 activeHeaderIdentity,
@@ -110,10 +113,24 @@ class {
     public end() -> SyntaxIsland[] {
         if (finished) return SyntaxIsland[]
 
-        if (state == BODY) reject("Flat source ended inside an incomplete top-level type body")
+        if (state == BODY) {
+            let diagnostic = ParserDiagnostic(
+                "incomplete-type-body",
+                "Flat source ended inside an incomplete top-level type body",
+                snapshot,
+                SourceRange(snapshot, bodyStartTokenIndex - 1, lastTokenIndex + 1,
+                    bodyStart, observedEnd)
+            )
+            finished = true
+            clearHeader()
+            clearBody()
+            observedEnd = null
+            throw ParseFailure(diagnostic)
+        }
         if (headerTokens.isNotEmpty) reject("Flat source ended inside an incomplete top-level type header")
 
         finished = true
+        observedEnd = null
         return SyntaxIsland[]
     }
 
@@ -123,6 +140,7 @@ class {
         finished = true
         clearHeader()
         clearBody()
+        observedEnd = null
     }
 
     acceptBody(Token token, Int tokenIndex) -> SyntaxIsland[] {
@@ -157,7 +175,7 @@ class {
                         snapshot,
                         bodyStartTokenIndex,
                         tokenIndex,
-                        bodyStart,
+                        Location(lineNumber: bodyStart.lineNumber, column: bodyStart.column + 1),
                         token.location
                     ),
                     activeHeaderIdentity,
@@ -260,6 +278,7 @@ class {
         finished = true
         clearHeader()
         clearBody()
+        observedEnd = null
         throw Exception(message)
     }
 

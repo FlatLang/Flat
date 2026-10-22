@@ -12,6 +12,48 @@ class {
         private AirshipCli cliArgs
     ) {}
 
+    /** Only the conventional single Node entrypoint is an argv command.
+     * This is not shell tokenization: quoting, expansion, flags and operators
+     * retain the explicit shell route and remain subject to caller admission.
+     */
+    public getNodeScriptArguments(String command) -> String[] {
+        if (!command.startsWith("node ")) return null
+        var String path = command.substring(5)
+        if (path.startsWith("./")) path = path.substring(2)
+        if (path.isEmpty || !path.endsWith(".js") || path.startsWith("/") || path.startsWith("-") || path.contains("..")) return null
+        var Int index
+        while (index < path.count) {
+            // Explicit integer conversion avoids mixed Char comparison lowering
+            // in the reviewed bootstrap compiler; the ASCII allowlist is unchanged.
+            let Int code = (Int)path[index]
+            if (!((code >= 97 && code <= 122) || (code >= 65 && code <= 90) ||
+                (code >= 48 && code <= 57) || code == 47 || code == 46 ||
+                code == 95 || code == 45)) return null
+            index++
+        }
+        return ["node", command.substring(5)]
+    }
+
+    async executeScriptString(String command, String workingDirectory) -> Int {
+        if (let arguments = getNodeScriptArguments(command)) {
+            let fullArguments = Array<String>():addAll(arguments):addAll(cliArgs.propagationArgs.values)
+            if (airship.debug) {
+                Console.writeLine(fullArguments.map({ System.sanitizeCliArgument(_) }).join(" "))
+                return 0
+            }
+            return AirshipProcess.execute(fullArguments, workingDirectory, silent: cliArgs.quietArg.enabled)
+        }
+        var fullCommand = command
+        if (cliArgs.propagationArgs.enabled) {
+            fullCommand += cliArgs.propagationArgs.values.map({ System.sanitizeCliArgument(_) }).stitchFront(" ")
+        }
+        if (airship.debug) {
+            Console.writeLine(fullCommand)
+            return 0
+        }
+        return AirshipProcess.executeShell(fullCommand, workingDirectory, silent: cliArgs.quietArg.enabled)
+    }
+
     public async runScripts(String[] scripts) {
         scripts.forEachAsync({ runScript(_) })
     }
@@ -47,38 +89,16 @@ class {
                     }
                 } else if (obj.class.isOfType(String.class)) {
                     let String c = (String)obj
-                    var fullCmd = c
-                    
-                    if (airship.cliArgs.propagationArgs.enabled) {
-                        fullCmd += airship.cliArgs.propagationArgs.values.map({ System.sanitizeCliArgument(_) }).stitchFront(" ")
-                    }
-
-                    if (airship.debug) {
-                        Console.writeLine(fullCmd)
-                    } else {
-                        let status = AirshipProcess.executeShell(fullCmd, workingDirectory, silent: cliArgs.quietArg.enabled)
-
-                        if (status != 0) {
-                            throw ExecutionFailureException("Script exited with exit code #status")
-                        }
+                    let status = executeScriptString(c, workingDirectory)
+                    if (status != 0) {
+                        throw ExecutionFailureException("Script exited with exit code #status")
                     }
                 }
             }
 
             return
         } else {
-            var fullCmd = cmd.toString()
-                    
-            if (airship.cliArgs.propagationArgs.enabled) {
-                fullCmd += airship.cliArgs.propagationArgs.values.map({ System.sanitizeCliArgument(_) }).stitchFront(" ")
-            }
-
-            if (airship.debug) {
-                Console.writeLine(fullCmd)
-                return
-            }
-
-            let status = AirshipProcess.executeShell(fullCmd, workingDirectory, silent: cliArgs.quietArg.enabled)
+            let status = executeScriptString(cmd.toString(), workingDirectory)
 
             if (status != 0) {
                 throw ExecutionFailureException("Script exited with exit code #status")

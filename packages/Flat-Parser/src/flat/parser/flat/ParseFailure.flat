@@ -1,0 +1,46 @@
+package flat/parser/flat
+
+import flat/parser/ParserDiagnostic
+import flat/compiler/models
+
+/** Source syntax failure, not an infrastructure or semantic failure. */
+class extends Exception {
+    public construct(visible ParserDiagnostic diagnostic) {
+        if (!diagnostic) throw Exception("Parse failure requires a diagnostic")
+        super(diagnostic.message)
+    }
+
+    /** Finite primitive-parser token slice. EOF is the last observed token end,
+     * never a fabricated line/column. An empty slice has no available range.
+     */
+    public static atTokens(
+        String code,
+        String message,
+        SourceSnapshotIdentity snapshot,
+        Token[] tokens,
+        Int tokenIndex,
+        Int tokenIndexOffset = 0,
+        SourceRange containingRange = null
+    ) -> ParseFailure {
+        var SourceRange range
+        if (tokens.isNotEmpty && tokenIndex >= 0) {
+            if (tokenIndex >= tokens.count) {
+                let last = tokens.last
+                let end = Location(lineNumber: last.endLineNumber, column: last.endColumn)
+                range = SourceRange(snapshot, tokens.count + tokenIndexOffset,
+                    tokens.count + tokenIndexOffset, end, end)
+            } else {
+                let index = tokenIndex
+                let token = tokens[index]
+                range = SourceRange(snapshot, index + tokenIndexOffset,
+                    index + tokenIndexOffset + 1, token.location,
+                    Location(lineNumber: token.endLineNumber, column: token.endColumn))
+            }
+        }
+        if (range && containingRange) {
+            range = SourceRange(snapshot, containingRange.startTokenIndex,
+                containingRange.endTokenIndex, range.start, range.end)
+        }
+        return ParseFailure(ParserDiagnostic(code, message, snapshot, range))
+    }
+}

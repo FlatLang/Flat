@@ -263,7 +263,9 @@ class {
     syntax(String message, Int start, Int end) {
         let sourceStart = start + tokenIndexOffset
         let sourceEnd = end + tokenIndexOffset
-        throw Exception("Primitive statement syntax error at " + sourceStart.toString() +
-            ".." + sourceEnd.toString() + ": " + message)
+        throw ParseFailure.atTokens("invalid-statement-syntax",
+            "Primitive statement syntax error at " + sourceStart.toString() +
+            ".." + sourceEnd.toString() + ": " + message,
+            snapshot, tokens, start, tokenIndexOffset)
     }
 }

@@ -9,18 +9,18 @@ import flat/writer/es6/bound
 testable class {
     /** Bounded recorder: two paths and terminal counters, never a replay backlog. */
     class ManifestRecorder extends CompilerArtifactLifecycleObserver {
-        visible String revision
-        visible String destination
-        visible String directory
-        visible String payload
-        visible Int created
-        visible Int removed
-        visible Int publishedCount
-        visible Int finalizedCount
-        visible Bool invalid
-        visible Bool lastRemoved
-        visible Bool lastFailed
-        visible Bool throwCallbacks
+        visible var String revision
+        visible var String destination
+        visible var String directory
+        visible var String payload
+        visible var Int created
+        visible var Int removed
+        visible var Int publishedCount
+        visible var Int finalizedCount
+        visible var Bool invalid
+        visible var Bool lastRemoved
+        visible var Bool lastFailed
+        visible var Bool throwCallbacks
 
         check(CompilerArtifactLifecycleBinding binding) {
             if (binding.revision != revision || binding.destination != destination ||
@@ -102,12 +102,12 @@ testable class {
                 external js {
                     const fs = #{File.FileGlobal.fs};
                     #{hooks} = {remove:fs.rmSync, rename:fs.renameSync, write:fs.writeFileSync, mkdir:fs.mkdtempSync};
-                    const mode = #{mode};
-                    if (mode === 5) fs.mkdtempSync = () => { throw new Error('controlled manifest creation failure'); };
-                    if (mode === 1) fs.renameSync = () => { throw new Error('controlled manifest rename failure'); };
-                    if (mode === 2) fs.rmSync = () => { throw new Error('controlled manifest cleanup failure'); };
-                    if (mode === 3) fs.rmSync = () => {};
-                    if (mode === 4) fs.writeFileSync = (fd,contents) => {
+                    const injectedFailureMode = #{mode};
+                    if (injectedFailureMode === 5) fs.mkdtempSync = () => { throw new Error('controlled manifest creation failure'); };
+                    if (injectedFailureMode === 1) fs.renameSync = () => { throw new Error('controlled manifest rename failure'); };
+                    if (injectedFailureMode === 2) fs.rmSync = () => { throw new Error('controlled manifest cleanup failure'); };
+                    if (injectedFailureMode === 3) fs.rmSync = () => {};
+                    if (injectedFailureMode === 4) fs.writeFileSync = (fd,contents) => {
                         #{hooks}.write(fd,contents.slice(0,9));
                         throw new Error('controlled manifest partial write failure');
                     };
@@ -146,11 +146,11 @@ testable class {
                     }
                 } finally {
                     external js {
-                        const fs = #{File.FileGlobal.fs};
-                        fs.rmSync = #{hooks}.remove;
-                        fs.renameSync = #{hooks}.rename;
-                        fs.writeFileSync = #{hooks}.write;
-                        fs.mkdtempSync = #{hooks}.mkdir;
+                        const restoredManifestFs = #{File.FileGlobal.fs};
+                        restoredManifestFs.rmSync = #{hooks}.remove;
+                        restoredManifestFs.renameSync = #{hooks}.rename;
+                        restoredManifestFs.writeFileSync = #{hooks}.write;
+                        restoredManifestFs.mkdtempSync = #{hooks}.mkdir;
                     }
                 }
                 transaction.dispose()
@@ -202,15 +202,15 @@ testable class {
                 native var Object hooks
                 external js {
                     const fs = #{File.FileGlobal.fs};
-                    const lock = #{lock.normalizedLocation.chars.data};
-                    const owner = #{owner.normalizedLocation.chars.data};
+                    const nativeLockPath = #{lock.normalizedLocation.chars.data};
+                    const nativeOwnerPath = #{owner.normalizedLocation.chars.data};
                     #{hooks} = {unlink:fs.unlinkSync, rmdir:fs.rmdirSync, unlinks:0, rmdirs:0};
                     fs.unlinkSync = location => {
-                        if (location === owner) #{hooks}.unlinks++;
+                        if (location === nativeOwnerPath) #{hooks}.unlinks++;
                         return #{hooks}.unlink(location);
                     };
                     fs.rmdirSync = location => {
-                        if (location === lock) {
+                        if (location === nativeLockPath) {
                             #{hooks}.rmdirs++;
                             if (#{hooks}.rmdirs === 1) throw new Error('controlled lock rmdir failure after unlink');
                         }
@@ -317,7 +317,8 @@ testable class {
                 expect(rejected).toBe(true)
                 expect(Es6ArtifactFiles.read(manifest)).toBe(published)
             } finally { state.dispose() }
-            let mismatched = CompilerIncrementalState(FilesystemCompilerSourceProvider([]), files,
+            let emptyFiles = File[]
+            let mismatched = CompilerIncrementalState(FilesystemCompilerSourceProvider(emptyFiles), files,
                 ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
             try {
                 var Bool rejected

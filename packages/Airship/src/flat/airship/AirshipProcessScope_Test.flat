@@ -1,0 +1,68 @@
+package flat/airship
+
+/** Isolated model scopes never mutate the trusted preload's real capability.
+ * These tests prove consumer routing, not host transport/tree cleanup receipts.
+ */
+testable class {
+    test async `external command cancellation delegates once without local signals`() {
+        external js {
+            const vm = require('node:vm');
+            const events = require('node:events');
+            const implementation = #{AirshipProcess.executeInProcessScope}.toString();
+            for (const mode of ['success', 'interrupt', 'notify', 'latched', 'spawn-error', 'request-error', 'invalid']) {
+                const state = {requests: [], subscriptions: 0, releases: 0, spawned: 0, timers: 0};
+                const parent = new events.EventEmitter();
+                parent.platform = process.platform;
+                parent.kill = () => { throw Error('External owner must never receive local process.kill'); };
+                const context = vm.createContext({process: parent,
+                    setTimeout: () => { state.timers++; throw Error('External owner must not use private escalation'); },
+                    clearTimeout: () => { throw Error('Unexpected private timer cleanup'); }});
+                let notify;
+                const capability = {
+                    version: 1, ownership: 'external-command-group',
+                    requestCancellation(reason) {
+                        state.requests.push(reason);
+                        if (mode === 'request-error') throw Error('controlled host request failure');
+                        if (notify) notify();
+                    },
+                    subscribeCancellation(callback) {
+                        state.subscriptions++; notify = callback;
+                        if (mode === 'latched') callback();
+                        return () => { state.releases++; notify = undefined; };
+                    }
+                };
+                const key = Symbol.for('flat.stage.processScope.v1');
+                Object.defineProperty(context, key, {value: mode === 'invalid' ? capability : Object.freeze(capability)});
+                const execute = vm.runInContext('(' + implementation + ')', context);
+                const cp = {spawn(command, args, options) {
+                    state.spawned++;
+                    if (options.detached !== false || options.shell !== false) throw Error('External command must inherit its group');
+                    const child = new events.EventEmitter();
+                    child.pid = 123; child.exitCode = null; child.signalCode = null;
+                    child.kill = () => { throw Error('External owner must never receive child.kill'); };
+                    queueMicrotask(() => {
+                        if (mode === 'interrupt' || mode === 'request-error') {
+                            parent.emit('SIGTERM'); parent.emit('SIGINT');
+                        }
+                        if (mode === 'notify') notify();
+                        if (mode === 'spawn-error') child.emit('error', Error('controlled spawn failure'));
+                        child.exitCode = 0;
+                        child.emit('close', 0, null);
+                    });
+                    return child;
+                }};
+                let status, error;
+                try { status = await execute(cp, ['node', 'fixture.js'], '.', true); }
+                catch (failure) { error = failure; }
+                const fails = ['spawn-error', 'request-error', 'invalid'].includes(mode);
+                if (!!error !== fails) throw Error('Unexpected consumer result: ' + mode);
+                if (!fails && status !== (mode === 'success' ? 0 : -1)) throw Error('Cancellation reported success: ' + mode);
+                if (state.requests.length !== (mode === 'interrupt' || mode === 'request-error' ? 1 : 0)) throw Error('Duplicate/missing host request');
+                if (state.spawned !== (mode === 'latched' || mode === 'invalid' ? 0 : 1)) throw Error('Spawn after latched/invalid scope');
+                if (state.releases !== state.subscriptions || state.timers || parent.listenerCount('SIGINT') || parent.listenerCount('SIGTERM')) {
+                    throw Error('Consumer ownership/listener leak: ' + mode);
+                }
+            }
+        }
+    }
+}

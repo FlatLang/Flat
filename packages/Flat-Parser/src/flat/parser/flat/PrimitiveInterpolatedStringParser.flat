@@ -1,6 +1,7 @@
 package flat/parser/flat
 
 import flat/compiler/models
+import flat/parser/ParserDiagnostic
 
 /** Parses all Flat string interpolation segments without target-specific lowering. */
 class {
@@ -114,11 +115,19 @@ class {
                 tokens, sourceRange.snapshot, tokenIndex, sourceRange
             )
         } catch (Exception error) {
+            if (!error.class.isOfType(ParseFailure.class)) throw error
+            ParseFailure failure = (ParseFailure)error
+            // Keep source provenance while preserving the interpolation API's
+            // established concise message (without the inner parser prefix).
+            let diagnostic = failure.diagnostic
             let prefix = "Primitive expression syntax error at token "
-            if (error.message.startsWith(prefix) && error.message.contains(":")) {
-                invalid(error.message.substring(error.message.indexOf(":") + 2))
+            var String message = diagnostic.message
+            if (message.startsWith(prefix) && message.contains(":")) {
+                message = message.substring(message.indexOf(":") + 2)
             }
-            invalid(error.message)
+            throw ParseFailure(ParserDiagnostic(
+                diagnostic.code, message, diagnostic.snapshot, diagnostic.range
+            ))
         }
     }
 

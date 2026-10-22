@@ -210,6 +210,30 @@ class {
     public static sanitizeFileLocation(String location) =>
         location.contains("*") ? "\"#{location}\"" : location
 
+    /** Canonical identity for one compiler source selector, not its matches.
+     * Realpath owns only the literal base before the first glob component.
+     * Keep the remaining selector intact: expanding it here would change argv,
+     * introduce a source-set barrier and race the compiler's source discovery.
+     * A missing literal base remains an error; it is never silently bypassed.
+     */
+    public async getCanonicalSourceLocation(String location) -> String {
+        let normalized = location.replace("\\", "/")
+        var Int index
+        var Int componentStart
+        while (index < normalized.count) {
+            let character = normalized[index]
+            if (character == '*' || character == '?' || character == '[' || character == '{') {
+                let base = componentStart == 0 ? "." : normalized.substring(end: componentStart)
+                let canonicalBase = File(base).getCanonicalPath()
+                let suffix = normalized.substring(componentStart)
+                return canonicalBase.endsWith("/") ? canonicalBase + suffix : canonicalBase + "/" + suffix
+            }
+            if (character == '/') componentStart = index + 1
+            index++
+        }
+        return File(normalized).getCanonicalPath()
+    }
+
     public async getLegacyInstallArguments(String installationTarget, PackageSource source) -> String[] {
         let args = String[]
 
@@ -220,7 +244,7 @@ class {
         let sourceLocations = dependencyService.getDependencySourceLocations(currentDependency, installationTarget)
         let excludeSources = dependencyService.getDependencyExclusions(currentDependency, installationTarget)
         let excludeSource = installationTarget == "test" ? null : dependencyService.getDependencySourceGlobLocation(currentDependency, "test")
-        let canonicalSourceLocations = sourceLocations.mapParallel({ File(_).getCanonicalPath() }).unique()
+        let canonicalSourceLocations = sourceLocations.mapParallel({ getCanonicalSourceLocation(_) }).unique()
 
         log.trace("Adding source locations: #{sourceLocations}")
         args.addAll(sourceLocations.map({ sanitizeFileLocation(_) }))
@@ -276,7 +300,7 @@ class {
                 dependencyLocations[_x] = Array()
 
                 for (src in dependencySourceLocations) {
-                     dependencyLocations[_x].add(File(src).getCanonicalPath())
+                     dependencyLocations[_x].add(getCanonicalSourceLocation(src))
                 }
             }
         })

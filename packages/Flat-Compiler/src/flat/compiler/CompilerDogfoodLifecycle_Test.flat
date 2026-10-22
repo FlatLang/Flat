@@ -31,7 +31,9 @@ testable class {
         visible var Int peak
 
         public construct(Int count, Bool holdCleanup = false) {
-            for (index in 0..count) gates.add(SourceGate("Value#index.flat", holdCleanup))
+            for (index in 0..count) {
+                gates.add(SourceGate("Value#{index}.flat", holdCleanup))
+            }
         }
 
         override public identities() -> String[] => gates.map({ _.identity })
@@ -66,7 +68,7 @@ testable class {
 
         public construct(Int count, Bool immediate = false, Bool holdCleanup = false) {
             for (index in 0..count) {
-                let gate = SourceGate("Value#index.flat", holdCleanup)
+                let gate = SourceGate("Value#{index}.flat", holdCleanup)
                 if (immediate) gate.release.complete(true)
                 gates.add(gate)
             }
@@ -111,18 +113,20 @@ testable class {
         let sink = MemoryCompilerArtifactSink()
         let session = CompilerSession()
         CompilerEngine(maxActiveSources: parallelism).startPackage(provider, sink, "ordered.js", session)
-        for (index in 0..parallelism) provider.gates[index].entered.get()
+        for (index in 0..parallelism) {
+            provider.gates[index].entered.get()
+        }
         expect(provider.active).toBe(parallelism)
         expect(provider.gates[parallelism].entryCount).toBe(0)
 
         // Await settlement after each release: reverse is an observed schedule,
         // not merely the order complete() happened to be called on the gates.
         if (reverse) {
-            var index = parallelism
-            while (index > 0) {
-                index--
-                provider.gates[index].release.complete(true)
-                provider.gates[index].settled.get()
+            var reverseReleaseIndex = parallelism
+            while (reverseReleaseIndex > 0) {
+                reverseReleaseIndex--
+                provider.gates[reverseReleaseIndex].release.complete(true)
+                provider.gates[reverseReleaseIndex].settled.get()
             }
             for (offset in 0..parallelism) {
                 expect(provider.settlementOrder[offset]).toBe("Value#{parallelism - 1 - offset}.flat")
@@ -147,7 +151,7 @@ testable class {
         expect(summary.peakRetainedSourceReads <= parallelism).toBe(true)
         expect(provider.peak).toBe(parallelism)
         expect(provider.active).toBe(0)
-        expect(provider.gates.all({ _.entryCount == 1 && _.settlementCount == 1 })).toBe(true)
+        expect(provider.gates.all((gate) => gate.entryCount == 1 && gate.settlementCount == 1)).toBe(true)
         expect(sink.artifacts().count).toBe(1)
         expect(sink.artifacts().first.identity).toBe("ordered.js")
         expect(session.artifacts.receive().value.code).toBe(sink.artifacts().first.code)
@@ -176,7 +180,9 @@ testable class {
             maxActiveSources: parallelism, maxQueuedSources: 1).start(
             MemoryCompilerSourceProvider(compiler.sources()), sink, session)
         if (parallelism == 3) {
-            for (gate in compiler.gates) gate.entered.get()
+            for (gate in compiler.gates) {
+                gate.entered.get()
+            }
             expect(executor.activeCount).toBe(3)
             expect(session.retainedSourceCount <= 4).toBe(true)
             compiler.gates[2].release.complete(true)
@@ -232,16 +238,18 @@ testable class {
         let sink = MemoryCompilerArtifactSink()
         let session = CompilerSession()
         CompilerEngine(maxActiveSources: parallelism).startPackage(provider, sink, "cancelled.js", session)
-        for (index in 0..parallelism) provider.gates[index].entered.get()
+        for (index in 0..parallelism) {
+            provider.gates[index].entered.get()
+        }
         session.cancel()
         expect(session.completion.completed).toBe(false)
         var Int cleanupWaitSamples
-        var index = parallelism
-        while (index > 0) {
-            index--
-            provider.gates[index].release.complete(true)
-            provider.gates[index].cleanupEntered.get()
-            expect(provider.gates[index].settled.completed).toBe(false)
+        var cancellationReleaseIndex = parallelism
+        while (cancellationReleaseIndex > 0) {
+            cancellationReleaseIndex--
+            provider.gates[cancellationReleaseIndex].release.complete(true)
+            provider.gates[cancellationReleaseIndex].cleanupEntered.get()
+            expect(provider.gates[cancellationReleaseIndex].settled.completed).toBe(false)
             if (!session.completion.completed) cleanupWaitSamples++
             expect(session.completion.completed).toBe(false)
         }
@@ -256,7 +264,9 @@ testable class {
         expect(summary.artifactCount).toBe(0)
         expect(provider.active).toBe(0)
         expect(provider.gates[parallelism].entryCount).toBe(0)
-        for (index in 0..parallelism) expect(provider.gates[index].settlementCount).toBe(1)
+        for (index in 0..parallelism) {
+            expect(provider.gates[index].settlementCount).toBe(1)
+        }
         expect(sink.artifacts().count).toBe(0)
         expect(session.artifacts.receive().completed).toBe(true)
         expect(session.artifactBackpressure.get()).toBe(false)
@@ -278,7 +288,9 @@ testable class {
         CompilerEngine(executor: executor, sourceCompiler: compiler,
             maxActiveSources: parallelism, maxQueuedSources: 1).start(
             MemoryCompilerSourceProvider(compiler.sources()), sink, session)
-        for (index in 0..parallelism) compiler.gates[index].entered.get()
+        for (index in 0..parallelism) {
+            compiler.gates[index].entered.get()
+        }
         expect(executor.activeCount).toBe(parallelism)
         session.cancel()
         expect(session.completion.completed).toBe(false)
@@ -289,18 +301,20 @@ testable class {
             if (!session.completion.completed) cleanupWaitSamples++
             expect(session.completion.completed).toBe(false)
         }
-        var index = parallelism
-        while (index > 0) {
-            index--
+        var executorCleanupIndex = parallelism
+        while (executorCleanupIndex > 0) {
+            executorCleanupIndex--
             expect(session.completion.completed).toBe(false)
-            compiler.gates[index].cleanupRelease.complete(true)
-            compiler.gates[index].settled.get()
+            compiler.gates[executorCleanupIndex].cleanupRelease.complete(true)
+            compiler.gates[executorCleanupIndex].settled.get()
         }
         let summary = session.completion.get()
         expect(summary.cancelled).toBe(true)
         expect(summary.cleanupSettled).toBe(true)
         expect(compiler.gates[parallelism].entryCount).toBe(0)
-        for (index in 0..parallelism) expect(compiler.gates[index].settlementCount).toBe(1)
+        for (index in 0..parallelism) {
+            expect(compiler.gates[index].settlementCount).toBe(1)
+        }
         expect(compiler.active).toBe(0)
         expect(executor.activeCount).toBe(0)
         expect(executor.queuedCount).toBe(0)
@@ -345,10 +359,12 @@ testable class {
         expect(session.inFlightSourceCount).toBe(0)
         expect(session.retainedSourceCount).toBe(0)
         expect(session.retainedSourceCodeCharacters).toBe(0)
-        expect(compiler.gates.all({ _.entryCount == _.settlementCount })).toBe(true)
+        expect(compiler.gates.all((gate) => gate.entryCount == gate.settlementCount)).toBe(true)
         let committed = sink.artifacts().count
         // Graceful cancellation keeps already accepted delivery, not pending sends.
-        for (index in 0..4) expect(session.artifacts.receive().received).toBe(true)
+        for (index in 0..4) {
+            expect(session.artifacts.receive().received).toBe(true)
+        }
         expect(session.artifacts.receive().completed).toBe(true)
         expect(sink.artifacts().count).toBe(committed)
         emitLifecycle("artifact-backpressure-cancellation", parallelism, compiler.gates,
@@ -373,7 +389,7 @@ testable class {
         expect(summary.cancelled).toBe(true)
         expect(summary.cleanupSettled).toBe(true)
         expect(executor.queuedCount).toBe(0)
-        expect(compiler.gates.all({ _.entryCount == 0 && _.settlementCount == 0 })).toBe(true)
+        expect(compiler.gates.all((gate) => gate.entryCount == 0 && gate.settlementCount == 0)).toBe(true)
         expect(sink.artifacts().count).toBe(0)
         expect(session.inFlightSourceCount).toBe(0)
         expect(session.retainedSourceCount).toBe(0)

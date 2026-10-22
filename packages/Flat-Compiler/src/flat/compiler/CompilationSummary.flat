@@ -1,6 +1,7 @@
 package flat/compiler
 
 import flat/semantic/binding/BindingDiagnostic
+import flat/parser/ParserDiagnostic
 
 /** Immutable terminal counts. sourceCount counts admitted identities, artifactCount
  * counts successful writes to the supplied sink (staging for a spool, not final
@@ -25,7 +26,8 @@ data class {
         visible Bool cleanupSettled = true,
         visible Int peakActiveSourceReads = 0,
         visible Int peakRetainedSourceReads = 0,
-        visible BindingDiagnostic bindingDiagnostic = null
+        visible BindingDiagnostic bindingDiagnostic = null,
+        visible ParserDiagnostic parserDiagnostic = null
     ) {
         if (sourceCount < 0 || artifactCount < 0 || diagnosticCount < 0) {
             throw Exception("Compilation summary counts cannot be negative")

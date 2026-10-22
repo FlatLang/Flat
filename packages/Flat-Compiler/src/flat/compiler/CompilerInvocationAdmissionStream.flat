@@ -1,0 +1,31 @@
+package flat/compiler
+
+/** Synchronous, non-replaying admission stream. Exceptions stop admission before
+ * compiler work. Overrides must deliver each record or throw, never silently drop.
+ * Source records alone are not an admission: the terminal seal is required.
+ */
+class CompilerInvocationAdmissionStream {
+    public source(String revision, Int sequence, String identity, String contentFingerprint) {
+        native_array native var Char[] json
+        external js {
+            #{json} = JSON.stringify({schema:'flat.compiler.invocation-source.v1',
+                revision:#{revision.chars.data}, sequence:#{sequence},
+                identity:#{identity.chars.data}, contentFingerprint:#{contentFingerprint.chars.data}});
+        }
+        Console.log(String(json))
+    }
+
+    public seal(String revision, String destination, String toolFingerprint,
+        String optionsFingerprint, String configurationFingerprint,
+        String sourceInventoryFingerprint, Int sourceCount) {
+        native_array native var Char[] json
+        external js {
+            #{json} = JSON.stringify({schema:'flat.compiler.invocation-admission.v1',
+                revision:#{revision.chars.data}, destination:#{destination.chars.data},
+                toolFingerprint:#{toolFingerprint.chars.data}, optionsFingerprint:#{optionsFingerprint.chars.data},
+                configurationFingerprint:#{configurationFingerprint.chars.data},
+                sourceInventoryFingerprint:#{sourceInventoryFingerprint.chars.data}, sourceCount:#{sourceCount}});
+        }
+        Console.log(String(json))
+    }
+}
