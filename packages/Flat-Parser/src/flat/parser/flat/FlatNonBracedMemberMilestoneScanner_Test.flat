@@ -5,6 +5,46 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `invalid non braced EOF reports retained member range before terminal cleanup`() {
+        let tokens = significant(lex("public broken("))
+        let subject = scanner(16)
+        var Int index
+        for (token in tokens) {
+            expect(subject.accept(token, 20 + index * 2).count).toBe(0)
+            index++
+        }
+        var ParseFailure failure
+        try { subject.end() }
+        catch (Exception error) {
+            expect(error.class.isOfType(ParseFailure.class)).toBe(true)
+            failure = (ParseFailure)error
+        }
+        expect(failure).toNotBe(null)
+        expect(failure.diagnostic.code).toBe("invalid-non-braced-member")
+        expect(failure.diagnostic.snapshot).toBe(subject.snapshot)
+        expect(failure.diagnostic.range.snapshot).toBe(subject.snapshot)
+        expect(failure.diagnostic.range.startTokenIndex).toBe(20)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(25)
+        expect(failure.diagnostic.range.start.lineNumber).toBe(1)
+        expect(failure.diagnostic.range.start.column).toBe(1)
+        expect(failure.diagnostic.range.end.lineNumber).toBe(1)
+        expect(failure.diagnostic.range.end.column).toBe(15)
+        expect(subject.finished).toBe(true)
+        expect(subject.retainedTokenCount).toBe(0)
+        expect(subject.end().count).toBe(0)
+        subject.cancel()
+        expect(subject.end().count).toBe(0)
+        let valid = scanner(16)
+        let validTokens = significant(lex("public good()"))
+        index = 0
+        for (token in validTokens) {
+            valid.accept(token, index)
+            index++
+        }
+        expect(valid.end().count).toBe(1)
+        expect(valid.end().count).toBe(0)
+    }
+
     async test `retains nested callback prefix until complete adjacent signatures preserve ranges`() {
         let source = "public async forEachParallel(async func(Type x, Int i, List<Type> list), " +
             "Int maxParallel, async onAfterChunk(Int count)) public next()"

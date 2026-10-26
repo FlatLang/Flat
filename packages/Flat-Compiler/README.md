@@ -29,6 +29,11 @@ Configured `-default-import` / `-default-static-import` values are supported.
 ambiguous and rejected. Target-runtime and application-property selection are
 still unsupported. Quiet mode never suppresses failures.
 
+`CompilerSourceProvider.load(identity)` is an asynchronous source contract, even
+for memory-backed providers. Polymorphic callers await the immutable source before
+inspecting its identity/text; session wrappers checkpoint after load settlement.
+It does not add a whole-package barrier or change bounded read admission.
+
 `-threads N` (also `--threads N`, `-parallel`) bounds overlapping source-provider
 reads. It does **not** claim threaded parsing, semantic parallelism or filesystem
 parallelism: current production FileReader is synchronous. The package linker
@@ -156,6 +161,22 @@ Pre-session errors explicitly emit `complete:false` with revision
 incomplete. Missing output is never interpreted as empty diagnostics. A complete
 semantic batch is not an assertion that artifact publication subsequently succeeded;
 exit status and persistent-publication evidence are separate requirements.
+
+## Focused infrastructure diagnosis
+
+The existing test executable accepts an explicit diagnostic selection:
+
+```sh
+node packages/Flat-Compiler/dist/es6/test.js --infrastructure
+```
+
+It runs the complete admission, evidence, source-read schedule and incremental
+suites through their existing public `runTests` contracts, with the same result
+counts and failure exit status. `Compiler_TestSuite.runInfrastructure(onResult)`
+is the corresponding in-process entrypoint. No arguments still run the full
+registered suite unchanged. The subset is labelled diagnostic and never replaces
+full-suite or stage acceptance. Incremental process tests still require the fresh
+ordinary `dist/es6/index.js` compiler prerequisite; no test is skipped.
 
 ## Deferred verification
 

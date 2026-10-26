@@ -7,6 +7,76 @@ import flat/glob/Glob
 testable class {
     static let File workingDirectory = File.EXECUTED_DIRECTORY.getParent().getParent()
 
+    test `globstar slash matches zero one and multiple directories`() {
+        let String[] matches = ["example_Test.flat", "nested/example_Test.flat",
+            "one/two/example_TestSuite.flat"]
+        for (name in matches) {
+            expect(Glob.matchesGlobPattern("**/*_Test*.flat", workingDirectory,
+                File(workingDirectory, name))).toBe(true)
+        }
+        let String[] misses = ["example.flat", "example_Test.js", "example_Test.flat.bak",
+            "nested/example.flat", "nested/example_Test.flat/other.flat"]
+        for (name in misses) {
+            expect(Glob.matchesGlobPattern("**/*_Test*.flat", workingDirectory,
+                File(workingDirectory, name))).toBe(false)
+        }
+    }
+
+    test `globstar slash retains literal directory prefixes`() {
+        let String[] matches = ["src/example_Test.flat", "src/one/example_Test.flat",
+            "src/one/two/example_Test.flat"]
+        for (name in matches) {
+            expect(Glob.matchesGlobPattern("src/**/*_Test*.flat", workingDirectory,
+                File(workingDirectory, name))).toBe(true)
+        }
+        expect(Glob.matchesGlobPattern("**/one/**/example_Test.flat", workingDirectory,
+            File(workingDirectory, "one/example_Test.flat"))).toBe(true)
+        expect(Glob.matchesGlobPattern("**/one/**/example_Test.flat", workingDirectory,
+            File(workingDirectory, "outer/one/two/example_Test.flat"))).toBe(true)
+        let String[] misses = ["example_Test.flat", "other/src/example_Test.flat",
+            "srcOther/example_Test.flat", "src/example.flat"]
+        for (name in misses) {
+            expect(Glob.matchesGlobPattern("src/**/*_Test*.flat", workingDirectory,
+                File(workingDirectory, name))).toBe(false)
+        }
+    }
+
+    test `single stars stay within one path component`() {
+        expect(Glob.matchesGlobPattern("*_Test*.flat", workingDirectory,
+            File(workingDirectory, "example_TestSuite.flat"))).toBe(true)
+        expect(Glob.matchesGlobPattern("*_Test*.flat", workingDirectory,
+            File(workingDirectory, "nested/example_Test.flat"))).toBe(false)
+        expect(Glob.matchesGlobPattern("src/*/example_Test.flat", workingDirectory,
+            File(workingDirectory, "src/one/example_Test.flat"))).toBe(true)
+        expect(Glob.matchesGlobPattern("src/*/example_Test.flat", workingDirectory,
+            File(workingDirectory, "src/one/two/example_Test.flat"))).toBe(false)
+        expect(Glob.matchesGlobPattern("src/*/example_Test.flat", workingDirectory,
+            File(workingDirectory, "src/example_Test.flat"))).toBe(false)
+    }
+
+    test `all wildcards expand while regex punctuation stays literal`() {
+        expect(Glob.matchesGlobPattern("**/pre*mid*end.flat", workingDirectory,
+            File(workingDirectory, "preAmidBend.flat"))).toBe(true)
+        expect(Glob.matchesGlobPattern("**/pre*mid*end.flat", workingDirectory,
+            File(workingDirectory, "one/two/premidend.flat"))).toBe(true)
+        expect(Glob.matchesGlobPattern("**/pre*mid*end.flat", workingDirectory,
+            File(workingDirectory, "preAmidBendXflat"))).toBe(false)
+        expect(Glob.matchesGlobPattern("**/example+(one).flat", workingDirectory,
+            File(workingDirectory, "example+(one).flat"))).toBe(true)
+        expect(Glob.matchesGlobPattern("**/example+(one).flat", workingDirectory,
+            File(workingDirectory, "exampleone.flat"))).toBe(false)
+    }
+
+    async test `globstar traversal includes files at its starting directory`() {
+        let base = File(workingDirectory, "src/flat/glob")
+        let value = Glob.glob("**/*_Test*.flat", base, includeHidden: false)
+        expect(value.contains(File(base, "Glob_Test.flat"))).toBe(true)
+        expect(value.contains(File(base, "Glob_TestSuite.flat"))).toBe(true)
+        expect(value.contains(File(base, "Glob.flat"))).toBe(false)
+        let prefixed = Glob.glob("src/**/Glob_Test.flat", workingDirectory, includeHidden: false)
+        expect(prefixed.contains(File(base, "Glob_Test.flat"))).toBe(true)
+    }
+
     async test `can do basic glob search`() {
         let value = Glob.glob("**/*_Test*.flat", workingDirectory, includeHidden: false)
 

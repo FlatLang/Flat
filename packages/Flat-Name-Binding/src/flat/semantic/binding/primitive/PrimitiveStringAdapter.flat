@@ -127,7 +127,7 @@ class {
         return call("plus", candidates, receiver, [argument], context, callables, hierarchy)
     }
 
-    /** Primitive concatenation follows the source Char.toString(Char) contract. */
+    /** Primitive concatenation follows canonical source-declared scalar toString contracts. */
     static textOperand(BoundExpression value, SemanticType required,
         PrimitiveResolvedDeclarationContext context, CallableSignature[] callables,
         TypeHierarchyComponent hierarchy) -> BoundExpression {
@@ -142,6 +142,19 @@ class {
                 candidate.name == "toString" && candidate.returnType.value() == required.value() &&
                 candidate.parameterTypes().isEmpty)
             return call("toString", targets, value, BoundExpression[], context, callables, hierarchy)
+        }
+        if (value.semanticType.value() == SemanticTypes.intType().value()) {
+            let declarations = context ? context.candidates("flat/primitive/number/Int") : null
+            if (!declarations || declarations.count != 1)
+                throw Exception("String addition requires one canonical Int declaration")
+            let candidates = callables.filter((candidate) => candidate.callableKind.value == "static-method" &&
+                candidate.ownerType && candidate.ownerType.declarationIdentity.value == declarations.first.value &&
+                candidate.name == "toString" && candidate.returnType.value() == required.value() &&
+                candidate.parameterTypes().count == 1 && candidate.optionalParameterCount == 0 &&
+                candidate.parameterTypes().first.value() == SemanticTypes.intType().value())
+            if (candidates.count != 1)
+                throw Exception("String addition requires one canonical Int.toString(Int) contract")
+            return call("toString", candidates, null, [value], context, callables, hierarchy, callRange: value.range)
         }
         if (value.semanticType.value() != SemanticTypes.charType().value())
             throw Exception("String addition requires a declared text conversion contract")

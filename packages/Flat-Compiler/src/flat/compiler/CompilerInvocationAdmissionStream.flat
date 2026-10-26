@@ -11,8 +11,8 @@ class CompilerInvocationAdmissionStream {
             #{json} = JSON.stringify({schema:'flat.compiler.invocation-source.v1',
                 revision:#{revision.chars.data}, sequence:#{sequence},
                 identity:#{identity.chars.data}, contentFingerprint:#{contentFingerprint.chars.data}});
+            console.log(#{json});
         }
-        Console.log(String(json))
     }
 
     public seal(String revision, String destination, String toolFingerprint,
@@ -25,7 +25,7 @@ class CompilerInvocationAdmissionStream {
                 toolFingerprint:#{toolFingerprint.chars.data}, optionsFingerprint:#{optionsFingerprint.chars.data},
                 configurationFingerprint:#{configurationFingerprint.chars.data},
                 sourceInventoryFingerprint:#{sourceInventoryFingerprint.chars.data}, sourceCount:#{sourceCount}});
+            console.log(#{json});
         }
-        Console.log(String(json))
     }
 }

@@ -3131,6 +3131,22 @@ class {
                         candidate.identity.declaration.name == "String"))
                 if (field) return BoundMemberAccessExpression(access.range, field.semanticType,
                     projectedReceiver, field.name, field.identity)
+                // Native text still uses the source-declared canonical String property contract.
+                // Adapt native storage through the same canonical constructor used for text arguments.
+                // The projected receiver occurs once, as the sole constructor argument.
+                let canonicalText = declarationContext ? declarationContext.candidates("flat/String") : null
+                let properties = constructors.filter((candidate) =>
+                    canonicalText && canonicalText.count == 1 && candidate.ownerType &&
+                    candidate.ownerType.declarationIdentity.value == canonicalText.first.value &&
+                    candidate.callableKind.value == "instance-method" &&
+                    candidate.name == access.memberName && candidate.parameterTypes().isEmpty)
+                if (properties.isNotEmpty) {
+                    let adaptedReceiver = PrimitiveStringAdapter.wrap(projectedReceiver,
+                        UserClassSemanticType(canonicalText.first), declarationContext, constructors)
+                    return PrimitiveStringAdapter.call(access.memberName,
+                        properties, adaptedReceiver, BoundExpression[], declarationContext,
+                        constructors, typeHierarchy, callRange: access.range)
+                }
             }
             if (projectedReceiver.semanticType.kind() == "generic-instance") {
                 let instanceObject = (Object)projectedReceiver.semanticType
@@ -3224,7 +3240,7 @@ class {
                     inherited.name, inherited.identity
                 )
             }
-            return member(access, receiver, fields)
+            throw Exception("Unknown member '#{access.memberName}' on '#{projectedReceiver.semanticType.value()}' at #{access.range.startTokenIndex}")
         }
         let result = PrimitiveExpressionBinder().bind(
             syntax, locals: locals, callables: constructors,

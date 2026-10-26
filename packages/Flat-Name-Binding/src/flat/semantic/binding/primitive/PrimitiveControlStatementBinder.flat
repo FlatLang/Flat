@@ -631,20 +631,17 @@ class {
                     var TypeConversion conversion = TypeConversions.classify(
                         expression.semanticType, target.semanticType
                     )
-                    let declaredStringAssignment = receiver &&
-                        target.semanticType.value() == receiver.semanticType.value() &&
-                        expression.semanticType.value() == SemanticTypes.stringType().value() &&
-                        callables.any((candidate) =>
-                            candidate.ownerType &&
-                            candidate.ownerType.value() == receiver.semanticType.value() &&
-                            candidate.ownerType.declarationIdentity.name == "String"
-                        )
+                    let declaredStringAssignment = target.semanticType.kind() == "user-class" &&
+                        ((UserClassSemanticType)target.semanticType).declarationIdentity.name == "String" &&
+                        expression.semanticType.value() == SemanticTypes.stringType().value()
                     if (!conversion.applicable && declaredStringAssignment) {
                         expression = PrimitiveStringAdapter.wrap(expression, target.semanticType,
                             currentTypeResolver.declarationContext, callables)
                         conversion = TypeConversions.classify(expression.semanticType, target.semanticType)
                     }
-                    if (!conversion.applicable) throw Exception("Assignment value type mismatch")
+                    if (!conversion.applicable) throw Exception(
+                        "Assignment value type mismatch for '#{value.name}' at #{value.range.startTokenIndex}..#{value.range.endTokenIndex}: " +
+                        "#{expression.semanticType.value()} -> #{target.semanticType.value()}")
                     result.add(BoundAssignmentStatement(
                         value.range, target, expression, conversion
                     ))
@@ -652,6 +649,17 @@ class {
                     let target = BoundReferenceExpression(value.range, local.semanticType, local.name, local.identity)
                     let operand = classExpression(value.value, receiver, fields, scopeLocals, callables)
                     let operator = binaryOperator(value.assignmentOperator)
+                    if (operator == "+") {
+                        let resolved = PrimitiveStringAdapter.plus(target, operand,
+                            currentTypeResolver ? currentTypeResolver.declarationContext : null,
+                            callables, currentHierarchy)
+                        if (resolved) {
+                            let conversion = TypeConversions.classify(resolved.semanticType, target.semanticType)
+                            if (!conversion.applicable) throw Exception("Compound assignment value type mismatch")
+                            result.add(BoundAssignmentStatement(value.range, target, resolved, conversion))
+                            continue
+                        }
+                    }
                     let operation = TypeOperations.binary(operator, target.semanticType, operand.semanticType, value.range)
                     if (!operation.valid) throw Exception(operation.diagnostic.message)
                     let expression = BoundBinaryExpression(value.range, operation.semanticType, operator, target, operand)
@@ -678,7 +686,18 @@ class {
                         value.initializer, receiver, fields, scopeLocals, callables,
                         currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields, currentHierarchy
                     )
-                    if (!value.declaredTypeName) semanticType = initialized.semanticType
+                    if (!value.declaredTypeName) {
+                        semanticType = initialized.semanticType
+                        if (semanticType.value() == SemanticTypes.stringType().value() &&
+                            currentTypeResolver && currentTypeResolver.declarationContext) {
+                            let declarations = currentTypeResolver.declarationContext.candidates("flat/String")
+                            if (declarations.count == 1) {
+                                semanticType = UserClassSemanticType(declarations.first)
+                                initialized = PrimitiveStringAdapter.wrap(initialized, semanticType,
+                                    currentTypeResolver.declarationContext, callables)
+                            }
+                        }
+                    }
                 }
                 let identity = SymbolIdentity(
                     DeclarationIdentity(
@@ -931,7 +950,8 @@ class {
                     projectedReceiver, field.name, field.identity)
             }
             if (projectedReceiver.semanticType.kind() == "generic-instance" ||
-                projectedReceiver.semanticType.kind() == "user-class") {
+                projectedReceiver.semanticType.kind() == "user-class" ||
+                projectedReceiver.semanticType.value() == SemanticTypes.stringType().value()) {
                 return PrimitiveClassBinder().bindScopedExpression(
                     syntax, receiver, fields, locals, callables,
                     currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields, currentHierarchy)

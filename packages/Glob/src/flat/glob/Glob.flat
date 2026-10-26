@@ -65,14 +65,41 @@ class {
             value.replace(/[.+?^${}()|[\]\\]/, "\\$&")
 
     static patternize(String value, Bool directory) -> Pattern {
-        let pattern = directory ?
-            sanitizeRegex(value)
-                .replace(/\*\*.+/, "(.+?|$)") :
-            sanitizeRegex(value)
-                .replace(/\*\*/, "(.+?|$)")
-                .replace(/\*/, "([^/]*?|$)")
-
-        return Pattern(pattern)
+        var String pattern = ""
+        var String directories = ""
+        var Int index
+        while (index < value.count) {
+            let character = value.substring(index, index + 1)
+            if (character == "*") {
+                if (index + 1 < value.count && value.substring(index + 1, index + 2) == "*") {
+                    // A globstar can enter any descendant directory. Keep the
+                    // prefix alternative for traversal before consuming its slash.
+                    if (directories.count > 0) directories += "|"
+                    directories += pattern + ".*"
+                    index += 2
+                    if (index < value.count && value.substring(index, index + 1) == "/") {
+                        pattern += "([^/]+/)*"
+                        index++
+                    } else {
+                        pattern += ".*"
+                    }
+                } else {
+                    pattern += "[^/]*"
+                    index++
+                }
+            } else {
+                if (character == "/") {
+                    if (directories.count > 0) directories += "|"
+                    directories += pattern
+                }
+                // Escape each literal separately so every regex metacharacter
+                // is protected even on targets with first-only replacement.
+                pattern += sanitizeRegex(character)
+                index++
+            }
+        }
+        if (directory && directories.count > 0) pattern = directories + "|" + pattern
+        return Pattern("^(" + pattern + ")$")
     }
 
     public static matchesGlobPattern(

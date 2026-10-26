@@ -77,7 +77,7 @@ class extends CompilerSourceProvider {
                     } finally { fs.closeSync(fd); }
                 };
                 const maxSourceBytes = #{maxSourceCharacters} * 4;
-                const maxOutputBytes = Number(#{maxArtifactBytes});
+                const maxOutputBytes = globalThis.Number(#{maxArtifactBytes});
                 if (#{files.count} > 16384 || #{arguments.count} > 65536) throw new Error('Incremental metadata exceeds entry capacity');
                 const options = #{arguments.map({ _.chars.data }).data};
                 if (options.some(value => value.length > 1048576) ||
@@ -90,8 +90,8 @@ class extends CompilerSourceProvider {
                 const toolDigest = digestFile(path.resolve(tool), 268435456);
                 const entries = [];
                 let metadataBytes = 0;
-                const expected = new Map();
-                const physicalSources = new Set();
+                const expected = new globalThis.Map();
+                const physicalSources = new globalThis.Set();
                 for (const identity of #{files.map({ _.normalizedLocation.chars.data }).data}) {
                     const location = fs.realpathSync(identity);
                     const sourceIdentity = path.resolve(identity);
@@ -126,9 +126,9 @@ class extends CompilerSourceProvider {
                             }
                         } finally { fs.closeSync(fd); }
                         if (!previous || previous.schema !== 'flat.compiler.incremental.v1' ||
-                            !Array.isArray(previous.entries) || previous.entries.length > 16384 ||
+                            !globalThis.Array.isArray(previous.entries) || previous.entries.length > 16384 ||
                             !previous.diagnostics || previous.diagnostics.complete !== true ||
-                            !Array.isArray(previous.diagnostics.records) || previous.diagnostics.records.length !== 0 ||
+                            !globalThis.Array.isArray(previous.diagnostics.records) || previous.diagnostics.records.length !== 0 ||
                             !/^[0-9a-f]{64}$/.test(previous.output) || !/^[0-9a-f]{64}$/.test(previous.key) ||
                             !/^[0-9a-f]{64}$/.test(previous.configuration) ||
                             previous.entries.some((value,index) => !value || typeof value.identity !== 'string' ||
@@ -141,7 +141,7 @@ class extends CompilerSourceProvider {
                     } catch (_) { previous = null; }
                 }
                 let unchanged = 0, changed = 0, added = 0, removed = 0;
-                const old = new Map(previous ? previous.entries.map(value => [value.identity,value.digest]) : []);
+                const old = new globalThis.Map(previous ? previous.entries.map(value => [value.identity,value.digest]) : []);
                 for (const value of entries) {
                     if (!old.has(value.identity)) added++;
                     else if (old.get(value.identity) === value.digest) unchanged++;
@@ -190,7 +190,7 @@ class extends CompilerSourceProvider {
         external js {
             const expected = #{state}.expected;
             const admittedIdentityStrings = #{values.map({ _.chars.data }).data};
-            if (admittedIdentityStrings.length !== expected.size || new Set(admittedIdentityStrings).size !== admittedIdentityStrings.length ||
+            if (admittedIdentityStrings.length !== expected.size || new globalThis.Set(admittedIdentityStrings).size !== admittedIdentityStrings.length ||
                 admittedIdentityStrings.some(identity => !expected.has(identity))) {
                 #{errorMessage} = 'Provider closure differs from incremental admission';
             }

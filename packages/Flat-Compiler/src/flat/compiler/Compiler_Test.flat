@@ -263,7 +263,7 @@ testable class {
             values.add("b")
             return values
         }
-        override public load(String identity) -> CompilerSource {
+        override public async load(String identity) -> CompilerSource {
             return CompilerSource(identity == "a" ? "wrong" : "b",
                 "value() -> Int { return 1; }")
         }
@@ -316,16 +316,21 @@ testable class {
 
     class GatedSourceCompiler extends FlatEs6SourceCompiler {
         visible Future<Bool>[] gates = Future<Bool>[]
+        visible Future<Bool>[] readiness = Future<Bool>[]
         visible var Int entered
         visible var Int cleaned
         public construct() {
             gates.add(Future.create<Bool>())
             gates.add(Future.create<Bool>())
+            readiness.add(Future.create<Bool>())
+            readiness.add(Future.create<Bool>())
         }
         override public async compile(CompilerSource source) -> String {
             entered++
             try {
                 let index = source.identity == "a" ? 0 : 1
+                Future.CompletableFuture<Bool> ready = (Future.CompletableFuture<Bool>)readiness[index]
+                if (!ready.completed) ready.complete(true)
                 gates[index].get()
                 if (source.text == "bad") throw Exception("controlled source failure")
                 return "// #{source.identity}\n"
@@ -333,7 +338,14 @@ testable class {
         }
         public release(Int index) {
             Future.CompletableFuture<Bool> gate = (Future.CompletableFuture<Bool>)gates[index]
-            gate.complete(true)
+            if (!gate.completed) gate.complete(true)
+        }
+        public async awaitEntered(Int index) { readiness[index].get() }
+        public async finish(CompilerSession session) {
+            session.cancel()
+            release(0)
+            release(1)
+            session.completion.get()
         }
     }
 
@@ -345,7 +357,10 @@ testable class {
             MemoryCompilerSourceProvider([CompilerSource("a", "ok"), CompilerSource("b", "ok")]),
             sink, session
         )
-        compiler.release(1)
+        try {
+            compiler.awaitEntered(0)
+            compiler.awaitEntered(1)
+            compiler.release(1)
         expect(session.artifacts.receive().value.identity).toBe("b.js")
         expect(sink.artifacts().first.identity).toBe("b.js")
         expect(session.retainedSourceCodeCharacters).toBe(0)
@@ -357,6 +372,7 @@ testable class {
         expect(session.peakActiveSourceCount <= 2).toBe(true)
         expect(session.peakRetainedSourceCount <= 3).toBe(true)
         expect(session.retainedSourceCount).toBe(0)
+        } finally { compiler.finish(session) }
     }
 
     async test `source cancellation releases pending payloads before running cleanup finishes`() {
@@ -371,7 +387,9 @@ testable class {
             maxActiveSources: 8, maxQueuedSources: 1).start(
             MemoryCompilerSourceProvider(sources), sink, session)
         let runningA = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
-        compiler.release(1)
+        try {
+            compiler.awaitEntered(0)
+            compiler.release(1)
         for (index in 0..7) executor.runNext()
         session.artifactBackpressure.get()
         expect(session.retainedSourceCodeCharacters > 0).toBe(true)
@@ -394,6 +412,10 @@ testable class {
             expect(received.value.code).toBe("// b#{index}\n")
         }
         expect(session.artifacts.receive().completed).toBe(true)
+        } finally {
+            compiler.finish(session)
+            runningA.get()
+        }
     }
 
     class ThrowAfterEntryExecutor extends Executor {
@@ -403,24 +425,60 @@ testable class {
         }
     }
 
+    class SubmissionSourceProvider extends CompilerSourceProvider {
+        visible var Int entered
+        visible var Int cleaned
+        visible Future.CompletableFuture<Bool> enteredRead = Future.create<Bool>()
+        visible Future.CompletableFuture<Bool> releaseRead = Future.create<Bool>()
+        public construct(visible CompilerSession session, visible Bool cancelOnRead = false) {}
+        override public identities() -> String[] {
+            String[] values = ["a", "b"]
+            return values
+        }
+        override public async load(String identity) -> CompilerSource {
+            entered++
+            try {
+                if (cancelOnRead) session.cancel()
+                enteredRead.complete(true)
+                releaseRead.get()
+                return CompilerSource(identity, "ok")
+            } finally { cleaned++ }
+        }
+        public async finish() {
+            session.cancel()
+            if (!releaseRead.completed) releaseRead.complete(true)
+            session.completion.get()
+        }
+    }
+
     async test `source submission failure after entry waits for cleanup at one and two reservations`() {
         for (capacity in 1..3) {
             let compiler = GatedSourceCompiler()
             let session = CompilerSession()
+            let provider = SubmissionSourceProvider(session)
             let sink = MemoryCompilerArtifactSink()
-            CompilerEngine(executor: ThrowAfterEntryExecutor(), sourceCompiler: compiler,
-                maxActiveSources: capacity).start(MemoryCompilerSourceProvider([
-                    CompilerSource("a", "ok"), CompilerSource("b", "ok")
-                ]), sink, session)
-            expect(compiler.entered).toBe(1)
-            expect(session.completion.completed).toBe(false)
-            compiler.release(0)
-            let summary = session.completion.get()
-            expect(compiler.cleaned).toBe(1)
-            expect(summary.cancelled).toBe(true)
-            expect(summary.packageDiagnostic).toBe("controlled submission failure after entry")
-            expect(summary.artifactCount).toBe(0)
-            expect(session.inFlightSourceCount).toBe(0)
+            try {
+                CompilerEngine(executor: ThrowAfterEntryExecutor(), sourceCompiler: compiler,
+                    maxActiveSources: capacity).start(provider, sink, session)
+                provider.enteredRead.get()
+                expect(provider.entered).toBe(1)
+                expect(provider.cleaned).toBe(0)
+                expect(session.completion.completed).toBe(false)
+                provider.releaseRead.complete(true)
+                let summary = session.completion.get()
+                expect(provider.cleaned).toBe(1)
+                // Submission failure cancels during the admitted read, before compile.
+                expect(compiler.entered).toBe(0)
+                expect(compiler.cleaned).toBe(0)
+                expect(summary.cancelled).toBe(true)
+                expect(summary.packageDiagnostic).toBe("controlled submission failure after entry")
+                expect(summary.artifactCount).toBe(0)
+                expect(session.inFlightSourceCount).toBe(0)
+            } finally {
+                compiler.release(0)
+                compiler.release(1)
+                provider.finish()
+            }
         }
     }
 
@@ -493,17 +551,20 @@ testable class {
             MemoryCompilerSourceProvider([CompilerSource("a", "ok"), CompilerSource("b", "ok")]),
             sink, session
         )
-        expect(session.queuedSourceCount).toBe(1)
-        expect(session.retainedSourceCount).toBe(2)
-        session.cancel()
-        expect(session.completion.completed).toBe(false)
-        compiler.release(0)
-        expect(session.completion.get().cancelled).toBe(true)
-        expect(compiler.entered).toBe(1)
-        expect(compiler.cleaned).toBe(1)
-        expect(sink.artifacts().count).toBe(0)
-        expect(session.activeSourceCount).toBe(0)
-        expect(session.queuedSourceCount).toBe(0)
+        try {
+            compiler.awaitEntered(0)
+            expect(session.queuedSourceCount).toBe(1)
+            expect(session.retainedSourceCount).toBe(2)
+            session.cancel()
+            expect(session.completion.completed).toBe(false)
+            compiler.release(0)
+            expect(session.completion.get().cancelled).toBe(true)
+            expect(compiler.entered).toBe(1)
+            expect(compiler.cleaned).toBe(1)
+            expect(sink.artifacts().count).toBe(0)
+            expect(session.activeSourceCount).toBe(0)
+            expect(session.queuedSourceCount).toBe(0)
+        } finally { compiler.finish(session) }
     }
 
     async test `source scheduler isolates failure and orders diagnostics across reversed schedules`() {
@@ -516,14 +577,19 @@ testable class {
                 MemoryCompilerSourceProvider([CompilerSource("b", "bad"), CompilerSource("a", "bad")]),
                 sink, session
             )
-            compiler.release(1)
-            compiler.release(0)
+            try {
+                compiler.release(1)
+                compiler.release(0)
             expect(diagnostics.receive().value).toBe("Failed to compile 'a': controlled source failure")
             expect(diagnostics.receive().value).toBe("Failed to compile 'b': controlled source failure")
             let summary = session.completion.get()
             expect(summary.diagnosticCount).toBe(2)
             expect(summary.packageDiagnostic).toBe("Failed to compile 'b': controlled source failure")
             expect(compiler.cleaned).toBe(2)
+            } finally {
+                session.diagnostics.unsubscribe(diagnostics)
+                compiler.finish(session)
+            }
         }
     }
 
@@ -535,10 +601,12 @@ testable class {
         engine.start(MemoryCompilerSourceProvider([
             CompilerSource("a", "bad"), CompilerSource("b", "ok")
         ]), sink, session)
-        compiler.release(1)
-        expect(session.artifacts.receive().value.identity).toBe("b.js")
-        compiler.release(0)
-        expect(session.completion.get().diagnosticCount).toBe(1)
+        try {
+            compiler.release(1)
+            expect(session.artifacts.receive().value.identity).toBe("b.js")
+            compiler.release(0)
+            expect(session.completion.get().diagnosticCount).toBe(1)
+        } finally { compiler.finish(session) }
         let secondSink = MemoryCompilerArtifactSink()
         let second = engine.compile(MemoryCompilerSourceProvider([CompilerSource("b", "ok")]), secondSink)
         expect(second.completion.get().artifactCount).toBe(1)
@@ -556,7 +624,8 @@ testable class {
                 MemoryCompilerSourceProvider([CompilerSource("b", "ok"), CompilerSource("a", "ok")]),
                 sink, session
             )
-            compiler.release(1)
+            try {
+                compiler.release(1)
             if (parallel > 1) {
                 expect(session.artifacts.receive().value.identity).toBe("b.js")
                 expect(session.completion.completed).toBe(false)
@@ -572,6 +641,7 @@ testable class {
             expect(session.peakActiveSourceCount <= parallel).toBe(true)
             expect(session.peakRetainedSourceCount <= parallel + 1).toBe(true)
             expect(session.inFlightSourceCount).toBe(0)
+            } finally { compiler.finish(session) }
         }
     }
 
@@ -610,17 +680,23 @@ testable class {
         )
         expect(executor.queuedCount).toBe(2)
         let executing = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
-        expect(compiler.entered).toBe(1)
-        session.cancel()
-        expect(executor.queuedCount).toBe(0)
-        expect(session.completion.completed).toBe(false)
-        compiler.release(0)
-        executing.get()
-        expect(session.completion.get().cancelled).toBe(true)
-        expect(compiler.cleaned).toBe(1)
-        expect(compiler.entered).toBe(1)
-        expect(session.activeSourceCount).toBe(0)
-        expect(session.inFlightSourceCount).toBe(0)
+        try {
+            compiler.awaitEntered(0)
+            expect(compiler.entered).toBe(1)
+            session.cancel()
+            expect(executor.queuedCount).toBe(0)
+            expect(session.completion.completed).toBe(false)
+            compiler.release(0)
+            executing.get()
+            expect(session.completion.get().cancelled).toBe(true)
+            expect(compiler.cleaned).toBe(1)
+            expect(compiler.entered).toBe(1)
+            expect(session.activeSourceCount).toBe(0)
+            expect(session.inFlightSourceCount).toBe(0)
+        } finally {
+            compiler.finish(session)
+            executing.get()
+        }
     }
 
     test `source concurrency capacities reject invalid configuration`() {
@@ -633,12 +709,14 @@ testable class {
     class CancellingSourceCompiler extends FlatEs6SourceCompiler {
         visible var Bool completedInsideCompile
         visible var Bool cleaned
+        visible Future.CompletableFuture<Bool> enteredCompile = Future.create<Bool>()
         public construct(visible CompilerSession session, visible Future<Bool> cleanupGate) {}
 
         override public async compile(CompilerSource source) -> String {
             session.cancel()
             // InlineExecutor has entered before submit returns/attach assigns task.
             completedInsideCompile = session.completion.completed
+            enteredCompile.complete(true)
             try {
                 cleanupGate.get()
                 return "unused cancelled code"
@@ -656,18 +734,54 @@ testable class {
         CompilerEngine(sourceCompiler: compiler).start(MemoryCompilerSourceProvider([
             CompilerSource("one", "value() -> Int { return 1; }")
         ]), sink, session)
-        expect(session.cancelled).toBe(true)
-        expect(compiler.completedInsideCompile).toBe(false)
-        expect(compiler.cleaned).toBe(false)
-        expect(session.completion.completed).toBe(false)
-        let cleanupCompletion = (Future.CompletableFuture<Bool>)gate
-        cleanupCompletion.complete(true)
-        let summary = session.completion.get()
-        expect(compiler.cleaned).toBe(true)
-        expect(summary.cancelled).toBe(true)
-        expect(summary.sourceCount).toBe(1)
-        expect(summary.artifactCount).toBe(0)
-        expect(sink.artifacts().count).toBe(0)
+        try {
+            compiler.enteredCompile.get()
+            expect(session.cancelled).toBe(true)
+            expect(compiler.completedInsideCompile).toBe(false)
+            expect(compiler.cleaned).toBe(false)
+            expect(session.completion.completed).toBe(false)
+            let cleanupCompletion = (Future.CompletableFuture<Bool>)gate
+            cleanupCompletion.complete(true)
+            let summary = session.completion.get()
+            expect(compiler.cleaned).toBe(true)
+            expect(summary.cancelled).toBe(true)
+            expect(summary.sourceCount).toBe(1)
+            expect(summary.artifactCount).toBe(0)
+            expect(sink.artifacts().count).toBe(0)
+        } finally {
+            session.cancel()
+            Future.CompletableFuture<Bool> cleanupRelease = (Future.CompletableFuture<Bool>)gate
+            if (!cleanupRelease.completed) cleanupRelease.complete(true)
+            session.completion.get()
+        }
+    }
+
+    async test `inline read cancellation before task attachment waits for admitted load cleanup`() {
+        for (capacity in 1..3) {
+            let session = CompilerSession()
+            let provider = SubmissionSourceProvider(session, cancelOnRead: true)
+            let compiler = GatedSourceCompiler()
+            let sink = MemoryCompilerArtifactSink()
+            try {
+                CompilerEngine(sourceCompiler: compiler, maxActiveSources: capacity).start(provider, sink, session)
+                provider.enteredRead.get()
+                expect(session.cancelled).toBe(true)
+                expect(session.completion.completed).toBe(false)
+                expect(provider.entered).toBe(1)
+                expect(provider.cleaned).toBe(0)
+                provider.releaseRead.complete(true)
+                let summary = session.completion.get()
+                expect(provider.cleaned).toBe(1)
+                expect(compiler.entered).toBe(0)
+                expect(summary.cancelled).toBe(true)
+                expect(summary.artifactCount).toBe(0)
+                expect(session.inFlightSourceCount).toBe(0)
+            } finally {
+                compiler.release(0)
+                compiler.release(1)
+                provider.finish()
+            }
+        }
     }
 
     async test `session first start waits for controlled executor and preserves attached consumers`() {
@@ -679,13 +793,23 @@ testable class {
         let started = engine.start(MemoryCompilerSourceProvider([
             CompilerSource("one", "value() -> Int { return 1; }")
         ]), sink, session)
-        expect(Object.referenceEquals(started, session)).toBe(true)
-        expect(session.completion.completed).toBe(false)
-        expect(sink.artifacts().count).toBe(0)
-        executor.runNext()
-        expect(progress.receive().value).toBe("Compiled one")
-        expect(session.artifacts.receive().value.identity).toBe("one.js")
-        expect(session.completion.get().artifactCount).toBe(1)
+        let running = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
+        try {
+            expect(Object.referenceEquals(started, session)).toBe(true)
+            expect(session.completion.completed).toBe(false)
+            expect(sink.artifacts().count).toBe(0)
+            // runNext settles a worker, not coordinator publications.
+            // Receive both independent channels while that worker is in flight.
+            expect(progress.receive().value).toBe("Compiled one")
+            expect(session.artifacts.receive().value.identity).toBe("one.js")
+            running.get()
+            expect(session.completion.get().artifactCount).toBe(1)
+        } finally {
+            session.cancel()
+            session.progress.unsubscribe(progress)
+            running.get()
+            session.completion.get()
+        }
     }
 
     async test `slow artifact consumer receives more than four artifacts without loss`() {
@@ -1141,12 +1265,17 @@ testable class {
         }
     }
     async test `compiler CLI matches glob source exclusions`() {
-        let excluded = File("#{System.workingDirectory}/packages/Flat-Parser/src/flat/example_Test.flat")
-        let included = File("#{System.workingDirectory}/packages/Flat-Parser/src/flat/example.flat")
-        let pattern = "#{System.workingDirectory}/packages/Flat-Parser/src/**/*_Test*.flat"
-
-        expect(CompilerCli.matchesExclusion(pattern, excluded)).toBe(true)
-        expect(CompilerCli.matchesExclusion(pattern, included)).toBe(false)
+        let root = File(".flat-compiler-glob-exclusion-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let excluded = File(root, "example_Test.flat")
+            let included = File(root, "example.flat")
+            Es6ArtifactFiles.write(excluded, "class Excluded {}")
+            Es6ArtifactFiles.write(included, "class Included {}")
+            let pattern = "#{root.normalizedLocation}/**/*_Test*.flat"
+            expect(CompilerCli.matchesExclusion(pattern, excluded)).toBe(true)
+            expect(CompilerCli.matchesExclusion(pattern, included)).toBe(false)
+        } finally { Es6ArtifactFiles.remove(root) }
     }
 
     async test `in process session composes Flat source through binding into runnable ES6`() {
@@ -1897,9 +2026,15 @@ testable class {
             SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex),
             "static-method", "read"
         )
-        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        // Generic callback results require canonical Int boxing declarations.
+        // Retain the actual bounded Core closure, including its storage constructor.
+        let callbackSources = realCoreExecutionSources([CompilerSource(identity, source)])
+        expect(callbackSources.count <= 64).toBe(true)
+        expect(callbackSources.filter((value) => value.identity == "flat/primitive/number/Int.flat").count).toBe(1)
+        let code = FlatEs6PackageLinker().link(callbackSources)
         let root = File(".flat-compiler-contextual-async-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
+        try {
         let destination = File(root, "program.js")
         Es6ArtifactCommitter().commit(destination, code + "(async () => { console.log(await " +
             Es6NameMangler.mangle(typeIdentity.value) + "." +
@@ -1907,7 +2042,7 @@ testable class {
         let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
         expect(response.stdout.join("")).toBe("44\n")
-        Es6ArtifactFiles.remove(root)
+        } finally { Es6ArtifactFiles.remove(root) }
     }
 
     async test `executes empty async callback default`() {
@@ -2113,11 +2248,9 @@ testable class {
 
     async test `package linker compiles and executes real Bool inheritance slice`() {
         let identity = "flat/primitive/Bool.flat"
+        let boolSource = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Bool.flat"))
         let code = FlatEs6PackageLinker().link([
-            CompilerSource(
-                identity,
-                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Bool.flat"))
-            ),
+            CompilerSource(identity, boolSource),
             CompilerSource(
                 "flat/primitive/Primitive.flat",
                 Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
@@ -2139,24 +2272,43 @@ testable class {
             )
         ])
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let boolStream = Lexer().lexInterpolated(boolSource)
+        boolStream.emit("start")
+        let boolTokens = boolStream.consumeAll<Token>("data")
+        let boolPartition = FlatSourceTypePartitioner().partition(boolTokens, snapshot).first
+        let boolSyntax = PrimitiveClassParser().parse(
+            boolPartition.tokenValues(), snapshot, boolPartition.startTokenIndex, "Bool")
         let boolType = DeclarationIdentity(
-            SyntaxIslandIdentity(snapshot, "class", 8), "class", "Bool"
+            SyntaxIslandIdentity(snapshot, "class", boolSyntax.range.startTokenIndex), "class", "Bool"
         )
         let boolName = Es6NameMangler.mangle(boolType.value)
         let valueField = Es6NameMangler.mangle(SymbolIdentity(boolType, "field", 0).value)
+        let compareToMethod = boolSyntax.methodValues().firstOrNull((method) => method.name == "compareTo" && !method.staticMethod)
+        expect(compareToMethod != null).toBe(true)
         let compareToIdentity = DeclarationIdentity(
-            SyntaxIslandIdentity(snapshot, "instance-method", 26),
+            SyntaxIslandIdentity(snapshot, "instance-method", compareToMethod.range.startTokenIndex),
             "instance-method", "compareTo"
         )
         let objectSnapshot = SourceSnapshotIdentity(
             SourceIdentity("flat/primitive/Object.flat"), "compiler-input"
         )
+        let objectSource = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Object.flat"))
+        let objectStream = Lexer().lexInterpolated(objectSource)
+        objectStream.emit("start")
+        let objectTokens = objectStream.consumeAll<Token>("data")
+        let objectPartition = FlatSourceTypePartitioner().partition(objectTokens, objectSnapshot).first
+        let objectSyntax = PrimitiveClassParser().parse(
+            objectPartition.tokenValues(), objectSnapshot, objectPartition.startTokenIndex, "Object")
+        let toStringMethod = objectSyntax.methodValues().firstOrNull((method) => method.name == "toString" && !method.staticMethod)
+        expect(toStringMethod != null).toBe(true)
         let toStringIdentity = DeclarationIdentity(
-            SyntaxIslandIdentity(objectSnapshot, "instance-method", 17),
+            SyntaxIslandIdentity(objectSnapshot, "instance-method", toStringMethod.range.startTokenIndex),
             "instance-method", "toString"
         )
+        let fromStringMethod = boolSyntax.methodValues().firstOrNull((method) => method.name == "fromString" && method.staticMethod)
+        expect(fromStringMethod != null).toBe(true)
         let fromStringIdentity = DeclarationIdentity(
-            SyntaxIslandIdentity(snapshot, "static-method", 120),
+            SyntaxIslandIdentity(snapshot, "static-method", fromStringMethod.range.startTokenIndex),
             "static-method", "fromString"
         )
         let compareToName = Es6NameMangler.mangle(compareToIdentity.value)
@@ -2165,13 +2317,14 @@ testable class {
         let root = File(".flat-compiler-bool-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "program.js")
+        try {
         Es6ArtifactCommitter().commit(
             destination,
             code + "let yes = new " + boolName + "(true);\n" +
                 "let no = new " + boolName + "(false);\n" +
                 "console.log(yes." + valueField + ", no." + valueField + ");\n" +
                 "console.log(yes." + compareToName + "(true), yes." +
-                    compareToName + "(false));\n" +
+                    compareToName + "(false), no." + compareToName + "(true));\n" +
                 "console.log(yes." + toStringName + "(), no." + toStringName + "());\n" +
                 "console.log(" + boolName + "." + fromStringName + "('true'), " +
                     boolName + "." + fromStringName + "('false'));\n" +
@@ -2183,9 +2336,9 @@ testable class {
         )
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
         expect(response.stdout.join("")).toBe(
-            "true false\n0 -1\ntrue false\ntrue false\ntrue\nComparable<Bool>\n"
+            "true false\n0 1 -1\ntrue false\ntrue false\ntrue\nComparable<Bool>\n"
         )
-        Es6ArtifactFiles.remove(root)
+        } finally { Es6ArtifactFiles.remove(root) }
     }
 
     async test `package linker compiles and executes unchanged real Math target source`() {
@@ -3118,7 +3271,7 @@ testable class {
         expect(session.artifacts.closed).toBe(true)
     }
 
-    test `filesystem source and atomic spooled artifact sinks preserve deterministic content`() {
+    async test `filesystem source and atomic spooled artifact sinks preserve deterministic content`() {
         let root = File(".flat-compiler-provider-test-#{Time.currentTimeMillis}")
         let sourceRoot = File(root, "sources")
         let outputRoot = File(root, "output")

@@ -20,6 +20,18 @@ import flat/compiler/Compiler
     FlatEs6SourceCompiler_Test
 ]]
 class {
+    /** Explicit diagnostic subset; never substitutes for default full acceptance. */
+    public static async runInfrastructure(onResult(TestResult)) {
+        CompilerInvocationAdmission_Test().runTests(onResult)
+        CompilerEvidence_Test().runTests(onResult)
+        CompilerSourceReadSchedule_Test().runTests(onResult)
+        CompilerIncrementalState_Test().runTests(onResult)
+    }
+
+    public static infrastructureRequested(String[] args) -> Bool {
+        return args.contains("--infrastructure")
+    }
+
     public static async main(String[] args) {
         let test = Compiler_TestSuite()
 
@@ -27,9 +39,12 @@ class {
 
         let results = TestResult[]
 
-        test.runTests({
-            results.add(_)
-        })
+        if (infrastructureRequested(args)) {
+            Console.writeLine("Compiler infrastructure subset; full suite acceptance remains required")
+            runInfrastructure((result) => { results.add(result) })
+        } else {
+            test.runTests((result) => { results.add(result) })
+        }
 
         let fancy = FancyOutputStream(headerPattern: "/\\")
 

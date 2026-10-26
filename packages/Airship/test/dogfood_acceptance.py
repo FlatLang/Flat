@@ -369,6 +369,11 @@ def validate_production_run(root, run, compiler_sha):
         else:
             require(any(any(str(argument).endswith('/test.js') for argument in record.get('args', []))
                         for record in admissions), 'Missing generated suite execution admission')
+        if run.get('package') == 'Airship' and 'run' in argv:
+            validate_airship_fixtures(root, command, workspace, run['artifacts'], sources, admissions)
+        else:
+            require(not any(name.startswith('fixture_') for name in command),
+                    'Fixture policy outside Airship run')
         require(command.get('persistent') == persistent_records(log, compiler_sha), 'Persistent observations changed')
         require(command.get('diagnostic_batches') == diagnostic_batches(log, workspace, command['persistent']),
                 'Diagnostic observations changed')
@@ -580,6 +585,62 @@ def create_production_workspace(repo, directory, sources, seeds, tools, stage2, 
             'journal': journal, 'env': env, 'commands': [], 'policy': policy}
 
 
+def airship_fixture_policy(workspace, generated, policy):
+    """Only the just-installed ordinary Airship test runner gets these fixtures."""
+    dist = workspace / 'packages/Airship/dist'
+    candidates = [dist / name for name in generated if PurePosixPath(name).name == 'test.js']
+    require(len(candidates) == 1, 'Expected exactly one fresh Airship test runner for fixture inventory')
+    runner = candidates[0]
+    require(runner.is_file() and not runner.is_symlink() and runner.resolve() == runner
+            and bootstrap.digest(runner) == generated[runner.relative_to(dist).as_posix()],
+            'Fresh Airship test runner changed')
+    require('fixtures' not in policy, 'Production default policy must not declare fixtures')
+    return {**policy, 'fixtures': bootstrap.lifecycle_inventory(workspace, runner)}
+
+
+def validate_airship_fixtures(root, command, workspace, generated, sources, admissions):
+    for name in ('fixture_policy_reference', 'fixture_base_policy_reference', 'fixture_scope_reference'):
+        file_reference(root, command[name])
+    base = read_json(root / command['fixture_base_policy_reference']['path'])
+    require(base.get('root') == str(workspace), 'Foreign Airship fixture policy workspace')
+    expected = airship_fixture_policy(workspace, generated, base)
+    require(read_json(root / command['fixture_policy_reference']['path']) == expected,
+            'Changed production Airship fixture policy')
+    require(sources.get(bootstrap.LIFECYCLE_SOURCE) == bootstrap.LIFECYCLE_SOURCE_SHA256,
+            'Airship fixture source is not in pinned workload')
+    entries = expected['fixtures']
+    runner = entries[0]['runner']
+    require(any(record.get('command') == command['argv'][0] and record.get('args') == [runner]
+                for record in admissions), 'Missing exact fresh Airship fixture runner admission')
+    scope = read_json(root / command['fixture_scope_reference']['path'])
+    events = scope.get('events')
+    require(scope.get('schema') == 'flat.stage.process-scope.v1'
+            and scope.get('ownership') == 'external-command-group'
+            and scope.get('scope_cancelled') is False
+            and scope.get('fixtures_started') == len(entries) == scope.get('fixtures_finished')
+            and scope.get('cleanup') == command['process_cleanup']
+            and isinstance(events, list) and len(events) <= 4096
+            and scope.get('frame_count') == len(events), 'Incomplete Airship fixture process scope')
+    require(all(event.get('scope') == scope.get('scope') and type(event.get('pid')) is int
+                and event['pid'] > 0 for event in events), 'Foreign Airship fixture scope')
+    hellos = [event for event in events if event.get('kind') == 'hello']
+    require(hellos and scope.get('hello_count') == len(hellos), 'Missing Airship fixture scope handshake')
+    outcomes = [event for event in events if event.get('kind') != 'hello']
+    require(len(outcomes) == 2 * len(entries), 'Unexpected Airship fixture event count')
+    identities = set()
+    for index, entry in enumerate(entries):
+        start, end = outcomes[index * 2:index * 2 + 2]
+        identity = (start.get('pid'), start.get('invocation'))
+        require(start.get('kind') == 'fixture-start' and end.get('kind') == 'fixture-end'
+                and start.get('fixture') == entry['id'] == end.get('fixture')
+                and type(identity[1]) is int and identity not in identities
+                and identity == (end.get('pid'), end.get('invocation'))
+                and end.get('exit') == entry['outcome']['exit']
+                and end.get('signal') == entry['outcome']['signal'],
+                'Changed Airship fixture order/count/outcome')
+        identities.add(identity)
+
+
 def execute_production(context, package, seeds, budget, seconds):
     workspace, directory = context['workspace'], context['directory']
     generated = None
@@ -599,8 +660,18 @@ def execute_production(context, package, seeds, budget, seconds):
         context['commands'].append(command)
         bootstrap.write_json(directory / 'commands.json', context['commands'])
         cleanup = {}
+        command_env = context['env']
+        if package == 'Airship' and operation == 'run':
+            selected_policy = airship_fixture_policy(workspace, generated, context['policy'])
+            policy_path = log.with_suffix('.policy.json')
+            bootstrap.write_json(policy_path, selected_policy)
+            command_env = {**command_env, 'FLAT_BOOTSTRAP_POLICY': str(policy_path)}
+            reference = lambda path: {'path': path.relative_to(directory.parent).as_posix(),
+                                      'sha256': bootstrap.digest(path)}
+            command['fixture_policy_reference'] = reference(policy_path)
+            command['fixture_base_policy_reference'] = reference(Path(context['env']['FLAT_BOOTSTRAP_POLICY']))
         try:
-            bootstrap.run_command(argv, workspace / 'packages' / package, context['env'], log,
+            bootstrap.run_command(argv, workspace / 'packages' / package, command_env, log,
                                   context['journal'], timeout=seconds, budget=budget,
                                   cleanup_observation=cleanup)
         finally:
@@ -610,6 +681,10 @@ def execute_production(context, package, seeds, budget, seconds):
             command['temporary_outputs_after'] = temporary_output_inventory(workspace)
             bootstrap.write_json(directory / 'commands.json', context['commands'])
         records = admission_records(context['journal'], offset)
+        if package == 'Airship' and operation == 'run':
+            command['fixture_scope_reference'] = reference(log.with_suffix(log.suffix + '.scope.json'))
+            validate_airship_fixtures(directory.parent, command, workspace, generated,
+                                     scenario_sources(None, workspace), records)
         if operation == 'install':
             generated = output_inventory(workspace, package)
             # Empty compiler admissions are recorded as a possible install cache

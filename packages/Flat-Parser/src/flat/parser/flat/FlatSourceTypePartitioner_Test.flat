@@ -6,6 +6,43 @@ import flat/io/File
 import flat/io/FileReader
 
 testable class {
+    async test `invalid member suffix preserves typed range and never returns valid prefix partitions`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-member"), "original")
+        let prefixes = ["", "class Valid {}\n"]
+        for (prefix in prefixes) {
+            let text = prefix + "class Main { public broken( }"
+            let stream = Lexer().lex(text)
+            stream.emit("start")
+            let values = stream.consumeAll<Token>("data")
+            var Bool returned
+            var ParseFailure failure
+            try {
+                FlatSourceTypePartitioner().partition(values, snapshot)
+                returned = true
+            } catch (Exception error) {
+                expect(error.class.isOfType(ParseFailure.class)).toBe(true)
+                failure = (ParseFailure)error
+            }
+            expect(returned).toBe(false)
+            expect(failure).toNotBe(null)
+            expect(failure.diagnostic.code).toBe("invalid-non-braced-member")
+            expect(failure.diagnostic.snapshot).toBe(snapshot)
+            expect(failure.diagnostic.range.snapshot).toBe(snapshot)
+            let offset = prefix.isEmpty ? 0 : 4
+            let line = prefix.isEmpty ? 1 : 2
+            expect(failure.diagnostic.range.startTokenIndex).toBe(offset + 3)
+            expect(failure.diagnostic.range.endTokenIndex).toBe(offset + 6)
+            expect(failure.diagnostic.range.start.lineNumber).toBe(line)
+            expect(failure.diagnostic.range.start.column).toBe(14)
+            expect(failure.diagnostic.range.end.lineNumber).toBe(line)
+            expect(failure.diagnostic.range.end.column).toBe(28)
+        }
+        let validStream = Lexer().lex("class Main { public good() }")
+        validStream.emit("start")
+        let valid = FlatSourceTypePartitioner().partition(validStream.consumeAll<Token>("data"), snapshot)
+        expect(valid.count).toBe(1)
+    }
+
     async test `incomplete suffix never returns prefix partitions and preserves typed source failure`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:incomplete-suffix"), "original")
         let stream = Lexer().lex("class Valid {}\nclass DogfoodInvalidSyntax {\n")

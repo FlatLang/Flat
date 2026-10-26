@@ -20,6 +20,384 @@ testable class {
         let namespaceName = name == "Bool" ? "flat/primitive" : "flat/primitive/number"
         contexts.add(PrimitiveSourceBindingContext(namespaceName, snapshot, [syntax]))
     }
+    async test `native text properties use canonical receiver contracts`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-text-property"), "one")
+        let sources = [
+            "class String { visible native String data; public construct(native String text) { data = text; } public Bool isNotEmpty => true }",
+            "class Use { run(native String text) -> Bool { return text.isNotEmpty; } static native source() -> String { return \"x\"; } factory() -> Bool { return source().isNotEmpty; } }"
+        ]
+        let contexts = PrimitiveSourceBindingContext[]
+        var Int index
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            contexts.add(PrimitiveSourceBindingContext(index++ == 0 ? "flat" : "app", snapshot, [syntax]))
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let method = units.firstOrNull({ _.identity.name == "Use" }).functionUnits().firstOrNull({ _.name == "run" })
+        let statements = method.statements()
+        Object returnedSource = statements.first
+        BoundReturnStatement returned = (BoundReturnStatement)returnedSource
+        Object callSource = returned.value
+        BoundCallExpression call = (BoundCallExpression)callSource
+        expect(call.target.name).toBe("isNotEmpty")
+        expect(call.target.ownerType.declarationIdentity.name).toBe("String")
+        expect(call.receiver.semanticType.value()).toBe(call.target.ownerType.value())
+        Object storageSource = call.receiver
+        BoundCallExpression storage = (BoundCallExpression)storageSource
+        expect(storage.target.callableKind.value).toBe("constructor")
+        let storageArguments = storage.argumentValues()
+        expect(storageArguments.count).toBe(1)
+        expect(storageArguments.first.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        expect(storageArguments.first.expressionKind()).toBe("reference")
+        expect(call.semanticType.value()).toBe(SemanticTypes.boolType().value())
+        expect(call.range.startTokenIndex > 0).toBe(true)
+        let factory = units.firstOrNull({ _.identity.name == "Use" }).functionUnits().firstOrNull({ _.name == "factory" })
+        let factoryStatements = factory.statements()
+        Object factoryReturnSource = factoryStatements.first
+        BoundReturnStatement factoryReturn = (BoundReturnStatement)factoryReturnSource
+        Object factoryCallSource = factoryReturn.value
+        BoundCallExpression factoryCall = (BoundCallExpression)factoryCallSource
+        Object factoryStorageSource = factoryCall.receiver
+        BoundCallExpression factoryStorage = (BoundCallExpression)factoryStorageSource
+        let factoryArguments = factoryStorage.argumentValues()
+        expect(factoryArguments.count).toBe(1)
+        Object producerSource = factoryArguments.first
+        BoundCallExpression producer = (BoundCallExpression)producerSource
+        expect(producer.target.name).toBe("source")
+        expect(producer.argumentValues().count).toBe(0)
+        expect(factoryCall.argumentValues().count).toBe(0)
+    }
+
+    async test `structured native text property retains nested ranges and canonical receiver`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-text-property"), "one")
+        let sources = [
+            "class String { visible native String data; public construct(native String text) { data = text; } public Bool isNotEmpty => true }",
+            "class Long { static native time(native String str, native String delimiter) -> String { if (str.isNotEmpty) { return " + '"' + "s" + '#' + "{str.isNotEmpty ? delimiter + str : " + '"' + '"' + "}" + '"' + "; } return " + '"' + '"' + "; } }"
+        ]
+        let contexts = PrimitiveSourceBindingContext[]
+        var Int index
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            contexts.add(PrimitiveSourceBindingContext(index++ == 0 ? "flat" : "app", snapshot, [syntax]))
+        }
+        let syntaxes = contexts.last.classValues()
+        let syntaxStatements = syntaxes.first.methodValues().first.statements()
+        Object syntaxIfSource = syntaxStatements.first
+        PrimitiveIfSyntax syntaxIf = (PrimitiveIfSyntax)syntaxIfSource
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let method = units.firstOrNull({ _.identity.name == "Long" }).functionUnits().firstOrNull({ _.name == "time" })
+        let statements = method.statements()
+        Object ifSource = statements.first
+        BoundIfStatement conditional = (BoundIfStatement)ifSource
+        Object conditionSource = conditional.condition
+        BoundCallExpression condition = (BoundCallExpression)conditionSource
+        expect(condition.target.name).toBe("isNotEmpty")
+        expect(condition.range.startTokenIndex).toBe(syntaxIf.condition.range.startTokenIndex)
+        expect(condition.range.endTokenIndex).toBe(syntaxIf.condition.range.endTokenIndex)
+        Object receiverSource = condition.receiver
+        BoundCallExpression storage = (BoundCallExpression)receiverSource
+        expect(storage.target.callableKind.value).toBe("constructor")
+        expect(storage.argumentValues().count).toBe(1)
+        expect(method.returnType.value()).toBe(SemanticTypes.stringType().value())
+    }
+
+    async test `structured inferred text local keeps canonical assignment representation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:time-text-assignment"), "one")
+        let traitStream = Lexer().lex("trait PlusOperator<In, Out> { public plus(In another) -> Out }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let contexts = [PrimitiveSourceBindingContext("flat/operators", snapshot, PrimitiveClassSyntax[], [contract])]
+        let sources = ["class String implements PlusOperator<String, String> { public construct(native String text) {} public plus(String other) -> String { return this; } }",
+            "class Long { static run(String delimiter, Bool abbreviate) -> String { var str = \"\"; if (abbreviate) { str = \"s\"; } else { str = \" seconds\" + (true ? delimiter + str : \"\"); } return str; } }"]
+        var Int index
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            contexts.add(PrimitiveSourceBindingContext(index++ == 0 ? "flat" : "app", snapshot, [syntax],
+                importValues: [PrimitiveBindingImport("flat/operators/PlusOperator", syntax.range)]))
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let stringType = units.firstOrNull({ _.identity.name == "String" }).semanticType
+        let method = units.firstOrNull({ _.identity.name == "Long" }).functionUnits().firstOrNull({ _.name == "run" })
+        let statements = method.statements()
+        Object localSource = statements.first
+        BoundLocalDeclarationStatement local = (BoundLocalDeclarationStatement)localSource
+        expect(local.local.semanticType.value()).toBe(stringType.value())
+        expect(local.initializer.semanticType.value()).toBe(stringType.value())
+        Object ifSource = statements[1]
+        BoundIfStatement conditional = (BoundIfStatement)ifSource
+        let thenValues = conditional.thenValues()
+        let elseValues = conditional.elseValues()
+        Object nativeAssignmentSource = thenValues.first
+        BoundAssignmentStatement nativeAssignment = (BoundAssignmentStatement)nativeAssignmentSource
+        Object plusAssignmentSource = elseValues.first
+        BoundAssignmentStatement plusAssignment = (BoundAssignmentStatement)plusAssignmentSource
+        expect(nativeAssignment.value.semanticType.value()).toBe(stringType.value())
+        expect(plusAssignment.value.semanticType.value()).toBe(stringType.value())
+        expect(plusAssignment.target.semanticType.value()).toBe(stringType.value())
+        let syntaxStatements = contexts.last.classValues().first.methodValues().first.statements()
+        Object syntaxIfSource = syntaxStatements[1]
+        PrimitiveIfSyntax syntaxIf = (PrimitiveIfSyntax)syntaxIfSource
+        let expectedAssignments = syntaxIf.elseValues()
+        expect(plusAssignment.range.startTokenIndex).toBe(expectedAssignments.first.range.startTokenIndex)
+        expect(plusAssignment.range.endTokenIndex).toBe(expectedAssignments.first.range.endTokenIndex)
+    }
+
+    async test `generic join compound text assignment selects canonical plus once`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:join-compound-text"), "one")
+        let traitStream = Lexer().lex("trait PlusOperator<In, Out> { public plus(In another) -> Out }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let contexts = [PrimitiveSourceBindingContext("flat/operators", snapshot, PrimitiveClassSyntax[], [contract])]
+        let sources = ["class String implements PlusOperator<String, String> { public construct(native String text) {} public plus(String another) -> String { return this; } }",
+            "class Array<E> { public join(native_array E[] data, String delimiter, String ellipse) -> String { var str = \"\"; for (i in 0..1) { str += data[i] + delimiter; } str += ellipse; str += \"!\"; return str; } }"]
+        var Int index
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            contexts.add(PrimitiveSourceBindingContext(index++ == 0 ? "flat" : "flat/datastruct/list", snapshot, [syntax],
+                importValues: [PrimitiveBindingImport("flat/operators/PlusOperator", syntax.range)]))
+        }
+        let rootStream = Lexer().lex("class Object { public toString() -> String { return \"element\"; } }")
+        rootStream.emit("start")
+        let root = PrimitiveClassParser().parse(rootStream.consumeAll<Token>("data"), snapshot)
+        contexts.add(PrimitiveSourceBindingContext("flat", snapshot, [root]))
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let stringType = units.firstOrNull({ _.identity.name == "String" }).semanticType
+        let method = units.firstOrNull({ _.identity.name == "Array" }).functionUnits().firstOrNull({ _.name == "join" })
+        let statements = method.statements()
+        Object assignmentSource = statements[2]
+        BoundAssignmentStatement assignment = (BoundAssignmentStatement)assignmentSource
+        Object callSource = assignment.value
+        BoundCallExpression call = (BoundCallExpression)callSource
+        expect(call.target.name).toBe("plus")
+        expect(call.target.ownerType.value()).toBe(stringType.value())
+        expect(call.semanticType.value()).toBe(stringType.value())
+        expect(call.receiver.expressionKind()).toBe("reference")
+        expect(call.argumentValues().count).toBe(1)
+        expect(call.argumentValues().first.expressionKind()).toBe("reference")
+        Object nativeAssignmentSource = statements[3]
+        BoundAssignmentStatement nativeAssignment = (BoundAssignmentStatement)nativeAssignmentSource
+        Object nativeCallSource = nativeAssignment.value
+        BoundCallExpression nativeCall = (BoundCallExpression)nativeCallSource
+        Object nativeArgumentSource = nativeCall.argumentValues().first
+        BoundCallExpression nativeArgument = (BoundCallExpression)nativeArgumentSource
+        expect(nativeArgument.target.callableKind.value).toBe("constructor")
+        expect(nativeArgument.argumentValues().count).toBe(1)
+        let syntaxStatements = contexts[2].classValues().first.methodValues().first.statements()
+        expect(assignment.range.startTokenIndex).toBe(syntaxStatements[2].range.startTokenIndex)
+        expect(assignment.range.endTokenIndex).toBe(syntaxStatements[2].range.endTokenIndex)
+    }
+
+    async test `concrete Int join operands use canonical static text conversion once`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:int-range-text"), "one")
+        let stream = Lexer().lex("trait PlusOperator<In, Out> { public plus(In another) -> Out }")
+        stream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let contexts = [PrimitiveSourceBindingContext("flat/operators", snapshot, PrimitiveClassSyntax[], [contract])]
+        let sources = [
+            "class String implements PlusOperator<String, String> { public construct(native String text) {} public plus(String another) -> String { return this; } }",
+            "class Int { public static toString(Int value) -> String { return \"number\"; } }",
+            "class IntRange { public join(Int value, String delimiter) -> String { var str = \"\"; str += value + delimiter; str += delimiter + value; return str; } }"
+        ]
+        let namespaces = ["flat", "flat/primitive/number", "flat/datastruct/list"]
+        var Int index
+        for (source in sources) {
+            let tokens = Lexer().lex(source)
+            tokens.emit("start")
+            let syntax = PrimitiveClassParser().parse(tokens.consumeAll<Token>("data"), snapshot)
+            contexts.add(PrimitiveSourceBindingContext(namespaces[index++], snapshot, [syntax],
+                importValues: [PrimitiveBindingImport("flat/operators/PlusOperator", syntax.range)]))
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let intType = units.firstOrNull({ _.identity.name == "Int" }).semanticType
+        let stringType = units.firstOrNull({ _.identity.name == "String" }).semanticType
+        let method = units.firstOrNull({ _.identity.name == "IntRange" }).functionUnits().firstOrNull({ _.name == "join" })
+        let statements = method.statements()
+        let syntaxStatements = contexts.last.classValues().first.methodValues().first.statements()
+        for (position in [1, 2]) {
+            Object assignmentSource = statements[position]
+            BoundAssignmentStatement assignment = (BoundAssignmentStatement)assignmentSource
+            Object outerSource = assignment.value
+            BoundCallExpression outer = (BoundCallExpression)outerSource
+            Object innerSource = outer.argumentValues().first
+            BoundCallExpression inner = (BoundCallExpression)innerSource
+            expect(outer.target.name).toBe("plus")
+            expect(inner.target.name).toBe("plus")
+            expect(inner.target.ownerType.value()).toBe(stringType.value())
+            Object convertedSource = position == 1 ? inner.receiver : inner.argumentValues().first
+            BoundCallExpression converted = (BoundCallExpression)convertedSource
+            expect(converted.target.name).toBe("toString")
+            expect(converted.target.callableKind.value).toBe("static-method")
+            expect(converted.target.ownerType.value()).toBe(intType.value())
+            expect(converted.semanticType.value()).toBe(stringType.value())
+            expect(converted.receiver == null).toBe(true)
+            let arguments = converted.argumentValues()
+            expect(arguments.count).toBe(1)
+            expect(arguments.first.semanticType.value()).toBe(SemanticTypes.intType().value())
+            expect(arguments.first.expressionKind()).toBe("reference")
+            expect(converted.range.startTokenIndex).toBe(arguments.first.range.startTokenIndex)
+            expect(converted.range.endTokenIndex).toBe(arguments.first.range.endTokenIndex)
+            expect(assignment.range.startTokenIndex).toBe(syntaxStatements[position].range.startTokenIndex)
+            expect(assignment.range.endTokenIndex).toBe(syntaxStatements[position].range.endTokenIndex)
+        }
+    }
+
+    async test `Int text conversion requires unique canonical declaration and exact signature`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:int-text-evidence"), "one")
+        let operatorStream = Lexer().lex("trait PlusOperator<In, Out> { public plus(In another) -> Out }")
+        operatorStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(operatorStream.consumeAll<Token>("data"), snapshot)
+        let stringStream = Lexer().lex("class String implements PlusOperator<String, String> {}")
+        stringStream.emit("start")
+        let stringSyntax = PrimitiveClassParser().parse(stringStream.consumeAll<Token>("data"), snapshot)
+        let intStream = Lexer().lex("class Int {}")
+        intStream.emit("start")
+        let intSyntax = PrimitiveClassParser().parse(intStream.consumeAll<Token>("data"), snapshot)
+        let operatorSource = PrimitiveSourceBindingContext("flat/operators", snapshot, PrimitiveClassSyntax[], [contract])
+        let stringSource = PrimitiveSourceBindingContext("flat", snapshot, [stringSyntax],
+            importValues: [PrimitiveBindingImport("flat/operators/PlusOperator", stringSyntax.range)])
+        let intSource = PrimitiveSourceBindingContext("flat/primitive/number", snapshot, [intSyntax])
+        let base = [operatorSource, stringSource]
+        let complete = [operatorSource, stringSource, intSource]
+        let scope = PrimitiveResolvedDeclarationContext(stringSource, complete)
+        let stringType = UserClassSemanticType(scope.classIdentity(stringSyntax))
+        let intType = UserClassSemanticType(scope.classIdentity(intSyntax))
+        let plus = CallableSignature(SymbolIdentity(stringType.declarationIdentity, "plus"), "plus",
+            CallableKind("instance-method"), [stringType], stringType, stringType)
+        let scalar = BoundLiteralExpression(intSyntax.range, SemanticTypes.intType(), "7")
+        let text = BoundLiteralExpression(stringSyntax.range, stringType, "text")
+        for (mode in [0, 1, 2, 3, 4, 5, 6, 7, 8]) {
+            let inputs = mode == 0 ? base : mode == 1 ? [operatorSource, stringSource, intSource, intSource] : complete
+            let context = PrimitiveResolvedDeclarationContext(stringSource, inputs)
+            let owner = mode == 2 ? stringType : intType
+            let parameter = mode == 3 ? SemanticTypes.longType() : SemanticTypes.intType()
+            let result = mode == 4 ? SemanticTypes.stringType() : stringType
+            let kind = mode == 5 ? "instance-method" : "static-method"
+            let target = CallableSignature(SymbolIdentity(owner.declarationIdentity, "toString"), "toString",
+                CallableKind(kind), [parameter], result, owner, optionalParameterCount: mode == 6 ? 1 : 0)
+            let callables = mode == 8 ? [plus] : mode == 7 ? [plus, target, target] : [plus, target]
+            var Bool rejected
+            try { PrimitiveStringAdapter.plus(scalar, text, context, callables, null) }
+            catch (Exception error) { rejected = true }
+            if (!rejected) throw Exception("Int text conversion accepted invalid canonical evidence mode #mode")
+        }
+        var Bool nullableRejected
+        let nullable = BoundLiteralExpression(intSyntax.range, NullableSemanticType(SemanticTypes.intType()), "null")
+        let target = CallableSignature(SymbolIdentity(intType.declarationIdentity, "toString"), "toString",
+            CallableKind("static-method"), [SemanticTypes.intType()], stringType, intType)
+        try { PrimitiveStringAdapter.plus(nullable, text, scope, [plus, target], null) }
+        catch (Exception error) { nullableRejected = true }
+        expect(nullableRejected).toBe(true)
+    }
+
+    async test `inferred text without canonical declaration retains builtin storage`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:no-canonical-text-local"), "one")
+        let stream = Lexer().lex("class Use { run(Bool enabled) -> String { var str = \"\"; if (enabled) { str = \"s\"; } return str; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let statements = unit.functionUnits().firstOrNull({ _.name == "run" }).statements()
+        Object localSource = statements.first
+        BoundLocalDeclarationStatement local = (BoundLocalDeclarationStatement)localSource
+        expect(local.local.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        expect(local.initializer.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        expect(local.initializer.expressionKind()).toBe("literal")
+    }
+
+    async test `native text adapter rejects absent ambiguous and missing constructor evidence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:text-adapter-evidence"), "one")
+        let stream = Lexer().lex("class String {}")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let source = PrimitiveSourceBindingContext("flat", snapshot, [syntax])
+        let scopes = [PrimitiveResolvedDeclarationContext(source, PrimitiveSourceBindingContext[]),
+            PrimitiveResolvedDeclarationContext(source, [source, source]),
+            PrimitiveResolvedDeclarationContext(source, [source])]
+        let owner = UserClassSemanticType(PrimitiveResolvedDeclarationContext(source, [source]).classIdentity(syntax))
+        let value = BoundLiteralExpression(syntax.range, SemanticTypes.stringType(), "\"x\"")
+        var Int index
+        for (scope in scopes) {
+            var String failure
+            try { PrimitiveStringAdapter.wrap(value, owner, scope, CallableSignature[]) }
+            catch (Exception error) { failure = error.message }
+            if (!failure) throw Exception("Native text receiver accepted without unique canonical evidence")
+            let expected = index++ < 2 ? "one canonical flat/String declaration" : "one canonical native text constructor"
+            expect(failure.contains(expected)).toBe(true)
+        }
+    }
+
+    async test `instance scalar field forwards to static overload with defaults`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:long-forward-field"), "one")
+        let stream = Lexer().lex("class Long { visible Long value; public construct(Long input) { value = input; } public millisToTime(Bool abbreviate = true) -> Long { return millisToTime(value, abbreviate); } public static millisToTime(Long time, Bool abbreviate = true) -> Long { return time; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let method = unit.functionUnits().firstOrNull((candidate) => candidate.name == "millisToTime" && !candidate.staticFunction)
+        let statements = method.statements()
+        Object returnedSource = statements.first
+        BoundReturnStatement returned = (BoundReturnStatement)returnedSource
+        Object callSource = returned.value
+        BoundCallExpression call = (BoundCallExpression)callSource
+        expect(call.target.callableKind.value).toBe("static-method")
+        let arguments = call.argumentValues()
+        Object fieldSource = arguments.first
+        BoundMemberAccessExpression field = (BoundMemberAccessExpression)fieldSource
+        expect(field.memberName).toBe("value")
+        expect(field.semanticType.value()).toBe(SemanticTypes.longType().value())
+    }
+
+    async test `unknown projected text property diagnoses its access range`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-text-property"), "one")
+        let stream = Lexer().lex("class Use { run(native String text) -> Bool { return text.missing; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
+        catch (Exception error) { failure = error.message }
+        if (!failure) throw Exception("Unknown projected property accepted")
+        Object syntaxReturnSource = syntax.methodValues().first.statements().first
+        PrimitiveReturnSyntax syntaxReturn = (PrimitiveReturnSyntax)syntaxReturnSource
+        let accessToken = syntaxReturn.value.range.startTokenIndex
+        expect(SemanticTypes.stringType().value()).toBe("builtin:String")
+        expect(failure.contains("Unknown member 'missing' on '#{SemanticTypes.stringType().value()}' at #accessToken")).toBe(true)
+        expect(failure.contains("Reduced field access requires")).toBe(false)
+    }
+
+    async test `contextual async callback default retains inferred scalar identity`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:contextual-default-identity"), "one")
+        let stream = Lexer().lex("class Value { static async apply<Out, In>(In value, async callback(In value, Int index) -> Out) -> Out { return callback(value, 2); } static async apply(Int value, async callback(Bool value, Int index) -> Int) -> Int { return 0; } static async read(Int offset = 2, async next(Int value) -> Int = lambda(Int value) => value + offset) -> Int { return Value.apply(40, { next(_) + _ }); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let contexts = [PrimitiveSourceBindingContext("app", snapshot, [syntax])]
+        admitCallbackScalar(contexts, "Int")
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let method = units.firstOrNull({ _.identity.name == "Value" }).functionUnits().firstOrNull({ _.name == "read" })
+        let statements = method.statements()
+        Object returnedSource = statements.first
+        BoundReturnStatement returned = (BoundReturnStatement)returnedSource
+        Object callSource = returned.value
+        BoundCallExpression call = (BoundCallExpression)callSource
+        expect(call.target.genericParameters().count).toBe(0)
+        expect(call.target.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+        expect(call.semanticType.value()).toBe(SemanticTypes.intType().value())
+        let arguments = call.argumentValues()
+        Object callbackSource = arguments[1]
+        BoundLambdaExpression callback = (BoundLambdaExpression)callbackSource
+        Object callbackTypeSource = callback.semanticType
+        FunctionSemanticType callbackType = (FunctionSemanticType)callbackTypeSource
+        expect(callbackType.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+        expect(callbackType.returnType.value()).toBe(SemanticTypes.intType().value())
+        expect(callbackType.asyncFunction).toBe(true)
+        expect(callback.resultBoxingConstructor.ownerType.declarationIdentity.name).toBe("Int")
+    }
+
     async test `member lexical scopes keep configured defaults separate while canonical members remain shared`() {
         let baseSnapshot = SourceSnapshotIdentity(SourceIdentity("app/Owner.flat"), "one")
         let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("app/Owner.js.flat"), "one")
@@ -4099,7 +4477,12 @@ testable class {
         var String failure
         try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
         catch (Exception error) { failure = error.message }
-        expect(failure.contains("Reduced field access requires 'this'")).toBe(true)
+        if (!failure) throw Exception("Unresolved call-result member accepted as owner field")
+        let readSyntax = syntax.methodValues().firstOrNull({ _.name == "read" })
+        Object syntaxReturnSource = readSyntax.statements().first
+        PrimitiveReturnSyntax syntaxReturn = (PrimitiveReturnSyntax)syntaxReturnSource
+        let accessToken = syntaxReturn.value.range.startTokenIndex
+        expect(failure.contains("Unknown member 'first' on '#{SemanticTypes.intType().value()}' at #accessToken")).toBe(true)
     }
 
     async test `infers owner generic constructor through a source-owned array receiver`() {

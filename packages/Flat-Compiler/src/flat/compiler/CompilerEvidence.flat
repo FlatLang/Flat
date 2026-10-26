@@ -93,7 +93,9 @@ class CompilerEvidence {
             else if (character == '\\') encoded += "\\\\"
             else if (character < ' ') {
                 Int code = character
-                encoded += "\\u00" + hex[code / 16] + hex[code % 16]
+                encoded += "\\u00"
+                encoded += hex[code / 16]
+                encoded += hex[code % 16]
             } else encoded += character
         }
         return encoded + "\""

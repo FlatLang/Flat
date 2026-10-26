@@ -16,7 +16,7 @@ import flat/future
 class CompilerSourceReadSchedule {
     visible Int capacity
     visible String completionOrder
-    var Future.CompletableFuture<Bool>[] gates = Future.CompletableFuture<Bool>[]
+    var Future<Bool>[] gates = Future<Bool>[]
     var Int remaining
     var Int released
     var Bool sealed
@@ -53,7 +53,7 @@ class CompilerSourceReadSchedule {
         if (sealed || gates.isEmpty) return
         sealed = true
         released = completionOrder == "forward" ? 0 : gates.count - 1
-        gates[released].complete(true)
+        releaseGate()
     }
 
     protected settle() {
@@ -61,8 +61,12 @@ class CompilerSourceReadSchedule {
         if (remaining == 0) drained.complete(true)
         else {
             released += completionOrder == "forward" ? 1 : -1
-            gates[released].complete(true)
+            releaseGate()
         }
+    }
+    private releaseGate() {
+        Future.CompletableFuture<Bool> gate = (Future.CompletableFuture<Bool>)gates[released]
+        gate.complete(true)
     }
     protected async awaitSettlement() { if (sealed) drained.get() }
 }

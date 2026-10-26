@@ -1,6 +1,7 @@
 package flat/parser/flat
 
 import flat/parser/SyntaxIsland
+import flat/parser/ParserDiagnostic
 import flat/compiler/models
 
 /**
@@ -174,8 +175,14 @@ class {
                 continue
             }
             if (!match.matchedAll || match.memberTokenCounts.isEmpty) {
-                reject("Flat type body ended inside an invalid or incomplete non-braced member '" +
-                    retained.map({ _.value }).join(" ") + "'")
+                let message = "Flat type body ended inside an invalid or incomplete non-braced member '" +
+                    retained.map({ _.value }).join(" ") + "'"
+                let range = SourceRange(snapshot, retainedIndexes.first,
+                    retainedIndexes.last + 1, retained.first.location, endLocation(retained.last))
+                let diagnostic = ParserDiagnostic("invalid-non-braced-member", message, snapshot, range)
+                finished = true
+                clear()
+                throw ParseFailure(diagnostic)
             }
             islands.addAll(publishFirst(match.memberTokenCounts.first))
         }

@@ -749,7 +749,7 @@ class TrackingPackageSourceProvider extends CompilerSourceProvider {
         String[] values = ["a-broken.flat", "z-later.flat"]
         return values
     }
-    override public load(String identity) -> CompilerSource {
+    override public async load(String identity) -> CompilerSource {
         loaded.add(identity)
         return CompilerSource(identity, identity == "a-broken.flat" ? "class Broken {" : "class Later {}")
     }

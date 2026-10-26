@@ -4,5 +4,7 @@ abstract class {
     public identities() -> String[] => String[]
     /** Cooperative cancellation/lifecycle boundary; default providers need no hook. */
     public checkpoint() {}
-    public load(String identity) -> CompilerSource => null
+    /** Loads may suspend. Calls through this public contract await asynchronous
+     * providers before accessing the immutable source or advancing checkpoints. */
+    public async load(String identity) -> CompilerSource => null
 }

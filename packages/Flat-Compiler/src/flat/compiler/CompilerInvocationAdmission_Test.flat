@@ -181,6 +181,8 @@ testable class {
                 if (record.schema === 'flat.compiler.invocation-admission.v1') #{observed}.seal = record;
             };
         }
+        // Pending presentation output must not contaminate native JSON records.
+        Console.out.write("pending admission presentation ")
         try {
             state.emitAdmission(CompilerInvocationAdmissionStream())
             Bool valid

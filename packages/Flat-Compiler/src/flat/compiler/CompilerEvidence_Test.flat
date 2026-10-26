@@ -11,6 +11,45 @@ import flat/future
 
 /** Evidence is a report of observations, never a substitute for acceptance. */
 testable class {
+    test `infrastructure selection is explicit and default remains full`() {
+        expect(Compiler_TestSuite.infrastructureRequested(String[])).toBe(false)
+        expect(Compiler_TestSuite.infrastructureRequested(["test.js"])).toBe(false)
+        expect(Compiler_TestSuite.infrastructureRequested(["test.js", "--infrastructure"])).toBe(true)
+        expect(Compiler_TestSuite.infrastructureRequested(["test.js", "infrastructure"])).toBe(false)
+    }
+
+    test `control characters retain both hexadecimal digits in diagnostic JSON`() {
+        expect(CompilerEvidence.quote("\n")).toBe("\"\\u000a\"")
+        expect(CompilerEvidence.quote("\t\r")).toBe("\"\\u0009\\u000d\"")
+        let escaped = CompilerEvidence.quote("quote\" slash\\ newline\n")
+        expect(escaped).toBe("\"quote\\\" slash\\\\ newline\\u000a\"")
+    }
+
+    class SuspendedSourceProvider extends CompilerSourceProvider {
+        visible var Bool entered
+        visible var Bool settled
+        visible Future.CompletableFuture<Bool> release = Future.create<Bool>()
+        override public async load(String identity) -> CompilerSource {
+            entered = true
+            release.get()
+            settled = true
+            return CompilerSource(identity, "class Main {}")
+        }
+    }
+
+    async test `base source provider awaits a suspended override before reading identity`() {
+        let controlled = SuspendedSourceProvider()
+        CompilerSourceProvider provider = controlled
+        let pending = Future.from<CompilerSource>(async { return provider.load("Main.flat") })$
+        expect(controlled.entered).toBe(true)
+        expect(controlled.settled).toBe(false)
+        expect(pending.completed).toBe(false)
+        controlled.release.complete(true)
+        let loaded = pending.get()
+        expect(controlled.settled).toBe(true)
+        expect(loaded.identity).toBe("Main.flat")
+        expect(loaded.text).toBe("class Main {}")
+    }
     async test `package scanner failure retains actual parser range in terminal evidence`() {
         let text = "class DogfoodInvalidSyntax {\n"
         let identity = "Invalid.flat"

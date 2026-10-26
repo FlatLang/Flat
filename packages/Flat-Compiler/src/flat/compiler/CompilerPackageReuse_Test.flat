@@ -238,7 +238,7 @@ testable class {
         expect(again.artifacts().first.code).toBe(dirtyCode)
     }
 
-    test `snapshot owns strings across input provider and result boundaries`() {
+    async test `snapshot owns strings across input provider and result boundaries`() {
         let reuse = CompilerPackageReuse()
         let linker = CountingLinker()
         let values = sources()

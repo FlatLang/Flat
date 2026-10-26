@@ -1182,6 +1182,133 @@ class AcceptanceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Malformed'):
             gate.lifecycle_records(log)
 
+    def production_fixture_case(self, package='Airship'):
+        self.root = self.root.resolve()
+        directory = self.root / 'fixture-production'
+        workspace = directory / 'workspace'
+        (directory / 'logs').mkdir(parents=True)
+        source = workspace / gate.bootstrap.LIFECYCLE_SOURCE
+        source.parent.mkdir(parents=True)
+        repo = Path(__file__).resolve().parents[3]
+        source.write_bytes((repo / gate.bootstrap.LIFECYCLE_SOURCE).read_bytes())
+        runner, compiler = directory / 'runner.js', directory / 'compiler.js'
+        runner.write_text('pinned Airship')
+        compiler.write_text('pinned compiler')
+        policy = {'root': str(workspace), 'airshipSha256': gate.bootstrap.digest(runner),
+                  'seedSha256': gate.bootstrap.digest(compiler)}
+        policy_path = directory / 'policy.json'
+        self.write(policy_path, policy)
+        context = {'directory': directory, 'workspace': workspace, 'runner': runner, 'compiler': compiler,
+                   'journal': directory / 'admissions.jsonl', 'commands': [], 'policy': policy,
+                   'env': {'FLAT_BOOTSTRAP_POLICY': str(policy_path)}}
+        generated = workspace / 'packages' / package / 'dist/test.js'
+        node = directory / 'node'
+        node.write_text('pinned test executable; never executed')
+        seeds = {'node': (node, gate.bootstrap.digest(node))}
+        seen = []
+        def execute(argv, cwd, env, log, journal, **kwargs):
+            selected = gate.read_json(Path(env['FLAT_BOOTSTRAP_POLICY']))
+            seen.append(copy.deepcopy(selected))
+            if 'install' in argv:
+                self.assertNotIn('fixtures', selected)
+                generated.parent.mkdir(parents=True, exist_ok=True)
+                generated.write_text('fresh generated test')
+                args = [str(compiler), 'src']
+            else:
+                args = [str(generated)]
+                if package == 'Airship':
+                    expected = gate.bootstrap.lifecycle_inventory(workspace, generated)
+                    self.assertEqual(selected.get('fixtures'), expected)
+                else:
+                    self.assertNotIn('fixtures', selected)
+            with journal.open('a') as stream:
+                stream.write(json.dumps({'decision': 'allow', 'command': str(node), 'args': args}) + '\n')
+            log.write_text('suite passed\n')
+            cleanup = kwargs['cleanup_observation']
+            cleanup.update(pid=42, exit_code=0, wait_completed=True, child_reaped=True, process_group_absent=True)
+            if package == 'Airship' and 'run' in argv:
+                events = [{'kind': 'hello', 'scope': 'a' * 32, 'pid': 42}]
+                for index, entry in enumerate(selected['fixtures'], 1):
+                    identity = {'scope': 'a' * 32, 'pid': 42, 'invocation': index, 'fixture': entry['id']}
+                    events.extend([dict(identity, kind='fixture-start'),
+                                   dict(identity, kind='fixture-end', **entry['outcome'])])
+                self.write(log.with_suffix('.log.scope.json'), {
+                    'schema': 'flat.stage.process-scope.v1', 'scope': 'a' * 32,
+                    'ownership': 'external-command-group', 'scope_cancelled': False,
+                    'hello_count': 1, 'frame_count': len(events), 'events': events,
+                    'fixtures_started': 3, 'fixtures_finished': 3, 'cleanup': cleanup,
+                    'claim': 'command-scope only; not per-operation descendant cleanup'})
+        with mock.patch.object(gate.bootstrap, 'run_command', side_effect=execute):
+            run = gate.execute_production(context, package, seeds, None, 10)
+        return context, run, seen, generated
+
+    def test_production_airship_run_uses_only_exact_fresh_lifecycle_inventory(self):
+        context, run, seen, generated = self.production_fixture_case()
+        self.assertNotIn('fixtures', context['policy'])
+        self.assertNotIn('fixtures', gate.read_json(Path(context['env']['FLAT_BOOTSTRAP_POLICY'])))
+        self.assertEqual(len(seen[1]['fixtures']), 3)
+        self.assertEqual([entry['outcome']['exit'] for entry in seen[1]['fixtures']], [0, 7, 0])
+        self.assertEqual(gate.validate_production_run(self.root, run, context['policy']['seedSha256']),
+                         gate.scenario_sources(None, context['workspace']))
+
+    def test_production_non_airship_run_keeps_default_policy(self):
+        context, run, seen, generated = self.production_fixture_case('Flat-Core')
+        self.assertTrue(all('fixtures' not in value for value in seen))
+        self.assertTrue(all(not any(key.startswith('fixture_') for key in command)
+                            for command in run['commands']))
+
+    def test_production_airship_fixture_bindings_reject_tampering(self):
+        context, run, seen, generated = self.production_fixture_case()
+        command = run['commands'][1]
+        policy_path = self.root / command['fixture_policy_reference']['path']
+        original = gate.read_json(policy_path)
+        def validate():
+            return gate.validate_production_run(self.root, run, context['policy']['seedSha256'])
+        for field, bad in (('runner', str(context['runner'])), ('runnerSha256', 'b' * 64),
+                           ('cwd', str(context['workspace'])), ('scriptSha256', 'b' * 64),
+                           ('count', 2), ('lifecycleStep', 2), ('outcome', {'exit': 0, 'signal': None}),
+                           ('files', [])):
+            changed = copy.deepcopy(original)
+            index = 1 if field == 'outcome' else 0
+            changed['fixtures'][index][field] = bad
+            self.write(policy_path, changed)
+            # Even re-pinning a tampered policy must not make it authoritative.
+            command['fixture_policy_reference']['sha256'] = gate.bootstrap.digest(policy_path)
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, 'fixture policy'):
+                validate()
+        self.write(policy_path, original)
+        command['fixture_policy_reference']['sha256'] = gate.bootstrap.digest(policy_path)
+        scope_path = self.root / command['fixture_scope_reference']['path']
+        scope = gate.read_json(scope_path)
+        for mutate in (lambda value: value['events'].pop(),
+                       lambda value: value['events'][4].update(exit=0),
+                       lambda value: value['events'].reverse(),
+                       lambda value: value.update(fixtures_finished=2)):
+            changed = copy.deepcopy(scope)
+            mutate(changed)
+            self.write(scope_path, changed)
+            command['fixture_scope_reference']['sha256'] = gate.bootstrap.digest(scope_path)
+            with self.assertRaises(ValueError):
+                validate()
+        self.write(scope_path, scope)
+        command['fixture_scope_reference']['sha256'] = gate.bootstrap.digest(scope_path)
+        generated.write_text('changed runner')
+        with self.assertRaisesRegex(ValueError, 'runner changed'):
+            validate()
+        generated.write_text('fresh generated test')
+        source = context['workspace'] / gate.bootstrap.LIFECYCLE_SOURCE
+        source.write_text(source.read_text() + '\n// changed reviewed source\n')
+        with self.assertRaisesRegex(ValueError, 'reviewed lifecycle'):
+            validate()
+
+    def test_production_airship_fixtures_reject_ambiguous_runner_and_default_fixtures(self):
+        context, run, seen, generated = self.production_fixture_case()
+        for outputs in ({}, {'test.js': gate.bootstrap.digest(generated), 'es6/test.js': 'a' * 64}):
+            with self.assertRaisesRegex(ValueError, 'exactly one fresh'):
+                gate.airship_fixture_policy(context['workspace'], outputs, context['policy'])
+        with self.assertRaisesRegex(ValueError, 'default policy'):
+            gate.airship_fixture_policy(context['workspace'], run['artifacts'], dict(context['policy'], fixtures=[]))
+
     def test_production_run_rechecks_retained_logs_and_artifacts(self):
         directory = self.root / 'measured'
         directory.mkdir()

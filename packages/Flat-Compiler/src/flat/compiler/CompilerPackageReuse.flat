@@ -93,7 +93,7 @@ class {
             defaults, toolFingerprint)
     }
 
-    protected evidence(CompilerPackageSnapshot input, Bool reused) -> CompilerReuseEvidence {
+    protected async evidence(CompilerPackageSnapshot input, Bool reused) -> CompilerReuseEvidence {
         var Int unchanged
         var Int changed
         var Int added
@@ -174,7 +174,7 @@ class CompilerPackageSnapshot extends CompilerSourceProvider {
         }
 
         override public identities() -> String[] => values.map({ _.identity.concat("") })
-        override public load(String identity) -> CompilerSource => null {
+        override public async load(String identity) -> CompilerSource => null {
             let value = values.firstOrNull({ _.identity == identity })
             if (value) return CompilerSource(value.identity.concat(""), value.text.concat(""))
         }

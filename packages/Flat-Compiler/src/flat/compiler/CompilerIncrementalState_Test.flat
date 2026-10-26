@@ -88,7 +88,7 @@ testable class {
         Es6ArtifactFiles.write(tool, "// tool")
         Es6ArtifactFiles.write(output, "program")
         let observer = ManifestRecorder()
-        observer.destination = manifest.normalizedLocation
+        observer.destination = output.getCanonicalFileSync().normalizedLocation + ".flat-incremental.json"
         observer.throwCallbacks = mode == 0
         let files = [source]
         try {
@@ -164,7 +164,7 @@ testable class {
                 expect(manifest.isFile).toBe(mode != 1 && mode != 4)
                 if (mode == 0) {
                     let warmObserver = ManifestRecorder()
-                    warmObserver.destination = manifest.normalizedLocation
+                    warmObserver.destination = output.getCanonicalFileSync().normalizedLocation + ".flat-incremental.json"
                     let warm = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
                         ["library"], output, 1048576, toolLocation: tool.normalizedLocation,
                         manifestObserver: warmObserver)
@@ -202,8 +202,8 @@ testable class {
                 native var Object hooks
                 external js {
                     const fs = #{File.FileGlobal.fs};
-                    const nativeLockPath = #{lock.normalizedLocation.chars.data};
-                    const nativeOwnerPath = #{owner.normalizedLocation.chars.data};
+                    const nativeLockPath = require('path').resolve(#{lock.normalizedLocation.chars.data});
+                    const nativeOwnerPath = require('path').resolve(#{owner.normalizedLocation.chars.data});
                     #{hooks} = {unlink:fs.unlinkSync, rmdir:fs.rmdirSync, unlinks:0, rmdirs:0};
                     fs.unlinkSync = location => {
                         if (location === nativeOwnerPath) #{hooks}.unlinks++;
@@ -265,7 +265,7 @@ testable class {
     class CancellingProvider extends CompilerSourceProvider {
         public construct(visible CompilerSourceProvider source, visible CompilerSession session) {}
         override public identities() -> String[] => source.identities()
-        override public load(String identity) -> CompilerSource {
+        override public async load(String identity) -> CompilerSource {
             let value = source.load(identity)
             session.cancel()
             return value
