@@ -1,6 +1,7 @@
 package flat/parser/flat
 
 import flat/parser/SyntaxIsland
+import flat/parser/ParserDiagnostic
 import flat/compiler/models
 
 /**
@@ -130,7 +131,7 @@ class {
         } else if (state == IMPORT_AFTER_NAME || state == IMPORT_AFTER_ALIAS) {
             published = publishImport()
         } else {
-            reject("Flat source ended inside an incomplete package or import declaration")
+            rejectSyntax("Flat source ended inside an incomplete package or import declaration")
         }
 
         finished = true
@@ -240,8 +241,22 @@ class {
 
     requireIdentifier(Token token) {
         if (token.type != Token.Type.IDENTIFIER) {
-            reject("Flat package and import declarations require identifier components")
+            rejectSyntax("Flat package and import declarations require identifier components", token)
         }
+    }
+
+    rejectSyntax(String message, Token token = null) {
+        var SourceRange diagnosticRange = retained.isNotEmpty ? range() : null
+        if (token && token.location && retained.isNotEmpty) {
+            diagnosticRange = SourceRange(snapshot, retainedIndexes.first, lastTokenIndex + 1,
+                retained.first.location,
+                Location(lineNumber: token.endLineNumber, column: token.endColumn))
+        }
+        let failure = ParseFailure(ParserDiagnostic("invalid-front-matter", message,
+            snapshot, diagnosticRange))
+        finished = true
+        reset()
+        throw failure
     }
 
     reject(String message) {

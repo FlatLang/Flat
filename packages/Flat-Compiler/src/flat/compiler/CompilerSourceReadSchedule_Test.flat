@@ -1,11 +1,32 @@
 package flat/compiler
 
 import flat/io
+import flat/future
+import flat/eventstream
 import flat/time/Time
 import flat/writer/es6/bound
+import flat/project
 
 /** Controlled source-read transitions, backed by the real filesystem provider. */
 testable class {
+    // One Core package artifact, at most eight million UTF-16 code units
+    // including identity, charged at four bytes each by the memory sink.
+    // This is a fixture ceiling, not a production default or observed size.
+    static Long coreProductArtifactBytes = 33554432
+
+    test `Core product artifact ceiling rejects overflow without retaining output`() {
+        let sink = MemoryCompilerArtifactSink(1, coreProductArtifactBytes)
+        let oversized = "x".repeat(8388608)
+        var String failure
+        try { sink.write(CompilerArtifact("core.js", oversized)) }
+        catch (Exception error) { failure = error.message }
+        expect(failure).toBe("Memory artifact sink byte capacity exceeded")
+        expect(sink.artifacts().count).toBe(0)
+        sink.write(CompilerArtifact("core.js", "small"))
+        expect(sink.artifacts().count).toBe(1)
+        expect(sink.artifacts().first.code).toBe("small")
+    }
+
     class ArtifactObservation extends CompilerArtifactLifecycleObserver {
         visible var Int createdCount
         visible var Int removedCount
@@ -40,6 +61,9 @@ testable class {
     }
 
     class Observation extends CompilerInvocationObserver {
+        public construct(private Int maxObservations = 64) {
+            if (maxObservations <= 0) throw Exception("Test observation capacity must be positive")
+        }
         visible ArtifactObservation lifecycle = ArtifactObservation()
         override public artifactLifecycleObserver() -> CompilerArtifactLifecycleObserver => lifecycle
         override public invocationAdmitted(String revision, String destination, String persistentEvidence) {
@@ -51,6 +75,7 @@ testable class {
         visible var Int settledCount
         visible var Int peakActive
         visible var Int peakRetained
+        visible Future.CompletableFuture<Bool> laterSettled = Future.create<Bool>()
         visible var Bool drainedReads
         visible var Bool cancelAtRead
         visible var Bool cancelAtStage
@@ -61,9 +86,10 @@ testable class {
             this.peakRetained = peakRetained
         }
         override public settled(String identity, Int settled, Int active) {
-            if (order.count >= 64) throw Exception("Test observation capacity exceeded")
+            if (order.count >= maxObservations) throw Exception("Test observation capacity exceeded")
             order.add(File(identity).name)
             settledCount = settled
+            if (File(identity).name == "B.flat" && !laterSettled.completed) laterSettled.complete(true)
         }
         override public drained(Int admitted, Int settled, Int peakActive, Int peakRetained) {
             admittedCount = admitted
@@ -82,12 +108,304 @@ testable class {
         }
     }
 
+    test `source observation capacity follows the admitted inventory beyond sixty four`() {
+        let observer = Observation(65)
+        var Int index
+        while (index < 65) {
+            observer.settled("Source#{index}.flat", index + 1, 0)
+            index++
+        }
+        expect(observer.order.count).toBe(65)
+        expect(observer.settledCount).toBe(65)
+        expect({ observer.settled("Overflow.flat", 66, 0) }).toThrow(Exception.class)
+        expect(observer.order.count).toBe(65)
+        expect(observer.settledCount).toBe(65)
+    }
+
+    class GatedReads extends CompilerSourceProvider {
+        visible Future.CompletableFuture<Bool> enteredRead = Future.create<Bool>()
+        visible Future.CompletableFuture<Bool> release = Future.create<Bool>()
+        visible Future.CompletableFuture<Bool> laterReady = Future.create<Bool>()
+        visible var Int reads
+        visible var Bool wrongIdentity
+        override public identities() -> String[] {
+            String[] names = ["A.flat", "B.flat", "C.flat"]
+            return names
+        }
+        override public async load(String identity) -> CompilerSource {
+            reads++
+            if (identity == "A.flat") {
+                enteredRead.complete(true)
+                release.get()
+            }
+            else if (!laterReady.completed) laterReady.complete(true)
+            return CompilerSource(wrongIdentity ? "Other.flat" : identity, "class Value {}")
+        }
+    }
+
+    class SpeculativeObserverFailure extends CompilerInvocationObserver {
+        public construct(visible Bool failConsumedRead = false) {}
+        visible var Bool drainedReads
+        visible var Int admittedCount
+        visible var Int settledCount
+        override public sourceReadCompleted(CompilerSession session, String identity) {
+            if (identity == "A.flat") session.cancel()
+        }
+        override public settled(String identity, Int settled, Int active) {
+            if (identity == (failConsumedRead ? "A.flat" : "B.flat")) {
+                throw Exception("controlled settled observation failure")
+            }
+        }
+        override public drained(Int admitted, Int settled, Int peakActive, Int peakRetained) {
+            drainedReads = true
+            admittedCount = admitted
+            settledCount = settled
+        }
+    }
+
+    async test `cancelled package retains consumed and speculative observer failures exactly once`() {
+        Bool[] directions = [false, true]
+        Bool[] failures = [false, true]
+        for (reverse in directions) {
+            for (failConsumedRead in failures) {
+                let source = GatedReads()
+                let observer = SpeculativeObserverFailure(failConsumedRead)
+                let schedule = reverse ? CompilerSourceReadSchedule.reverse(2) : CompilerSourceReadSchedule.forward(2)
+                let pending = Future.from<CompilerSession>(async {
+                    return CompilerEngine(maxActiveSources: 2, sourceReadSchedule: schedule,
+                        sourceReadObserver: observer, invocationObserver: observer).compilePackage(
+                        source, MemoryCompilerArtifactSink(), "cancelled.js")
+                })$
+                source.enteredRead.get()
+                source.laterReady.get()
+                try {
+                    expect(pending.completed).toBe(false)
+                } finally { source.release.complete(true) }
+                let summary = pending.get().completion.get()
+                expect(summary.cancelled).toBe(true)
+                expect(summary.cleanupSettled).toBe(true)
+                expect(summary.diagnosticCount).toBe(1)
+                expect(summary.packageDiagnostic.contains("controlled settled observation failure")).toBe(true)
+                expect(summary.artifactCount).toBe(0)
+                expect(observer.drainedReads).toBe(true)
+                expect(observer.admittedCount).toBe(2)
+                expect(observer.settledCount).toBe(2)
+                expect(source.reads).toBe(2)
+            }
+        }
+    }
+
+    class CapturedReadExecutor extends Executor {
+        visible var Future<ExecutorTaskResult> handle
+        override public submit(async action()) -> Future<ExecutorTaskResult> {
+            handle = Future.from<ExecutorTaskResult>(async {
+                action()
+                return ExecutorTaskResult(completed: true)
+            })$
+            return handle
+        }
+    }
+
+    async test `cancelled executor handles do not retire entered source callbacks before cleanup`() {
+        let source = GatedReads()
+        let executor = CapturedReadExecutor()
+        let session = CompilerSession()
+        let sink = MemoryCompilerArtifactSink()
+        CompilerEngine(executor: executor, maxActiveSources: 1).start(source, sink, session)
+        source.enteredRead.get()
+        try {
+            executor.handle.cancel()
+            session.cancel()
+            expect(session.completion.completed).toBe(false)
+            expect(session.inFlightSourceCount).toBe(1)
+            expect(source.reads).toBe(1)
+        } finally { source.release.complete(true) }
+        let summary = session.completion.get()
+        expect(summary.cancelled).toBe(true)
+        expect(summary.cleanupSettled).toBe(true)
+        expect(session.inFlightSourceCount).toBe(0)
+        expect(session.retainedSourceCount).toBe(0)
+        expect(sink.artifacts().count).toBe(0)
+        expect(source.reads).toBe(1)
+    }
+
+    class ThrowingAdmission extends CompilerSourceReadObserver {
+        visible var Int admittedTotal = -1
+        visible var Int settledTotal = -1
+        override public admitted(String identity, Int admitted, Int retained, Int peakRetained) {
+            throw Exception("controlled admission observer failure")
+        }
+        override public drained(Int admitted, Int settled, Int peakActive, Int peakRetained) {
+            admittedTotal = admitted
+            settledTotal = settled
+        }
+    }
+
+    async test `invalid consumption rejects before admission and does not poison the next valid read`() {
+        let source = GatedReads()
+        let observer = Observation()
+        let provider = PackageCompilerSourceProvider(source, CompilerSession(), source.identities(),
+            2, 1024, observer: observer)
+        try {
+            var Bool rejected
+            try { provider.load("B.flat") } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            expect(source.reads).toBe(0)
+            expect(observer.admittedCount).toBe(0)
+            source.release.complete(true)
+            expect(provider.load("A.flat").identity).toBe("A.flat")
+            expect(source.reads).toBe(2)
+        } finally {
+            if (!source.release.completed) source.release.complete(true)
+            provider.dispose()
+        }
+    }
+
+    async test `one suspended read permits unrelated lookahead but rejects a competing consumer`() {
+        let source = GatedReads()
+        let observer = Observation()
+        let provider = PackageCompilerSourceProvider(source, CompilerSession(), source.identities(),
+            2, 1024, observer: observer)
+        let first = Future.from<CompilerSource>(async { return provider.load("A.flat") })$
+        try {
+            source.laterReady.get()
+            observer.laterSettled.get()
+            expect(first.completed).toBe(false)
+            expect(source.reads).toBe(2)
+            expect(observer.settledCount).toBe(1)
+            var Bool rejected
+            try { provider.load("A.flat") } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            expect(source.reads).toBe(2)
+            source.release.complete(true)
+            expect(first.get().identity).toBe("A.flat")
+            expect(provider.load("B.flat").identity).toBe("B.flat")
+            expect(source.reads).toBe(3)
+            expect(provider.load("C.flat").identity).toBe("C.flat")
+        } finally {
+            if (!source.release.completed) source.release.complete(true)
+            try { first.get() } catch (Exception error) {}
+            provider.dispose()
+        }
+        expect(observer.peakRetained <= 2).toBe(true)
+        expect(observer.admittedCount).toBe(3)
+        expect(observer.settledCount).toBe(3)
+    }
+
+    async test `concurrent disposal callers await the same admitted native read cleanup`() {
+        let source = GatedReads()
+        let observer = Observation()
+        let provider = PackageCompilerSourceProvider(source, CompilerSession(), source.identities(),
+            2, 1024, observer: observer)
+        let first = Future.from<Bool>(async {
+            try { provider.load("A.flat") } catch (Exception error) { return true }
+            return false
+        })$
+        source.laterReady.get()
+        let disposeOne = Future.from<Bool>(async {
+            provider.dispose()
+            return true
+        })$
+        let disposeTwo = Future.from<Bool>(async {
+            provider.dispose()
+            return true
+        })$
+        try {
+            expect(disposeOne.completed).toBe(false)
+            expect(disposeTwo.completed).toBe(false)
+            expect(observer.drainedReads).toBe(false)
+        } finally { source.release.complete(true) }
+        expect(first.get()).toBe(true)
+        expect(disposeOne.get()).toBe(true)
+        expect(disposeTwo.get()).toBe(true)
+        expect(observer.drainedReads).toBe(true)
+        expect(observer.admittedCount).toBe(2)
+        expect(observer.settledCount).toBe(2)
+        expect(source.reads).toBe(2)
+    }
+
+    async test `package reads reject mismatched identities before publishing loaded sources`() {
+        let source = GatedReads()
+        source.wrongIdentity = true
+        source.release.complete(true)
+        let observer = Observation()
+        let provider = PackageCompilerSourceProvider(source, CompilerSession(), source.identities(),
+            1, 1024, observer: observer)
+        var Bool rejected
+        try {
+            try { provider.load("A.flat") } catch (Exception error) { rejected = true }
+        } finally { provider.dispose() }
+        expect(rejected).toBe(true)
+        expect(observer.admittedCount).toBe(1)
+        expect(observer.settledCount).toBe(1)
+    }
+
+    async test `throwing admission observers leave no phantom admitted read to drain`() {
+        let source = GatedReads()
+        let observer = ThrowingAdmission()
+        let provider = PackageCompilerSourceProvider(source, CompilerSession(), source.identities(),
+            2, 1024, observer: observer)
+        var Bool rejected
+        try {
+            try { provider.load("A.flat") } catch (Exception error) { rejected = true }
+        } finally { provider.dispose() }
+        expect(rejected).toBe(true)
+        expect(source.reads).toBe(0)
+        expect(observer.admittedTotal).toBe(0)
+        expect(observer.settledTotal).toBe(0)
+    }
+
+    async test `a controlled read schedule remains single use after its window drains`() {
+        let source = GatedReads()
+        source.release.complete(true)
+        let schedule = CompilerSourceReadSchedule.forward(1)
+        let provider = PackageCompilerSourceProvider(source, CompilerSession(), source.identities(),
+            1, 1024, schedule)
+        try { expect(provider.load("A.flat").identity).toBe("A.flat") }
+        finally { provider.dispose() }
+        var Bool rejected
+        try {
+            PackageCompilerSourceProvider(source, CompilerSession(), source.identities(), 1, 1024, schedule)
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        expect(schedule.completionOrder).toBe("forward")
+        expect(CompilerSourceReadSchedule.reverse(1).completionOrder).toBe("reverse")
+    }
+
+    async test `filesystem async reads preserve byte bounds empty input and immutable identities`() {
+        let root = File(".flat-async-read-bounds-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let empty = File(root, "Empty.flat")
+        let exact = File(root, "Exact.flat")
+        Es6ArtifactFiles.write(empty, "")
+        Es6ArtifactFiles.write(exact, "a€😀")
+        try {
+            let emptyProvider = FilesystemCompilerSourceProvider([empty], 0)
+            expect(emptyProvider.load(empty.normalizedLocation).text).toBe("")
+            expect(emptyProvider.load("missing.flat")).toBe(null)
+            let provider = FilesystemCompilerSourceProvider([exact], 8)
+            let source = provider.load(exact.normalizedLocation)
+            expect(source.identity).toBe(exact.normalizedLocation)
+            expect(source.text).toBe("a€😀")
+            let Int[] limits = [0, 7]
+            for (limit in limits) {
+                var Bool rejected
+                try {
+                    FilesystemCompilerSourceProvider([exact], limit).load(exact.normalizedLocation)
+                } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+            }
+            // Failed bounded reads must not prevent a fresh successful read.
+            expect(provider.load(exact.normalizedLocation).text).toBe("a€😀")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     async test `real filesystem reads settle forward and reverse within bounded windows`() {
         let root = File(".flat-read-schedule-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         try {
             let files = File[]
-            let String[] names = ["A", "B", "C"]
+            let String[] names = ["A", "B", "C", "D", "E"]
             for (name in names) {
                 let file = File(root, "#{name}.flat")
                 Es6ArtifactFiles.write(file, "class #name {}")
@@ -106,12 +424,13 @@ testable class {
                     let session = engine.compilePackage(FilesystemCompilerSourceProvider(files), sink, "program.js")
                     let summary = session.completion.get()
                     expect(summary.diagnosticCount).toBe(0)
-                    expect(observer.admittedCount).toBe(3)
-                    expect(observer.settledCount).toBe(3)
+                    expect(observer.admittedCount).toBe(5)
+                    expect(observer.settledCount).toBe(5)
                     expect(observer.drainedReads).toBe(true)
                     expect(observer.peakRetained <= capacity).toBe(true)
                     expect(observer.peakActive <= capacity).toBe(true)
-                    expect(observer.order.join(",")).toBe(reverse && capacity == 3 ? "C.flat,B.flat,A.flat" : "A.flat,B.flat,C.flat")
+                    expect(observer.order.join(",")).toBe(reverse && capacity == 3 ?
+                        "C.flat,B.flat,A.flat,E.flat,D.flat" : "A.flat,B.flat,C.flat,D.flat,E.flat")
                     let code = sink.artifacts().first.code
                     if (reference == null) reference = code
                     else expect(code).toBe(reference)
@@ -130,13 +449,17 @@ testable class {
         let Bool[] completionOrders = [false, true]
         for (capacity in capacities) {
             for (reverse in completionOrders) {
-                let observer = Observation()
+                let observer = Observation(files.count)
                 let schedule = reverse ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
-                let sink = MemoryCompilerArtifactSink()
+                // Complete Core output is one bounded product retained for exact
+                // comparison with later schedules, not an unbounded artifact log.
+                let sink = MemoryCompilerArtifactSink(1, coreProductArtifactBytes)
                 let engine = CompilerEngine(maxActiveSources: capacity, sourceReadSchedule: schedule,
                     sourceReadObserver: observer, invocationObserver: observer)
                 let session = engine.compilePackage(FilesystemCompilerSourceProvider(files), sink, "core.js")
                 let summary = session.completion.get()
+                CompilerEvidence.emitProductFailure(summary,
+                    "real-Core-library-#{capacity}-#{reverse ? "reverse" : "forward"}")
                 expect(summary.diagnosticCount).toBe(0)
                 expect(summary.artifactCount).toBe(1)
                 expect(observer.admittedCount).toBe(files.count)
@@ -149,6 +472,60 @@ testable class {
                 else expect(code).toBe(reference)
             }
         }
+    }
+
+    async test `complete production Core workload executes under every bounded read order`() {
+        let project = AirshipCompilerArguments().fromArguments([
+            "../Flat-Core/workloads/ProductionCoreWorkload.flat", "-l", "../Flat-Core/src",
+            "-x", "../Flat-Core/src/**/*_Test*.flat", "-target", "es6", "-target-runtime", "node",
+            "-main", "core/workloads/ProductionCoreWorkload", "-o", "production-core-workload.js"
+        ])
+        let files = CompilerSourceDiscovery().discover(project.packages.first)
+        expect(files.count > 64).toBe(true)
+        let Int[] capacities = [1, 3]
+        let Bool[] directions = [false, true]
+        let root = File(".flat-complete-core-schedules-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        var String reference
+        try {
+            for (capacity in capacities) {
+                for (reverse in directions) {
+                    let observer = Observation(files.count)
+                    let schedule = reverse ? CompilerSourceReadSchedule.reverse(capacity)
+                        : CompilerSourceReadSchedule.forward(capacity)
+                    // One complete package artifact is an explicit bounded product boundary.
+                    let sink = MemoryCompilerArtifactSink(1, coreProductArtifactBytes)
+                    let engine = CompilerEngine(maxActiveSources: capacity, sourceReadSchedule: schedule,
+                        sourceReadObserver: observer, invocationObserver: observer)
+                    let session = engine.compilePackage(FilesystemCompilerSourceProvider(files), sink,
+                        "production-core-workload.js", "core/workloads/ProductionCoreWorkload")
+                    let summary = session.completion.get()
+                    CompilerEvidence.emitProductFailure(summary,
+                        "complete-Core-main-#{capacity}-#{reverse ? "reverse" : "forward"}")
+                    expect(summary.sourceCount).toBe(files.count)
+                    expect(summary.diagnosticCount).toBe(0)
+                    expect(summary.artifactCount).toBe(1)
+                    expect(summary.succeeded).toBe(true)
+                    expect(observer.admittedCount).toBe(files.count)
+                    expect(observer.settledCount).toBe(files.count)
+                    expect(observer.drainedReads).toBe(true)
+                    expect(observer.peakRetained <= capacity).toBe(true)
+                    expect(observer.peakActive <= capacity).toBe(true)
+                    let artifacts = sink.artifacts()
+                    expect(artifacts.count).toBe(1)
+                    let code = artifacts.first.code
+                    if (reference == null) reference = code
+                    else expect(code).toBe(reference)
+                    let output = File(root, "workload-#{capacity}-#{reverse}.js")
+                    Es6ArtifactFiles.write(output, code)
+                    let response = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+                    expect(response.exitCode).toBe(0)
+                    expect(response.stdout.join("")).toBe("production-core-workload:ok\n")
+                    expect(response.stderr.join("")).toBe("")
+                    expect(Es6ArtifactFiles.read(output)).toBe(code)
+                }
+            }
+        } finally { Es6ArtifactFiles.remove(root) }
     }
 
     async test `CLI successful publication streams actual artifact cleanup observations`() {

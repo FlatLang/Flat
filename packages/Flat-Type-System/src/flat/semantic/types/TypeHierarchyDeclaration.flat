@@ -6,6 +6,7 @@ data class {
     var TypeMember[] declaredMembers
     var GenericParameterSemanticType[] parameters
     var GenericInstanceSemanticType[] parentTemplates
+    visible Int genericArity => parameters.count
 
     public construct(
         visible UserClassSemanticType semanticType,

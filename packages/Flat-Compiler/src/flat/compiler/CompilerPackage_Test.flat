@@ -11,6 +11,71 @@ import flat/semantic/binding/primitive/PrimitiveDefaultImport
 
 /** Public package API acceptance, separate from direct linker feature tests. */
 testable class {
+    async test `production Core workload syntax retains typed mixed array declaration`() {
+        assertProductionWorkloadSyntax()
+    }
+
+    public static async assertProductionWorkloadSyntax() {
+        let file = File("../Flat-Core/workloads/ProductionCoreWorkload.flat")
+        let text = Es6ArtifactFiles.read(file)
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(file.normalizedLocation), "workload-syntax")
+        let stream = Lexer().lexInterpolated(text)
+        stream.emit("start")
+        // This one fixture file is the explicit bounded syntax regression unit.
+        let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot, "js")
+        var Int methods
+        var Bool foundMixed
+        for (partition in partitions) {
+            let syntax = PrimitiveClassParser().parse(partition.tokenValues(), snapshot,
+                partition.startTokenIndex)
+            for (method in syntax.methodValues()) {
+                methods++
+                if (method.name == "collectionsAndNumbers") {
+                    for (statement in method.statements()) {
+                        if (!statement.class.isOfType(PrimitiveLocalDeclarationSyntax.class)) continue
+                        let local = (PrimitiveLocalDeclarationSyntax)statement
+                        if (local.name == "mixed") {
+                            expect(local.declaredTypeName).toBe("Object[]")
+                            expect(local.initializer != null).toBe(true)
+                            foundMixed = true
+                        }
+                    }
+                }
+            }
+        }
+        expect(partitions.count).toBe(2)
+        expect(methods).toBe(13)
+        expect(foundMixed).toBe(true)
+    }
+
+    async test `public package API selects main without turning library loading into execution`() {
+        let sources = [CompilerSource("app/Main.flat",
+            "package app class Main { public static main() { external js { console.log('package-main'); } } }")]
+        let compiler = Compiler(CompilerEngine(packageReuse: CompilerPackageReuse()))
+        let library = MemoryCompilerArtifactSink()
+        let executable = MemoryCompilerArtifactSink()
+        let librarySummary = compiler.compilePackageSnapshots(sources, library, "library.js").completion.get()
+        let mainSummary = compiler.compilePackageSnapshots(sources, executable, "main.js", "app/Main").completion.get()
+        expect(librarySummary.diagnosticCount).toBe(0)
+        expect(mainSummary.diagnosticCount).toBe(0)
+        expect(librarySummary.artifactCount).toBe(1)
+        expect(mainSummary.artifactCount).toBe(1)
+        let root = File(".flat-package-main-policy-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let libraryFile = File(root, "library.js")
+            let mainFile = File(root, "main.js")
+            Es6ArtifactFiles.write(libraryFile, library.artifacts().first.code)
+            Es6ArtifactFiles.write(mainFile, executable.artifacts().first.code)
+            let loaded = System.execute(["node", libraryFile.normalizedLocation], silent: true, shell: false)
+            expect(loaded.exitCode).toBe(0)
+            expect(loaded.stdout.join("")).toBe("")
+            let executed = System.execute(["node", mainFile.normalizedLocation], silent: true, shell: false)
+            expect(executed.exitCode).toBe(0)
+            expect(executed.stdout.join("")).toBe("package-main\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     /** Requires separately bootstrapped flatc and Airship artifacts; never builds this suite recursively. */
     async test `Airship Flat runtime builds a real package executable and Node runs its production dependency`() {
         let airship = File("../Airship/dist/airship.js")
@@ -266,6 +331,9 @@ testable class {
                 "external js { console.log(); console.log(" + reference + "{nativeDeclared.chars.data}); }\n" +
                 "let declaredNative = leftDeclared(\"declared-left|\") + rightNative(\"native-right\");\n" +
                 "external js { console.log(); console.log(" + reference + "{declaredNative.chars.data}); }\n" +
+                "let nativeNative = leftNative(\"native-left|\") + rightNative(\"native-right\");\n" +
+                "let nativeNativeText = String(nativeNative);\n" +
+                "external js { console.log(); console.log(" + reference + "{nativeNativeText.chars.data}); }\n" +
             "} }"
         sources.add(CompilerSource("app/Main.flat", program))
         let sink = MemoryCompilerArtifactSink()
@@ -293,7 +361,8 @@ testable class {
             expect(response.stdout.join("")).toBe(
                 "LR\ndeclared-left|declared-right\n" +
                 "LR\nnative-left|declared-right\n" +
-                "LR\ndeclared-left|native-right\n"
+                "LR\ndeclared-left|native-right\n" +
+                "LR\nnative-left|native-right\n"
             )
             expect(response.stderr.join("")).toBe("")
         } finally {

@@ -27,7 +27,7 @@ class extends BoundTreeLoweringPass {
                 BoundLocalDeclarationStatement local = (BoundLocalDeclarationStatement)value
                 let name = Es6NameMangler.mangle(local.local.symbolIdentity.value)
                 // Semantic identities, not a synthetic branch block, own setup locals.
-                selected = selected.replace("let " + name, "var " + name)
+                if (!local.evaluationLocal) selected = selected.replace("let " + name, "var " + name)
             }
             code += selected
         }
@@ -97,12 +97,29 @@ class extends BoundTreeLoweringPass {
             BoundCallExpression value = (BoundCallExpression)expression
             var BoundExpression receiver = null
             if (value.receiver) receiver = lowerExpression(value.receiver)
+            // Capture the selected callee and static owner before argument setup.
+            // Re-reading either after setup can select a different runtime target.
             var String method = null
-            if (receiver) {
+            let kind = value.target.callableKind.value
+            let name = value.target.externalName ?: Es6NameMangler.mangle(
+                value.target.dispatchIdentity ?: value.target.identity.declaration.value)
+            var String owner = null
+            var Bool directConstructor = false
+            if (receiver || kind == "function" || kind == "static-method" || kind == "constructor") {
                 method = fresh()
-                let name = value.target.externalName ?: Es6NameMangler.mangle(
-                    value.target.dispatchIdentity ?: value.target.identity.declaration.value)
-                code += "let " + method + " = " + expressions.emit(receiver).code + "." + name + ";\n"
+                var String selected = ""
+                if (receiver) selected = expressions.emit(receiver).code + "." + name
+                else if (kind == "function") selected = name
+                else {
+                    let ownerName = Es6NameMangler.mangle(value.target.ownerType.declarationIdentity.value)
+                    owner = fresh()
+                    code += "let " + owner + " = " + ownerName + ";\n"
+                    directConstructor = kind == "constructor" &&
+                        value.target.identity.declaration.syntaxIdentity.kind != "constructor-overload"
+                    selected = directConstructor ? owner : owner + "." +
+                        (kind == "constructor" ? Es6NameMangler.mangle(value.target.identity.declaration.value) : name)
+                }
+                code += "let " + method + " = " + selected + ";\n"
             }
             let arguments = BoundExpression[]
             let conversions = TypeConversion[]
@@ -117,10 +134,12 @@ class extends BoundTreeLoweringPass {
                 index++
             }
             if (diagnostic) return expression
-            if (receiver) {
+            if (method) {
                 let text = expressions.emitArguments(arguments)
                 if (!text.emitted) { diagnostic = text.diagnostic; return expression }
-                let call = method + ".call(" + expressions.emit(receiver).code +
+                let call = directConstructor ? "new " + method + "(" + text.code + ")" :
+                    kind == "function" ? method + "(" + text.code + ")" :
+                    method + ".call(" + (receiver ? expressions.emit(receiver).code : owner) +
                     (arguments.isEmpty ? "" : ", " + text.code) + ")"
                 return capture(BoundLiteralExpression(value.range, value.semanticType,
                     value.target.asyncFunction && !value.suppressAwait ? "(await " + call + ")" : call))

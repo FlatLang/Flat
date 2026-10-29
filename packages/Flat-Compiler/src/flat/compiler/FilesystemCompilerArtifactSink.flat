@@ -20,6 +20,7 @@ class extends CompilerArtifactSink {
             this.receipt = receipt
         }
     }
+    var Bool mutating
     var CompilerArtifact[] values = CompilerArtifact[]
     var PendingArtifactCleanup[] pendingCleanup = PendingArtifactCleanup[]
     visible Int pendingCleanupCount => pendingCleanup.count
@@ -31,6 +32,15 @@ class extends CompilerArtifactSink {
         Es6ArtifactFiles.ensureDirectory(root)
     }
     override public write(CompilerArtifact artifact) {
+        if (mutating) throw Exception("Filesystem artifact sink does not permit reentrant mutation")
+        mutating = true
+        try {
+            let snapshot = artifact ? CompilerArtifact(artifact.identity.concat(""), artifact.code.concat("")) : null
+            publish(snapshot)
+        } finally { mutating = false }
+    }
+
+    publish(CompilerArtifact artifact) {
         if (!artifact || values.any({ _.identity == artifact.identity })) {
             throw Exception("Filesystem artifact sink requires unique artifact")
         }
@@ -66,7 +76,7 @@ class extends CompilerArtifactSink {
             receipt.remove()
             pendingCleanup.remove(pending)
         } catch (Exception cleanupError) {}
-        values.add(artifact)
+        values.add(CompilerArtifact(artifact.identity.concat(""), artifact.code.concat("")))
         values = values.sort({ _a.identity.compareTo(_b.identity) })
     }
 
@@ -78,6 +88,12 @@ class extends CompilerArtifactSink {
 
     /** Artifact-local retry; failed entries remain owned, successful ones retire. */
     public retryCleanup(String identity) {
+        if (mutating) throw Exception("Filesystem artifact sink does not permit reentrant mutation")
+        mutating = true
+        try { cleanupIdentity(identity) } finally { mutating = false }
+    }
+
+    cleanupIdentity(String identity) {
         for (pending in pendingCleanup.copy()) {
             if (pending.identity == identity) {
                 pending.receipt.remove()
@@ -88,6 +104,12 @@ class extends CompilerArtifactSink {
 
     /** Finalization attempts every bounded entry, then reports the first failure. */
     public retryCleanup() {
+        if (mutating) throw Exception("Filesystem artifact sink does not permit reentrant mutation")
+        mutating = true
+        try { cleanupAll() } finally { mutating = false }
+    }
+
+    cleanupAll() {
         var Exception failure
         for (pending in pendingCleanup.copy()) {
             try {
@@ -114,5 +136,9 @@ class extends CompilerArtifactSink {
             }
         }
     }
-    override public artifacts() -> CompilerArtifact[] => CompilerArtifact[]:addAll(values)
+    override public artifacts() -> CompilerArtifact[] {
+        let snapshots = CompilerArtifact[]
+        for (value in values) snapshots.add(CompilerArtifact(value.identity.concat(""), value.code.concat("")))
+        return snapshots
+    }
 }

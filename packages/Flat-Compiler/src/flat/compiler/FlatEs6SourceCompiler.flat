@@ -31,30 +31,27 @@ class {
             throw Exception("Flat source exceeds configured character capacity")
         }
 
-        let tokenStream = Lexer().lex(source.text)
+        let tokenStream = Lexer().lexInterpolated(source.text)
         tokenStream.emit("start")
         let tokens = tokenStream.consumeAll<Token>("data")
         if (tokens.count > maxTokens) {
             throw Exception("Flat source exceeds configured token capacity")
         }
-        let significant = tokens.filter({
-            let type = _.type
+        let significant = tokens.filter((token) => {
+            let type = token.type
             return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
         })
         if (significant.count == 0) throw Exception("Flat source contains no declarations")
 
         let snapshot = SourceSnapshotIdentity(SourceIdentity(source.identity), "compiler-input")
         if (significant.first.value == "package" || significant.first.value == "import" ||
-            hasMultipleTypes(significant)) {
-            return compileTypeSource(significant, snapshot)
+            hasTypeDeclarations(significant)) {
+            return compileTypeSource(tokens, snapshot)
         }
-        let fragments = significant.first.value == "class"
-            ? compileClass(significant, snapshot, 0, 0)
-            : compileFunctions(significant, snapshot)
-        return assemble(fragments)
+        return assemble(compileFunctions(tokens, snapshot))
     }
 
-    hasMultipleTypes(Token[] tokens) -> Bool {
+    hasTypeDeclarations(Token[] tokens) -> Bool {
         var Int depth
         var Int count
         for (token in tokens) {
@@ -62,7 +59,7 @@ class {
             else if (token.value == "}") depth--
             else if (depth == 0 && token.value == "class") count++
         }
-        return count > 1
+        return count > 0
     }
 
     compileTypeSource(

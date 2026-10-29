@@ -101,6 +101,7 @@ testable class {
                 native var Object hooks
                 external js {
                     const fs = #{File.FileGlobal.fs};
+                    const Error = globalThis.Error;
                     #{hooks} = {remove:fs.rmSync, rename:fs.renameSync, write:fs.writeFileSync, mkdir:fs.mkdtempSync};
                     const injectedFailureMode = #{mode};
                     if (injectedFailureMode === 5) fs.mkdtempSync = () => { throw new Error('controlled manifest creation failure'); };
@@ -202,15 +203,16 @@ testable class {
                 native var Object hooks
                 external js {
                     const fs = #{File.FileGlobal.fs};
+                    const Error = globalThis.Error;
                     const nativeLockPath = require('path').resolve(#{lock.normalizedLocation.chars.data});
                     const nativeOwnerPath = require('path').resolve(#{owner.normalizedLocation.chars.data});
                     #{hooks} = {unlink:fs.unlinkSync, rmdir:fs.rmdirSync, unlinks:0, rmdirs:0};
                     fs.unlinkSync = location => {
-                        if (location === nativeOwnerPath) #{hooks}.unlinks++;
+                        if (require('path').resolve(location) === nativeOwnerPath) #{hooks}.unlinks++;
                         return #{hooks}.unlink(location);
                     };
                     fs.rmdirSync = location => {
-                        if (location === nativeLockPath) {
+                        if (require('path').resolve(location) === nativeLockPath) {
                             #{hooks}.rmdirs++;
                             if (#{hooks}.rmdirs === 1) throw new Error('controlled lock rmdir failure after unlink');
                         }
@@ -259,6 +261,132 @@ testable class {
             let next = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
                 ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
             next.dispose()
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    test `lock unlink no op retains ownership until actual removal`() {
+        lockReleaseNoOp(0)
+    }
+
+    test `lock rmdir no op retains ownership and blocks publication until retry`() {
+        lockReleaseNoOp(1)
+    }
+
+    lockReleaseNoOp(Int mode) {
+        let root = File(".flat-incremental-lock-no-op-#mode-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        let lock = File(root.getCanonicalFileSync(), "program.js.flat-incremental.json.lock")
+        let owner = File(lock, "owner.json")
+        Es6ArtifactFiles.write(source, "class Main {}")
+        Es6ArtifactFiles.write(tool, "// tool")
+        let files = [source]
+        try {
+            let transaction = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                native var Object hooks
+                external js {
+                    const fs = #{File.FileGlobal.fs};
+                    const path = require('path');
+                    const ownerPath = path.resolve(#{owner.normalizedLocation.chars.data});
+                    const lockPath = path.resolve(#{lock.normalizedLocation.chars.data});
+                    const injectedLockFailureMode = #{mode};
+                    #{hooks} = {unlink:fs.unlinkSync, rmdir:fs.rmdirSync, faults:0};
+                    fs.unlinkSync = location => {
+                        if (injectedLockFailureMode === 0 && path.resolve(location) === ownerPath) { #{hooks}.faults++; return; }
+                        return #{hooks}.unlink(location);
+                    };
+                    fs.rmdirSync = location => {
+                        if (injectedLockFailureMode === 1 && path.resolve(location) === lockPath) { #{hooks}.faults++; return; }
+                        return #{hooks}.rmdir(location);
+                    };
+                }
+                try {
+                    var Bool rejected
+                    try { transaction.dispose() } catch (Exception error) { rejected = true }
+                    expect(rejected).toBe(true)
+                    expect(lock.exists).toBe(true)
+                    expect(owner.exists).toBe(mode == 0)
+                    var Int faults
+                    external js { #{faults} = #{hooks}.faults; }
+                    expect(faults).toBe(1)
+                    rejected = false
+                    try {
+                        CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                            ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+                    } catch (Exception error) { rejected = true }
+                    expect(rejected).toBe(true)
+                    if (mode == 1) {
+                        rejected = false
+                        try { transaction.evidence() } catch (Exception error) { rejected = true }
+                        expect(rejected).toBe(true)
+                    }
+                } finally {
+                    external js {
+                        #{File.FileGlobal.fs}.unlinkSync = #{hooks}.unlink;
+                        #{File.FileGlobal.fs}.rmdirSync = #{hooks}.rmdir;
+                    }
+                }
+                transaction.dispose()
+                transaction.dispose()
+                expect(lock.exists).toBe(false)
+                expect(owner.exists).toBe(false)
+            } finally { transaction.dispose() }
+            let next = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            next.dispose()
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    test `replaced lock owner revokes evidence and publication without deleting replacement`() {
+        let root = File(".flat-incremental-replaced-owner-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+        let lock = File(manifest.normalizedLocation + ".lock")
+        let owner = File(lock, "owner.json")
+        let retainedOwner = File(root, "retained-owner.json")
+        Es6ArtifactFiles.write(source, "class Main {}")
+        Es6ArtifactFiles.write(tool, "// tool")
+        Es6ArtifactFiles.write(output, "previous")
+        let files = [source]
+        try {
+            let transaction = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                external js {
+                    #{File.FileGlobal.fs}.renameSync(#{owner.normalizedLocation.chars.data},
+                        #{retainedOwner.normalizedLocation.chars.data});
+                }
+                Es6ArtifactFiles.write(owner, "replacement owner")
+                var Bool rejected
+                try { transaction.evidence() } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                rejected = false
+                try { transaction.preparePublication(output, CompilationSummary(1, 1, 0, false)) }
+                catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                rejected = false
+                try { transaction.dispose() } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(Es6ArtifactFiles.read(owner)).toBe("replacement owner")
+                expect(manifest.exists).toBe(false)
+                expect(Es6ArtifactFiles.read(output)).toBe("previous")
+            } finally {
+                // Restore the exact retained inode, not a rewritten owner receipt.
+                external js {
+                    #{File.FileGlobal.fs}.unlinkSync(#{owner.normalizedLocation.chars.data});
+                    #{File.FileGlobal.fs}.renameSync(#{retainedOwner.normalizedLocation.chars.data},
+                        #{owner.normalizedLocation.chars.data});
+                }
+                transaction.dispose()
+            }
+            expect(lock.exists).toBe(false)
         } finally { Es6ArtifactFiles.remove(root) }
     }
 
@@ -400,7 +528,7 @@ testable class {
         let launcher = File(root, "compiler-launcher.js")
         native_array native var Char[] launcherText
         external js {
-            #{launcherText} = 'require(' + JSON.stringify(require('path').resolve(#{compiler.normalizedLocation.chars.data})) + ');\n';
+            #{launcherText} = 'require(' + globalThis.JSON.stringify(require('path').resolve(#{compiler.normalizedLocation.chars.data})) + ');\n';
         }
         Es6ArtifactFiles.write(launcher, String(launcherText))
         Es6ArtifactFiles.write(source, "package app\nclass Main { public static main() { external js { console.log('cold'); } } }")
@@ -419,6 +547,18 @@ testable class {
             let changed = System.execute(command, silent: true, shell: false)
             expect(changed.exitCode).toBe(0)
             expect(changed.stdout.join("").contains("\"changedSources\":1")).toBe(true)
+            expect(changed.stdout.join("").contains("\"reused\":false")).toBe(true)
+            let addedSource = File(sources, "Added.flat")
+            Es6ArtifactFiles.write(addedSource, "class Added {}")
+            let added = System.execute(command, silent: true, shell: false)
+            expect(added.exitCode).toBe(0)
+            expect(added.stdout.join("").contains("\"addedSources\":1")).toBe(true)
+            expect(added.stdout.join("").contains("\"reused\":false")).toBe(true)
+            Es6ArtifactFiles.write(removed, "class Unused { public static value() -> Int => 2 }")
+            let dependencyChanged = System.execute(command, silent: true, shell: false)
+            expect(dependencyChanged.exitCode).toBe(0)
+            expect(dependencyChanged.stdout.join("").contains("\"changedSources\":1")).toBe(true)
+            expect(dependencyChanged.stdout.join("").contains("\"reused\":false")).toBe(true)
             Es6ArtifactFiles.remove(removed)
             let without = System.execute(command, silent: true, shell: false)
             expect(without.exitCode).toBe(0)
@@ -427,6 +567,9 @@ testable class {
                 "-target", "es6", "-main", "app/Main", "-o", clean.normalizedLocation], silent: true, shell: false)
             expect(rebuilt.exitCode).toBe(0)
             expect(Es6ArtifactFiles.read(output)).toBe(Es6ArtifactFiles.read(clean))
+            let executed = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(executed.exitCode).toBe(0)
+            expect(executed.stdout.join("").trim()).toBe("changed")
             let toolCommand = command.copy()
             // Both processes execute the same generated compiler; only the actual
             // launcher bytes change, and therefore the executing-tool fingerprint.
@@ -446,6 +589,35 @@ testable class {
             expect(configuredWarm.exitCode).toBe(0)
             expect(configuredWarm.stdout.join("").contains("\"reused\":true")).toBe(true)
             let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+            let lock = File(manifest.normalizedLocation + ".lock")
+            let owner = File(lock, "owner.json")
+            let lockedManifest = Es6ArtifactFiles.read(manifest)
+            let lockedOutput = Es6ArtifactFiles.read(output)
+            // A separate process must not steal even an owner with opaque metadata.
+            external js { #{File.FileGlobal.fs}.mkdirSync(#{lock.normalizedLocation.chars.data}); }
+            Es6ArtifactFiles.write(owner, "controlled live owner")
+            try {
+                let locked = System.execute(configured, silent: true, shell: false)
+                expect(locked.exitCode == 0).toBe(false)
+                expect(locked.stdout.join("").contains("\"reused\":true")).toBe(false)
+                expect(Es6ArtifactFiles.read(owner)).toBe("controlled live owner")
+                expect(Es6ArtifactFiles.read(manifest)).toBe(lockedManifest)
+                expect(Es6ArtifactFiles.read(output)).toBe(lockedOutput)
+            } finally { Es6ArtifactFiles.remove(lock) }
+            Es6ArtifactFiles.write(manifest, "{corrupt-state")
+            let corruptState = System.execute(configured, silent: true, shell: false)
+            expect(corruptState.exitCode).toBe(0)
+            expect(corruptState.stdout.join("").contains("\"reason\":\"cold\"")).toBe(true)
+            expect(corruptState.stdout.join("").contains("\"reused\":false")).toBe(true)
+            expect(Es6ArtifactFiles.read(output)).toBe(lockedOutput)
+            let recoveredWarm = System.execute(configured, silent: true, shell: false)
+            expect(recoveredWarm.exitCode).toBe(0)
+            expect(recoveredWarm.stdout.join("").contains("\"reused\":true")).toBe(true)
+            Es6ArtifactFiles.write(output, "corrupt-output")
+            let corruptOutput = System.execute(configured, silent: true, shell: false)
+            expect(corruptOutput.exitCode).toBe(0)
+            expect(corruptOutput.stdout.join("").contains("\"reason\":\"output-changed\"")).toBe(true)
+            expect(Es6ArtifactFiles.read(output)).toBe(lockedOutput)
             let priorManifest = Es6ArtifactFiles.read(manifest)
             let priorOutput = Es6ArtifactFiles.read(output)
             Es6ArtifactFiles.write(source, "class Main { public static main( {")
@@ -568,6 +740,61 @@ testable class {
             let next = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
                 ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
             try { expect(next.reused).toBe(false) } finally { next.dispose() }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    test `malformed manifest field types never become partial trusted admission`() {
+        let root = File(".flat-incremental-corrupt-fields-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+        let files = [source]
+        Es6ArtifactFiles.write(source, "class Main {}")
+        Es6ArtifactFiles.write(tool, "// tool")
+        Es6ArtifactFiles.write(output, "previous")
+        try {
+            let initial = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try {
+                initial.preparePublication(output, CompilationSummary(1, 1, 0, false))
+                initial.commit(CompilationSummary(1, 1, 0, false))
+            } finally { initial.dispose() }
+            let original = Es6ArtifactFiles.read(manifest)
+            var Int mode
+            while (mode < 6) {
+                native_array native var Char[] corrupt
+                external js {
+                    const value = globalThis.JSON.parse(#{original.chars.data});
+                    switch (#{mode}) {
+                        case 0: value.output = [value.output]; break;
+                        case 1: value.key = [value.key]; break;
+                        case 2: value.configuration = [value.configuration]; break;
+                        case 3: value.entries[0].digest = [value.entries[0].digest]; break;
+                        case 4: value.entries.push(value.entries[0]); break;
+                        case 5: value.diagnostics.complete = false; break;
+                    }
+                    if (#{mode} === 3) value.key = require('crypto').createHash('sha256').update(
+                        globalThis.JSON.stringify({configuration:value.configuration,entries:value.entries})).digest('hex');
+                    #{corrupt} = globalThis.JSON.stringify(value);
+                }
+                Es6ArtifactFiles.write(manifest, String(corrupt))
+                let reopened = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                    ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+                try {
+                    expect(reopened.reused).toBe(false)
+                    expect(reopened.evidence().contains("\"reason\":\"cold\"")).toBe(true)
+                    expect(reopened.evidence().contains("\"addedSources\":1")).toBe(true)
+                    expect(Es6ArtifactFiles.read(output)).toBe("previous")
+                    expect(Es6ArtifactFiles.read(manifest)).toBe(String(corrupt))
+                } finally { reopened.dispose() }
+                mode++
+            }
+            Es6ArtifactFiles.write(manifest, original)
+            let recovered = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+                ["library"], output, 1048576, toolLocation: tool.normalizedLocation)
+            try { expect(recovered.reused).toBe(true) } finally { recovered.dispose() }
         } finally { Es6ArtifactFiles.remove(root) }
     }
 

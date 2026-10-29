@@ -31,7 +31,10 @@ data class {
         let defaultExports = defaultExportsArray?.map({ DefaultExport(_) })
         let dependenciesValue = (Object)(map["dependencies"])
         let dependenciesMap = (HashMap)dependenciesValue
-        let dependencies = dependenciesMap.map({ dependencyService.getDependencyFromKeyValue((String)_x.key, (String)_x.value) })
+        let dependencies = Array<Dependency>()
+        if (dependenciesMap) {
+            dependencies.addAll(dependenciesMap.map({ dependencyService.getDependencyFromKeyValue((String)_x.key, (String)_x.value) }))
+        }
 
         binaries = Array<PackageBinary>()
 

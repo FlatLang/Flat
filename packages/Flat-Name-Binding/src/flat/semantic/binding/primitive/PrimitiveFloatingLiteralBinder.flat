@@ -1,0 +1,35 @@
+package flat/semantic/binding/primitive
+
+import flat/parser/flat
+import flat/bound
+import flat/semantic/types
+import flat/compiler/models
+import flat/semantic/binding/BindingDiagnostic
+
+/** Admits only source numeric literals under a declared primitive floating context. */
+class {
+    public static bind(PrimitiveExpressionSyntax syntax, SemanticType expected) -> BoundExpression {
+        if (!syntax || !expected || !TypeConversions.isFloating(expected)) return null
+        if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) {
+            Object unarySource = syntax
+            PrimitiveUnarySyntax unary = (PrimitiveUnarySyntax)unarySource
+            if (unary.operator != "+" && unary.operator != "-") return null
+            let operand = bind(unary.operand, expected)
+            if (!operand) return null
+            // Keep every source unary node and its range: sign and negative zero
+            // semantics are unchanged, and the leaf retains its original lexeme.
+            return BoundUnaryExpression(unary.range, expected, unary.operator, operand)
+        }
+        if (!syntax.class.isOfType(PrimitiveLiteralSyntax.class)) return null
+        Object literalSource = syntax
+        PrimitiveLiteralSyntax literal = (PrimitiveLiteralSyntax)literalSource
+        if (literal.tokenType != Token.Type.FLOAT && literal.tokenType != Token.Type.INTEGER) return null
+        let result = FloatingLiteralTyping.contextualize(literal.sourceValue, expected, literal.range)
+        if (!result.valid) throw PrimitiveContextBindingException(BindingDiagnostic(
+            result.diagnostic.code, result.diagnostic.message,
+            SyntaxIslandIdentity(result.diagnostic.range.snapshot, "floating-literal",
+                result.diagnostic.range.startTokenIndex), result.diagnostic.range))
+        return BoundLiteralExpression(result.literal.range, result.literal.semanticType,
+            result.literal.sourceValue, canonicalValue: result.canonicalValue)
+    }
+}

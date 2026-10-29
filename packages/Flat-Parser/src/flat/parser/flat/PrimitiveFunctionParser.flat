@@ -7,6 +7,7 @@ class {
     var Token[] tokens
     var Int index
     var Int tokenIndexOffset
+    var Int[] sourceTokenIndexes = Int[]
     var SourceSnapshotIdentity snapshot
 
     public parse(
@@ -15,15 +16,26 @@ class {
         Int sourceTokenIndexOffset = 0,
         Bool allowBodylessDeclaration = false
     ) -> PrimitiveFunctionSyntaxResult {
+        try {
+            return parseTokens(tokenValues, sourceSnapshot, sourceTokenIndexOffset, allowBodylessDeclaration)
+        } catch (Exception error) {
+            if (!error.class.isOfType(ParseFailure.class)) throw error
+            let failure = (ParseFailure)error
+            throw failure.remapTokenIndexes(sourceTokenIndexes, tokenIndexOffset)
+        }
+    }
+
+    parseTokens(
+        Token[] tokenValues,
+        SourceSnapshotIdentity sourceSnapshot,
+        Int sourceTokenIndexOffset = 0,
+        Bool allowBodylessDeclaration = false
+    ) -> PrimitiveFunctionSyntaxResult {
         if (!tokenValues || !sourceSnapshot) {
             throw Exception("Primitive function parsing requires tokens and snapshot")
         }
-        tokens = tokenValues.filter({
-            let type = _.type
-            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
-        })
+        prepareTokens(tokenValues, sourceTokenIndexOffset)
         snapshot = sourceSnapshot
-        tokenIndexOffset = sourceTokenIndexOffset
         index = 0
         let functions = PrimitiveFunctionSyntax[]
         while (index < tokens.count) functions.add(parseFunction(allowBodylessDeclaration))
@@ -367,16 +379,18 @@ class {
         if (!tokenValues || tokenValues.isEmpty || !sourceSnapshot) {
             throw Exception("Primitive type parsing requires tokens and snapshot")
         }
-        tokens = tokenValues.filter({
-            let type = _.type
-            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
-        })
+        prepareTokens(tokenValues, 0)
         snapshot = sourceSnapshot
-        tokenIndexOffset = 0
         index = 0
-        let result = parseTypeName("Expected field type")
-        if (index != tokens.count) syntax("Unexpected trailing type token", index)
-        return result
+        try {
+            let result = parseTypeName("Expected field type")
+            if (index != tokens.count) syntax("Unexpected trailing type token", index)
+            return result
+        } catch (Exception error) {
+            if (!error.class.isOfType(ParseFailure.class)) throw error
+            let failure = (ParseFailure)error
+            throw failure.remapTokenIndexes(sourceTokenIndexes, tokenIndexOffset)
+        }
     }
 
     parseTypeName(String message) -> String {
@@ -443,6 +457,20 @@ class {
     require(String value, String message) {
         if (index >= tokens.count || tokens[index].value != value) syntax(message, index)
         index++
+    }
+
+    prepareTokens(Token[] tokenValues, Int sourceTokenIndexOffset) {
+        tokens = Token[]
+        sourceTokenIndexes = Int[]
+        tokenIndexOffset = sourceTokenIndexOffset
+        var Int sourceIndex = sourceTokenIndexOffset
+        for (token in tokenValues) {
+            if (token.type != Token.Type.WHITESPACE && token.type != Token.Type.COMMENT) {
+                tokens.add(token)
+                sourceTokenIndexes.add(sourceIndex)
+            }
+            sourceIndex++
+        }
     }
 
     range(Int start, Int end) -> SourceRange {

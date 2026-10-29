@@ -7,7 +7,7 @@ import flat/system
  * Explicit production acceptance entrypoint, not a compiler fallback or a test
  * replacement. Compile this class as an executable using the ordinary compiler
  * launcher during coordinated validation. Usage:
- *   <forward|reverse|cancel-after-read|cancel-after-stage> <capacity> <flatc argv...>
+ *   <forward|reverse|cancel-after-read[-forward|-reverse]|cancel-after-stage[-forward|-reverse]> <capacity> <flatc argv...>
  * argv excludes the flatc executable token. Inputs are passed unchanged to CLI.
  * The caller must provide a cold isolated destination; a warm hit is rejected
  * because it cannot prove controlled reads or cancellation of actual work.
@@ -16,6 +16,11 @@ import flat/system
  */
 class CompilerProductionDriver {
     public static async main(String[] args) {
+        System.exit(run(args))
+    }
+
+    /** In-process entrypoint shares all production observations without exiting the host. */
+    public static async run(String[] args) -> Int {
         if (args.count < 3) throw Exception("Production driver requires scenario, capacity and compiler arguments")
         let mode = args[0]
         let capacity = AirshipCompilerArguments.parsePositiveCapacity(args[1])
@@ -23,10 +28,36 @@ class CompilerProductionDriver {
         invocation.addAll(args.skip(2))
         invocation.addAll(["-threads", args[1]])
         let observer = ProductionObservation(mode, capacity, invocation.skip(1))
-        let schedule = mode == "reverse" ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
+        let schedule = reverseOrder(mode) ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
         let code = CompilerCli.run(invocation, observer, schedule)
         observer.report(code)
-        System.exit(code)
+        return code
+    }
+
+    public static reverseOrder(String mode) -> Bool {
+        requireMode(mode)
+        return mode == "reverse" || mode.endsWith("-reverse")
+    }
+
+    public static cancellationPhase(String mode) -> String {
+        requireMode(mode)
+        if (mode.startsWith("cancel-after-read")) return "read"
+        if (mode.startsWith("cancel-after-stage")) return "stage"
+        return null
+    }
+
+    static requireMode(String mode) {
+        if (mode != "forward" && mode != "reverse" && mode != "cancel-after-read" &&
+            mode != "cancel-after-stage" && mode != "cancel-after-read-forward" &&
+            mode != "cancel-after-read-reverse" && mode != "cancel-after-stage-forward" &&
+            mode != "cancel-after-stage-reverse") {
+            throw Exception("Unknown production observation scenario")
+        }
+    }
+
+    // Machine records bypass the buffered presentation stream.
+    static writeObservation(String record) {
+        external js { console.log(#{record.chars.data}); }
     }
 
     class ArtifactObservation extends CompilerArtifactLifecycleObserver {
@@ -41,7 +72,7 @@ class CompilerProductionDriver {
                 sequence++
                 let encodedPath = path != null ? CompilerEvidence.quote(path) : "null"
                 let encodedFailure = failure != null ? CompilerEvidence.quote(failure.message) : "null"
-                Console.log("{\"schema\":#{CompilerEvidence.quote(schema)},\"revision\":#{CompilerEvidence.quote(binding.revision)}," +
+                CompilerProductionDriver.writeObservation("{\"schema\":#{CompilerEvidence.quote(schema)},\"revision\":#{CompilerEvidence.quote(binding.revision)}," +
                     "\"identity\":#{CompilerEvidence.quote(binding.identity)},\"destination\":#{CompilerEvidence.quote(binding.destination)}," +
                     "\"sequence\":#sequence,\"transition\":#{CompilerEvidence.quote(transition)},\"path\":#encodedPath," +
                     "\"removed\":#removed,\"failure\":#encodedFailure}")
@@ -85,16 +116,15 @@ class CompilerProductionDriver {
         native var Object eventDigest
 
         public construct(String mode, Int capacity, String[] arguments) {
-            if (mode != "forward" && mode != "reverse" && mode != "cancel-after-read" && mode != "cancel-after-stage") {
-                throw Exception("Unknown production observation scenario")
-            }
+            CompilerProductionDriver.requireMode(mode)
+            if (capacity <= 0 || capacity > 256) throw Exception("Controlled read capacity must be from 1 to 256")
             this.mode = mode
             this.capacity = capacity
             native_array native var Char[] fingerprint
             external js {
                 #{eventDigest} = require('crypto').createHash('sha256');
                 #{fingerprint} = 'sha256:' + require('crypto').createHash('sha256')
-                    .update(JSON.stringify(#{arguments.map((argument) => argument.chars.data).data})).digest('hex');
+                    .update(globalThis.JSON.stringify(#{arguments.map((argument) => argument.chars.data).data})).digest('hex');
             }
             optionsFingerprint = String(fingerprint)
         }
@@ -102,7 +132,7 @@ class CompilerProductionDriver {
         override public invocationAdmitted(String revision, String destination, String persistentEvidence) {
             if (this.revision) throw Exception("Production observer is single-use")
             var Bool reused
-            external js { #{reused} = JSON.parse(#{persistentEvidence.chars.data}).reused === true; }
+            external js { #{reused} = globalThis.JSON.parse(#{persistentEvidence.chars.data}).reused === true; }
             if (reused) throw Exception("Controlled production observation requires a cold compilation")
             this.revision = revision
             this.destination = destination
@@ -110,13 +140,13 @@ class CompilerProductionDriver {
         }
         record(String transition, String identity) {
             sequence++
-            Console.log("{\"schema\":\"flat.compiler.source-read-event.v1\",\"revision\":#{CompilerEvidence.quote(revision)}," +
+            CompilerProductionDriver.writeObservation("{\"schema\":\"flat.compiler.source-read-event.v1\",\"revision\":#{CompilerEvidence.quote(revision)}," +
                 "\"destination\":#{CompilerEvidence.quote(destination)},\"sequence\":#sequence," +
                 "\"transition\":#{CompilerEvidence.quote(transition)},\"source\":#{CompilerEvidence.quote(identity)}," +
                 "\"admitted\":#admittedCount,\"settled\":#settledCount,\"active\":#currentActive," +
                 "\"retained\":#currentRetained,\"capacity\":#capacity}")
             external js {
-                #{eventDigest}.update(JSON.stringify([#{transition.chars.data}, #{identity.chars.data}]) + '\n');
+                #{eventDigest}.update(globalThis.JSON.stringify([#{transition.chars.data}, #{identity.chars.data}]) + '\n');
             }
         }
         override public admitted(String identity, Int admitted, Int retained, Int peakRetained) {
@@ -149,7 +179,7 @@ class CompilerProductionDriver {
         }
         override public sourceReadCompleted(CompilerSession session, String identity) {
             this.session = session
-            if (mode == "cancel-after-read" && !cancellationRequested) {
+            if (CompilerProductionDriver.cancellationPhase(mode) == "read" && !cancellationRequested) {
                 record("cancel-readiness-after-read", identity)
                 session.cancel()
                 cancellationRequested = session.cancelled
@@ -157,7 +187,7 @@ class CompilerProductionDriver {
         }
         override public artifactAccepted(CompilerSession session, String identity) {
             this.session = session
-            if (mode == "cancel-after-stage" && !cancellationRequested) {
+            if (CompilerProductionDriver.cancellationPhase(mode) == "stage" && !cancellationRequested) {
                 record("cancel-readiness-after-stage", identity)
                 session.cancel()
                 cancellationRequested = session.cancelled
@@ -167,11 +197,19 @@ class CompilerProductionDriver {
             if (!revision || !session || !readsDrained) throw Exception("Production observation did not enter and drain actual source work")
             if (artifactObserver.deliveryFailures != 0) throw Exception("Artifact lifecycle evidence delivery failed")
             if (manifestObserver.deliveryFailures != 0) throw Exception("Manifest lifecycle evidence delivery failed")
+            if (admittedCount == 0 || admittedCount != settledCount || currentActive != 0 ||
+                currentRetained != 0 || peakActive > capacity || peakRetained > capacity) {
+                throw Exception("Production source reads did not settle within configured capacity")
+            }
             let summary = session.completion.get()
+            if (CompilerProductionDriver.cancellationPhase(mode) &&
+                (!cancellationRequested || !summary.cancelled || exitCode == 0)) {
+                throw Exception("Production cancellation scenario did not reach its requested work boundary")
+            }
             native_array native var Char[] digest
             external js { #{digest} = 'sha256:' + #{eventDigest}.digest('hex'); }
             let events = String(digest)
-            Console.log("{\"schema\":\"flat.compiler.source-reads.v1\",\"scenario\":#{CompilerEvidence.quote(mode)}," +
+            CompilerProductionDriver.writeObservation("{\"schema\":\"flat.compiler.source-reads.v1\",\"scenario\":#{CompilerEvidence.quote(mode)}," +
                 "\"revision\":#{CompilerEvidence.quote(revision)},\"destination\":#{CompilerEvidence.quote(destination)}," +
                 "\"optionsFingerprint\":#{CompilerEvidence.quote(optionsFingerprint)},\"input\":#persistent," +
                 "\"capacity\":#capacity,\"admitted\":#admittedCount,\"settled\":#settledCount," +

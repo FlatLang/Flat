@@ -52,12 +52,12 @@ class {
         }
         if (isSymbol(token, "{")) {
             if (!canOpenExpressionBrace && !expressionBodyOpen) {
-                reject("Non-braced member scanner does not accept braced declarations")
+                rejectSyntax("Non-braced member scanner does not accept braced declarations", token, tokenIndex)
             }
             expressionBraceDepth++
         } else if (isSymbol(token, "}")) {
             if (!expressionBodyOpen) {
-                reject("Non-braced member scanner does not accept braced declarations")
+                rejectSyntax("Non-braced member scanner does not accept braced declarations", token, tokenIndex)
             }
             expressionBraceDepth--
         }
@@ -164,7 +164,7 @@ class {
 
     public end() -> SyntaxIsland[] {
         if (finished) return SyntaxIsland[]
-        if (expressionBodyOpen) reject("Flat type body ended inside an incomplete braced expression body")
+        if (expressionBodyOpen) rejectSyntax("Flat type body ended inside an incomplete braced expression body")
         let islands = SyntaxIsland[]
 
         while (retained.isNotEmpty) {
@@ -177,12 +177,7 @@ class {
             if (!match.matchedAll || match.memberTokenCounts.isEmpty) {
                 let message = "Flat type body ended inside an invalid or incomplete non-braced member '" +
                     retained.map({ _.value }).join(" ") + "'"
-                let range = SourceRange(snapshot, retainedIndexes.first,
-                    retainedIndexes.last + 1, retained.first.location, endLocation(retained.last))
-                let diagnostic = ParserDiagnostic("invalid-non-braced-member", message, snapshot, range)
-                finished = true
-                clear()
-                throw ParseFailure(diagnostic)
+                rejectSyntax(message)
             }
             islands.addAll(publishFirst(match.memberTokenCounts.first))
         }
@@ -234,7 +229,7 @@ class {
         islands.add(memberHeader)
 
         if (arrow >= 0) {
-            if (arrow + 1 >= memberTokens.count) reject("Expression-bodied member requires a body expression")
+            if (arrow + 1 >= memberTokens.count) rejectSyntax("Expression-bodied member requires a body expression")
             islands.add(ExpressionMemberBodySyntaxIsland(
                 identity("member-expression-body"),
                 SourceRange(
@@ -377,6 +372,22 @@ class {
         retained = Token[]
         retainedIndexes = Int[]
         expressionBraceDepth = 0
+    }
+
+    rejectSyntax(String message, Token token = null, Int tokenIndex = -1) {
+        var SourceRange range
+        if (retained.isNotEmpty) {
+            range = SourceRange(snapshot, retainedIndexes.first,
+                token ? tokenIndex + 1 : retainedIndexes.last + 1,
+                retained.first.location, endLocation(token ?: retained.last))
+        } else if (token && token.location) {
+            range = SourceRange(snapshot, tokenIndex, tokenIndex + 1,
+                token.location, endLocation(token))
+        }
+        let failure = ParseFailure(ParserDiagnostic("invalid-non-braced-member", message, snapshot, range))
+        finished = true
+        clear()
+        throw failure
     }
 
     reject(String message) {

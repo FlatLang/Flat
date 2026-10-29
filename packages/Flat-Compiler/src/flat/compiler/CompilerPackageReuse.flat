@@ -94,26 +94,28 @@ class {
     }
 
     protected async evidence(CompilerPackageSnapshot input, Bool reused) -> CompilerReuseEvidence {
+        // Keep one immutable comparison baseline across suspended provider reads.
+        let previousSnapshot = retained
         var Int unchanged
         var Int changed
         var Int added
         var Int removed
         for (identity in input.identities()) {
-            let previous = retained ? retained.load(identity) : null
+            let previous = previousSnapshot ? previousSnapshot.load(identity) : null
             if (!previous) added++
             else if (previous.text == input.load(identity).text) unchanged++
             else changed++
         }
-        if (retained) {
-            for (identity in retained.identities()) {
+        if (previousSnapshot) {
+            for (identity in previousSnapshot.identities()) {
                 if (!input.load(identity)) removed++
             }
         }
         var String reason = "closure-changed"
         if (reused) reason = "exact-hit"
-        else if (!retained) reason = "cold"
-        else if (retained.options != input.options || retained.mainClass != input.mainClass ||
-            retained.linker != input.linker) reason = "configuration-changed"
+        else if (!previousSnapshot) reason = "cold"
+        else if (previousSnapshot.options != input.options || previousSnapshot.mainClass != input.mainClass ||
+            previousSnapshot.linker != input.linker) reason = "configuration-changed"
         return CompilerReuseEvidence(reused, reason, unchanged, changed, added, removed, input.toolFingerprint)
     }
 
@@ -122,8 +124,7 @@ class {
     }
 
     protected remember(CompilerPackageSnapshot input, CompilationSummary summary) {
-        if (!summary || input.ticket != generation || summary.cancelled || !summary.cleanupSettled ||
-            summary.diagnosticCount != 0 || summary.packageDiagnostic != null || summary.bindingDiagnostic != null ||
+        if (!summary || !summary.succeeded || input.ticket != generation ||
             summary.sourceCount != input.identities().count || summary.artifactCount != 1 || input.code == null) return
         let code = input.code
         Long codeBytes = code.count
@@ -152,7 +153,8 @@ class CompilerPackageSnapshot extends CompilerSourceProvider {
         visible String code => compiledCode != null ? compiledCode.concat("") : null
         var String compiledCode
         var PrimitiveDefaultImport[] defaults
-        visible String toolFingerprint
+        visible String toolFingerprint => ownedToolFingerprint.concat("")
+        var String ownedToolFingerprint
         public defaultImportValues() -> PrimitiveDefaultImport[] {
             return defaults.map((value) => PrimitiveDefaultImport(value.location, value.staticImport))
         }
@@ -169,7 +171,7 @@ class CompilerPackageSnapshot extends CompilerSourceProvider {
             ownedOptions = options.concat("")
             this.bytes = bytes
             this.defaults = defaults.map((value) => PrimitiveDefaultImport(value.location, value.staticImport))
-            this.toolFingerprint = toolFingerprint.concat("")
+            this.ownedToolFingerprint = toolFingerprint.concat("")
             this.ticket = ticket
         }
 

@@ -8,6 +8,41 @@ import flat/time/Time
 import flat/writer/es6/bound
 
 testable class {
+    async test `unqualified source type preserves parsed identity and js target selection`() {
+        let identity = "memory:source-trivia-target-selection"
+        let source = "/" + "* leading trivia *" + "/\n\nclass Selected { " +
+            "[Target not js] public static run() -> Int { return excludedTargetName; } " +
+            "[Target js] public static run() -> Int { return 42; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot, "js"
+        ).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex
+        )
+        expect(syntax.methodValues().count).toBe(1)
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Selected"
+        )
+        let method = syntax.methodValues().first
+        let target = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex), "static-method", "run"
+        )
+        let code = FlatEs6SourceCompiler().compile(CompilerSource(identity, source))
+        let root = File(".flat-compiler-source-trivia-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "program.js")
+            Es6ArtifactCommitter().commit(destination, code + "console.log(" +
+                Es6NameMangler.mangle(owner.value) + "." + Es6NameMangler.mangle(target.value) + "());\n")
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("42\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     async test `source compiler executes js target members and excludes invalid non js member`() {
         let identity = "memory:source-target-selection"
         let source = "package sample class Selected { " +

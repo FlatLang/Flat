@@ -1,8 +1,57 @@
 package flat/fucli
 
 import flat/fucli/FuCli
+import flat/fucli/FuCli.RequiredCliArgumentException
 
 testable class {
+    test `indexed child lookup returns the first exact name and preserves identity`() {
+        let first = CliArg("--target", aliases: ["-t"])
+        let duplicate = CliArg("--target")
+        let root = CliArg("tool", args: [first, duplicate])
+        expect(Object.referenceEquals(root["--target"], first)).toBe(true)
+        expect(root["-t"]).toBe(null)
+        expect(root["missing"]).toBe(null)
+        expect(root["--TARGET"]).toBe(null)
+        root["--target"].value = "es6"
+        expect(first.value).toBe("es6")
+        expect(duplicate.values.isEmpty).toBe(true)
+    }
+
+    test `indexed CLI lookup forwards names while parsing continues to accept aliases`() {
+        let runtime = CliArg("runtime", wildcard: true, count: 1, required: true)
+        let target = CliArg("--target", aliases: ["-t"], args: [runtime])
+        let cli = FuCli("tool", [target])
+        expect(Object.referenceEquals(cli["--target"], target)).toBe(true)
+        expect(Object.referenceEquals(cli["--target"]["runtime"], runtime)).toBe(true)
+        expect(cli["-t"]).toBe(null)
+        expect(cli["missing"]).toBe(null)
+        cli.parse(["-t", "es6"])
+        expect(target.enabled).toBe(true)
+        expect(runtime.value).toBe("es6")
+        expect(Object.referenceEquals(cli["--target"], target)).toBe(true)
+    }
+
+    test `indexed child lookup on an empty child list returns null`() {
+        let root = CliArg("tool", args: CliArg[])
+        expect(root["missing"]).toBe(null)
+    }
+
+    test `indexed lookup without declared children returns null`() {
+        let root = CliArg("tool")
+        expect(root["missing"]).toBe(null)
+        let cli = FuCli("tool", CliArg[])
+        expect(cli["missing"]).toBe(null)
+    }
+
+    test `required aliased option still rejects a missing value`() {
+        let runtime = CliArg("runtime", wildcard: true, count: 1, required: true)
+        let target = CliArg("--target", aliases: ["-t"], args: [runtime])
+        let cli = FuCli("tool", [target])
+        expect({ cli.parse(["-t"]) }).toThrow(RequiredCliArgumentException.class)
+        expect(Object.referenceEquals(cli["--target"]["runtime"], runtime)).toBe(true)
+        expect(runtime.values.isEmpty).toBe(true)
+    }
+
     test `can create`() {
         let value = FuCli("fucli", Array())
 

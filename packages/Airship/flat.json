@@ -5,6 +5,9 @@
   "author": "Braden Steffaniak",
   "license": "ISC",
   "defaultTarget": "es6",
+  "scripts": {
+    "toolchain-test": "node dist/es6/toolchain-test.js"
+  },
   "sources": {
     "main": {
       "mainClass": "flat/airship/Airship",
@@ -38,6 +41,14 @@
         "https://github.com/FlatLang/Flat-Parser.git": "master",
         "https://github.com/FlatLang/Flat-Compiler-Models.git": "master",
         "https://github.com/FlatLang/Flat-ES6-Bound-Writer.git": "master"
+      }
+    },
+    "toolchain-test": {
+      "mainClass": "flat/airship/AirshipToolchain_TestSuite",
+      "source": "src/**/*_Test*.flat",
+      "outFile": "toolchain-test.js",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master"
       }
     },
     "owned-process-test": {

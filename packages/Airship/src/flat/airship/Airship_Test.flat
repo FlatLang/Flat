@@ -1127,11 +1127,101 @@ testable class {
         expect(command.contains(Airship.flatHome + "/bin/flatc")).toBe(false)
     }
 
-    test async `rejects unsupported Flat target runtime before selecting the compiler`() {
+    test async `omitted source dependencies remain an empty source-owned list`() {
+        let root = File(".airship-optional-dependencies-#{Time.currentTimeMillis}")
+        root.mkdirs()
+        try {
+            FileWriter(File(root, "flat.json")):write(
+                "{\"name\":\"Optional dependencies\",\"defaultTarget\":\"es6\",\"sources\":{\"main\":{\"source\":\"src\"},\"test\":{\"source\":\"test\"}}}"):close()
+            let airship = Airship(["--use-links", "-f", root.normalizedLocation, "-t", "es6"])
+            // Loading adds real implicit Core, not a fabricated empty closure.
+            expect(airship.package.mainSource.dependencies.count).toBe(1)
+            expect(airship.package.testSource.dependencies.count).toBe(1)
+            expect(airship.package.mainSource.dependencies.first.name).toBe("Flat-Core")
+        } finally {
+            if (File(root, "flat.json").isFile) Airship.clearCache(File(root, "flat.json").normalizedLocation)
+            root.delete(recursive: true)
+        }
+    }
+
+    test `entrypoint accepts generated user argv and legacy script-prefixed argv`() {
+        let generated = Airship.getUserArguments(["--use-links", "install"], 2)
+        let legacy = Airship.getUserArguments(["airship.js", "--use-links", "install"], 2)
+        expect(generated.join("|")).toBe("--use-links|install")
+        expect(legacy.join("|")).toBe("--use-links|install")
+        expect(Airship.getUserArguments(["install"], 1).first).toBe("install")
+        expect({ Airship.getUserArguments(String[], 0) }).toThrow(Exception.class)
+        expect({ Airship.getUserArguments(["unexpected", "prefix", "install"], 1) }).toThrow(Exception.class)
+    }
+
+    test async `accepts explicit Node runtime without forwarding an unsupported compiler flag`() {
         let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6", "-r", "node"])
         let source = airship.getSourceForPackage("main").copy(dependencies: Array<Dependency>())
+        let args = airship.installService.getFlatcInstallArguments("main", source)
+        expect(airship.targetRuntime).toBe("node")
+        expect(args.contains("-target-runtime")).toBe(false)
+        expect(args.contains("-r")).toBe(false)
+    }
 
-        assertAsyncThrows(async { airship.installService.getFlatcInstallArguments("main", source) }, ExecutionFailureException.class, "Flat compiler target-runtime selection is not supported")
+    test async `rejects unsupported Flat targets and runtimes before dependency acquisition`() {
+        let browser = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6", "-r", "browser"])
+        assertAsyncThrows(async { browser.installService.install("main") }, ExecutionFailureException.class,
+            "Flat compiler supports only target runtime node")
+        let java = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "java"])
+        assertAsyncThrows(async { java.installService.install("main") }, ExecutionFailureException.class,
+            "Flat compiler supports only target es6")
+    }
+
+    test async `run rejects malformed command entries instead of silently succeeding`() {
+        let root = File(".airship-invalid-script-#{Time.currentTimeMillis}")
+        root.mkdirs()
+        try {
+            FileWriter(File(root, "flat.json")):write(
+                "{\"name\":\"Invalid script fixture\",\"scripts\":{\"unsupported\":[7],\"emptyArgv\":[[]],\"emptyValue\":null,\"scalar\":7},\"sources\":{\"main\":{\"source\":\"src\"}}}"):close()
+            let airship = Airship(["--use-links", "-f", root.normalizedLocation, "-t", "es6"])
+            assertAsyncThrows(async { airship.runScriptService.runScript("unsupported") }, InvalidScriptException.class,
+                "Script command 'unsupported' contains an unsupported command")
+            assertAsyncThrows(async { airship.runScriptService.runScript("emptyArgv") }, InvalidScriptException.class,
+                "Script command 'emptyArgv' contains an empty argv command")
+            assertAsyncThrows(async { airship.runScriptService.runScript("emptyValue") }, InvalidScriptException.class,
+                "Script command 'emptyValue' has no command")
+            assertAsyncThrows(async { airship.runScriptService.runScript("scalar") }, InvalidScriptException.class,
+                "Script command 'scalar' contains an unsupported command")
+        } finally {
+            if (File(root, "flat.json").isFile) Airship.clearCache(File(root, "flat.json").normalizedLocation)
+            root.delete(recursive: true)
+        }
+    }
+
+    test async `legacy alternate test entry keeps its own declared selector`() {
+        let airship = Airship(["--use-links", "-t", "es6"])
+        let source = airship.getSourceForPackage("toolchain-test")
+        let args = airship.installService.getLegacyInstallArguments("toolchain-test", source)
+        let selected = InstallService.sanitizeFileLocation(airship.packageLocation.normalizedLocation + "/" + source.source)
+        expect(source.source).toBe(airship.package.testSource.source)
+        expect(args.contains(selected)).toBe(true)
+        var Int index
+        while (index < args.count - 1) {
+            if (args[index] == "-x") expect(args[index + 1] == selected).toBe(false)
+            index++
+        }
+        expect(args[args.indexOf("-main") + 1]).toBe(source.mainClass)
+    }
+
+    test async `custom test entry sharing the declared test selector does not exclude itself`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        let source = airship.getSourceForPackage("owned-process-test").copy(dependencies: Array<Dependency>())
+        let args = airship.installService.getFlatcInstallArguments("owned-process-test", source)
+        let selected = airship.packageLocation.normalizedLocation + "/" + source.source
+        expect(source.source).toBe(airship.package.testSource.source)
+        expect(args.contains(selected)).toBe(true)
+        expect(args.contains("-x")).toBe(false)
+    }
+
+    test async `explicit missing install source fails instead of reporting success`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        assertAsyncThrows(async { airship.installService.install("not-a-source") }, InvalidCommandException.class,
+            "Package #{airship.package.name} has no source named not-a-source")
     }
 
     test async `forwards Flat library directory-only output`() {

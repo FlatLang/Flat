@@ -1,6 +1,9 @@
 package flat/compiler
 
 import flat/compiler/models
+import flat/future
+import flat/eventstream/ControlledExecutor
+import flat/parser/ParserDiagnostic
 import flat/semantic/binding/primitive/PrimitiveDefaultImport
 import flat/lexer
 import flat/parser/flat
@@ -10,6 +13,335 @@ import flat/time/Time
 import flat/writer/es6/bound
 
 testable class {
+    class CancelThenThrowSink extends CompilerArtifactSink {
+        visible var CompilerSession session
+        override public write(CompilerArtifact artifact) {
+            session.cancel()
+            throw Exception("controlled sink failure after cancellation")
+        }
+    }
+
+    class TerminalFailureObserver extends CompilerInvocationObserver {
+        public construct(visible var Bool failArtifact = false, visible var Bool failCleanup = false,
+            visible var Bool cancelArtifact = false) {}
+        override public artifactAccepted(CompilerSession session, String identity) {
+            if (cancelArtifact) session.cancel()
+            if (failArtifact) throw Exception("controlled accepted callback failure")
+        }
+        override public drained(Int admitted, Int settled, Int peakActive, Int peakRetained) {
+            if (failCleanup) throw Exception("controlled drained callback failure")
+        }
+    }
+
+    class IsolatedSourceCompiler extends FlatEs6SourceCompiler {
+        override public async compile(CompilerSource source) -> String {
+            if (source.text == "bad") throw Exception("controlled isolated source failure")
+            return "// #{source.identity}"
+        }
+    }
+
+    async test `independent source sink failure remains counted after reentrant cancellation`() {
+        for (capacity in 1..3) {
+            let session = CompilerSession()
+            let sink = CancelThenThrowSink()
+            sink.session = session
+            let engine = CompilerEngine(sourceCompiler: IsolatedSourceCompiler(), maxActiveSources: capacity)
+            engine.start(MemoryCompilerSourceProvider([
+                CompilerSource("a", "good"), CompilerSource("b", "good"), CompilerSource("c", "good")
+            ]), sink, session)
+            let summary = session.completion.get()
+            expect(summary.cancelled).toBe(true)
+            expect(summary.cleanupSettled).toBe(true)
+            expect(summary.diagnosticCount).toBe(1)
+            expect(summary.packageDiagnostic).toBe("Failed to compile 'a': controlled sink failure after cancellation")
+            expect(summary.artifactCount).toBe(0)
+            expect(summary.succeeded).toBe(false)
+            expect(session.inFlightSourceCount).toBe(0)
+            expect(session.retainedSourceCount).toBe(0)
+        }
+    }
+
+    async test `recoverable source failure preserves unrelated artifacts and stable terminal accounting`() {
+        for (capacity in 1..3) {
+            let sink = MemoryCompilerArtifactSink()
+            let engine = CompilerEngine(sourceCompiler: IsolatedSourceCompiler(),
+                maxActiveSources: capacity, maxQueuedSources: 1)
+            let session = engine.compile(MemoryCompilerSourceProvider([
+                CompilerSource("c", "ok"), CompilerSource("a", "ok"), CompilerSource("b", "bad")
+            ]), sink)
+            let summary = session.completion.get()
+            expect(summary.sourceCount).toBe(3)
+            expect(summary.artifactCount).toBe(2)
+            expect(summary.diagnosticCount).toBe(1)
+            expect(summary.cancelled).toBe(false)
+            expect(summary.cleanupSettled).toBe(true)
+            expect(summary.succeeded).toBe(false)
+            expect(summary.packageDiagnostic).toBe("Failed to compile 'b': controlled isolated source failure")
+            expect(sink.artifacts().any((artifact) => artifact.identity == "a.js")).toBe(true)
+            expect(sink.artifacts().any((artifact) => artifact.identity == "c.js")).toBe(true)
+            expect(sink.artifacts().any((artifact) => artifact.identity == "b.js")).toBe(false)
+            expect(session.artifacts.receive().completed).toBe(true)
+            expect(session.completion.get().diagnosticCount).toBe(1)
+        }
+    }
+
+    class IdentityLinker extends FlatEs6PackageLinker {
+        visible var String observedIdentity
+        override public async linkSources(
+            CompilerSourceProvider provider, String[] identities,
+            DeclarationIdentity arrayDeclaration = null, String mainClass = null,
+            PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
+        ) -> String {
+            observedIdentity = identities.first.concat("")
+            return "// isolated orchestration fixture"
+        }
+    }
+
+    async test `queued package owns source identities before caller mutation`() {
+        let executor = ControlledExecutor(1)
+        let linker = IdentityLinker()
+        let identity = "Stable.flat".concat("")
+        let provider = MemoryCompilerSourceProvider([CompilerSource(identity, "class Stable {}")])
+        let engine = CompilerEngine(executor: executor, packageLinker: linker)
+        let pending = Future.from<CompilerSession>(async {
+            return engine.compilePackage(provider, MemoryCompilerArtifactSink(), "stable.js")
+        })$
+        expect(pending.completed).toBe(false)
+        identity.chars[0] = 'x'
+        executor.runNext()
+        let summary = pending.get().completion.get()
+        expect(summary.succeeded).toBe(true)
+        expect(linker.observedIdentity).toBe("Stable.flat")
+    }
+
+    class CancelReadObserver extends CompilerInvocationObserver {
+        override public sourceReadCompleted(CompilerSession session, String identity) { session.cancel() }
+    }
+
+    class CleanupGatedLinker extends FlatEs6PackageLinker {
+        visible Future.CompletableFuture<Bool> cleanupEntered = Future.create<Bool>()
+        visible Future.CompletableFuture<Bool> cleanupRelease = Future.create<Bool>()
+        visible var Bool cleaned
+        override public async linkSources(
+            CompilerSourceProvider provider, String[] identities,
+            DeclarationIdentity arrayDeclaration = null, String mainClass = null,
+            PrimitiveDefaultImport[] defaultImports = PrimitiveDefaultImport[]
+        ) -> String {
+            try { provider.load(identities.first) }
+            finally {
+                cleanupEntered.complete(true)
+                cleanupRelease.get()
+                cleaned = true
+            }
+            return "unused"
+        }
+    }
+
+    async test `cancelled snapshot adapter waits for structural linker cleanup at both read capacities`() {
+        for (capacity in 1..3) {
+            let linker = CleanupGatedLinker()
+            let engine = CompilerEngine(packageLinker: linker, packageReuse: CompilerPackageReuse(),
+                maxActiveSources: capacity, invocationObserver: CancelReadObserver())
+            let sink = MemoryCompilerArtifactSink()
+            let pending = Future.from<CompilerSession>(async {
+                return engine.compilePackageSnapshots(sources(), sink, "cancelled.js")
+            })$
+            try {
+                linker.cleanupEntered.get()
+                expect(pending.completed).toBe(false)
+                expect(linker.cleaned).toBe(false)
+                expect(sink.artifacts().count).toBe(0)
+            } finally { if (!linker.cleanupRelease.completed) linker.cleanupRelease.complete(true) }
+            let session = pending.get()
+            let summary = session.completion.get()
+            expect(linker.cleaned).toBe(true)
+            expect(summary.cancelled).toBe(true)
+            expect(summary.cleanupSettled).toBe(true)
+            expect(summary.artifactCount).toBe(0)
+            expect(summary.diagnosticCount).toBe(0)
+            expect(summary.succeeded).toBe(false)
+            expect(session.artifacts.receive().completed).toBe(true)
+        }
+    }
+
+    async test `package read configuration failure is accounted without entering linker`() {
+        let linker = CountingLinker()
+        let engine = CompilerEngine(packageLinker: linker, maxActiveSources: 1,
+            sourceReadSchedule: CompilerSourceReadSchedule.forward(2))
+        let summary = engine.compilePackage(MemoryCompilerSourceProvider(sources()),
+            MemoryCompilerArtifactSink(), "failed.js").completion.get()
+        expect(summary.sourceCount).toBe(2)
+        expect(summary.artifactCount).toBe(0)
+        expect(summary.diagnosticCount).toBe(1)
+        expect(summary.cleanupSettled).toBe(true)
+        expect(summary.cancelled).toBe(false)
+        expect(summary.packageDiagnostic.contains("Controlled read schedule must match package capacity")).toBe(true)
+        expect(summary.succeeded).toBe(false)
+        expect(linker.calls).toBe(0)
+    }
+
+    async test `link failure plus cleanup callback failure preserves both terminal counts`() {
+        let linker = CountingLinker()
+        linker.fail = true
+        let observer = TerminalFailureObserver(failCleanup: true)
+        let engine = CompilerEngine(packageLinker: linker, packageReuse: CompilerPackageReuse(),
+            sourceReadObserver: observer)
+        let summary = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "failed.js").completion.get()
+        expect(summary.diagnosticCount).toBe(2)
+        expect(summary.packageDiagnostic).toBe("Failed package source cleanup: controlled drained callback failure")
+        expect(summary.artifactCount).toBe(0)
+        expect(summary.cleanupSettled).toBe(true)
+        expect(summary.succeeded).toBe(false)
+    }
+
+    async test `cancel then throw in sink records failure without claiming an accepted artifact`() {
+        let session = CompilerSession()
+        let sink = CancelThenThrowSink()
+        sink.session = session
+        CompilerEngine().startPackage(MemoryCompilerSourceProvider(sources()), sink, "failed.js", session)
+        let summary = session.completion.get()
+        expect(summary.cancelled).toBe(true)
+        expect(summary.cleanupSettled).toBe(true)
+        expect(summary.artifactCount).toBe(0)
+        expect(summary.diagnosticCount).toBe(1)
+        expect(summary.packageDiagnostic.contains("controlled sink failure after cancellation")).toBe(true)
+        expect(summary.succeeded).toBe(false)
+        expect(session.completion.get().diagnosticCount).toBe(1)
+    }
+
+    async test `accepted callback failure after cancellation blocks cold and warm retention`() {
+        for (capacity in 1..3) {
+            let linker = CountingLinker()
+            let reuse = CompilerPackageReuse()
+            let observer = TerminalFailureObserver()
+            let engine = CompilerEngine(packageLinker: linker, packageReuse: reuse,
+                maxActiveSources: capacity, invocationObserver: observer)
+            observer.failArtifact = true
+            observer.cancelArtifact = true
+            let failed = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "cold-failed.js").completion.get()
+            expect(failed.cancelled).toBe(true)
+            expect(failed.artifactCount).toBe(1)
+            expect(failed.diagnosticCount).toBe(1)
+            expect(failed.cleanupSettled).toBe(true)
+            expect(failed.packageDiagnostic.contains("controlled accepted callback failure")).toBe(true)
+            observer.failArtifact = false
+            observer.cancelArtifact = false
+            let repaired = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "repaired.js").completion.get()
+            expect(repaired.succeeded).toBe(true)
+            expect(repaired.reuse.reused).toBe(false)
+            expect(linker.calls).toBe(2)
+            observer.failArtifact = true
+            observer.cancelArtifact = true
+            let warmFailure = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "warm-failed.js").completion.get()
+            expect(warmFailure.reuse.reused).toBe(true)
+            expect(warmFailure.diagnosticCount).toBe(1)
+            expect(warmFailure.cancelled).toBe(true)
+            observer.failArtifact = false
+            observer.cancelArtifact = false
+            let recovered = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "warm-recovered.js").completion.get()
+            expect(recovered.reuse.reused).toBe(true)
+            expect(recovered.succeeded).toBe(true)
+            expect(linker.calls).toBe(2)
+        }
+    }
+
+    async test `cleanup callback failure is terminal even after cancellation and cannot populate reuse`() {
+        for (capacity in 1..3) {
+            Bool[] cancellationModes = [false, true]
+            for (cancelArtifact in cancellationModes) {
+                let linker = CountingLinker()
+                let observer = TerminalFailureObserver(failCleanup: true, cancelArtifact: cancelArtifact)
+                let engine = CompilerEngine(packageLinker: linker, packageReuse: CompilerPackageReuse(),
+                    maxActiveSources: capacity, sourceReadObserver: observer, invocationObserver: observer)
+                let failed = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "failed.js").completion.get()
+                expect(failed.cancelled).toBe(cancelArtifact)
+                expect(failed.cleanupSettled).toBe(true)
+                expect(failed.artifactCount).toBe(1)
+                expect(failed.diagnosticCount).toBe(1)
+                expect(failed.packageDiagnostic).toBe("Failed package source cleanup: controlled drained callback failure")
+                expect(failed.succeeded).toBe(false)
+                observer.failCleanup = false
+                observer.cancelArtifact = false
+                let repaired = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "repaired.js").completion.get()
+                expect(repaired.succeeded).toBe(true)
+                expect(repaired.reuse.reused).toBe(false)
+                expect(linker.calls).toBe(2)
+                let warm = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "warm.js").completion.get()
+                expect(warm.reuse.reused).toBe(true)
+                expect(linker.calls).toBe(2)
+            }
+        }
+    }
+
+    test `clean terminal predicate rejects partial cleanup and typed failures`() {
+        expect(CompilationSummary(0, 0, 0, false).succeeded).toBe(true)
+        expect(CompilationSummary(2, 1, 0, false, cleanupSettled: false).succeeded).toBe(false)
+        expect(CompilationSummary(2, 1, 0, true).succeeded).toBe(false)
+        expect(CompilationSummary(2, 1, 1, false).succeeded).toBe(false)
+        expect(CompilationSummary(2, 1, 0, false, packageDiagnostic: "failed").succeeded).toBe(false)
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("Broken.flat"), "input")
+        let diagnostic = ParserDiagnostic("syntax-error", "invalid syntax", snapshot)
+        expect(CompilationSummary(2, 1, 0, false, parserDiagnostic: diagnostic).succeeded).toBe(false)
+        let reuse = CompilerPackageReuse()
+        let candidate = reuse.capture(sources(), null, CountingLinker())
+        candidate.recordCode("code")
+        reuse.remember(candidate, CompilationSummary(2, 1, 0, false, parserDiagnostic: diagnostic))
+        expect(reuse.find(candidate)).toBe(null)
+        reuse.remember(candidate, CompilationSummary(2, 1, 0, false, cleanupSettled: false))
+        expect(reuse.find(candidate)).toBe(null)
+    }
+
+    test `summary rejects negative scheduler peak evidence`() {
+        var Int rejected
+        try { CompilationSummary(1, 0, 0, false, peakActiveSources: -1) }
+        catch (Exception error) { rejected++ }
+        try { CompilationSummary(1, 0, 0, false, peakRetainedSources: -1) }
+        catch (Exception error) { rejected++ }
+        try { CompilationSummary(1, 0, 0, false, peakActiveSourceReads: -1) }
+        catch (Exception error) { rejected++ }
+        try { CompilationSummary(1, 0, 0, false, peakRetainedSourceReads: -1) }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(4)
+    }
+
+    async test `tool identity result reads cannot mutate snapshot or later reuse evidence`() {
+        let reuse = CompilerPackageReuse()
+        let linker = CountingLinker()
+        let candidate = reuse.capture(sources(), null, linker, toolFingerprint: "tool-one")
+        candidate.toolFingerprint.chars[0] = 'x'
+        expect(candidate.toolFingerprint).toBe("tool-one")
+        candidate.recordCode("code")
+        reuse.remember(candidate, CompilationSummary(2, 1, 0, false))
+        let hit = reuse.capture(sources(), null, linker, toolFingerprint: "tool-one")
+        expect(reuse.find(hit)).toBe("code")
+        let evidence = reuse.evidence(hit, true)
+        expect(evidence.toolFingerprint).toBe("tool-one")
+        evidence.toolFingerprint.chars[0] = 'x'
+        expect(hit.toolFingerprint).toBe("tool-one")
+        expect(reuse.evidence(hit, true).toolFingerprint).toBe("tool-one")
+    }
+
+    async test `recoverable changed package failure preserves only prior exact successful closure`() {
+        let linker = CountingLinker()
+        let engine = CompilerEngine(packageLinker: linker, packageReuse: CompilerPackageReuse())
+        let original = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "original.js").completion.get()
+        expect(original.succeeded).toBe(true)
+        linker.fail = true
+        let failed = engine.compilePackageSnapshots(sources(22), MemoryCompilerArtifactSink(), "changed.js").completion.get()
+        expect(failed.succeeded).toBe(false)
+        expect(failed.diagnosticCount).toBe(1)
+        expect(failed.cancelled).toBe(false)
+        linker.fail = false
+        let warm = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "original-again.js").completion.get()
+        expect(warm.succeeded).toBe(true)
+        expect(warm.reuse.reused).toBe(true)
+        expect(linker.calls).toBe(2)
+        let changed = engine.compilePackageSnapshots(sources(22), MemoryCompilerArtifactSink(), "changed-again.js").completion.get()
+        expect(changed.reuse.reused).toBe(false)
+        expect(changed.succeeded).toBe(true)
+        expect(linker.calls).toBe(3)
+    }
+
     async test `reuse receipts distinguish actual hits closure changes removals and tool changes`() {
         let linker = CountingLinker()
         let engine = CompilerEngine(packageLinker: linker, packageReuse: CompilerPackageReuse())

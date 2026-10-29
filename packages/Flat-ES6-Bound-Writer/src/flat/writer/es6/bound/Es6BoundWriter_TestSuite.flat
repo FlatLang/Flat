@@ -33,7 +33,11 @@ import flat/io/FancyOutputStream
     Es6AsyncExecution_Test,
     Es6NativeExecution_Test,
     Es6RuntimeExecution_Test,
-    Es6RepresentationExecution_Test
+    Es6RepresentationExecution_Test,
+    Es6AdmittedRuntimeExecution_Test,
+    Es6ConditionalReferenceExecution_Test,
+    Es6ConstructorPlanExecution_Test,
+    Es6FloatingLiteralExecution_Test
 ]]
 class {
     public static async main(String[] args) {

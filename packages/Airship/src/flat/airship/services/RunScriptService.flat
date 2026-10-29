@@ -65,6 +65,7 @@ class {
 
         let workingDirectory = airship.flatJsonFile.getParent().location
         let cmd = airship.package.scripts[script]
+        if (!cmd) throw InvalidScriptException("Script command '#script' has no command")
 
         if (cmd?.class.isOfType(Array.class)) {
             let Object[] array = (Object[])cmd
@@ -74,8 +75,10 @@ class {
             }
 
             for (obj in array) {
+                if (!obj) throw InvalidScriptException("Script command '#script' contains an empty command")
                 if (obj.class.isOfType(Array.class)) {
                     let String[] c = (Array)obj
+                    if (c.isEmpty) throw InvalidScriptException("Script command '#script' contains an empty argv command")
                     let fullCmd = Array<String>():addAll(c):addAll(airship.cliArgs.propagationArgs.values)
 
                     if (airship.debug) {
@@ -93,16 +96,20 @@ class {
                     if (status != 0) {
                         throw ExecutionFailureException("Script exited with exit code #status")
                     }
+                } else {
+                    throw InvalidScriptException("Script command '#script' contains an unsupported command")
                 }
             }
 
             return
-        } else {
+        } else if (cmd.class.isOfType(String.class)) {
             let status = executeScriptString(cmd.toString(), workingDirectory)
 
             if (status != 0) {
                 throw ExecutionFailureException("Script exited with exit code #status")
             }
+        } else {
+            throw InvalidScriptException("Script command '#script' contains an unsupported command")
         }
     }
 }

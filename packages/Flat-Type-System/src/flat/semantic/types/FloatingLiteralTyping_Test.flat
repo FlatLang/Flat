@@ -1,0 +1,80 @@
+package flat/semantic/types
+
+testable class {
+    test `floating context rounds decimal directly to binary32 and retains provenance`() {
+        let range = TypeSystem_TestFixture().range(11, 12)
+        let result = FloatingLiteralTyping.contextualize("0.00000001", SemanticTypes.floatType(), range)
+        expect(result.valid).toBe(true)
+        expect(result.literal.sourceValue).toBe("0.00000001")
+        expect(result.literal.range).toBe(range)
+        expect(result.literal.semanticType.value()).toBe(SemanticTypes.floatType().value())
+        expect(result.canonicalValue).toBe("0.00000000999999993922529029077850282192230224609375")
+        expect(TypeConversions.classify(SemanticTypes.doubleType(), SemanticTypes.floatType()).applicable).toBe(false)
+        expect(FloatingLiteralTyping.contextualize("16777217", SemanticTypes.floatType(), range).canonicalValue).toBe("16777216")
+        expect(FloatingLiteralTyping.contextualize("16777217", SemanticTypes.doubleType(), range).canonicalValue).toBe("16777217")
+    }
+
+    test `floating midpoint ties use retained significand parity without double rounding`() {
+        let range = TypeSystem_TestFixture().range()
+        expect(FloatingLiteralTyping.contextualize("1.000000059604644775390625", SemanticTypes.floatType(), range).canonicalValue).toBe("1")
+        expect(FloatingLiteralTyping.contextualize("1.000000178813934326171875", SemanticTypes.floatType(), range).canonicalValue).toBe("1.0000002384185791015625")
+        expect(FloatingLiteralTyping.contextualize("1.0000000596046447753906249999999999999999", SemanticTypes.floatType(), range).canonicalValue).toBe("1")
+        expect(FloatingLiteralTyping.contextualize("1.0000000596046447753906250000000000000001", SemanticTypes.floatType(), range).canonicalValue).toBe("1.00000011920928955078125")
+        expect(FloatingLiteralTyping.contextualize("-1.000000059604644775390625", SemanticTypes.floatType(), range).canonicalValue).toBe("-1")
+        expect(FloatingLiteralTyping.contextualize("9007199254740993", SemanticTypes.doubleType(), range).canonicalValue).toBe("9007199254740992")
+        expect(FloatingLiteralTyping.contextualize("9007199254740995", SemanticTypes.doubleType(), range).canonicalValue).toBe("9007199254740996")
+    }
+
+    test `floating finite boundaries subnormal and signed zero preserve exact policy`() {
+        let range = TypeSystem_TestFixture().range()
+        let type = SemanticTypes.floatType()
+        expect(FloatingLiteralTyping.contextualize("340282346638528859811704183484516925440", type, range).valid).toBe(true)
+        expect(FloatingLiteralTyping.contextualize("340282356779733661637539395458142568447", type, range).canonicalValue).toBe("340282346638528859811704183484516925440")
+        expect(FloatingLiteralTyping.contextualize("340282356779733661637539395458142568448", type, range).diagnostic.code).toBe("type.floating-literal-overflow")
+        let subnormal = FloatingLiteralTyping.contextualize("1.40129846432481707092372958328991613128026194187651577175706828388979108268586060148663818836212158203125e-45", type, range)
+        expect(subnormal.valid).toBe(true)
+        expect(FloatingLiteralTyping.contextualize(subnormal.canonicalValue, type, range).canonicalValue).toBe(subnormal.canonicalValue)
+        expect(FloatingLiteralTyping.contextualize("7.00649232162408535461864791644958065640130970938257885878534141944895541342930300743319094181060791015625e-46", type, range).diagnostic.code).toBe("type.floating-literal-underflow")
+        expect(FloatingLiteralTyping.contextualize("7.006492321624086e-46", type, range).valid).toBe(true)
+        expect(FloatingLiteralTyping.contextualize("1e-1000000", type, range).diagnostic.code).toBe("type.floating-literal-underflow")
+        expect(FloatingLiteralTyping.contextualize("1e1000000", type, range).diagnostic.code).toBe("type.floating-literal-overflow")
+        expect(FloatingLiteralTyping.contextualize("-0.000e9999999999999999999", type, range).canonicalValue).toBe("-0")
+        expect(FloatingLiteralTyping.contextualize("+0", SemanticTypes.doubleType(), range).canonicalValue).toBe("0")
+        expect(FloatingLiteralTyping.contextualize("-0", SemanticTypes.doubleType(), range).canonicalValue).toBe("-0")
+        expect(FloatingLiteralTyping.contextualize("1.7976931348623157e308", SemanticTypes.doubleType(), range).valid).toBe(true)
+        expect(FloatingLiteralTyping.contextualize("1.7976931348623159e308", SemanticTypes.doubleType(), range).diagnostic.code).toBe("type.floating-literal-overflow")
+        expect(FloatingLiteralTyping.contextualize("5e-324", SemanticTypes.doubleType(), range).valid).toBe(true)
+        expect(FloatingLiteralTyping.contextualize("2e-324", SemanticTypes.doubleType(), range).diagnostic.code).toBe("type.floating-literal-underflow")
+    }
+
+    test `floating lexical and context failures retain exact source range`() {
+        let fixture = TypeSystem_TestFixture()
+        let range = fixture.range(17, 18)
+        let invalid = ["", ".", "+", "1e", "1e+", "1.2.3", "NaN", "Infinity", " 1", "1 ", "1_0", "0x10", "1f"]
+        for (text in invalid) {
+            let result = FloatingLiteralTyping.contextualize(text, SemanticTypes.floatType(), range)
+            expect(result.valid).toBe(false)
+            expect(result.diagnostic.code).toBe("type.floating-literal-syntax")
+            expect(result.diagnostic.range).toBe(range)
+            expect(result.literal == null).toBe(true)
+            expect(result.canonicalValue == null).toBe(true)
+        }
+        let failures = ["1e1000", "1e-1000"]
+        for (text in failures) {
+            let result = FloatingLiteralTyping.contextualize(text, SemanticTypes.floatType(), range)
+            expect(result.valid).toBe(false)
+            expect(result.diagnostic.range).toBe(range)
+            expect(result.literal == null).toBe(true)
+            expect(result.canonicalValue == null).toBe(true)
+        }
+        let contexts = [SemanticTypes.intType(), SemanticTypes.stringType(), fixture.userType("Float"), NullableSemanticType(SemanticTypes.floatType())]
+        for (context in contexts) {
+            let result = FloatingLiteralTyping.contextualize("1.0", context, range)
+            expect(result.diagnostic.code).toBe("type.floating-literal-context")
+            expect(result.diagnostic.range).toBe(range)
+        }
+        expect(FloatingLiteralTyping.contextualize(".5", SemanticTypes.floatType(), range).canonicalValue).toBe("0.5")
+        expect(FloatingLiteralTyping.contextualize("1.", SemanticTypes.floatType(), range).canonicalValue).toBe("1")
+        expect(FloatingLiteralTyping.contextualize("01.25E+1", SemanticTypes.floatType(), range).canonicalValue).toBe("12.5")
+    }
+}

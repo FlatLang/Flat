@@ -55,11 +55,12 @@ class {
 
     public static async main(String[] args) {
         try {
-            if (args.count < 2) {
-                throw Exception("Missing command")
-            }
-
-            Airship(args.skip(1)):run()
+            // Legacy entrypoints include the script token; generated entrypoints
+            // pass user argv only. Derive the boundary from the actual Node argv,
+            // never from whether a user option happens to look like a filename.
+            native var Int userArgumentCount
+            external js { #{userArgumentCount} = process.argv.length - 2; }
+            Airship(getUserArguments(args, userArgumentCount)):run()
         } catch (Exception e) {
             log.error(e.message)
             if (
@@ -71,6 +72,14 @@ class {
             }
             System.exit(1)
         }
+    }
+
+    public static getUserArguments(String[] args, Int userArgumentCount) -> String[] {
+        if (args.count != userArgumentCount && args.count != userArgumentCount + 1) {
+            throw Exception("Invalid Airship entrypoint argument boundary")
+        }
+        if (userArgumentCount == 0) throw Exception("Missing command")
+        return args.skip(args.count == userArgumentCount ? 0 : 1)
     }
 
     public construct(

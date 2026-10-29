@@ -14,7 +14,8 @@ data class {
         visible BoundExpression initializer = null,
         visible Bool staticField = false,
         visible Bool mutableField = false,
-        visible Bool nativeArrayStorage = false
+        visible Bool nativeArrayStorage = false,
+        visible DeclarationIdentity ownerIdentity = null
     ) {
         if (nativeArrayStorage && semanticType.kind() != "array") {
             throw Exception("Native storage field requires an array type")
@@ -26,7 +27,23 @@ data class {
             (initializer && initializer.semanticType.kind() == "null" &&
                 semanticType.kind() != "nullable") ||
             identity.declaration.syntaxIdentity.snapshot != range.snapshot) {
-            throw Exception("Bound field requires name identity type and range")
+            throw Exception("Bound field requires name identity type and range" +
+                "; namePresent=" + (name != null) + "; name=" + (name ?: "<missing>") +
+                "; identityPresent=" + (identity != null) + "; identity=" + (identity ? identity.value : "<missing>") +
+                "; identitySnapshot=" + (identity ? identity.declaration.syntaxIdentity.snapshot.value : "<missing>") +
+                "; canonicalOwner=" + (ownerIdentity ? ownerIdentity.value : (identity ? identity.declaration.value : "<missing>")) +
+                "; typePresent=" + (semanticType != null) + "; type=" + (semanticType ? semanticType.value() : "<missing>") +
+                "; rangePresent=" + (range != null) + "; rangeSnapshot=" + (range ? range.snapshot.value : "<missing>") +
+                "; tokens=" + (range ? "[" + range.startTokenIndex + "," + range.endTokenIndex + ")" : "<missing>") +
+                "; location=" + (range ? range.start.lineNumber + ":" + range.start.column + "-" +
+                    range.end.lineNumber + ":" + range.end.column : "<missing>") +
+                "; initializerPresent=" + (initializer != null) +
+                "; initializerType=" + (initializer ? initializer.semanticType.value() : "<missing>") +
+                "; visible=" + visibleField + "; static=" + staticField + "; mutable=" + mutableField +
+                "; nativeArray=" + nativeArrayStorage)
         }
     }
+
+    /** Canonical type ownership is independent of retained member source identity. */
+    public canonicalOwner() -> DeclarationIdentity => ownerIdentity ?: identity.declaration
 }

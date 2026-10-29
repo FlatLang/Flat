@@ -24,9 +24,19 @@ data class {
             throw Exception("Bound type requires identity, semantic type, functions, and range")
         }
         let constructors = functionUnits.filter({ _.constructorFunction })
-        if (parentType && (constructors.isEmpty ||
+        BoundConstructorPlanValidator.validate(identity, semanticType, parentType, functionUnits)
+        let planned = constructors.any((value) => value.constructorPlan != null)
+        if (!planned && parentType && (constructors.isEmpty ||
             constructors.first.parentConstructorCall == null)) {
-            throw Exception("Bound derived type requires explicit parent constructor evidence")
+            let constructorIdentity = constructors.isEmpty ? "missing" : constructors.first.identity.value
+            let delegationIdentity = !constructors.isEmpty && constructors.first.constructorDelegation != null ?
+                constructors.first.constructorDelegation.target.identity.declaration.value : "none"
+            throw Exception("Bound derived type requires explicit parent constructor evidence: type=" +
+                identity.value + "; parent=" + parentType.declarationIdentity.value +
+                "; tokens=[" + range.startTokenIndex + "," + range.endTokenIndex + ")" +
+                "; location=" + range.start.lineNumber + ":" + range.start.column +
+                "-" + range.end.lineNumber + ":" + range.end.column +
+                "; constructor=" + constructorIdentity + "; delegation=" + delegationIdentity)
         }
         functions = BoundFunctionUnit[]
         functions.addAll(functionUnits)

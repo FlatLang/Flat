@@ -35,10 +35,12 @@ class {
                 SymbolIdentity(identity, "function"),
                 function.name,
                 CallableKind("function"),
-                function.parameterValues().map({ typeOf(_.typeName) }),
+                function.parameterValues().map((parameter) => parameterType(parameter)),
                 typeOf(function.returnTypeName), null,
-                function.parameterValues().filter({ _.defaultValue != null }).count,
-                function.parameterValues().map({ _.name })
+                function.parameterValues().filter((parameter) => parameter.defaultValue != null).count,
+                function.parameterValues().map((parameter) => parameter.name),
+                asyncFunction: function.asyncMethod,
+                externalName: function.externalName
             ))
             index++
         }
@@ -58,7 +60,20 @@ class {
                 }
                 let identity = SymbolIdentity(identities[index], "parameter", parameterIndex)
                 let parameterType = signature.parameterTypes()[parameterIndex]
-                parameters.add(BoundFunctionParameter(parameter.name, identity, parameterType))
+                if (parameter.defaultValue && function.parameterValues().skip(parameterIndex + 1)
+                    .any((following) => following.defaultValue == null)) {
+                    throw Exception("Default function parameters must be trailing")
+                }
+                var BoundExpression defaultValue
+                if (parameter.defaultValue) {
+                    // A fresh expression binder keeps contextual callback state local to this default.
+                    // Only earlier parameters are in scope, including captured callback values.
+                    let value = PrimitiveExpressionBinder(functions).bind(parameter.defaultValue,
+                        requiredType: parameterType, locals: locals, callables: signatures)
+                    if (!value.succeeded) throw Exception(value.diagnostic.message)
+                    defaultValue = value.expression
+                }
+                parameters.add(BoundFunctionParameter(parameter.name, identity, parameterType, defaultValue))
                 locals.add(LocalBinding(parameter.name, identity, parameterType))
                 parameterIndex++
             }
@@ -66,7 +81,8 @@ class {
                 PrimitiveStatementSyntaxResult(function.statements()),
                 snapshot,
                 locals,
-                signatures
+                signatures,
+                expressionBinder: PrimitiveExpressionBinder(functions)
             ).statements()
             let checkedStatements = validateReturns(
                 statements, signature.returnType, function.name
@@ -77,7 +93,9 @@ class {
                 signature.returnType,
                 checkedStatements,
                 function.range,
-                parameters
+                parameters,
+                asyncFunction: signature.asyncFunction,
+                externalName: signature.externalName
             ))
             index++
         }
@@ -93,7 +111,7 @@ class {
         if (leftValues.count != rightValues.count) return false
         var Int index
         while (index < leftValues.count) {
-            if (leftValues[index].typeName != rightValues[index].typeName) return false
+            if (parameterType(leftValues[index]).value() != parameterType(rightValues[index]).value()) return false
             index++
         }
         return true
@@ -156,7 +174,14 @@ class {
         return result
     }
 
+    parameterType(PrimitiveFunctionParameterSyntax parameter) -> SemanticType =>
+        PrimitiveStructuralTypeResolver().withCallbackNames(
+            typeOf(parameter.typeName), parameter.callbackParameterNames())
+
     typeOf(String name) -> SemanticType {
+        if (name.startsWith("async ") || name.contains("(")) {
+            return PrimitiveStructuralTypeResolver().resolve(name)
+        }
         if (name.endsWith("[]")) {
             return ArraySemanticType(typeOf(name.substring(0, name.count - 2)))
         }

@@ -1,0 +1,126 @@
+package flat/writer/es6/bound
+
+import flat/bound
+import flat/semantic/types
+import flat/io
+import flat/system
+import flat/time/Time
+
+/** Execute admitted conversions without rediscovering common types in a backend. */
+testable class {
+    async test `quoted text versus original E maps to declared Object without coercing false values`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let root = UserClassSemanticType(fixture.declaration("class", "CanonicalObject", 821))
+        let text = UserClassSemanticType(fixture.declaration("class", "SourceString", 822))
+        let generic = GenericParameterSemanticType(fixture.declaration("class", "Array", 823), "E", 0)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(text, "class", [root]))
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.seal()
+        let textConversion = TypeConversions.classify(text, root, hierarchy: hierarchy)
+        let genericConversion = TypeConversions.classify(generic, root, hierarchy: hierarchy)
+        expect(textConversion.conversionKind).toBe("reference-upcast")
+        expect(genericConversion.conversionKind).toBe("reference-upcast")
+        let constructor = CallableSignature(fixture.symbol("constructor", "text", 824), "text",
+            CallableKind("constructor"), [SemanticTypes.stringType()], text, text)
+        let parameter = BoundFunctionParameter("element", fixture.symbol("parameter", "element", 825), generic)
+        let original = BoundReferenceExpression(range, generic, "element", parameter.identity)
+        let condition = BoundNativeCallExpression(range, SemanticTypes.boolType(), "isText", [original])
+        let content = BoundNativeCallExpression(range, SemanticTypes.stringType(), "readText", [original])
+        let quoteSource = "'\"'"
+        let quoted = BoundInterpolatedStringExpression(range, [
+            BoundInterpolatedStringSegment(range, quoteSource, null),
+            BoundInterpolatedStringSegment(range, null, content),
+            BoundInterpolatedStringSegment(range, quoteSource, null)])
+        let wrapped = BoundCallExpression(range, text, constructor, [quoted],
+            [TypeConversions.classify(quoted.semanticType, SemanticTypes.stringType())])
+        Bool[] setupChoices = [false, true]
+        for (withSetup in setupChoices) {
+            var BoundExpression yes = BoundConversionExpression(range, root, wrapped, textConversion)
+            var BoundExpression no = BoundConversionExpression(range, root, original, genericConversion)
+            if (withSetup) {
+                yes = BoundEvaluationExpression(range, root, [host("events.push('T');")], yes)
+                no = BoundEvaluationExpression(range, root, [host("events.push('F');")], no)
+            }
+            let selected = BoundConditionalExpression(range, root, condition, yes, no)
+            let functionType = FunctionSemanticType([generic], root)
+            let outParameter = GenericParameterSemanticType(fixture.declaration("function", "map", 826), "Out", 0, root)
+            let declarationType = FunctionSemanticType([generic], outParameter)
+            let callback = BoundLambdaExpression(range, functionType, [parameter], BoundReferenceExpression[], selected,
+                declarationContract: declarationType)
+            expect(callback.body.semanticType.value()).toBe(root.value())
+            expect(callback.declarationContract.returnType.value()).toBe(outParameter.value())
+            let input = BoundLiteralExpression(range, ArraySemanticType(generic), "input")
+            let mapped = BoundIntrinsicMemberCallExpression(range, ArraySemanticType(root), input, "map", [callback])
+            let lowered = CollectionControlLoweringPass().lowerExpression(CoreLanguageLoweringPass().lowerExpression(mapped))
+            expect(lowered.semanticType.value()).toBe(ArraySemanticType(root).value())
+            let emitted = Es6ExpressionOrchestrator().emit(lowered)
+            expect(emitted.emitted).toBe(true)
+            let owner = Es6NameMangler.mangle(text.declarationIdentity.value)
+            let rootName = Es6NameMangler.mangle(root.declarationIdentity.value)
+            let expectedEvents = withSetup ? "C,T,Q,C,F,C,T,Q,C,F" : "C,Q,C,C,Q,C"
+            execute("let events=[], boxes=0; const q=String.fromCharCode(34);\n" +
+                "class " + rootName + " {} class " + owner + " extends " + rootName + " {constructor(text){super();this.text=text;boxes++;}}\n" +
+                "const original=Object.assign(new " + rootName + "(),{toString(){throw new Error('false branch coerced');}});\n" +
+                "const scalarBox=Object.assign(new " + rootName + "(),{value:17,toString(){throw new Error('generic payload coerced');}});\n" +
+                "const input=[new " + owner + "('a'+q+String.fromCharCode(39,92,10)),original,new " + owner + "(''),scalarBox];boxes=0;\n" +
+                "globalThis.isText=(value)=>{events.push('C');return value instanceof " + owner + ";};\n" +
+                "globalThis.readText=(value)=>{events.push('Q');return value.text;};\n" +
+                emitted.setup + "const output=" + emitted.code + ";\n" +
+                "if(output.length!==4 || !(output[0] instanceof " + owner + ") || !(output[2] instanceof " + owner +
+                ")) throw new Error('Out Object mapping lost declared text');\n" +
+                "if(output[0].text!==q+input[0].text+q || output[2].text!==q+q) throw new Error('quoted interpolation bytes');\n" +
+                "if(output.some(value=>!(value instanceof " + rootName + "))) throw new Error('canonical Object result');\n" +
+                "if(output[1]!==original || output[3]!==scalarBox || output[3].value!==17) throw new Error('generic identity erased');\n" +
+                "if(output[0]===input[0] || output[2]===input[2] || boxes!==2) throw new Error('selected conversion count');\n" +
+                "if(events.join(',')!=='" + expectedEvents + "') throw new Error('conditional selection or evaluation order');\n" +
+                "console.log('ok');\n")
+        }
+    }
+
+    async test `nullable declared Object selection preserves null and original identity without text conversion`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let root = UserClassSemanticType(fixture.declaration("class", "CanonicalObject", 831))
+        let nullable = NullableSemanticType(root)
+        let nullValue = BoundLiteralExpression(range, SemanticTypes.nullType(), "null")
+        let original = BoundNativeCallExpression(range, root, "readOriginal", BoundExpression[])
+        let yes = BoundEvaluationExpression(range, nullable, [host("events.push('N');")],
+            BoundConversionExpression(range, nullable, nullValue, TypeConversions.classify(nullValue.semanticType, nullable)))
+        let no = BoundEvaluationExpression(range, nullable, [host("events.push('V');")],
+            BoundConversionExpression(range, nullable, original, TypeConversions.classify(root, nullable)))
+        let condition = BoundNativeCallExpression(range, SemanticTypes.boolType(), "selectNull", BoundExpression[])
+        let selected = BoundConditionalExpression(range, nullable, condition, yes, no)
+        let callback = BoundLambdaExpression(range, FunctionSemanticType(SemanticType[], nullable),
+            BoundFunctionParameter[], BoundReferenceExpression[], selected)
+        let lowered = CollectionControlLoweringPass().lowerExpression(CoreLanguageLoweringPass().lowerExpression(callback))
+        let emitted = Es6ExpressionOrchestrator().emit(lowered)
+        expect(emitted.emitted).toBe(true)
+        let rootName = Es6NameMangler.mangle(root.declarationIdentity.value)
+        execute("let events=[],chooseNull=true; class " + rootName + " {} const original=Object.assign(new " + rootName +
+            "(),{toString(){throw new Error('identity coerced');}});\n" +
+            "globalThis.selectNull=()=>{events.push('C');return chooseNull;};\n" +
+            "globalThis.readOriginal=()=>{events.push('R');return original;};\n" +
+            emitted.setup + "const select=" + emitted.code + ";\n" +
+            "if(select()!==null || events.join(',')!=='C,N') throw new Error('null branch selection');\n" +
+            "events=[];chooseNull=false;if(select()!==original || events.join(',')!=='C,V,R') " +
+            "throw new Error('nullable identity or evaluation count');console.log('ok');\n")
+    }
+
+    host(String code) -> BoundExternalStatement => BoundExternalStatement(
+        Es6BoundWriter_TestFixture().range(), "es6", [BoundExternalCodeSegment(Es6BoundWriter_TestFixture().range(), code)])
+
+    async execute(String code) {
+        let root = File(".flat-es6-conditional-reference-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "regression.js")
+            Es6ArtifactCommitter().commit(destination, code)
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("ok\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+}

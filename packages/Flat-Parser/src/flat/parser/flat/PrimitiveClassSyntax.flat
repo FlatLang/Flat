@@ -21,7 +21,8 @@ data class {
         String[] implementedTypeNames = String[],
         visible Bool abstractClass = false,
         PrimitiveArrayOverrideSyntax[] arrayOverrideValues = PrimitiveArrayOverrideSyntax[],
-        PrimitiveConstructorSyntax[] constructorValues = PrimitiveConstructorSyntax[]
+        PrimitiveConstructorSyntax[] constructorValues = PrimitiveConstructorSyntax[],
+        visible PrimitiveTypeReferenceSyntax parentType = null
     ) {
         if (!range || !name || name.trim().count == 0 ||
             (genericParameterName && genericParameterName.trim().count == 0) ||
@@ -31,7 +32,9 @@ data class {
             implementedTypeNames.any((implementedType) =>
                 !implementedType || implementedType.trim().count == 0
             ) || !arrayOverrideValues || arrayOverrideValues.any({ !_ }) ||
-            !constructorValues || constructorValues.any({ !_ })) {
+            !constructorValues || constructorValues.any({ !_ }) ||
+            (parentType && (parentType.name != parentName || parentType.arrayDimensions != 0 ||
+                parentType.nullableType))) {
             throw Exception("Primitive class syntax requires range name fields constructor and methods")
         }
         fields = PrimitiveFieldSyntax[]
@@ -130,7 +133,7 @@ data class {
             fields, mergedConstructors.first, methods, implementedTypeNames(), abstractClass,
             overlay.arrayOverrideValues().isNotEmpty ?
                 overlay.arrayOverrideValues() : arrayOverrideValues(),
-            mergedConstructors
+            mergedConstructors, parentType
         )
     }
 

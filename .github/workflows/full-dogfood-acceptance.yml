@@ -3,44 +3,12 @@ name: Full production dogfood acceptance
 on:
   workflow_dispatch:
     inputs:
-      seed_manifest:
-        description: Absolute reviewed seed manifest on provisioned runner
+      dispatch_manifest:
+        description: Absolute independently reviewed dispatch manifest on protected runner
         required: true
         type: string
-      review_receipt:
-        description: Absolute independently reviewed seed provenance receipt
-        required: true
-        type: string
-      review_sha256:
-        description: Independent expected SHA-256 of seed review
-        required: true
-        type: string
-      bootstrap_output:
-        description: Absolute completed stage_bootstrap output with retained workspaces
-        required: true
-        type: string
-      changed_input:
-        description: Reviewed existing Flat-Core source for controlled byte-change probe
-        required: true
-        type: string
-      removed_input:
-        description: Reviewed independently removable Flat-Core source for removal probe
-        required: true
-        type: string
-      production_evidence:
-        description: Absolute reviewed supplemental receipt in a dedicated, non-secret evidence directory (entire directory retained)
-        required: true
-        type: string
-      scaling_plan:
-        description: Absolute predeclared reviewed scaling plan (source-bound tiers, budgets and pinned RSS timer)
-        required: true
-        type: string
-      scaling_plan_sha256:
-        description: Independent expected SHA-256 of reviewed scaling plan
-        required: true
-        type: string
-      production_evidence_sha256:
-        description: Independent expected SHA-256 of production evidence receipt
+      dispatch_manifest_sha256:
+        description: Independent expected SHA-256 of the exact reviewed dispatch manifest
         required: true
         type: string
   pull_request:
@@ -55,18 +23,44 @@ jobs:
   receipt-tests:
     name: Acceptance harness tests (NOT production acceptance)
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Run owning bootstrap harness regression suite (NOT self-host acceptance)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s packages/Airship/test -p test_stage_bootstrap.py \
+            2>&1 | tee "$RUNNER_TEMP/bootstrap-harness-tests.log"
       - name: Run isolated receipt validation tests
-        run: python3 -B -m unittest discover -s packages/Airship/test -p test_dogfood_acceptance.py
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s packages/Airship/test -p test_dogfood_acceptance.py \
+            2>&1 | tee "$RUNNER_TEMP/dogfood-receipt-tests.log"
+      - name: Run scaling receipt regressions (NOT measurements)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s packages/Airship/test -p test_dogfood_scaling.py \
+            2>&1 | tee "$RUNNER_TEMP/scaling-receipt-tests.log"
+      - name: Run public workload and incremental acceptance receipt regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s packages/Airship/test -p test_public_acceptance_contracts.py \
+            2>&1 | tee "$RUNNER_TEMP/public-acceptance-tests.log"
       - name: Regress producer failure propagation (mocked workloads, NOT acceptance)
         shell: bash
         run: |
-          python3 -B - <<'PY'
+          set -euo pipefail
+          python3 -B - <<'PY' 2>&1 | tee "$RUNNER_TEMP/producer-contract-tests.log"
           import sys
           import tempfile
           from pathlib import Path
@@ -101,6 +95,24 @@ jobs:
                       self.assertEqual(produce.call_args.kwargs['scaling_plan_path'], root / 'scaling-plan.json')
                       self.assertEqual(produce.call_args.kwargs['scaling_plan_sha'], 'b' * 64)
 
+              def test_unknown_producer_is_not_cli_success(self):
+                  for status in ('unknown', 'running', 'failed', 'unsupported', None, True, False, '', 0, 1):
+                      with self.subTest(status=status), mock.patch.object(gate, 'produce_evidence', return_value={'status': status}):
+                          with self.assertRaises(SystemExit):
+                              self.invoke()
+
+              def test_missing_producer_status_is_not_cli_success(self):
+                  with mock.patch.object(gate, 'produce_evidence', return_value={}):
+                      with self.assertRaises(KeyError):
+                          self.invoke()
+
+              def test_passed_producer_preserves_independent_scaling_arguments(self):
+                  with mock.patch.object(gate, 'produce_evidence', return_value={'status': 'passed'}) as produce:
+                      self.assertIsNone(self.invoke())
+                      self.assertEqual(produce.call_args.kwargs['scaling_plan_path'],
+                                       Path(self.directory.name) / 'scaling-plan.json')
+                      self.assertEqual(produce.call_args.kwargs['scaling_plan_sha'], 'b' * 64)
+
               def test_passed_producer_returns_success(self):
                   with mock.patch.object(gate, 'produce_evidence', return_value={'status': 'passed'}):
                       self.assertIsNone(self.invoke())
@@ -112,8 +124,22 @@ jobs:
 
           unittest.main()
           PY
+      - name: Retain harness regression logs even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dogfood-harness-tests-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/bootstrap-harness-tests.log
+            ${{ runner.temp }}/dogfood-receipt-tests.log
+            ${{ runner.temp }}/scaling-receipt-tests.log
+            ${{ runner.temp }}/public-acceptance-tests.log
+            ${{ runner.temp }}/producer-contract-tests.log
+          if-no-files-found: error
+          retention-days: 14
 
   production-acceptance:
+    name: Clean three-stage whole-toolchain and production acceptance (UNVALIDATED source wiring)
     # Only explicitly dispatched gates claim production acceptance. No untrusted
     # PR code executes on the provisioned runner; normal CI is receipt tests only.
     if: github.event_name == 'workflow_dispatch'
@@ -129,30 +155,112 @@ jobs:
     concurrency:
       group: flat-dogfood-provisioned-runner
       cancel-in-progress: false
-    timeout-minutes: 230
+    timeout-minutes: 300
+    outputs:
+      full_acceptance: ${{ steps.outcomes.outputs.full_acceptance }}
     env:
-      SEEDS: ${{ inputs.seed_manifest }}
-      REVIEW: ${{ inputs.review_receipt }}
-      REVIEW_SHA256: ${{ inputs.review_sha256 }}
-      STAGES: ${{ inputs.bootstrap_output }}
-      CHANGED: ${{ inputs.changed_input }}
-      REMOVED: ${{ inputs.removed_input }}
-      SCALING_PLAN: ${{ inputs.scaling_plan }}
-      SCALING_PLAN_SHA256: ${{ inputs.scaling_plan_sha256 }}
-      EVIDENCE: ${{ inputs.production_evidence }}
-      EVIDENCE_SHA256: ${{ inputs.production_evidence_sha256 }}
+      DISPATCH_MANIFEST: ${{ inputs.dispatch_manifest }}
+      DISPATCH_MANIFEST_SHA256: ${{ inputs.dispatch_manifest_sha256 }}
       PYTHONDONTWRITEBYTECODE: "1"
       ACCEPTANCE_ROOT: ${{ runner.temp }}/flat-acceptance-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Admit independently pinned dispatch manifest before exporting configuration
+        id: dispatch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir "$ACCEPTANCE_ROOT"
+          python3 -B - <<'PY' 2>&1 | tee "$ACCEPTANCE_ROOT/dispatch.log"
+          import hashlib
+          import json
+          import os
+          from pathlib import Path, PurePosixPath
+          import re
+
+          root = Path(os.environ['ACCEPTANCE_ROOT'])
+          receipt = {'status': 'failed', 'source_revision': os.environ['GITHUB_SHA']}
+          try:
+              def text(value):
+                  if not isinstance(value, str) or not value or value != value.strip() or any(ord(c) < 32 or ord(c) == 127 for c in value):
+                      raise ValueError('Expected nonempty single-line value without control characters')
+                  return value
+              def sha(value):
+                  if not re.fullmatch('[0-9a-f]{64}', text(value)):
+                      raise ValueError('Expected independently reviewed lowercase SHA-256')
+                  return value
+              def local_file(value):
+                  path = Path(text(value))
+                  if not path.is_absolute() or path.resolve(strict=True) != path or not path.is_file():
+                      raise ValueError('Expected canonical absolute existing regular file without symlink aliases')
+                  return path
+              def unique(pairs):
+                  result = {}
+                  for key, value in pairs:
+                      if key in result:
+                          raise ValueError('Duplicate dispatch manifest key')
+                      result[key] = value
+                  return result
+              pin = sha(os.environ['DISPATCH_MANIFEST_SHA256'])
+              path = local_file(os.environ['DISPATCH_MANIFEST'])
+              with path.open('rb') as source:
+                  raw = source.read(65537)
+              if len(raw) > 65536 or hashlib.sha256(raw).hexdigest() != pin:
+                  raise ValueError('Dispatch manifest exceeds 64 KiB or independent digest mismatches')
+              value = json.loads(raw.decode('utf-8'), object_pairs_hook=unique,
+                                 parse_constant=lambda token: (_ for _ in ()).throw(ValueError('Nonfinite JSON value')))
+              fields = {'seed_manifest': 'SEEDS', 'review_receipt': 'REVIEW',
+                        'review_sha256': 'REVIEW_SHA256', 'bootstrap_output': 'STAGES',
+                        'changed_input': 'CHANGED', 'removed_input': 'REMOVED',
+                        'production_evidence': 'EVIDENCE', 'production_evidence_sha256': 'EVIDENCE_SHA256',
+                        'scaling_plan': 'SCALING_PLAN', 'scaling_plan_sha256': 'SCALING_PLAN_SHA256'}
+              if not isinstance(value, dict) or set(value) != set(fields) | {'schema', 'source_revision'}:
+                  raise ValueError('Dispatch manifest requires exact schema and all original configuration fields')
+              if value['schema'] != 'flat.dogfood.dispatch.v1' or value['source_revision'] != os.environ['GITHUB_SHA']:
+                  raise ValueError('Unsupported dispatch schema or different dispatched source revision')
+              for name in fields:
+                  text(value[name])
+              for name in ('seed_manifest', 'review_receipt', 'production_evidence', 'scaling_plan'):
+                  local_file(value[name])
+              for name, pin_name in (('review_receipt', 'review_sha256'),
+                                     ('production_evidence', 'production_evidence_sha256'),
+                                     ('scaling_plan', 'scaling_plan_sha256')):
+                  digest = hashlib.sha256()
+                  with local_file(value[name]).open('rb') as source:
+                      for block in iter(lambda: source.read(1024 * 1024), b''):
+                          digest.update(block)
+                  if digest.hexdigest() != sha(value[pin_name]):
+                      raise ValueError(name + ' independent reviewed digest mismatch')
+              stages = Path(value['bootstrap_output'])
+              if not stages.is_absolute() or stages.exists() or stages.is_symlink() or stages.parent.resolve(strict=True) != stages.parent or not stages.parent.is_dir() or stages.name in ('', '.', '..'):
+                  raise ValueError('Bootstrap output must be fresh with canonical existing parent')
+              workspace = Path(os.environ['GITHUB_WORKSPACE']).resolve()
+              for name in ('changed_input', 'removed_input'):
+                  relative = PurePosixPath(value[name])
+                  if relative.is_absolute() or str(relative) != value[name] or '..' in relative.parts or relative.parts[:3] != ('packages', 'Flat-Core', 'src'):
+                      raise ValueError(name + ' must identify a canonical repository-relative real Core source')
+                  selected = workspace / str(relative)
+                  if selected.resolve(strict=True) != selected or not selected.is_file() or selected.suffix != '.flat':
+                      raise ValueError(name + ' must identify existing nonlinked Flat source')
+              # Retain the exact reviewed bytes, never synthesize a review or hash.
+              (root / 'dispatch-manifest.json').write_bytes(raw)
+              receipt.update(status='admitted', manifest_sha256=pin)
+              # No unvalidated field is exported; all names are fixed above.
+              with open(os.environ['GITHUB_ENV'], 'a') as environment:
+                  environment.write(''.join(fields[name] + '=' + value[name] + '\n' for name in fields))
+          except BaseException as error:
+              receipt['error'] = str(error)
+              raise
+          finally:
+              (root / 'dispatch-admission.json').write_text(json.dumps(receipt, indent=2) + '\n')
+          PY
       - name: Check reviewed local provisioning before production execution
         id: provisioning
         shell: bash
         run: |
           set -euo pipefail
-          mkdir "$ACCEPTANCE_ROOT"
           # Keep early provisioning errors as well as harness-level receipts.
           exec > >(tee "$ACCEPTANCE_ROOT/provisioning.log") 2>&1
           python3 -B - <<'PY'
@@ -172,7 +280,7 @@ jobs:
               if sys.version_info < (3, 12):
                   raise ValueError('Provision Python 3.12 or newer')
               paths = {}
-              for name in ('SEEDS', 'REVIEW', 'STAGES', 'EVIDENCE', 'SCALING_PLAN'):
+              for name in ('SEEDS', 'REVIEW', 'EVIDENCE', 'SCALING_PLAN'):
                   value = os.environ[name]
                   path = Path(value)
                   if not path.is_absolute() or any(c in value for c in '\r\n'):
@@ -180,6 +288,15 @@ jobs:
                   if path.is_symlink() or not (path.is_dir() if name == 'STAGES' else path.is_file()):
                       raise ValueError(f'{name} is missing or linked')
                   paths[name] = path.resolve()
+              value = os.environ['STAGES']
+              stages = Path(value)
+              if not stages.is_absolute() or any(c in value for c in '\r\n'):
+                  raise ValueError('STAGES must be an absolute fresh path without newlines')
+              if stages.exists() or stages.is_symlink() or not stages.parent.is_dir():
+                  raise ValueError('Bootstrap output must not exist and must have a provisioned parent')
+              if stages.parent.resolve() != stages.parent:
+                  raise ValueError('Bootstrap output parent must be canonical without symlink aliases')
+              paths['STAGES'] = stages
               # The full trees are required for later hash/reference verification.
               # Their provisioning contract excludes secrets and unrelated files.
               evidence_root = paths['EVIDENCE'].parent
@@ -187,6 +304,16 @@ jobs:
               for tree in (paths['STAGES'], evidence_root):
                   if tree == Path(tree.anchor) or tree == workspace or tree in workspace.parents or workspace in tree.parents:
                       raise ValueError('Evidence trees must be dedicated directories outside checkout')
+              if paths['STAGES'] == evidence_root or paths['STAGES'] in evidence_root.parents or evidence_root in paths['STAGES'].parents:
+                  raise ValueError('Bootstrap and supplemental evidence trees must be disjoint')
+              if root == paths['STAGES'] or root in paths['STAGES'].parents or paths['STAGES'] in root.parents:
+                  raise ValueError('Bootstrap and run receipt trees must be disjoint')
+              if root == evidence_root or root in evidence_root.parents or evidence_root in root.parents:
+                  raise ValueError('Supplemental evidence and run receipt trees must be disjoint')
+              # Publish safe retention paths before hash/preflight checks.
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+                  stream.write(f'bootstrap={paths["STAGES"]}\n')
+                  stream.write(f'evidence_root={evidence_root}\n')
               for name, pin in (('REVIEW', 'REVIEW_SHA256'), ('EVIDENCE', 'EVIDENCE_SHA256'),
                                 ('SCALING_PLAN', 'SCALING_PLAN_SHA256')):
                   expected = os.environ[pin]
@@ -201,23 +328,48 @@ jobs:
               for name in ('CHANGED', 'REMOVED'):
                   if not os.environ[name].strip():
                       raise ValueError(f'{name} must identify a reviewed Flat-Core source')
-              for name in ('acceptance.json', 'sources.json', 'seeds.json', 'review.json'):
-                  if not (paths['STAGES'] / name).is_file():
-                      raise ValueError(f'Missing bootstrap {name}')
-              for number in range(3):
-                  if not (paths['STAGES'] / f'stage{number}/workspace').is_dir():
-                      raise ValueError(f'Missing retained stage{number} workspace')
+              def digest(path):
+                  value = hashlib.sha256()
+                  with Path(path).open('rb') as source:
+                      for block in iter(lambda: source.read(1024 * 1024), b''):
+                          value.update(block)
+                  return value.hexdigest()
+              # Admit exact reviewed seed bytes before any bootstrap execution.
               sys.path.insert(0, str(workspace / 'packages/Airship/test'))
-              import dogfood_acceptance as gate
-              # Validate the exact production schema against accepted sources before
-              # launching any workloads. The independent pin is never derived here.
-              plan = gate.scaling_plan(paths['SCALING_PLAN'], os.environ['SCALING_PLAN_SHA256'],
-                                       gate.bootstrap.digest(paths['STAGES'] / 'sources.json'))
-              timer = Path(plan['timer']['path'])
-              if timer.is_symlink() or not timer.is_file() or not os.access(timer, os.X_OK):
-                  raise ValueError('Provision the reviewed executable RSS timer')
-              if gate.bootstrap.digest(timer) != plan['timer']['sha256']:
-                  raise ValueError('RSS timer reviewed digest mismatch')
+              import stage_bootstrap as bootstrap
+              entries, review, seeds = bootstrap.load_reviewed_bundle(
+                  paths['SEEDS'], paths['REVIEW'], os.environ['REVIEW_SHA256'])
+              metadata['reviewed_seed_delivery'] = {
+                  'review_sha256': os.environ['REVIEW_SHA256'],
+                  'seed_manifest_sha256': review['seeds_sha256'],
+                  'seeds': {name: {'reviewed_path': entries[name]['path'],
+                                   'resolved_path': str(selected), 'sha256': expected}
+                            for name, (selected, expected) in seeds.items()}}
+              # Plan shape/source binding is admitted against fresh sources later;
+              # provision and pin its timer now, before costly stage execution.
+              plan = bootstrap.reviewed_json(paths['SCALING_PLAN'], os.environ['SCALING_PLAN_SHA256'],
+                                             'Reviewed scaling plan')
+              timer_entry = plan.get('timer') if isinstance(plan, dict) else None
+              if not isinstance(timer_entry, dict) or timer_entry.get('kind') not in ('bsd-time', 'gnu-time'):
+                  raise ValueError('Provision a reviewed BSD/GNU RSS timer')
+              timer = Path(timer_entry.get('path', ''))
+              expected_timer = timer_entry.get('sha256')
+              if (not timer.is_absolute() or timer.resolve(strict=True) != timer or not timer.is_file()
+                      or not os.access(timer, os.X_OK) or not isinstance(expected_timer, str)
+                      or len(expected_timer) != 64 or any(c not in '0123456789abcdef' for c in expected_timer)
+                      or digest(timer) != expected_timer):
+                  raise ValueError('RSS timer canonical executable identity mismatch')
+              metadata['reviewed_timer'] = {'path': str(timer), 'kind': timer_entry['kind'],
+                                            'sha256': expected_timer}
+              # Identify the orchestrator; seed trust still comes from review.
+              metadata['orchestrator'] = {'python': str(Path(sys.executable).resolve()),
+                                          'python_sha256': digest(Path(sys.executable).resolve()),
+                                          'python_version': sys.version,
+                                          'sources': {name: digest(workspace / name) for name in (
+                                              '.github/workflows/full-dogfood-acceptance.yml',
+                                              'packages/Airship/test/stage_bootstrap.py',
+                                              'packages/Airship/test/dogfood_acceptance.py',
+                                              'packages/Airship/test/stage_subprocess_guard.cjs')}}
               retained = root / 'reviewed-inputs'
               retained.mkdir()
               for name in ('SEEDS', 'REVIEW', 'SCALING_PLAN'):
@@ -226,9 +378,6 @@ jobs:
                               review_sha256=os.environ['REVIEW_SHA256'],
                               scaling_plan_sha256=os.environ['SCALING_PLAN_SHA256'],
                               evidence_sha256=os.environ['EVIDENCE_SHA256'])
-              with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
-                  stream.write(f'bootstrap={paths["STAGES"]}\n')
-                  stream.write(f'evidence_root={evidence_root}\n')
           except BaseException as error:
               metadata['error'] = str(error)
               raise
@@ -239,7 +388,50 @@ jobs:
             --preflight-only --repo "$GITHUB_WORKSPACE" \
             --output "$ACCEPTANCE_ROOT/seed-preflight" \
             --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256"
-      - name: Execute actual stage2 production Core and retained-output/clean comparisons
+      - name: Execute clean guarded stage0 then Java-free stage1 and stage2
+        id: bootstrap
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B packages/Airship/test/stage_bootstrap.py \
+            --repo "$GITHUB_WORKSPACE" --output "$STAGES" \
+            --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256" \
+            --run-seconds 3600 --command-seconds 600 \
+            2>&1 | tee "$ACCEPTANCE_ROOT/bootstrap.log"
+      - name: Admit reviewed source-bound scaling plan against new bootstrap
+        id: stage_admission
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY' 2>&1 | tee "$ACCEPTANCE_ROOT/stage-admission.log"
+          import json
+          import os
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, 'packages/Airship/test')
+          import dogfood_acceptance as gate
+          stages = Path(os.environ['STAGES'])
+          acceptance = gate.read_json(stages / 'acceptance.json')
+          if acceptance.get('status') != 'passed' or acceptance.get('source_revision') != os.environ['GITHUB_SHA']:
+              raise ValueError('Fresh bootstrap must pass for this exact dispatched commit')
+          tools = gate.validate_bootstrap(stages, require_public=True,
+                                          review_sha256=os.environ['REVIEW_SHA256'])
+          plan = gate.scaling_plan(Path(os.environ['SCALING_PLAN']), os.environ['SCALING_PLAN_SHA256'],
+                                   gate.bootstrap.digest(stages / 'sources.json'))
+          timer = Path(plan['timer']['path'])
+          if timer.is_symlink() or not timer.is_file() or not os.access(timer, os.X_OK):
+              raise ValueError('Provision the reviewed executable RSS timer')
+          if gate.bootstrap.digest(timer) != plan['timer']['sha256']:
+              raise ValueError('RSS timer reviewed digest mismatch')
+          (Path(os.environ['ACCEPTANCE_ROOT']) / 'stage-admission.json').write_text(json.dumps({
+              'source_revision': os.environ['GITHUB_SHA'],
+              'bootstrap_sha256': gate.bootstrap.digest(stages / 'acceptance.json'),
+              'source_manifest_sha256': gate.bootstrap.digest(stages / 'sources.json'),
+              'products': tools,
+              'public_workloads': ['airship-toolchain', 'core-lr'],
+              'timer_sha256': plan['timer']['sha256']}, indent=2) + '\n')
+          PY
+      - name: Execute stage2 public toolchain Core invalidations lifecycle driver and scaling production
         id: production
         shell: bash
         run: |
@@ -255,11 +447,55 @@ jobs:
             --scaling-plan "$SCALING_PLAN" --scaling-plan-sha256 "$SCALING_PLAN_SHA256" \
             --run-seconds 10800 --command-seconds 600 \
             2>&1 | tee "$ACCEPTANCE_ROOT/production.log"
+      - name: Bind producer and supplemental scaling to independently reviewed plan
+        id: plan_binding
+        if: ${{ !cancelled() && steps.stage_admission.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY' 2>&1 | tee "$ACCEPTANCE_ROOT/plan-binding.log"
+          import json
+          import os
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, 'packages/Airship/test')
+          import dogfood_acceptance as gate
+          root = Path(os.environ['ACCEPTANCE_ROOT'])
+          source_sha = gate.bootstrap.digest(Path(os.environ['STAGES']) / 'sources.json')
+          expected = os.environ['SCALING_PLAN_SHA256']
+          gate.scaling_plan(Path(os.environ['SCALING_PLAN']), expected, source_sha)
+          evidence_path = Path(os.environ['EVIDENCE'])
+          # Reviewed supplemental bytes, not a digest derived as review in CI.
+          if gate.bootstrap.digest(evidence_path) != os.environ['EVIDENCE_SHA256']:
+              raise ValueError('Supplemental reviewed digest mismatch')
+          supplemental = gate.read_json(evidence_path)
+          if gate.bootstrap.digest(evidence_path) != os.environ['EVIDENCE_SHA256']:
+              raise ValueError('Supplemental evidence changed while reading')
+          producer_path = root / 'production/production-evidence.json'
+          producer = gate.read_json(producer_path)
+          observations = {}
+          for name, path, value in (('producer', producer_path, producer),
+                                    ('supplemental', evidence_path, supplemental)):
+              if value.get('source_manifest_sha256') != source_sha:
+                  raise ValueError(name + ' source manifest differs from fresh bootstrap')
+              scaling = value.get('scaling')
+              if not isinstance(scaling, dict) or not isinstance(scaling.get('plan'), dict):
+                  raise ValueError(name + ' has no observed scaling plan')
+              reference = scaling['plan']
+              if reference.get('sha256') != expected:
+                  raise ValueError(name + ' scaling plan was not independently reviewed for this dispatch')
+              if gate.file_reference(path.parent, reference) != expected:
+                  raise ValueError(name + ' archived scaling plan digest mismatch')
+              gate.scaling_plan(path.parent / reference['path'], expected, source_sha)
+              observations[name] = {'receipt_sha256': gate.bootstrap.digest(path),
+                                    'plan_sha256': expected, 'source_manifest_sha256': source_sha}
+          (root / 'plan-binding.json').write_text(json.dumps(observations, indent=2) + '\n')
+          PY
       - name: Validate complete production and self-host evidence
         id: validation
         # Collect independent validator failures even when the producer is blocked.
         # Do not start more workloads after cancellation or failed provisioning.
-        if: ${{ !cancelled() && steps.provisioning.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.stage_admission.outcome == 'success' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -269,14 +505,52 @@ jobs:
             --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256" \
             --bootstrap-output "$STAGES" \
             --evidence "$EVIDENCE" --evidence-sha256 "$EVIDENCE_SHA256" \
+            --scaling-plan "$SCALING_PLAN" --scaling-plan-sha256 "$SCALING_PLAN_SHA256" \
             --run-seconds 600 --command-seconds 600 \
             2>&1 | tee "$ACCEPTANCE_ROOT/validation.log"
+      - name: Require current producer full acceptance and public workload evidence
+        id: producer_validation
+        if: ${{ !cancelled() && steps.stage_admission.outcome == 'success' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY' 2>&1 | tee "$ACCEPTANCE_ROOT/producer-validation.log"
+          import json
+          import os
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, 'packages/Airship/test')
+          import dogfood_acceptance as gate
+          root = Path(os.environ['ACCEPTANCE_ROOT'])
+          path = root / 'production/production-evidence.json'
+          value = gate.read_json(path)
+          if value.get('status') != 'passed' or value.get('full_acceptance') is not True:
+              raise ValueError('Current producer is failed, blocked, missing or nonterminal; no delivery acceptance')
+          stages = Path(os.environ['STAGES'])
+          gate.validate_bootstrap(stages, require_public=True, review_sha256=os.environ['REVIEW_SHA256'])
+          verdict = gate.validate_production_evidence(path, value, stages,
+                                                       scaling_plan_sha=os.environ['SCALING_PLAN_SHA256'],
+                                                       review_sha256=os.environ['REVIEW_SHA256'])
+          if verdict.get('status') != 'passed' or verdict.get('full_acceptance') is not True:
+              raise ValueError('Current producer evidence did not close all production gates')
+          (root / 'producer-validation.json').write_text(json.dumps({
+              'source_revision': os.environ['GITHUB_SHA'],
+              'receipt_sha256': gate.bootstrap.digest(path),
+              'scaling_plan_sha256': os.environ['SCALING_PLAN_SHA256'],
+              'verdict': verdict}, indent=2) + '\n')
+          PY
       - name: Record acceptance step outcomes
+        id: outcomes
         if: always()
         shell: bash
         env:
+          DISPATCH: ${{ steps.dispatch.outcome }}
           PROVISIONING: ${{ steps.provisioning.outcome }}
+          BOOTSTRAP: ${{ steps.bootstrap.outcome }}
+          STAGE_ADMISSION: ${{ steps.stage_admission.outcome }}
           PRODUCTION: ${{ steps.production.outcome }}
+          PLAN_BINDING: ${{ steps.plan_binding.outcome }}
+          PRODUCER_VALIDATION: ${{ steps.producer_validation.outcome }}
           VALIDATION: ${{ steps.validation.outcome }}
         run: |
           set -euo pipefail
@@ -285,8 +559,10 @@ jobs:
           import json
           import os
           from pathlib import Path
-          outcomes = {key.lower(): os.environ[key] for key in ('PROVISIONING', 'PRODUCTION', 'VALIDATION')}
+          outcomes = {key.lower(): os.environ[key] for key in ('DISPATCH', 'PROVISIONING', 'BOOTSTRAP', 'STAGE_ADMISSION', 'PRODUCTION', 'PLAN_BINDING', 'VALIDATION', 'PRODUCER_VALIDATION')}
           outcomes['full_acceptance'] = all(value == 'success' for value in outcomes.values())
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('full_acceptance=' + str(outcomes['full_acceptance']).lower() + '\n')
           (Path(os.environ['ACCEPTANCE_ROOT']) / 'outcomes.json').write_text(json.dumps(outcomes, indent=2) + '\n')
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
               summary.write('## Production dogfood acceptance\n\n')
@@ -323,4 +599,49 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           compression-level: 0
+          retention-days: 14
+
+  acceptance-result:
+    name: Explicit acceptance result (no skipped-prerequisite success)
+    if: always()
+    needs: [receipt-tests, production-acceptance]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report prerequisite graph and require dispatched acceptance
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          HARNESS: ${{ needs.receipt-tests.result }}
+          PRODUCTION: ${{ needs.production-acceptance.result }}
+          ACCEPTED: ${{ needs.production-acceptance.outputs.full_acceptance }}
+        run: |
+          set -euo pipefail
+          {
+            echo 'Coverage contract: three stage products, seven suites, guarded public airship-toolchain and core-lr workloads at each stage and in production, incremental invalidations, lifecycle/cleanup, deterministic driver matrix and reviewed scaling.'
+            echo 'Source-ready CI wiring is not executed acceptance. Missing, blocked, skipped and unknown evidence cannot produce delivery_complete=true.'
+            delivery=false
+            if [[ "$EVENT" == workflow_dispatch && "$HARNESS" == success && "$PRODUCTION" == success && "$ACCEPTED" == true ]]; then
+              delivery=true
+            fi
+            printf 'delivery_complete=%s\n' "$delivery"
+            printf 'event=%s\nharness=%s\nbootstrap_and_production=%s\nfull_acceptance=%s\n' \
+              "$EVENT" "$HARNESS" "$PRODUCTION" "${ACCEPTED:-unknown}"
+            if [[ "$EVENT" != workflow_dispatch ]]; then
+              echo 'Production acceptance NOT REQUESTED; harness CI is not completion evidence.'
+            else
+              echo 'Required graph: harness -> pinned dispatch -> reviewed provisioning -> fresh stages (seven suites + public workloads each) -> source/timer admission -> production + independent plan binding + supplemental/current producer validation -> retained artifacts.'
+            fi
+          } | tee "$RUNNER_TEMP/acceptance-result.txt" >> "$GITHUB_STEP_SUMMARY"
+          [[ "$HARNESS" == success ]]
+          if [[ "$EVENT" == workflow_dispatch ]]; then
+            [[ "$PRODUCTION" == success && "$ACCEPTED" == true ]]
+          fi
+      - name: Retain final outcome including unknown or failed prerequisites
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dogfood-result-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/acceptance-result.txt
+          if-no-files-found: error
           retention-days: 14

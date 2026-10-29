@@ -1,0 +1,209 @@
+package core/workloads
+
+import flat/datastruct/list
+import flat/primitive/number
+import flat/exception
+
+/** Runs against the complete production Core source tree, never stub declarations. */
+class ProductionCoreWorkload {
+    static String trace = ""
+
+    static require(Bool condition, String label) {
+        if (!condition) throw Exception(label)
+    }
+
+    static text(String actual, String expected, String label) {
+        require(actual == expected, label)
+        require(actual.count == expected.count, label + " length")
+    }
+
+    static nonemptyString(String value) -> Bool => value != null && value.count > 0
+
+    static leftDeclared(native String value) -> String {
+        trace += "L"
+        return String(value)
+    }
+
+    static rightDeclared(native String value) -> String {
+        trace += "R"
+        return String(value)
+    }
+
+    static leftNative(native String value) => value {
+        trace += "L"
+    }
+
+    static rightNative(native String value) => value {
+        trace += "R"
+    }
+
+    static concatenation() {
+        trace = ""
+        let dd = leftDeclared("declared-left|") + rightDeclared("declared-right")
+        text(trace, "LR", "declared declared evaluation")
+        text(dd, "declared-left|declared-right", "declared declared contents")
+
+        trace = ""
+        let nd = leftNative("native-left|") + rightDeclared("declared-right")
+        text(trace, "LR", "native declared evaluation")
+        text(nd, "native-left|declared-right", "native declared contents")
+
+        trace = ""
+        let dn = leftDeclared("declared-left|") + rightNative("native-right")
+        text(trace, "LR", "declared native evaluation")
+        text(dn, "declared-left|native-right", "declared native contents")
+
+        trace = ""
+        let nn = leftNative("native-left|") + rightNative("native-right")
+        text(trace, "LR", "native native evaluation")
+        text(String(nn), "native-left|native-right", "native native contents")
+
+        trace = ""
+        let empty = leftDeclared("") + rightNative("")
+        text(trace, "LR", "empty mixed evaluation")
+        text(empty, "", "empty mixed contents")
+
+        trace = ""
+        let special = leftNative("a\0") + rightDeclared("ä\n")
+        text(trace, "LR", "special mixed evaluation")
+        text(special, "a\0ä\n", "special mixed contents")
+    }
+
+    static stringsAndCharacters() {
+        let String absent = null
+        require(!nonemptyString(absent), "null is not nonempty")
+        require(!nonemptyString(""), "empty is not nonempty")
+        require(nonemptyString(" "), "whitespace is nonempty")
+        require(nonemptyString("\0"), "NUL is nonempty")
+        let String empty = ""
+        var Bool present = false
+        if (empty) present = true
+        require(present, "empty String reference is present")
+        present = false
+        if (absent) present = true
+        require(!present, "null String reference is absent")
+
+        text(Char.toString('a'), "a", "Char static conversion")
+        text(Char('ä').toString(), "ä", "Char instance conversion")
+        text(Char.toString('\0'), "\0", "Char NUL conversion")
+        text(Char.repeat('a', 3), "aaa", "Char repeat")
+        text(Char.repeat('a', 0), "", "Char zero repeat")
+        require(Char.toLowerCase('A') == 'a', "lower case")
+        require(Char.toUpperCase('z') == 'Z', "upper case")
+        require(Char.toLowerCase('1') == '1', "case identity")
+        require(Char.isNumber('0') && Char.isNumber('9'), "digit boundaries")
+        require(!Char.isNumber('/') && !Char.isNumber(':'), "nondigit boundaries")
+        require(Char.isWhitespace(' ') && Char.isWhitespace('\t'), "horizontal whitespace")
+        require(Char.isWhitespace('\r') && Char.isWhitespace('\n'), "vertical whitespace")
+        require(!Char.isWhitespace('x'), "nonwhitespace")
+        let wrapper = Char('c')
+        require(wrapper.minusEquals((Char)1) == 'b', "Char mutation result")
+        text(wrapper.toString(), "b", "Char mutation storage")
+
+        let chars = StringCharArray(['a', '\0', 'ä', 'b'])
+        text(chars.toString(), "a\0äb", "StringCharArray contents")
+        let copy = chars.toCharArray()
+        copy.add('c')
+        require(copy.count == 5, "copy append count")
+        text(String(copy), "a\0äbc", "copy append contents")
+        text(chars.toString(), "a\0äb", "copy storage independence")
+        let StringCharArray missing = null
+        require(!chars.equals(missing), "typed character storage null equality")
+        require(chars.equals(StringCharArray(['a', '\0', 'ä', 'b'])), "character storage equality")
+    }
+
+    static collectionsAndNumbers() {
+        let marker = ProductionDisplayValue()
+        let Object[] mixed = ["hello", marker]
+        let displayed = mixed.map({ _x != null && _x.class.isOfType(String.class)
+            ? "\"#{_x}\"" : _x })
+        require(displayed[1] == marker, "display map preserves original nontext identity")
+        require(marker.textCalls == 0, "display map does not eagerly convert nontext")
+        text(mixed.toString(), "[\"hello\", marker]", "mixed array production display")
+        require(marker.textCalls == 1, "display converts original nontext once")
+        require(mixed[1] == marker, "display does not replace source storage")
+        let values = ["first", "middle", "last"]
+        text(values.removeAtIndex(1), "middle", "array removal")
+        values.add("tail")
+        values.add(0, "head")
+        text(values.join("|"), "head|first|last|tail", "array insert and append")
+        let reversed = values.reverse()
+        reversed.add("end")
+        text(reversed.join("|"), "tail|last|first|head|end", "reverse append")
+        text(values.join("|"), "head|first|last|tail", "reverse isolation")
+        let removed = values.clear()
+        values.add("new")
+        text(values.join("|"), "new", "clear append")
+        text(removed.join("|"), "head|first|last|tail", "clear detached storage")
+        text(IntRange(2, 5).join("|"), "2|3|4", "range numeric text both operand orders")
+        require(IntRange(2, 5).contains(2), "range includes start")
+        require(!IntRange(2, 5).contains(5), "range excludes end")
+
+        text(Int.toString(-42), "-42", "Int text")
+        text(Long.toString(0), "0", "Long zero text")
+        text(Long.toString(-12345), "-12345", "Long signed text")
+        text(Double.toString(1.25), "1.25", "Double fraction text")
+        require(Double.withinTolerance(Double.parseDouble("-0.125"), -0.125), "signed fraction parsing")
+        let Object zero = Double(0.0)
+        let Object integerZero = Long(0)
+        let Object fraction = Double(-1.25)
+        let Object same = Double(-1.25)
+        let Object different = Double(-1.5)
+        let Object absent = null
+        require(zero.equals(integerZero), "Double equals Object zero")
+        require(fraction.equals(same), "Double equals Object fraction")
+        require(!fraction.equals(different), "Double equals Object unequal fraction")
+        require(!fraction.equals(absent), "Double equals Object null")
+        let Object nonnumeric = "-1.25"
+        require(!fraction.equals(nonnumeric), "Double equals Object nonnumeric")
+    }
+
+    static exceptions() {
+        let empty = Exception()
+        text(empty.toString(), empty.class.name, "empty exception message")
+        let String absent = null
+        let missing = Exception(absent)
+        text(missing.toString(), missing.class.name, "null exception message")
+        let explicit = InvalidArgumentException("bad input")
+        text(explicit.toString(), explicit.class.name + ": bad input", "exception message contents")
+        let whitespace = Exception(" ")
+        text(whitespace.toString(), whitespace.class.name + ":  ", "whitespace message retained")
+        let nul = Exception("\0")
+        text(nul.toString(), nul.class.name + ": \0", "NUL message retained")
+        var Bool caught = false
+        try {
+            throw explicit
+        } catch (InvalidArgumentException error) {
+            caught = true
+            text(error.message, "bad input", "caught exception message")
+        }
+        require(caught, "typed catch executes")
+        caught = false
+        try {
+            "abc".substring(-1, 2)
+        } catch (Exception error) {
+            caught = true
+        }
+        require(caught, "invalid substring throws")
+        text("abc".substring(1, 3), "bc", "valid substring contents")
+    }
+
+    public static main() {
+        concatenation()
+        stringsAndCharacters()
+        collectionsAndNumbers()
+        exceptions()
+        external js {
+            console.log("production-core-workload:ok");
+        }
+    }
+}
+
+/** Workload-owned object observes conversion without replacing Core behavior. */
+class ProductionDisplayValue {
+    visible var Int textCalls
+    override public toString() -> String {
+        textCalls = textCalls + 1
+        return "marker"
+    }
+}

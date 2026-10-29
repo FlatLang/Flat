@@ -1,0 +1,72 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Immutable selected allocation schedule. Defaults belong to the entry helper prologue. */
+data class {
+    var BoundStatement[] setup
+    var BoundCallExpression[] calls
+    var DeclarationIdentity[] path
+
+    public construct(
+        visible CallableSignature entry,
+        visible DeclarationIdentity fieldInitializer,
+        BoundStatement[] preBaseStatements,
+        visible BoundParentConstructorCall parentCall,
+        BoundCallExpression[] initializationCalls,
+        DeclarationIdentity[] delegationPath,
+        visible SourceRange range
+    ) {
+        if (!entry || entry.callableKind.value != "constructor" || !entry.ownerType || entry.asyncFunction ||
+            !fieldInitializer || !preBaseStatements || preBaseStatements.any((value) => !value) ||
+            !initializationCalls || initializationCalls.any((value) => !value) ||
+            !delegationPath || delegationPath.isEmpty || delegationPath.any((value) => !value) || !range ||
+            entry.identity.declaration.syntaxIdentity.snapshot != range.snapshot ||
+            delegationPath.first.value != entry.identity.declaration.value ||
+            fieldInitializer.value != fieldInitializerIdentity(entry.ownerType.declarationIdentity).value ||
+            initializationCalls.count != delegationPath.count + 1) {
+            throw Exception("Constructor plan requires exact entry, field stage, path and source evidence")
+        }
+        if (parentCall && (parentCall.range.snapshot != range.snapshot ||
+            parentCall.target.ownerType.value() == entry.ownerType.value() ||
+            parentCall.target.asyncFunction)) {
+            throw Exception("Constructor parent call must select a different synchronous owner")
+        }
+        var Int index
+        for (identity in delegationPath) {
+            if (delegationPath.take(index).any((previous) => previous.value == identity.value)) {
+                throw Exception("Constructor delegation cycle at " + identity.value)
+            }
+            index++
+        }
+        index = 0
+        for (call in initializationCalls) {
+            let expected = index == 0 ? fieldInitializer : bodyInitializerIdentity(delegationPath[delegationPath.count - index])
+            if (call.target.identity.declaration.value != expected.value ||
+                call.target.callableKind.value != "instance-method" || call.target.asyncFunction ||
+                call.target.externalName || call.target.dispatchIdentity ||
+                !call.target.ownerType || call.target.ownerType.value() != entry.ownerType.value() ||
+                call.semanticType.value() != SemanticTypes.unitType().value() || !call.receiver ||
+                call.receiver.semanticType.value() != entry.ownerType.value() || call.safeAccess) {
+                throw Exception("Constructor plan initializer requires exact synchronous same-owner stage")
+            }
+            index++
+        }
+        setup = BoundStatement[]:addAll(preBaseStatements)
+        calls = BoundCallExpression[]:addAll(initializationCalls)
+        path = DeclarationIdentity[]:addAll(delegationPath)
+    }
+
+    public preBaseStatements() -> BoundStatement[] => BoundStatement[]:addAll(setup)
+    public initializationCalls() -> BoundCallExpression[] => BoundCallExpression[]:addAll(calls)
+    public delegationPath() -> DeclarationIdentity[] => DeclarationIdentity[]:addAll(path)
+
+    public static fieldInitializerIdentity(DeclarationIdentity owner) -> DeclarationIdentity => DeclarationIdentity(
+        SyntaxIslandIdentity(owner.syntaxIdentity.snapshot, "constructor-fields", owner.syntaxIdentity.ordinal),
+        "constructor-fields", owner.value)
+
+    public static bodyInitializerIdentity(DeclarationIdentity constructor) -> DeclarationIdentity => DeclarationIdentity(
+        SyntaxIslandIdentity(constructor.syntaxIdentity.snapshot, "constructor-body", constructor.syntaxIdentity.ordinal),
+        "constructor-body", constructor.value)
+}

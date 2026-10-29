@@ -10,6 +10,27 @@ class extends Exception {
         super(diagnostic.message)
     }
 
+    /** Translate a diagnostic from a significant-token slice to its supplied source indexes. */
+    public remapTokenIndexes(Int[] sourceTokenIndexes, Int tokenIndexOffset) -> ParseFailure {
+        let range = diagnostic.range
+        if (!range || sourceTokenIndexes.isEmpty) return this
+        let start = range.startTokenIndex - tokenIndexOffset
+        let end = range.endTokenIndex - tokenIndexOffset
+        if (start < 0 || end < start || end > sourceTokenIndexes.count) return this
+        var Int sourceStart
+        if (end == start && start > 0) {
+            sourceStart = sourceTokenIndexes[start - 1] + 1
+        } else if (start == sourceTokenIndexes.count) {
+            sourceStart = sourceTokenIndexes.last + 1
+        } else {
+            sourceStart = sourceTokenIndexes[start]
+        }
+        var Int sourceEnd = sourceStart
+        if (end != start) sourceEnd = sourceTokenIndexes[end - 1] + 1
+        return ParseFailure(ParserDiagnostic(diagnostic.code, diagnostic.message, diagnostic.snapshot,
+            SourceRange(diagnostic.snapshot, sourceStart, sourceEnd, range.start, range.end)))
+    }
+
     /** Finite primitive-parser token slice. EOF is the last observed token end,
      * never a fabricated line/column. An empty slice has no available range.
      */

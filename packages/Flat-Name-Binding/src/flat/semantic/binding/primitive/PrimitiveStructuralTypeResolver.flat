@@ -225,6 +225,30 @@ class {
         return ArraySemanticType(resolve(name.substring(0, name.count - 2)))
     }
 
+    /** Resolve retained declaration syntax recursively; argument order/ranges are authoritative. */
+    public resolveReference(PrimitiveTypeReferenceSyntax syntax) -> SemanticType {
+        let scoped = PrimitiveStructuralTypeResolver(syntaxes, callables, snapshot, genericParameter,
+            receiverType, methodParameters, interfaces, implementationOwner, implementationRange,
+            declarationContext, syntax.range)
+        return scoped.resolveReferenceValue(syntax)
+    }
+
+    resolveReferenceValue(PrimitiveTypeReferenceSyntax syntax) -> SemanticType {
+            var SemanticType result = resolve(syntax.name)
+            let arguments = syntax.typeArguments()
+            if (arguments.isNotEmpty) {
+                if (!result.class.isOfType(UserClassSemanticType.class))
+                    throw Exception("Generic type reference requires a declared class at token " + syntax.range.startTokenIndex)
+                Object declarationSource = result
+                UserClassSemanticType declaration = (UserClassSemanticType)declarationSource
+                result = GenericInstanceSemanticType(declaration, arguments.map({ resolveReference(_) }))
+            }
+            var Int dimension
+            while (dimension++ < syntax.arrayDimensions) result = ArraySemanticType(result)
+            if (syntax.nullableType) result = NullableSemanticType(result)
+            return result
+    }
+
     public resolve(String name) -> SemanticType {
         if (!name || name.trim().isEmpty) throw Exception("Reduced type name is required")
         if (name.startsWith("async ")) {
@@ -264,16 +288,12 @@ class {
             for (implemented in implementationOwner.implementedTypeNames()) {
                 let ownerContext = declarationContext ? declarationContext.scopeForSnapshot(implementationOwner.range.snapshot) : null
                 let resolved = traitParameter(implemented, name, String[], ownerContext)
-                if (resolved) return PrimitiveStructuralTypeResolver(
-                    syntaxes: syntaxes, callables: callables, snapshot: snapshot,
-                    genericParameter: genericParameter, receiverType: receiverType,
-                    interfaces: interfaces, declarationContext: ownerContext,
-                    lookupRange: implementationOwner.range
-                ).resolve(resolved)
+                if (resolved) return resolved
             }
         }
         if (genericParameter && name == genericParameter.name) return genericParameter
-        if (name == "this" && receiverType) return receiverType
+        if (name == "this" && receiverType) return genericParameter ?
+            GenericInstanceSemanticType(receiverType, [genericParameter]) : receiverType
         if (name == "Unknown") return SemanticTypes.unknownType()
         if (name == "Bool") return SemanticTypes.boolType()
         if (name == "Byte") return SemanticTypes.byteType()
@@ -367,20 +387,35 @@ class {
         return FunctionSemanticType(parameters, returnType, parameterNames: names)
     }
 
-    /** Follow the source member's owner through instantiated interface edges. */
+    /** Follow retained member ownership with semantic substitution at each source-local edge. */
     traitParameter(String implemented, String name, String[] path,
-        PrimitiveResolvedDeclarationContext edgeContext = null) -> String {
+        PrimitiveResolvedDeclarationContext edgeContext = null,
+        GenericParameterSemanticType[] edgeParameters = GenericParameterSemanticType[],
+        GenericSubstitution edgeSubstitution = null) -> SemanticType {
         let open = implemented.indexOf("<", defaultReturnValue: -1)
         let contractName = open < 0 ? implemented : implemented.substring(0, open)
         let contract = edgeContext ? edgeContext.interfaceFor(
             edgeContext.resolve(contractName, implementationOwner.range)) :
-            interfaces.firstOrNull({ _.name == contractName })
+            interfaces.firstOrNull((candidate) => candidate.name == contractName)
         if (!contract) return null
-        if (path.contains(contractName)) throw Exception("Cyclic trait inheritance '#contractName'")
-        let arguments = open < 0 ? String[] :
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(contract.range.snapshot, "interface", contract.range.startTokenIndex),
+            "interface", contract.name)
+        if (path.contains(identity.value)) throw Exception("Cyclic trait inheritance '#contractName'")
+        let argumentNames = open < 0 ? String[] :
             splitTypes(implemented.substring(open + 1, implemented.count - 1))
         let names = contract.genericParameterNames()
-        if (names.count != arguments.count) throw Exception("Trait implementation generic arity mismatch")
+        if (names.count != argumentNames.count) throw Exception("Trait implementation generic arity mismatch")
+        let argumentResolver = PrimitiveStructuralTypeResolver(
+            syntaxes: syntaxes, callables: callables, snapshot: snapshot,
+            genericParameter: genericParameter, receiverType: receiverType,
+            methodGenericParameters: edgeParameters, interfaces: interfaces,
+            declarationContext: edgeContext, lookupRange: implementationOwner.range)
+        let arguments = SemanticType[]
+        for (argumentName in argumentNames) {
+            let argument = argumentResolver.resolveTypeArgument(argumentName)
+            arguments.add(edgeSubstitution ? edgeSubstitution.apply(argument) : argument)
+        }
         if (contract.methodValues().any((member) => member.range &&
             member.range.snapshot == implementationRange.snapshot &&
             member.range.startTokenIndex == implementationRange.startTokenIndex)) {
@@ -389,22 +424,15 @@ class {
             return arguments[position]
         }
         let visited = String[]:addAll(path)
-        visited.add(contractName)
+        visited.add(identity.value)
         let parentContext = edgeContext ? edgeContext.scopeForSnapshot(contract.range.snapshot) : null
+        let parameters = GenericParameterSemanticType[]
+        for (parameterName in names) parameters.add(GenericParameterSemanticType(
+            identity, parameterName, parameters.count))
+        let substitution = GenericSubstitution(parameters, arguments)
         for (parentName in contract.parentTypeNames()) {
-            let parentOpen = parentName.indexOf("<", defaultReturnValue: -1)
-            if (parentOpen < 0) {
-                let found = traitParameter(parentName, name, visited, parentContext)
-                if (found) return found
-                continue
-            }
-            let instantiated = String[]
-            for (argument in splitTypes(parentName.substring(parentOpen + 1, parentName.count - 1))) {
-                let position = names.indexOf(argument, defaultReturnValue: -1)
-                instantiated.add(position < 0 ? argument : arguments[position])
-            }
-            let found = traitParameter(parentName.substring(0, parentOpen) +
-                "<" + instantiated.join(",") + ">", name, visited, parentContext)
+            let found = traitParameter(parentName, name, visited, parentContext,
+                parameters, substitution)
             if (found) return found
         }
         return null

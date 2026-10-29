@@ -1,0 +1,68 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Missing semantic parent evidence is attributable without guessing an initializer. */
+testable class {
+    test `derived missing constructor evidence identifies owner parent and source range`() {
+        let fixture = BoundIR_TestFixture()
+        let identity = fixture.declaration("class", "Derived", 901)
+        let type = UserClassSemanticType(identity)
+        let parent = UserClassSemanticType(fixture.declaration("class", "Parent", 902))
+        let range = fixture.range(20, 30)
+        var String failure
+        try { BoundTypeUnit(identity, type, BoundFunctionUnit[], range, parentType: parent) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+        expect(failure.contains("Bound derived type requires explicit parent constructor evidence")).toBe(true)
+        expect(failure.contains("type=" + identity.value)).toBe(true)
+        expect(failure.contains("parent=" + parent.declarationIdentity.value)).toBe(true)
+        expect(failure.contains("tokens=[20,30)")).toBe(true)
+        expect(failure.contains("location=1:21-1:31")).toBe(true)
+        expect(failure.contains("constructor=missing; delegation=none")).toBe(true)
+    }
+
+    test `delegating primary cannot silently lose its required base initialization evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let identity = fixture.declaration("class", "Derived", 911)
+        let type = UserClassSemanticType(identity)
+        let parent = UserClassSemanticType(fixture.declaration("class", "Parent", 912))
+        let range = fixture.range(40, 50)
+        let primaryIdentity = fixture.declaration("constructor", "Derived", 913)
+        let targetIdentity = DeclarationIdentity(SyntaxIslandIdentity(fixture.snapshot,
+            "constructor-overload", 914), "constructor", "Derived")
+        let target = CallableSignature(SymbolIdentity(targetIdentity, "constructor"), "Derived",
+            CallableKind("constructor"), SemanticType[], type, type)
+        let delegation = BoundConstructorDelegation(target, BoundExpression[], TypeConversion[], range)
+        let primary = BoundFunctionUnit(primaryIdentity, "Derived", SemanticTypes.unitType(),
+            BoundStatement[], range, constructorFunction: true, constructorDelegation: delegation)
+        var String failure
+        try { BoundTypeUnit(identity, type, [primary], range, parentType: parent) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+        expect(failure.contains("constructor=" + primaryIdentity.value)).toBe(true)
+        expect(failure.contains("delegation=" + targetIdentity.value)).toBe(true)
+        expect(failure.contains("type=" + identity.value)).toBe(true)
+    }
+
+    test `explicit checked parent evidence survives immutable constructor lowering`() {
+        let fixture = BoundIR_TestFixture()
+        let identity = fixture.declaration("class", "Derived", 921)
+        let type = UserClassSemanticType(identity)
+        let parent = UserClassSemanticType(fixture.declaration("class", "Parent", 922))
+        let range = fixture.range(60, 70)
+        let target = CallableSignature(fixture.symbol("constructor", "Parent", 923), "Parent",
+            CallableKind("constructor"), SemanticType[], parent, parent)
+        let call = BoundParentConstructorCall(target, BoundExpression[], TypeConversion[], range)
+        let constructor = BoundFunctionUnit(fixture.declaration("constructor", "Derived", 924),
+            "Derived", SemanticTypes.unitType(), BoundStatement[], range,
+            constructorFunction: true, parentConstructorCall: call)
+        let lowered = CollectionControlLoweringPass().lower(CoreLanguageLoweringPass().lower(constructor))
+        let unit = BoundTypeUnit(identity, type, [lowered], range, parentType: parent)
+        expect(unit.functionUnits().first.parentConstructorCall.target).toBe(target)
+        expect(unit.functionUnits().first.parentConstructorCall.range).toBe(range)
+        expect(unit.functionUnits().first.parentConstructorCall.argumentValues().count).toBe(0)
+        expect(unit.functionUnits().first.parentConstructorCall.argumentConversions().count).toBe(0)
+    }
+}

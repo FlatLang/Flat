@@ -4,6 +4,7 @@ import flat/compiler/models
 import flat/parser/flat
 import flat/bound
 import flat/semantic/types
+import flat/semantic/binding/BindingDiagnostic
 
 /** Binds syntax-only function statements into typed reduced Bound statements. */
 class {
@@ -47,15 +48,17 @@ class {
                 locals.add(LocalBinding(value.name, identity, semanticType))
                 return BoundLocalDeclarationStatement(value.range, reference)
             }
-            let expression = expression(value.initializer)
+            let requiredType = value.declaredTypeName ? declaredType(value.declaredTypeName) : null
+            let expression = expression(value.initializer, requiredType)
+            let localType = requiredType ?: expression.semanticType
             let identity = localIdentity(snapshot, statement, value.name)
             let reference = BoundReferenceExpression(
-                value.range, expression.semanticType, value.name, identity
+                value.range, localType, value.name, identity
             )
-            locals.add(LocalBinding(value.name, identity, expression.semanticType))
+            locals.add(LocalBinding(value.name, identity, localType))
             return BoundLocalDeclarationStatement(
                 value.range, reference, expression,
-                TypeConversions.classify(expression.semanticType, expression.semanticType)
+                TypeConversions.classify(expression.semanticType, localType)
             )
         }
         if (statement.class.isOfType(PrimitiveAssignmentSyntax.class)) {
@@ -67,7 +70,7 @@ class {
             )
             var BoundExpression expression
             if (value.assignmentOperator == "=") {
-                expression = expression(value.value)
+                expression = expression(value.value, local.semanticType)
             } else {
                 let operand = expression(value.value)
                 let operator = binaryOperator(value.assignmentOperator)
@@ -140,11 +143,14 @@ class {
         throw Exception("Unsupported compound assignment operator '#assignmentOperator'")
     }
 
-    expression(PrimitiveExpressionSyntax syntax) -> BoundExpression {
+    expression(PrimitiveExpressionSyntax syntax, SemanticType requiredType = null) -> BoundExpression {
         let result = PrimitiveExpressionBinder().bind(
-            syntax, locals: locals, callables: callables
+            syntax, requiredType, locals: locals, callables: callables
         )
-        if (!result.succeeded) throw Exception(result.diagnostic.message)
+        if (!result.succeeded) throw PrimitiveContextBindingException(BindingDiagnostic(
+            result.diagnostic.code, result.diagnostic.message,
+            SyntaxIslandIdentity(result.diagnostic.range.snapshot, "statement-expression",
+                result.diagnostic.range.startTokenIndex), result.diagnostic.range))
         return result.expression
     }
 }

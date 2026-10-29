@@ -38,6 +38,11 @@ class extends CompilerSourceProvider {
         var Bool hit
         external js {
             const fs = #{File.FileGlobal.fs};
+            // Flat runtime types can share builtin names in the generated module.
+            const Error = globalThis.Error;
+            const Date = globalThis.Date;
+            const Buffer = globalThis.Buffer;
+            const JSON = globalThis.JSON;
             const crypto = require('crypto');
             const path = require('path');
             const destinationPath = path.resolve(#{destination.location.chars.data});
@@ -118,7 +123,8 @@ class extends CompilerSourceProvider {
                     try {
                         const fd = fs.openSync(manifest,'r');
                         try {
-                            if (fs.fstatSync(fd).size <= 4194304) {
+                            const manifestStat = fs.fstatSync(fd);
+                            if (manifestStat.isFile() && manifestStat.size <= 4194304) {
                                 const buffer = Buffer.alloc(4194305);
                                 let total = 0, size;
                                 while (total < buffer.length && (size = fs.readSync(fd,buffer,total,buffer.length-total,null)) > 0) total += size;
@@ -129,10 +135,13 @@ class extends CompilerSourceProvider {
                             !globalThis.Array.isArray(previous.entries) || previous.entries.length > 16384 ||
                             !previous.diagnostics || previous.diagnostics.complete !== true ||
                             !globalThis.Array.isArray(previous.diagnostics.records) || previous.diagnostics.records.length !== 0 ||
+                            typeof previous.output !== 'string' || typeof previous.key !== 'string' ||
+                            typeof previous.configuration !== 'string' ||
                             !/^[0-9a-f]{64}$/.test(previous.output) || !/^[0-9a-f]{64}$/.test(previous.key) ||
                             !/^[0-9a-f]{64}$/.test(previous.configuration) ||
                             previous.entries.some((value,index) => !value || typeof value.identity !== 'string' ||
                                 Buffer.byteLength(value.identity) > 16384 || !path.isAbsolute(value.identity) ||
+                                path.normalize(value.identity) !== value.identity || typeof value.digest !== 'string' ||
                                 (index > 0 && previous.entries[index-1].identity >= value.identity) ||
                                 !/^[0-9a-f]{64}$/.test(value.digest))) previous = null;
                         if (previous && crypto.createHash('sha256').update(JSON.stringify({
@@ -219,7 +228,15 @@ class extends CompilerSourceProvider {
         external js {
             try {
                 const s = #{state};
-                if (!s.owned) throw new Error('Incremental transaction is closed');
+                const Error = globalThis.Error;
+                if (!s.owned || s.ownerRemoved) throw new Error('Incremental transaction is closed');
+                const currentLock = s.fs.lstatSync(s.lock);
+                const currentOwner = s.fs.lstatSync(s.lock+'/owner.json');
+                if (!currentLock.isDirectory() || currentLock.dev !== s.lockIdentity.dev ||
+                    currentLock.ino !== s.lockIdentity.ino || !currentOwner.isFile() ||
+                    currentOwner.dev !== s.ownerIdentity.dev || currentOwner.ino !== s.ownerIdentity.ino) {
+                    throw new Error('Incremental lock ownership changed');
+                }
                 if (s.digestFile(s.tool,268435456) !== s.toolDigest) throw new Error('Compiler changed during compilation');
                 if (s.published && s.digestFile(s.destinationPath,s.maxOutputBytes) !== s.preparedOutput && !s.hit) {
                     throw new Error('Published output changed after incremental commit');
@@ -248,7 +265,7 @@ class extends CompilerSourceProvider {
         external js {
             try {
                 const s = #{state};
-                if (s.hit || s.published || s.preparedOutput) throw new Error('Incremental publication already admitted');
+                if (s.hit || s.published || s.preparedOutput) throw new globalThis.Error('Incremental publication already admitted');
                 s.preparedOutput = s.digestFile(#{artifact.normalizedLocation.chars.data},s.maxOutputBytes);
             } catch (error) { #{errorMessage} = error.message; }
         }
@@ -257,8 +274,7 @@ class extends CompilerSourceProvider {
 
     private requireSuccessfulSummary(CompilationSummary summary) {
         identities()
-        if (!summary || summary.cancelled || !summary.cleanupSettled || summary.diagnosticCount != 0 ||
-            summary.packageDiagnostic != null || summary.bindingDiagnostic != null || summary.parserDiagnostic != null ||
+        if (!summary || !summary.succeeded ||
             summary.artifactCount != 1) throw Exception("Persistent publication requires successful settled compilation")
         var Int sourceCount
         external js { #{sourceCount} = #{state}.entries.length; }
@@ -277,6 +293,7 @@ class extends CompilerSourceProvider {
         native_array native var Char[] manifestPath
         external js {
             const s = #{state};
+            const Error = globalThis.Error;
             try {
                 const output = s.digestFile(s.destinationPath,s.maxOutputBytes);
                 if (s.published) throw new Error('Incremental transaction already published');
@@ -284,10 +301,10 @@ class extends CompilerSourceProvider {
                 if (!expectedOutput || output !== expectedOutput) {
                     throw new Error('Destination does not match the admitted publication artifact');
                 }
-                const contents = JSON.stringify({schema:'flat.compiler.incremental.v1',
+                const contents = globalThis.JSON.stringify({schema:'flat.compiler.incremental.v1',
                     key:s.key, configuration:s.configuration, entries:s.entries, output,
                     diagnostics:{complete:true, records:[]}});
-                if (Buffer.byteLength(contents) > 4194304) throw new Error('Incremental manifest exceeds capacity');
+                if (globalThis.Buffer.byteLength(contents) > 4194304) throw new Error('Incremental manifest exceeds capacity');
                 s.manifestContents = contents;
                 #{manifestPath} = s.manifest;
             } catch (error) { #{errorMessage} = error.message; }
@@ -403,7 +420,7 @@ class extends CompilerSourceProvider {
         if (!reused) throw Exception("Cached diagnostic batch requires a validated hit")
         native_array native var Char[] value
         external js {
-            #{value} = JSON.stringify({schema:'flat.compiler.diagnostics.v1',
+            #{value} = globalThis.JSON.stringify({schema:'flat.compiler.diagnostics.v1',
                 revision:'sha256:'+#{state}.key, complete:true, records:[]}) + '\n';
         }
         return String(value)
@@ -413,7 +430,7 @@ class extends CompilerSourceProvider {
         // Never report a complete successful batch after the admitted bytes changed.
         validate()
         native_array native var Char[] json
-        external js { #{json} = JSON.stringify(#{state}.evidence) + '\n'; }
+        external js { #{json} = globalThis.JSON.stringify(#{state}.evidence) + '\n'; }
         return String(json)
     }
 
@@ -424,6 +441,7 @@ class extends CompilerSourceProvider {
         native_array native var Char[] errorMessage
         external js {
             const s = #{state};
+            const Error = globalThis.Error;
             if (s && s.owned) {
                 try {
                     const currentLock = s.fs.lstatSync(s.lock);
@@ -435,6 +453,11 @@ class extends CompilerSourceProvider {
                         if (!currentOwner.isFile() || currentOwner.dev !== s.ownerIdentity.dev ||
                             currentOwner.ino !== s.ownerIdentity.ino) throw new Error('Incremental owner identity changed');
                         s.fs.unlinkSync(owner);
+                        // A successful syscall wrapper is not proof of removal.
+                        try {
+                            s.fs.lstatSync(owner);
+                            throw new Error('Incremental owner remains after unlink');
+                        } catch (error) { if (error.code !== 'ENOENT') throw error; }
                         // Persist this transition before rmdir: a failed rmdir must
                         // not make retry unlink a missing (or replacement) owner.
                         s.ownerRemoved = true;
@@ -445,6 +468,10 @@ class extends CompilerSourceProvider {
                         } catch (error) { if (error.code !== 'ENOENT') throw error; }
                     }
                     s.fs.rmdirSync(s.lock);
+                    try {
+                        s.fs.lstatSync(s.lock);
+                        throw new Error('Incremental lock remains after rmdir');
+                    } catch (error) { if (error.code !== 'ENOENT') throw error; }
                     s.owned = false;
                 }
                 catch (error) { #{errorMessage}=error.message; }

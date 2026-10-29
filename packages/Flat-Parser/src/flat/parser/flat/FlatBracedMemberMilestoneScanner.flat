@@ -33,6 +33,7 @@ class {
     var String activeName
     var Int bodyStartTokenIndex
     var Location bodyStart
+    var Location observedEnd
 
     visible var Bool finished
     visible Int retainedHeaderTokenCount => headerTokens.count + accessorHeaderTokens.count
@@ -59,11 +60,21 @@ class {
     }
 
     public accept(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        try {
+            return acceptToken(token, tokenIndex)
+        } catch (Exception error) {
+            cancel()
+            throw error
+        }
+    }
+
+    acceptToken(Token token, Int tokenIndex) -> SyntaxIsland[] {
         if (finished) return SyntaxIsland[]
         if (tokenIndex < 0 || tokenIndex <= lastTokenIndex) {
             reject("Braced member token indexes must be non-negative and strictly increasing")
         }
         lastTokenIndex = tokenIndex
+        observedEnd = endLocation(token)
 
         if (state == BODY) return acceptBody(token, tokenIndex)
         return acceptHeader(token, tokenIndex)
@@ -71,9 +82,9 @@ class {
 
     public end() -> SyntaxIsland[] {
         if (finished) return SyntaxIsland[]
-        if (state == BODY) reject("Flat type body ended inside an incomplete braced member body")
+        if (state == BODY) rejectSyntax("Flat type body ended inside an incomplete braced member body")
         if (headerTokens.isNotEmpty) {
-            reject("Flat type body ended with an unsupported or incomplete non-braced member")
+            rejectSyntax("Flat type body ended with an unsupported or incomplete non-braced member")
         }
 
         finished = true
@@ -85,6 +96,7 @@ class {
         finished = true
         clearHeader()
         clearBody()
+        observedEnd = null
     }
 
     acceptHeader(Token token, Int tokenIndex) -> SyntaxIsland[] {
@@ -97,11 +109,11 @@ class {
         if (isSymbol(token, "(")) parenthesisDepth++
         else if (isSymbol(token, ")")) {
             parenthesisDepth--
-            if (parenthesisDepth < 0) reject("Braced member header contains an unmatched closing parenthesis")
+            if (parenthesisDepth < 0) rejectSyntax("Braced member header contains an unmatched closing parenthesis")
         } else if (isSymbol(token, "[")) bracketDepth++
         else if (isSymbol(token, "]")) {
             bracketDepth--
-            if (bracketDepth < 0) reject("Braced member header contains an unmatched closing bracket")
+            if (bracketDepth < 0) rejectSyntax("Braced member header contains an unmatched closing bracket")
         } else if (isSymbol(token, "{") && (parenthesisDepth > 0 || bracketDepth > 0 || nestedHeaderBraceDepth > 0)) {
             nestedHeaderBraceDepth++
         } else if (isSymbol(token, "}") && nestedHeaderBraceDepth > 0) {
@@ -133,7 +145,7 @@ class {
             clearHeader()
             return [memberHeader]
         } else if (isSymbol(token, "}") && parenthesisDepth == 0 && bracketDepth == 0) {
-            reject("Braced member header contains an unmatched closing brace")
+            rejectSyntax("Braced member header contains an unmatched closing brace")
         }
 
         return SyntaxIsland[]
@@ -153,7 +165,7 @@ class {
         if (isSymbol(token, "{")) bodyDepth++
         else if (isSymbol(token, "}")) {
             bodyDepth--
-            if (bodyDepth < 0) reject("Braced member body contains an unmatched closing brace")
+            if (bodyDepth < 0) rejectSyntax("Braced member body contains an unmatched closing brace")
 
             if (activeAccessorHeaderIdentity && bodyDepth == 1) {
                 let body = AccessorBodySyntaxIsland(
@@ -211,7 +223,7 @@ class {
         }
         if (isSymbol(token, "}")) {
             if (accessorHeaderTokens.isEmpty) return acceptBody(token, tokenIndex)
-            if (!FlatAccessorMatcher().matches(accessorHeaderTokens)) reject("Incomplete Flat accessor header")
+            if (!FlatAccessorMatcher().matches(accessorHeaderTokens)) rejectSyntax("Incomplete Flat accessor header")
             let islands = SyntaxIsland[]
             islands.add(publishBodylessAccessorHeader())
             islands.addAll(acceptBody(token, tokenIndex))
@@ -222,10 +234,10 @@ class {
         if (isSymbol(token, "(")) accessorParenthesisDepth++
         else if (isSymbol(token, ")")) {
             accessorParenthesisDepth--
-            if (accessorParenthesisDepth < 0) reject("Accessor header contains an unmatched closing parenthesis")
+            if (accessorParenthesisDepth < 0) rejectSyntax("Accessor header contains an unmatched closing parenthesis")
         } else if (isSymbol(token, "{") && accessorParenthesisDepth == 0) {
             let validationTokens = accessorHeaderTokens.skipLast(1)
-            if (!FlatAccessorMatcher().matches(validationTokens)) reject("Invalid Flat accessor header")
+            if (!FlatAccessorMatcher().matches(validationTokens)) rejectSyntax("Invalid Flat accessor header")
 
             activeAccessorKind = accessorHeaderTokens.first.value
             activeAccessorHeaderIdentity = identity("accessor-signature")
@@ -277,7 +289,7 @@ class {
         for (token in tokens) engine.consume(token)
 
         if (engine.invalid || engine.end().isEmpty) {
-            reject("Invalid Flat braced member header '" +
+            rejectSyntax("Invalid Flat braced member header '" +
                 headerTokens.skipLast(1).map({ _.value }).join(" ") + "'")
         }
     }
@@ -449,10 +461,33 @@ class {
         bodyStart = null
     }
 
+    rejectSyntax(String message) {
+        var SourceRange range
+        if (accessorHeaderTokens.isNotEmpty) {
+            range = SourceRange(snapshot, accessorHeaderTokenIndexes.first,
+                accessorHeaderTokenIndexes.last + 1, accessorHeaderTokens.first.location,
+                endLocation(accessorHeaderTokens.last))
+        } else if (headerTokens.isNotEmpty) {
+            range = SourceRange(snapshot, headerTokenIndexes.first,
+                headerTokenIndexes.last + 1, headerTokens.first.location,
+                endLocation(headerTokens.last))
+        } else if (state == BODY && bodyStart && observedEnd) {
+            range = SourceRange(snapshot, bodyStartTokenIndex, lastTokenIndex + 1,
+                bodyStart, observedEnd)
+        }
+        let failure = ParseFailure(ParserDiagnostic("invalid-braced-member", message, snapshot, range))
+        finished = true
+        clearHeader()
+        clearBody()
+        observedEnd = null
+        throw failure
+    }
+
     reject(String message) {
         finished = true
         clearHeader()
         clearBody()
+        observedEnd = null
         throw Exception(message)
     }
 

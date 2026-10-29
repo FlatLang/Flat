@@ -103,8 +103,11 @@ class ProcessScopeTests(unittest.TestCase):
             self.assertIn('Invalid process scope', result.stderr)
 
     def test_cleanup_requires_group_absence_even_after_leader_exit(self):
-        process = mock.Mock(pid=12345, returncode=0)
-        # Leader already exited; a descendant survives TERM until KILL.
+        process = mock.Mock(pid=12345, returncode=None)
+        process._stage_identity = dict(pid=12345, pgid=12345, session=12345,
+                                       start='controlled', state='running', source='controlled-kernel')
+        process.wait.side_effect = lambda timeout: setattr(process, 'returncode', 0)
+        # Leader exited but is unreaped; a descendant survives TERM until KILL.
         killed = False
         def kill(pid, sig):
             nonlocal killed
@@ -112,7 +115,9 @@ class ProcessScopeTests(unittest.TestCase):
                 killed = True
             if sig == 0 and killed:
                 raise ProcessLookupError()
-        with mock.patch.object(bootstrap.os, 'killpg', side_effect=kill) as calls, \
+        with mock.patch.object(bootstrap, 'process_finished', return_value=True), \
+                mock.patch.object(bootstrap, 'owned_process_identity', return_value=True), \
+                mock.patch.object(bootstrap.os, 'killpg', side_effect=kill) as calls, \
                 mock.patch.object(bootstrap.time, 'monotonic', side_effect=range(100)), \
                 mock.patch.object(bootstrap.time, 'sleep'):
             observed = {}
@@ -123,7 +128,7 @@ class ProcessScopeTests(unittest.TestCase):
         with mock.patch.object(bootstrap.os, 'killpg'), \
                 mock.patch.object(bootstrap.time, 'monotonic', side_effect=range(100)), \
                 mock.patch.object(bootstrap.time, 'sleep'):
-            with self.assertRaisesRegex(ValueError, 'cleanup unconfirmed'):
+            with self.assertRaisesRegex(ValueError, 'cleanup-unknown'):
                 bootstrap.settle_process_group(process)
 
     def test_scope_frames_reject_wrong_identity_and_capacity(self):
@@ -337,7 +342,9 @@ class BootstrapTests(unittest.TestCase):
                 self.assertEqual(bootstrap.digest(output / value['log']), value['log_sha256'])
             self.assertEqual(json.loads((output / 'subprocess-cleanup.json').read_text()), receipt)
             self.assertEqual(sorted(path.name for path in output.iterdir()),
-                             ['cancel.log', 'subprocess-cleanup.json', 'timeout.log'])
+                             ['cancel.log', 'cancel.log.process.json', 'cancel.log.settlement.json',
+                              'subprocess-cleanup.json', 'timeout.log', 'timeout.log.process.json',
+                              'timeout.log.settlement.json'])
 
     def test_lifecycle_fixture_launch_failure_never_claims_cleanup_success(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -497,7 +504,8 @@ class BootstrapTests(unittest.TestCase):
     def test_budget_failure_terminates_running_process_group(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            process = mock.Mock(pid=12345)
+            process = mock.Mock(pid=12345, returncode=None)
+            process.wait.side_effect = lambda timeout: setattr(process, 'returncode', 0)
             process.poll.return_value = None
             budget = mock.Mock(deadline=bootstrap.time.monotonic() + 100)
             budget.check.side_effect = [None, ValueError('Aggregate run storage capacity exceeded')]
@@ -508,7 +516,13 @@ class BootstrapTests(unittest.TestCase):
                     killed = True
                 if sig == 0 and killed:
                     raise ProcessLookupError()
+            kernel = dict(pid=12345, pgid=12345, session=12345, start='controlled',
+                          state='running', source='controlled-kernel')
+            clock = iter(range(100))
             with mock.patch.object(bootstrap.subprocess, 'Popen', return_value=process), \
+                    mock.patch.object(bootstrap, 'process_identity', return_value=kernel), \
+                    mock.patch.object(bootstrap.time, 'monotonic', side_effect=lambda: next(clock)), \
+                    mock.patch.object(bootstrap.time, 'sleep'), \
                     mock.patch.object(bootstrap.os, 'killpg', side_effect=kill_group) as kill:
                 with self.assertRaisesRegex(ValueError, 'storage'):
                     bootstrap.run_command(['not-executed'], root, {}, root / 'log',
@@ -616,6 +630,9 @@ class BootstrapTests(unittest.TestCase):
                 path.write_text('fresh test output')
             product = workspace / bootstrap.PRODUCTS[0]
             product.unlink()
+            driver = workspace / bootstrap.PRODUCTS[2]
+            if driver.parent == product.parent:
+                driver.unlink()
             product.parent.rmdir()
             outside.mkdir()
             (outside / product.name).write_text('outside stale output')
@@ -632,7 +649,7 @@ class BootstrapTests(unittest.TestCase):
                 path = root / name
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("output")
-            self.assertEqual(len(bootstrap.artifacts(root)), 2)
+            self.assertEqual(len(bootstrap.artifacts(root)), len(bootstrap.PRODUCTS))
             with self.assertRaises(FileExistsError):
                 bootstrap.fresh_directory(root)
 
@@ -763,7 +780,7 @@ class BootstrapTests(unittest.TestCase):
         root = HERE.parents[2]
         source = root / bootstrap.LIFECYCLE_SOURCE
         self.assertEqual(bootstrap.digest(source),
-                         '1221b785ea5d530d888341ac683e4a77c21d4f140b9fc054372f4d371d1b95a8')
+                         '9b6a6cbb16a5fcf3f1a8e43e5a42a8828103481b79d56d7bdc9c078221d983bc')
         scripts = (
             'process.exit(0);',
             "const fs=require('fs'); if(fs.readFileSync(process.argv[2],'utf8')!=='committed') process.exit(9); process.exit(7);",
@@ -836,6 +853,8 @@ class BootstrapTests(unittest.TestCase):
                         self.assertEqual(command[command.index('--flatc-script') + 1], policy['seed'])
                     if command[command.index('install') + 1] == 'flatc':
                         names = (bootstrap.PRODUCTS[0],)
+                    elif command[command.index('install') + 1] == 'production-driver':
+                        names = (bootstrap.PRODUCTS[2],)
                     elif command[command.index('install') + 1] == '-t':
                         names = (bootstrap.PRODUCTS[1],)
                     else:
@@ -864,6 +883,7 @@ class BootstrapTests(unittest.TestCase):
             with mock.patch.object(bootstrap, 'run_command', side_effect=fake_command), \
                     mock.patch.object(bootstrap, 'companion_contract'), \
                     mock.patch.object(bootstrap, 'lifecycle_inventory', return_value=[]), \
+                    mock.patch.object(bootstrap, 'stage_public_workloads', return_value={'mock': True}), \
                     mock.patch.object(bootstrap, 'process_companion_gates', return_value={'mock': True}) as gates:
                 previous = None
                 for number in range(3):
@@ -895,7 +915,7 @@ class BootstrapTests(unittest.TestCase):
                         self.assertEqual(expected, bootstrap.digest(output / f'stage{number}' / name))
                     self.assertEqual(set(manifest['tool_sha256']),
                                      set(seeds) if number == 0 else {'node', 'git'})
-                    self.assertEqual(len(manifest['commands']), 16)
+                    self.assertEqual(len(manifest['commands']), 17)
                     installed = [Path(item['argv'][item['argv'].index('-f') + 1]).name
                                  for item in manifest['commands']
                                  if 'install' in item['argv'] and 'test' in item['argv']]
@@ -903,7 +923,16 @@ class BootstrapTests(unittest.TestCase):
                                                 'Flat-Name-Binding', 'Flat-Bound-IR',
                                                 'Flat-ES6-Bound-Writer', 'Flat-Compiler'])
             self.assertEqual(gates.call_count, 3)
-            self.assertEqual([number for number, _ in calls], [0] * 16 + [1] * 16 + [2] * 16)
+            self.assertEqual([number for number, _ in calls], [0] * 17 + [1] * 17 + [2] * 17)
+            for number in (0, 1, 2):
+                stage_calls = [command for stage_number, command in calls if stage_number == number]
+                prerequisites = [(Path(command[command.index('-f') + 1]).name,
+                                  command[command.index('install') + 1])
+                                 for command in stage_calls[:3]]
+                self.assertEqual(prerequisites, [('Flat-Compiler', 'flatc'),
+                                                 ('Flat-Compiler', 'production-driver'),
+                                                 ('Airship', '-t')])
+                self.assertTrue((output / f'stage{number}/workspace' / bootstrap.PRODUCTS[2]).is_file())
             self.assertFalse((repo / bootstrap.PRODUCTS[0]).exists())
             # A zero-exit no-op producer cannot green the stage, even if supplied
             # with an old compiler seed at Airship's existence-check location.
@@ -957,6 +986,71 @@ class BootstrapTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Missing fresh'):
                 bootstrap.artifacts(root)
 
+    def test_stage_products_include_driver_and_compare_exact_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            first, second = root / 'stage1', root / 'stage2'
+            for workspace in (first, second):
+                for name in bootstrap.PRODUCTS:
+                    product = workspace / name
+                    product.parent.mkdir(parents=True, exist_ok=True)
+                    product.write_bytes(b'const stable = 1;\n')
+            self.assertIn('packages/Flat-Compiler/dist/es6/production-driver.js', bootstrap.PRODUCTS)
+            bootstrap.compare_products(bootstrap.artifacts(first), bootstrap.artifacts(second))
+            driver = second / bootstrap.PRODUCTS[2]
+            driver.write_bytes(b'const stable = 1;\r\n')
+            with self.assertRaisesRegex(ValueError, 'artifact hashes differ'):
+                bootstrap.compare_products(bootstrap.artifacts(first), bootstrap.artifacts(second))
+            driver.unlink()
+            with self.assertRaisesRegex(ValueError, 'Missing fresh stage product'):
+                bootstrap.artifacts(second)
+
+    def test_reviewed_json_rejects_duplicate_keys_and_changed_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            receipt = Path(directory) / 'receipt.json'
+            receipt.write_bytes(b'{"node": 1, "node": 2}')
+            with self.assertRaisesRegex(ValueError, 'duplicate key'):
+                bootstrap.reviewed_json(receipt, bootstrap.digest(receipt), 'Seed manifest')
+            receipt.write_bytes(b'{"node": 1}')
+            expected = bootstrap.digest(receipt)
+            receipt.write_bytes(b'{"node": 2}')
+            with self.assertRaisesRegex(ValueError, 'digest mismatch'):
+                bootstrap.reviewed_json(receipt, expected, 'Seed manifest')
+            receipt.write_bytes(b' ' * (1024 * 1024 + 1))
+            with self.assertRaisesRegex(ValueError, 'capacity'):
+                bootstrap.reviewed_json(receipt, bootstrap.digest(receipt), 'Seed manifest')
+
+    def test_snapshot_rejects_traversal_aliases_and_nonfresh_seed_outputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            repo = root / 'repo'
+            source = repo / 'packages/Example/source.flat'
+            source.parent.mkdir(parents=True)
+            source.write_text('source')
+            expected = bootstrap.digest(source)
+            for index, name in enumerate(('../outside', '/absolute', 'packages/../outside',
+                                          'packages//Example/source.flat',
+                                          'packages/Example/dist/old.js')):
+                output = root / f'rejected-{index}'
+                with self.subTest(name=name), self.assertRaisesRegex(ValueError, 'manifest path'):
+                    bootstrap.snapshot(repo, output, {name: expected})
+                self.assertFalse(output.exists())
+            alias = repo / 'packages/Example/alias.flat'
+            alias.symlink_to(source)
+            with self.assertRaisesRegex(ValueError, 'canonical regular file'):
+                bootstrap.snapshot(repo, root / 'alias-output',
+                                   {'packages/Example/alias.flat': expected})
+            with self.assertRaisesRegex(ValueError, 'separate trees'):
+                bootstrap.snapshot(repo, repo / 'nested', {'packages/Example/source.flat': expected})
+            target = root / 'seed.js'
+            target.write_text('existing output')
+            with self.assertRaisesRegex(ValueError, 'fresh and separate'):
+                bootstrap.copy_seed(source, target, expected)
+            self.assertEqual(target.read_text(), 'existing output')
+            with self.assertRaisesRegex(ValueError, 'fresh and separate'):
+                bootstrap.copy_seed(source, source, expected)
+            self.assertEqual(source.read_text(), 'source')
+
     def test_manifests_compare_hashes_not_stage_paths(self):
         bootstrap.compare_products({"x": "a"}, {"x": "a"})
         with self.assertRaises(ValueError):
@@ -970,6 +1064,7 @@ class GuardTests(unittest.TestCase):
         self.node = Path(shutil.which("node")).resolve()
         self.seed = self.root / "seed.js"
         self.seed.write_text("console.log('immutable seed')")
+        self.seed.chmod(0o444)
         self.compiler = self.root / "work/packages/Flat-Compiler/dist/es6/index.js"
         self.compiler.parent.mkdir(parents=True)
         self.compiler.symlink_to(self.seed)
@@ -1109,6 +1204,27 @@ class GuardTests(unittest.TestCase):
         self.assertEqual(records[-1]['args'][0], str(self.seed))
         self.assertEqual(records[-1]['decision'], 'allow')
 
+    def test_selected_seed_cannot_be_writable_or_current_output(self):
+        for variant in ('writable', 'current-output'):
+            with self.subTest(variant=variant):
+                policy = json.loads(self.policy.read_text())
+                policy['compiler'] = str(self.seed)
+                policy['seed'] = str(self.seed)
+                self.seed.chmod(0o644 if variant == 'writable' else 0o444)
+                if variant == 'current-output':
+                    policy['compilerOutput'] = str(self.seed)
+                else:
+                    policy.pop('compilerOutput', None)
+                self.policy.write_text(json.dumps(policy))
+                result = self.run_probe("try {require('child_process').spawnSync('node', [" +
+                                        json.dumps(str(self.seed)) + "], {stdio:'inherit'});} catch(e) {}")
+                self.assertNotIn('immutable seed', result.stdout)
+                records = [json.loads(line) for line in self.journal.read_text().splitlines()]
+                self.assertEqual(records[-1]['decision'], 'reject')
+                self.assertIn('read-only' if variant == 'writable' else 'not an admitted compiler input',
+                              records[-1]['reason'])
+                self.journal.unlink()
+
     def test_generated_compiler_output_is_not_an_admitted_seed(self):
         output = self.root / 'work/generated-flatc.js'
         output.write_text("console.log('must not run compiler output')")
@@ -1125,7 +1241,9 @@ class GuardTests(unittest.TestCase):
         policy = json.loads(self.policy.read_text())
         policy['compiler'] = str(self.seed)
         self.policy.write_text(json.dumps(policy))
+        self.seed.chmod(0o644)
         self.seed.write_text("console.log('replaced seed')")
+        self.seed.chmod(0o444)
         result = self.run_probe("try { require('child_process').spawnSync('node', [" +
                                 json.dumps(str(self.seed)) + "]); } catch(e) {}")
         self.assertNotIn('replaced seed', result.stdout)
@@ -1212,7 +1330,9 @@ class GuardTests(unittest.TestCase):
         self.assertIn('not the immutable seed', self.journal.read_text())
 
     def test_mutated_seed_rejected(self):
+        self.seed.chmod(0o644)
         self.seed.write_text("console.log('tampered')")
+        self.seed.chmod(0o444)
         result = self.run_probe("require('child_process').spawnSync('node', [" +
                                 json.dumps(str(self.compiler)) + "]);")
         self.assertNotEqual(result.returncode, 0)

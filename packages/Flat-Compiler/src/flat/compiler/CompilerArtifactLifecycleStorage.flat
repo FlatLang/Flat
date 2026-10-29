@@ -12,14 +12,36 @@ class {
     public construct(visible File file, visible CompilerArtifactLifecycleBinding binding,
         visible CompilerArtifactLifecycleObserver observer, visible File payload = null) {}
 
+    /** lstat distinguishes an absent entry from inaccessible storage and dangling links. */
+    public static pathPresent(File path) -> Bool {
+        if (!path) return false
+        var Bool present
+        native_array native var Char[] errorMessage
+        external {
+            try {
+                #{File.FileGlobal.fs}.lstatSync(#{path.normalizedLocation.chars.data});
+                #{present} = true;
+            } catch (error) {
+                if (error.code !== 'ENOENT') #{errorMessage} = error.message;
+            }
+        }
+        if (errorMessage) throw Exception(String(errorMessage))
+        return present
+    }
+
     public observeCreated() {
-        if (!created && file.exists) {
+        // Observation is best effort. Checked cleanup below owns inspection failure.
+        try { observeExisting() } catch (Exception error) {}
+    }
+
+    observeExisting() {
+        if (!created && pathPresent(file)) {
             created = true
             if (observer) {
                 try { observer.temporaryCreated(binding, file.normalizedLocation) } catch (Exception error) {}
             }
         }
-        if (payload && !payloadCreated && payload.exists) {
+        if (payload && !payloadCreated && pathPresent(payload)) {
             payloadCreated = true
             if (observer) {
                 try { observer.temporaryCreated(binding, payload.normalizedLocation) } catch (Exception error) {}
@@ -29,13 +51,17 @@ class {
 
     /** Also used after rename; absence is checked rather than assumed. */
     public observeRemoved() {
-        if (payloadCreated && !payload.exists) {
+        try { observeAbsent() } catch (Exception error) {}
+    }
+
+    observeAbsent() {
+        if (payloadCreated && !pathPresent(payload)) {
             payloadCreated = false
             if (observer) {
                 try { observer.temporaryRemoved(binding, payload.normalizedLocation) } catch (Exception error) {}
             }
         }
-        if (created && !file.exists) {
+        if (created && !pathPresent(file)) {
             created = false
             if (observer) {
                 try { observer.temporaryRemoved(binding, file.normalizedLocation) } catch (Exception error) {}
@@ -54,11 +80,16 @@ class {
         failure = null
         try {
             Es6ArtifactFiles.remove(file)
-            if (file.exists || (payload && payload.exists)) throw Exception("Artifact temporary remains after cleanup")
+            if (pathPresent(file) || pathPresent(payload)) throw Exception("Artifact temporary remains after cleanup")
         } catch (Exception error) { failure = error }
-        observeRemoved()
+        // Inspection failure is cleanup failure, never evidence of absence.
+        var Bool removed
+        try {
+            observeAbsent()
+            removed = !pathPresent(file) && !pathPresent(payload)
+        } catch (Exception error) { if (!failure) failure = error }
         if (observer) {
-            try { observer.finalized(binding, file.normalizedLocation, !file.exists && (!payload || !payload.exists), failure) }
+            try { observer.finalized(binding, file.normalizedLocation, removed, failure) }
             catch (Exception error) {}
         }
         if (failure) throw failure

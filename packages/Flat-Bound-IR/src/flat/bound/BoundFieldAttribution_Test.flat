@@ -1,0 +1,86 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Invalid field evidence remains rejected with enough context for its producer. */
+testable class {
+    test `field rejection attributes initializer type storage flags and exact source`() {
+        let fixture = BoundIR_TestFixture()
+        let range = fixture.range(24, 29)
+        let identity = fixture.symbol("field", "trace", 1300)
+        let text = BoundLiteralExpression(range, SemanticTypes.stringType(), "'text'")
+        var String failure
+        try { BoundFieldUnit("trace", identity, SemanticTypes.intType(), range,
+            visibleField: true, initializer: text, staticField: true, mutableField: false) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+        expect(failure.contains("Bound field requires name identity type and range")).toBe(true)
+        expect(failure.contains("name=trace")).toBe(true)
+        expect(failure.contains("identity=" + identity.value)).toBe(true)
+        expect(failure.contains("identitySnapshot=" + fixture.snapshot.value)).toBe(true)
+        expect(failure.contains("rangeSnapshot=" + fixture.snapshot.value)).toBe(true)
+        expect(failure.contains("type=" + SemanticTypes.intType().value())).toBe(true)
+        expect(failure.contains("initializerType=" + SemanticTypes.stringType().value())).toBe(true)
+        expect(failure.contains("tokens=[24,29)")).toBe(true)
+        expect(failure.contains("location=1:25-1:30")).toBe(true)
+        expect(failure.contains("namePresent=true; name=trace")).toBe(true)
+        expect(failure.contains("initializerPresent=true")).toBe(true)
+        expect(failure.contains("visible=true; static=true; mutable=false; nativeArray=false")).toBe(true)
+    }
+
+    test `field rejection formatting tolerates every missing required argument`() {
+        let fixture = BoundIR_TestFixture()
+        let range = fixture.range()
+        let identity = fixture.symbol("field", "value", 1310)
+        let type = SemanticTypes.intType()
+        var Int rejected
+        try { BoundFieldUnit(null, null, null, null) }
+        catch (Exception error) {
+            expect(error.message.contains("namePresent=false")).toBe(true)
+            expect(error.message.contains("identityPresent=false; identity=<missing>")).toBe(true)
+            expect(error.message.contains("typePresent=false; type=<missing>")).toBe(true)
+            expect(error.message.contains("rangePresent=false")).toBe(true)
+            expect(error.message.contains("tokens=<missing>; location=<missing>")).toBe(true)
+            expect(error.message.contains("initializerPresent=false; initializerType=<missing>")).toBe(true)
+            rejected++
+        }
+        try { BoundFieldUnit(null, identity, type, range) }
+        catch (Exception error) { expect(error.message.contains("namePresent=false")).toBe(true); rejected++ }
+        try { BoundFieldUnit("value", null, type, range) }
+        catch (Exception error) { expect(error.message.contains("identityPresent=false")).toBe(true); rejected++ }
+        try { BoundFieldUnit("value", identity, null, range) }
+        catch (Exception error) { expect(error.message.contains("typePresent=false")).toBe(true); rejected++ }
+        try { BoundFieldUnit("value", identity, type, null) }
+        catch (Exception error) { expect(error.message.contains("rangePresent=false")).toBe(true); rejected++ }
+        expect(rejected).toBe(5)
+    }
+
+    test `field guards still reject snapshot mismatch null narrowing and invalid native storage`() {
+        let fixture = BoundIR_TestFixture()
+        let range = fixture.range()
+        let identity = fixture.symbol("field", "value", 1320)
+        let other = SourceSnapshotIdentity(SourceIdentity("memory:other-field"), "one")
+        let otherRange = SourceRange(other, 0, 1, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        var Int rejected
+        try { BoundFieldUnit("value", identity, SemanticTypes.intType(), otherRange) }
+        catch (Exception error) {
+            expect(error.message.contains("identitySnapshot=" + fixture.snapshot.value)).toBe(true)
+            expect(error.message.contains("rangeSnapshot=" + other.value)).toBe(true)
+            rejected++
+        }
+        let nullValue = BoundLiteralExpression(range, SemanticTypes.nullType(), "null")
+        try { BoundFieldUnit("value", identity, SemanticTypes.stringType(), range, initializer: nullValue) }
+        catch (Exception error) { expect(error.message.contains("initializerType=" + SemanticTypes.nullType().value())).toBe(true); rejected++ }
+        try { BoundFieldUnit("value", identity, SemanticTypes.intType(), range, nativeArrayStorage: true) }
+        catch (Exception error) { expect(error.message).toBe("Native storage field requires an array type"); rejected++ }
+        expect(rejected).toBe(3)
+        let nullable = NullableSemanticType(SemanticTypes.stringType())
+        let validNull = BoundFieldUnit("value", identity, nullable, range, initializer: nullValue)
+        expect(validNull.initializer).toBe(nullValue)
+        let scalar = BoundLiteralExpression(range, SemanticTypes.intType(), "3")
+        let validScalar = BoundFieldUnit("value", identity, SemanticTypes.intType(), range, initializer: scalar)
+        expect(validScalar.initializer).toBe(scalar)
+        expect(validScalar.identity).toBe(identity)
+    }
+}

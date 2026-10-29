@@ -10,7 +10,12 @@ class {
 
     var Bool enabled = false
 
-    this[String argName] => args.firstWhere({ _.name == argName })
+    this[String argName] -> CliArg {
+        get {
+            if (!args) return null
+            return args.firstWhere((arg) => arg.name == argName)
+        }
+    }
 
     var String value {
         get {

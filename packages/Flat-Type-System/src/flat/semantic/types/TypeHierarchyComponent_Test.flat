@@ -1,6 +1,35 @@
 package flat/semantic/types
 
 testable class {
+    test `sealed declaration lookup retains sorted boundaries and missing ancestry`() {
+        let fixture = TypeSystem_TestFixture()
+        let a = fixture.userType("A", 1)
+        let b = fixture.userType("B", 2)
+        let c = fixture.userType("C", 3)
+        let missing = fixture.userType("Missing", 4)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(fixture.hierarchyDeclaration(c, parents: [b]))
+        hierarchy.add(fixture.hierarchyDeclaration(a))
+        hierarchy.add(fixture.hierarchyDeclaration(b, parents: [a]))
+        hierarchy.seal()
+        expect(hierarchy.distance(a, a)).toBe(0)
+        expect(hierarchy.distance(b, b)).toBe(0)
+        expect(hierarchy.distance(c, c)).toBe(0)
+        expect(hierarchy.distance(c, a)).toBe(2)
+        expect(hierarchy.distance(a, c)).toBe(-1)
+        expect(hierarchy.distance(missing, a)).toBe(-1)
+        expect(hierarchy.distance(c, missing)).toBe(-1)
+        let empty = TypeHierarchyComponent()
+        empty.seal()
+        expect(empty.distance(a, a)).toBe(-1)
+        let singleton = TypeHierarchyComponent()
+        singleton.add(fixture.hierarchyDeclaration(b))
+        singleton.seal()
+        expect(singleton.distance(b, b)).toBe(0)
+        expect(singleton.distance(a, b)).toBe(-1)
+        expect(singleton.distance(c, b)).toBe(-1)
+    }
+
     test `explicit declared downcast carries checked evidence only with hierarchy`() {
         let fixture = TypeSystem_TestFixture()
         let parent = fixture.userType("Parent", 1)

@@ -8,6 +8,13 @@ import flat/semantic/types
  */
 abstract class extends BoundFunctionLoweringPass {
     override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
+        if (input.constructorPlan) {
+            let loweredParameters = lowerParameters(input.parameterValues())
+            return BoundFunctionUnit(input.identity, input.name, input.returnType, BoundStatement[], input.range,
+                loweredParameters, input.staticFunction, input.mainFunction, input.constructorFunction,
+                input.dispatchIdentity, null, null, input.asyncFunction, input.externalName,
+                input.abstractFunction, input.lazyProperty, lowerConstructorPlan(input.constructorPlan))
+        }
         let parent = input.parentConstructorCall
         let delegation = input.constructorDelegation
         return BoundFunctionUnit(input.identity, input.name, input.returnType,
@@ -18,7 +25,31 @@ abstract class extends BoundFunctionLoweringPass {
                 parent.argumentConversions(), parent.range) : null,
             delegation ? BoundConstructorDelegation(delegation.target,
                 lowerExpressions(delegation.argumentValues()), delegation.argumentConversions(), delegation.range) : null,
-            input.asyncFunction, input.externalName, input.abstractFunction, input.lazyProperty)
+            input.asyncFunction, input.externalName, input.abstractFunction, input.lazyProperty,
+            lowerConstructorPlan(input.constructorPlan))
+    }
+
+    /** Immutable field copies retain both member provenance and canonical ownership. */
+    public lowerField(BoundFieldUnit field) -> BoundFieldUnit => BoundFieldUnit(
+        field.name, field.identity, field.semanticType, field.range, field.visibleField,
+        lowerExpression(field.initializer), field.staticField, field.mutableField,
+        field.nativeArrayStorage, field.ownerIdentity)
+
+    public lowerConstructorPlan(BoundConstructorPlan plan) -> BoundConstructorPlan {
+        if (!plan) return null
+        let calls = BoundCallExpression[]
+        for (call in plan.initializationCalls()) {
+            Object selectedSource = lowerExpression(call)
+            if (!selectedSource.class.isOfType(BoundCallExpression.class)) {
+                throw Exception("Constructor initializer lowering must preserve selected call")
+            }
+            calls.add((BoundCallExpression)selectedSource)
+        }
+        let parent = plan.parentCall
+        return BoundConstructorPlan(plan.entry, plan.fieldInitializer,
+            lowerStatements(plan.preBaseStatements()), parent ? BoundParentConstructorCall(parent.target,
+                lowerExpressions(parent.argumentValues()), parent.argumentConversions(), parent.range) : null,
+            calls, plan.delegationPath(), plan.range)
     }
 
     public lowerParameters(BoundFunctionParameter[] parameters) -> BoundFunctionParameter[] {
@@ -100,7 +131,7 @@ abstract class extends BoundFunctionLoweringPass {
             Object castSource11 = statement
             BoundLocalDeclarationStatement value = (BoundLocalDeclarationStatement)castSource11
             output.add(BoundLocalDeclarationStatement(value.range, value.local,
-                lowerExpression(value.initializer), value.conversion))
+                lowerExpression(value.initializer), value.conversion, value.evaluationLocal))
         } else if (statement.class.isOfType(BoundAssignmentStatement.class)) {
             Object castSource12 = statement
             BoundAssignmentStatement value = (BoundAssignmentStatement)castSource12

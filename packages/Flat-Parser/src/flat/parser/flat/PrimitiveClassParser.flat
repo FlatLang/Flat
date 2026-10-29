@@ -7,6 +7,7 @@ class {
     var Token[] tokens
     var SourceSnapshotIdentity snapshot
     var Int tokenIndexOffset
+    var Int[] sourceTokenIndexes = Int[]
     var Int index
 
     public parse(
@@ -15,11 +16,32 @@ class {
         Int sourceTokenIndexOffset = 0,
         String implicitName = null
     ) -> PrimitiveClassSyntax {
+        try {
+            return parseTokens(tokenValues, sourceSnapshot, sourceTokenIndexOffset, implicitName)
+        } catch (Exception error) {
+            if (!error.class.isOfType(ParseFailure.class)) throw error
+            let failure = (ParseFailure)error
+            throw failure.remapTokenIndexes(sourceTokenIndexes, tokenIndexOffset)
+        }
+    }
+
+    parseTokens(
+        Token[] tokenValues,
+        SourceSnapshotIdentity sourceSnapshot,
+        Int sourceTokenIndexOffset = 0,
+        String implicitName = null
+    ) -> PrimitiveClassSyntax {
         if (!tokenValues || !sourceSnapshot) throw Exception("Primitive class parsing requires tokens and snapshot")
-        tokens = tokenValues.filter({
-            let type = _.type
-            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
-        })
+        tokens = Token[]
+        sourceTokenIndexes = Int[]
+        var Int sourceIndex = sourceTokenIndexOffset
+        for (token in tokenValues) {
+            if (token.type != Token.Type.WHITESPACE && token.type != Token.Type.COMMENT) {
+                tokens.add(token)
+                sourceTokenIndexes.add(sourceIndex)
+            }
+            sourceIndex++
+        }
         snapshot = sourceSnapshot
         tokenIndexOffset = sourceTokenIndexOffset
         index = 0
@@ -51,10 +73,11 @@ class {
             require(">")
         }
         var String parentName
+        var PrimitiveTypeReferenceSyntax parentType
         if (index < tokens.count && tokens[index].value == "extends") {
             index++
-            parentName = identifier("Expected parent class name")
-            if (index < tokens.count && tokens[index].value == "<") skipGenericArguments()
+            parentType = parentTypeReference(false)
+            parentName = parentType.name
         }
         let implementedTypeNames = String[]
         if (index < tokens.count && tokens[index].value == "implements") {
@@ -405,7 +428,7 @@ class {
         return PrimitiveClassSyntax(
             range(start, index), name, genericParameterName, parentName,
             fields, constructorValue, methods, implementedTypeNames, abstractClass,
-            arrayOverrides, constructorValues
+            arrayOverrides, constructorValues, parentType
         )
     }
 
@@ -663,15 +686,46 @@ class {
             value == "external_name" || value == "native_array" || value == "native" ||
             value == "abstract" || value == "override"
 
-    skipGenericArguments() {
-        require("<")
-        var Int depth = 1
-        while (index < tokens.count && depth > 0) {
-            if (tokens[index].value == "<") depth++
-            else if (tokens[index].value == ">") depth--
+    /** Parse declaration-header structure without semantic resolution or a
+     * spelling round trip. Each argument is consumed once in source order. */
+    parentTypeReference(Bool argument) -> PrimitiveTypeReferenceSyntax {
+        let start = index
+        var String name = identifier("Expected parent type name")
+        while (index < tokens.count && tokens[index].value == ".") {
             index++
+            name += "." + identifier("Expected qualified parent type name")
         }
-        if (depth != 0) syntax("Unterminated generic arguments", index)
+        let arguments = PrimitiveTypeReferenceSyntax[]
+        if (index < tokens.count && tokens[index].value == "<") {
+            index++
+            arguments.add(parentTypeReference(true))
+            while (index < tokens.count && tokens[index].value == ",") {
+                index++
+                arguments.add(parentTypeReference(true))
+            }
+            require(">")
+        }
+        var Int dimensions
+        if (argument) {
+            while (index < tokens.count && tokens[index].value == "[") {
+                index++
+                require("]")
+                dimensions++
+            }
+        }
+        var Bool nullableType
+        if (argument && index < tokens.count && tokens[index].value == "?") {
+            index++
+            nullableType = true
+        }
+        // This parser filters trivia, but published references use original
+        // source indexes directly, including offset and internal trivia gaps.
+        let first = tokens[start]
+        let last = tokens[index - 1]
+        let referenceRange = SourceRange(snapshot, sourceTokenIndexes[start],
+            sourceTokenIndexes[index - 1] + 1, first.location,
+            Location(lineNumber: last.endLineNumber, column: last.endColumn))
+        return PrimitiveTypeReferenceSyntax(referenceRange, name, arguments, dimensions, nullableType)
     }
 
     abstractDeclarationEnd(Int start) -> Int {

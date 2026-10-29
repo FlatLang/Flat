@@ -1,0 +1,139 @@
+package flat/bound
+
+import flat/semantic/types
+
+/** Owner-local validation of lexical setup before an instance exists. */
+class extends BoundTreeLoweringPass {
+    var String[] available = String[]
+    var Int lambdaDepth
+    override public name() => "constructor-plan-safety"
+    override public inputInvariant() => "selected-constructor-plan"
+    override public outputInvariant() => "receiver-free-constructor-setup"
+
+    public validate(BoundConstructorPlan plan, BoundFunctionParameter[] parameters) {
+        available = String[]
+        lambdaDepth = 0
+        for (parameter in parameters) {
+            // Defaults see earlier parameters, never self or later parameters.
+            if (parameter.defaultValue) lowerExpression(parameter.defaultValue)
+            available.add(parameter.identity.value)
+        }
+        let output = BoundStatement[]
+        for (statement in plan.preBaseStatements()) lowerStatement(statement, output)
+        if (plan.parentCall) lowerExpressions(plan.parentCall.argumentValues())
+        for (call in plan.initializationCalls()) lowerExpressions(call.argumentValues())
+    }
+
+    override public lowerStatements(BoundStatement[] statements) -> BoundStatement[] {
+        let outer = String[]:addAll(available)
+        let result = super.lowerStatements(statements)
+        available = outer
+        return result
+    }
+
+    override public lowerStatement(BoundStatement statement, BoundStatement[] output) {
+        if (lambdaDepth == 0 && (statement.class.isOfType(BoundReturnStatement.class) ||
+            statement.class.isOfType(BoundBreakStatement.class) ||
+            statement.class.isOfType(BoundContinueStatement.class))) {
+            throw Exception("Constructor pre-base setup cannot escape its execution owner")
+        }
+        if (statement.class.isOfType(BoundExternalStatement.class)) {
+            let value = (BoundExternalStatement)statement
+            for (binding in value.nameBindingValues()) lowerExpression(binding.value)
+            for (segment in value.segmentValues()) {
+                if (segment.value) lowerExpression(segment.value)
+                else if (segment.text.contains("this") || segment.text.contains("super") ||
+                    segment.text.contains("return") || segment.text.contains("await") ||
+                    segment.text.contains("break") || segment.text.contains("continue") ||
+                    segment.text.contains("eval") || segment.text.contains("Function(")) {
+                    throw Exception("Constructor pre-base opaque control or receiver access is not representable")
+                }
+            }
+            output.add(statement)
+            return
+        }
+        if (statement.class.isOfType(BoundAssignmentStatement.class)) {
+            let value = (BoundAssignmentStatement)statement
+            lowerExpression(value.target)
+        }
+        if (statement.class.isOfType(BoundLocalDeclarationStatement.class)) {
+            let value = (BoundLocalDeclarationStatement)statement
+            if (available.contains(value.local.symbolIdentity.value)) {
+                throw Exception("Constructor setup local identity is repeated")
+            }
+            lowerExpression(value.initializer)
+            available.add(value.local.symbolIdentity.value)
+            output.add(statement)
+            return
+        }
+        super.lowerStatement(statement, output)
+    }
+
+    override public lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (!expression) return null
+        if (lambdaDepth == 0 && expression.class.isOfType(BoundDeferredExpression.class)) {
+            throw Exception("Constructor pre-base setup cannot introduce deferred execution")
+        }
+        if (expression.class.isOfType(BoundReferenceExpression.class)) {
+            let value = (BoundReferenceExpression)expression
+            if (value.symbolIdentity.symbolKind == "receiver") {
+                throw Exception("Constructor pre-base setup cannot access or capture receiver")
+            }
+            if (!value.staticOwner && !available.contains(value.symbolIdentity.value)) {
+                throw Exception("Constructor setup reference is not lexically bound: " + value.symbolIdentity.value)
+            }
+            return expression
+        }
+        if (expression.class.isOfType(BoundLambdaExpression.class)) {
+            let value = (BoundLambdaExpression)expression
+            let outer = String[]:addAll(available)
+            for (capture in value.captureValues()) lowerExpression(capture)
+            for (parameter in value.parameterValues()) {
+                if (parameter.defaultValue) lowerExpression(parameter.defaultValue)
+                available.add(parameter.identity.value)
+            }
+            lambdaDepth++
+            lowerExpression(value.body)
+            lowerStatements(value.statementValues())
+            lambdaDepth--
+            available = outer
+            return expression
+        }
+        if (expression.class.isOfType(BoundEvaluationExpression.class)) {
+            let value = (BoundEvaluationExpression)expression
+            let output = BoundStatement[]
+            for (statement in value.setup()) lowerStatement(statement, output)
+            lowerExpression(value.value)
+            return expression
+        }
+        if (expression.class.isOfType(BoundCallExpression.class)) {
+            let value = (BoundCallExpression)expression
+            if (lambdaDepth == 0 && value.target.asyncFunction && !value.suppressAwait) {
+                throw Exception("Constructor setup cannot suspend")
+            }
+            if (value.target.identity.declaration.declarationKind == "constructor-fields" ||
+                value.target.identity.declaration.declarationKind == "constructor-body") {
+                throw Exception("Constructor setup cannot execute an initializer stage")
+            }
+        }
+        if (expression.class.isOfType(BoundFunctionInvocationExpression.class)) {
+            let value = (BoundFunctionInvocationExpression)expression
+            Object typeSource = value.functionValue.semanticType
+            FunctionSemanticType type = (FunctionSemanticType)typeSource
+            if (lambdaDepth == 0 && type.asyncFunction && !value.suppressAwait) throw Exception("Constructor setup cannot suspend")
+        }
+        if (expression.class.isOfType(BoundClassNameExpression.class)) {
+            let value = (BoundClassNameExpression)expression
+            lowerExpression(value.receiver)
+            return expression
+        }
+        if (expression.class.isOfType(BoundAssignmentValueExpression.class)) {
+            let value = (BoundAssignmentValueExpression)expression
+            lowerExpression(value.target)
+        }
+        if (expression.class.isOfType(BoundExternalExpression.class)) {
+            throw Exception("Constructor pre-base setup requires typed native call evidence")
+        }
+        return super.lowerExpression(expression)
+    }
+}

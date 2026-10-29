@@ -1,7 +1,7 @@
 {
   "name": "Flat-Compiler",
   "version": "0.1.0",
-  "description": "Flat Compiler",
+  "description": "Bounded Flat compiler orchestration with Node ES6 library, executable and controlled production-driver entrypoints",
   "author": "Braden Steffaniak",
   "license": "ISC",
   "defaultTarget": "es6",
@@ -33,11 +33,14 @@
         "https://github.com/FlatLang/Future.git": "master",
         "https://github.com/FlatLang/Event-Stream.git": "master",
         "https://github.com/FlatLang/Flat-Name-Binding.git": "master",
+        "https://github.com/FlatLang/Flat-Bound-IR.git": "master",
+        "https://github.com/FlatLang/Flat-Type-System.git": "master",
         "https://github.com/FlatLang/Flat-ES6-Bound-Writer.git": "master"
       }
     },
     "flatc": {
       "mainClass": "flat/compiler/CompilerCli",
+      "outFile": "index.js",
       "bin": "flatc",
       "dependencies": {}
     },

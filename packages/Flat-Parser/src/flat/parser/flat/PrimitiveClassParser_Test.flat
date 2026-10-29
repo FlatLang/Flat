@@ -4,6 +4,154 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `parent reference retains nested ordered arguments with original ranges`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:parent-retention"), "one")
+        let stream = Lexer().lex("class Short extends Number<Short> {}")
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let syntax = PrimitiveClassParser().parse(tokens, snapshot, 40)
+        expect(syntax.parentName).toBe("Number")
+        expect(syntax.parentType.name).toBe("Number")
+        expect(syntax.parentType.typeArguments().first.name).toBe("Short")
+        expect(syntax.parentType.range.snapshot).toBe(snapshot)
+        var Int parentStart = -1
+        var Int argumentStart = -1
+        var Int parentEnd = -1
+        var Int index
+        for (token in tokens) {
+            if (token.value == "Number") parentStart = index
+            if (token.value == "Short" && parentStart >= 0) argumentStart = index
+            if (token.value == ">") parentEnd = index + 1
+            index++
+        }
+        expect(syntax.parentType.range.startTokenIndex).toBe(40 + parentStart)
+        expect(syntax.parentType.range.endTokenIndex).toBe(40 + parentEnd)
+        expect(syntax.parentType.range.start.column).toBe(tokens[parentStart].location.column)
+        expect(syntax.parentType.range.end.column).toBe(tokens[parentEnd - 1].endColumn)
+        expect(syntax.parentType.typeArguments().first.range.startTokenIndex).toBe(40 + argumentStart)
+        expect(syntax.parentType.typeArguments().first.range.endTokenIndex).toBe(41 + argumentStart)
+        let arguments = syntax.parentType.typeArguments()
+        arguments.clear()
+        expect(syntax.parentType.typeArguments().count).toBe(1)
+
+        let nestedStream = Lexer().lex("class Child extends pkg.Parent<Left<Short>, Right<Int[]>?> implements Marker {}")
+        nestedStream.emit("start")
+        let nestedTokens = nestedStream.consumeAll<Token>("data")
+        let nested = PrimitiveClassParser().parse(nestedTokens, snapshot)
+        expect(nested.parentName).toBe("pkg.Parent")
+        expect(nested.parentType.name).toBe("pkg.Parent")
+        expect(nested.parentType.typeArguments().count).toBe(2)
+        expect(nested.parentType.typeArguments().first.name).toBe("Left")
+        expect(nested.parentType.typeArguments().first.typeArguments().first.name).toBe("Short")
+        expect(nested.parentType.typeArguments().last.name).toBe("Right")
+        expect(nested.parentType.typeArguments().last.nullableType).toBe(true)
+        expect(nested.parentType.typeArguments().last.typeArguments().first.name).toBe("Int")
+        expect(nested.parentType.typeArguments().last.typeArguments().first.arrayDimensions).toBe(1)
+        let firstArgument = nested.parentType.typeArguments().first
+        let lastArgument = nested.parentType.typeArguments().last
+        expect(firstArgument.range.start.column).toBe(nestedTokens[firstArgument.range.startTokenIndex].location.column)
+        expect(firstArgument.range.end.column).toBe(nestedTokens[firstArgument.range.endTokenIndex - 1].endColumn)
+        expect(lastArgument.range.start.column).toBe(nestedTokens[lastArgument.range.startTokenIndex].location.column)
+        expect(lastArgument.range.end.column).toBe(nestedTokens[lastArgument.range.endTokenIndex - 1].endColumn)
+        expect(nestedTokens[firstArgument.range.startTokenIndex].value).toBe("Left")
+        expect(nestedTokens[lastArgument.range.startTokenIndex].value).toBe("Right")
+        expect(nestedTokens[lastArgument.range.endTokenIndex - 1].value).toBe("?")
+        expect(nested.implementedTypeNames()).toBe(["Marker"])
+        expect(nested.parentType.arrayDimensions).toBe(0)
+        expect(nested.parentType.nullableType).toBe(false)
+        let deepStream = Lexer().lex("class Child extends Parent<Box<List<Short>>> {}")
+        deepStream.emit("start")
+        let deep = PrimitiveClassParser().parse(deepStream.consumeAll<Token>("data"), snapshot)
+        expect(deep.parentType.typeArguments().first.typeArguments().first.typeArguments().first.name).toBe("Short")
+        let originalArguments = PrimitiveTypeReferenceSyntax[]
+        originalArguments.add(syntax.parentType.typeArguments().first)
+        let copied = PrimitiveTypeReferenceSyntax(syntax.parentType.range, "Number", originalArguments)
+        originalArguments.clear()
+        expect(copied.typeArguments().count).toBe(1)
+    }
+
+    async test `parent syntax keeps old construction and overlay compatibility`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:parent-overlay"), "one")
+        let stream = Lexer().lex("class Child extends Parent<Int> {}")
+        stream.emit("start")
+        let canonical = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let overlayStream = Lexer().lex("class Child {}")
+        overlayStream.emit("start")
+        let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), snapshot)
+        expect(overlay.parentType == null).toBe(true)
+        let merged = canonical.mergedWith(overlay)
+        expect(merged.parentType).toBe(canonical.parentType)
+        expect(merged.parentType.typeArguments().first.name).toBe("Int")
+        let legacy = PrimitiveClassSyntax(canonical.range, canonical.name,
+            canonical.genericParameterName, canonical.parentName, canonical.fieldValues(),
+            canonical.constructorValue, canonical.methodValues())
+        expect(legacy.parentName).toBe("Parent")
+        expect(legacy.parentType == null).toBe(true)
+        let plainStream = Lexer().lex("class Child extends Parent {}")
+        plainStream.emit("start")
+        let plain = PrimitiveClassParser().parse(plainStream.consumeAll<Token>("data"), snapshot)
+        expect(plain.parentType.name).toBe("Parent")
+        expect(plain.parentType.typeArguments().isEmpty).toBe(true)
+        let implicitStream = Lexer().lex("class extends Number<Short> {}")
+        implicitStream.emit("start")
+        let implicitSyntax = PrimitiveClassParser().parse(implicitStream.consumeAll<Token>("data"),
+            snapshot, implicitName: "Short")
+        expect(implicitSyntax.name).toBe("Short")
+        expect(implicitSyntax.parentName).toBe("Number")
+        expect(implicitSyntax.parentType.typeArguments().first.name).toBe("Short")
+    }
+
+    async test `malformed parent arguments reject at original source tokens`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:bad-parent"), "one")
+        let sources = ["class Child extends Parent<> {}", "class Child extends Parent<Int,> {}",
+            "class Child extends Parent<Int Bool> {}", "class Child extends Parent<,Int> {}",
+            "class Child extends Parent<Box<Int> {}", "class Child extends Parent<Int {}",
+            "class Child extends Parent[] {}", "class Child extends Parent? {}"]
+        let invalidTokens = [">", ">", "Bool", ",", "{", "{", "[", "?"]
+        var Int caseIndex
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data")
+            var ParseFailure failure
+            try { PrimitiveClassParser().parse(tokens, snapshot, 25) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure).toNotBe(null)
+            expect(failure.diagnostic.code).toBe("invalid-class-syntax")
+            expect(failure.diagnostic.snapshot).toBe(snapshot)
+            let originalIndex = failure.diagnostic.range.startTokenIndex - 25
+            expect(originalIndex >= 0 && originalIndex < tokens.count).toBe(true)
+            expect(failure.diagnostic.range.start.column).toBe(tokens[originalIndex].location.column)
+            expect(failure.diagnostic.range.endTokenIndex).toBe(26 + originalIndex)
+            expect(tokens[originalIndex].value).toBe(invalidTokens[caseIndex])
+            caseIndex++
+        }
+    }
+
+    async test `class diagnostics preserve trivia indexes across valid neighboring members`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:class-diagnostic-gaps"), "original")
+        let stream = Lexer().lex("class Example { good() {} broken( Int value, ) {} }")
+        stream.emit("start")
+        let values = stream.consumeAll<Token>("data")
+        var ParseFailure failure
+        try { PrimitiveClassParser().parse(values, snapshot, 30) }
+        catch (ParseFailure error) { failure = error }
+        expect(failure).toNotBe(null)
+        expect(failure.diagnostic.snapshot).toBe(snapshot)
+        var Int cursor
+        var Int closing = -1
+        var Bool commaSeen
+        for (token in values) {
+            if (token.value == ",") commaSeen = true
+            if (commaSeen && token.value == ")" && closing < 0) closing = cursor
+            cursor++
+        }
+        expect(closing >= 0).toBe(true)
+        expect(failure.diagnostic.range.startTokenIndex).toBe(30 + closing)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(31 + closing)
+        expect(failure.diagnostic.range.start.column).toBe(values[closing].location.column)
+    }
+
     async test `bodyless callable declarations retain complete contracts`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:interface-callable-contract"), "one")
         let stream = Lexer().lex("trait Bridge<E> { public native text() -> String " +

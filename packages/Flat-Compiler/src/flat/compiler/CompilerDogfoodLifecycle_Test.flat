@@ -229,11 +229,13 @@ testable class {
     }
 
     async test `package cancellation at one and three waits for every admitted cleanup callback`() {
-        cancellationSchedule(1)
-        cancellationSchedule(3)
+        cancellationSchedule(1, false)
+        cancellationSchedule(1, true)
+        cancellationSchedule(3, false)
+        cancellationSchedule(3, true)
     }
 
-    async cancellationSchedule(Int parallelism) {
+    async cancellationSchedule(Int parallelism, Bool reverse) {
         let provider = GatedProvider(4, holdCleanup: true)
         let sink = MemoryCompilerArtifactSink()
         let session = CompilerSession()
@@ -253,10 +255,12 @@ testable class {
             if (!session.completion.completed) cleanupWaitSamples++
             expect(session.completion.completed).toBe(false)
         }
-        for (index in 0..parallelism) {
+        for (offset in 0..parallelism) {
+            let index = reverse ? parallelism - 1 - offset : offset
             expect(session.completion.completed).toBe(false)
             provider.gates[index].cleanupRelease.complete(true)
             provider.gates[index].settled.get()
+            expect(provider.settlementOrder[offset]).toBe("Value#{index}.flat")
         }
         let summary = session.completion.get()
         expect(summary.cancelled).toBe(true)

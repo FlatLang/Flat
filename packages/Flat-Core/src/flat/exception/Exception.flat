@@ -4,12 +4,13 @@ class {
     visible StackTrace stackTrace = StackTrace()
 
     public construct(visible String message = "") {
+        let text = message == null ? "" : message
         external js {
-            this.error = Error(#{message.chars.data});
+            this.error = Error(#{text.chars.data});
         }
     }
 
-    public toString() => this.class.name + (message ? ": #message" : "")
+    public toString() => this.class.name + (message != null && message.count > 0 ? ": #message" : "")
 
     [Target c]
     public onThrown(Bool soft) {

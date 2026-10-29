@@ -772,24 +772,34 @@ class {
         return PrimitiveClassSyntax(syntax.range, syntax.name, syntax.genericParameterName,
             syntax.parentName, fields, syntax.constructorValue, methods,
             syntax.implementedTypeNames(), syntax.abstractClass,
-            syntax.arrayOverrideValues(), syntax.constructorValues())
+            syntax.arrayOverrideValues(), syntax.constructorValues(), syntax.parentType)
     }
 
     publishTraitStorage(PrimitiveClassSyntax syntax, String implementedName,
-        PrimitiveFieldSyntax[] fields, String[] path) {
+        PrimitiveFieldSyntax[] fields, String[] path,
+        PrimitiveResolvedDeclarationContext edgeContext = null) {
+        let context = edgeContext ?: signatureContext
         let open = implementedName.indexOf("<", defaultReturnValue: -1)
         let name = open < 0 ? implementedName : implementedName.substring(0, open)
-        if (path.contains(name)) throw Exception("Trait storage cycle '#name'")
-        let contract = signatureContext ? signatureContext.interfaceFor(
-            signatureContext.resolve(name, syntax.range)) : interfaces.firstOrNull({ _.name == name })
+        let identity = context ? context.resolve(name, syntax.range) : null
+        let contract = context ? context.interfaceFor(identity) : interfaces.firstOrNull({ _.name == name })
         if (!contract) return
-        let arguments = open < 0 ? String[] : splitOverrideTypes(implementedName.substring(open + 1, implementedName.count - 1))
+        let contractIdentity = identity ?: DeclarationIdentity(
+            SyntaxIslandIdentity(contract.range.snapshot, "interface", contract.range.startTokenIndex), "interface", contract.name)
+        if (path.contains(contractIdentity.value)) throw Exception("Trait storage cycle '#name'")
+        let arguments = String[]
+        if (open >= 0) {
+            for (argument in splitOverrideTypes(implementedName.substring(open + 1, implementedName.count - 1))) {
+                arguments.add(qualifyTraitEdge(argument, classGenericNames(syntax), context, syntax.range))
+            }
+        }
         let parameters = contract.genericParameterNames()
         if (parameters.count != arguments.count) throw Exception("Trait storage generic arity mismatch")
         for (member in contract.methodValues()) {
             if (!member.storageProperty || fields.any({ _.name == member.name }) ||
                 syntax.methodValues().any({ _.name == member.name })) continue
-            let typeName = substituteTraitTypeNames(member.returnTypeName, parameters, arguments)
+            let typeName = substituteTraitTypeNames(qualifyTraitEdge(member.returnTypeName, parameters,
+                context ? context.scopeFor(contractIdentity) : null, member.range), parameters, arguments)
             fields.add(PrimitiveFieldSyntax(member.range, typeName, member.name, true,
                 member.defaultValue, mutableField: true,
                 nativeArrayStorage: member.nativeArrayReturnModifierRange != null,
@@ -797,18 +807,48 @@ class {
                     member.nativeArrayReturnModifierRange == null))
         }
         let visited = String[]:addAll(path)
-        visited.add(name)
+        visited.add(contractIdentity.value)
         for (parent in contract.parentTypeNames()) {
-            let instantiated = substituteTraitTypeNames(parent, parameters, arguments)
-            publishTraitStorage(syntax, instantiated, fields, visited)
+            let instantiated = substituteTraitTypeNames(qualifyTraitEdge(parent, parameters,
+                context ? context.scopeFor(contractIdentity) : null, contract.range), parameters, arguments)
+            publishTraitStorage(syntax, instantiated, fields, visited,
+                context ? context.scopeFor(contractIdentity) : null)
         }
+    }
+
+    classGenericNames(PrimitiveClassSyntax syntax) -> String[] {
+        let names = String[]
+        if (syntax.genericParameterName) names.add(syntax.genericParameterName)
+        return names
+    }
+
+    /** Qualify edge-authored identifiers before inserting consumer arguments. */
+    qualifyTraitEdge(String value, String[] parameters, PrimitiveResolvedDeclarationContext context, SourceRange range) -> String {
+        if (!context) return value
+        let scalars = ["Bool", "Byte", "Short", "Int", "Long", "Float", "Double", "Char", "UInt", "ULong", "UShort", "UByte", "Unit", "Void", "func", "async"]
+        let identifierCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_/"
+        var String result = ""
+        var Int index
+        while (index < value.count) {
+            let start = index
+            while (index < value.count && identifierCharacters.contains(value.substring(index, index + 1))) index++
+            if (start == index) { result += value.substring(index, index + 1); index++; continue }
+            let name = value.substring(start, index)
+            let callbackName = start > 0 && value.substring(start - 1, start) == " " &&
+                index < value.count && (value.substring(index, index + 1) == "," || value.substring(index, index + 1) == ")")
+            if (callbackName || parameters.contains(name) || scalars.contains(name) || name.contains("/")) { result += name; continue }
+            let found = context.visibleCandidates(name, range)
+            if (found.isEmpty) result += name
+            else result += context.qualifiedName(context.resolve(name, range))
+        }
+        return result
     }
 
     /** Substitute complete type identifiers simultaneously, never substrings or inserted arguments. */
     substituteTraitTypeNames(String value, String[] parameters, String[] arguments) -> String {
         var String result = ""
         var Int index
-        let identifierCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+        let identifierCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_/"
         while (index < value.count) {
             let start = index
             while (index < value.count &&
@@ -832,17 +872,25 @@ class {
 
     /** Resolve each contract edge before publishing defaults; the path bounds cycles to this partition. */
     publishTraitDefaults(PrimitiveClassSyntax syntax, String implementedName,
-        PrimitiveFunctionSyntax[] methods, String[] path) {
+        PrimitiveFunctionSyntax[] methods, String[] path,
+        PrimitiveResolvedDeclarationContext edgeContext = null) {
+        let context = edgeContext ?: signatureContext
         let open = implementedName.indexOf("<", defaultReturnValue: -1)
         let contractName = open < 0 ? implementedName : implementedName.substring(0, open)
-        let contract = signatureContext ? signatureContext.interfaceFor(
-            signatureContext.resolve(contractName, syntax.range)) : interfaces.firstOrNull({ _.name == contractName })
+        let identity = context ? context.resolve(contractName, syntax.range) : null
+        let contract = context ? context.interfaceFor(identity) : interfaces.firstOrNull({ _.name == contractName })
         if (!contract) return
-        if (path.contains(contractName)) throw Exception("Cyclic trait inheritance '#contractName'")
+        let contractIdentity = identity ?: DeclarationIdentity(
+            SyntaxIslandIdentity(contract.range.snapshot, "interface", contract.range.startTokenIndex), "interface", contract.name)
+        if (path.contains(contractIdentity.value)) throw Exception("Cyclic trait inheritance '#contractName'")
         let visited = String[]:addAll(path)
-        visited.add(contractName)
-        let arguments = open < 0 ? String[] :
-            splitOverrideTypes(implementedName.substring(open + 1, implementedName.count - 1))
+        visited.add(contractIdentity.value)
+        let arguments = String[]
+        if (open >= 0) {
+            for (argument in splitOverrideTypes(implementedName.substring(open + 1, implementedName.count - 1))) {
+                arguments.add(qualifyTraitEdge(argument, classGenericNames(syntax), context, syntax.range))
+            }
+        }
         let parameters = contract.genericParameterNames()
         if (arguments.count != parameters.count) throw Exception("Trait implementation generic arity mismatch")
         for (member in contract.methodValues()) {
@@ -858,21 +906,11 @@ class {
             }
             methods.add(implementation)
         }
+        let parentContext = context ? context.scopeFor(contractIdentity) : null
         for (parentName in contract.parentTypeNames()) {
-            let parentOpen = parentName.indexOf("<", defaultReturnValue: -1)
-            if (parentOpen < 0) {
-                publishTraitDefaults(syntax, parentName, methods, visited)
-                continue
-            }
-            let instantiated = String[]
-            for (argument in splitOverrideTypes(parentName.substring(
-                parentOpen + 1, parentName.count - 1))) {
-                let position = parameters.indexOf(argument, defaultReturnValue: -1)
-                instantiated.add(position < 0 ? argument : arguments[position])
-            }
             publishTraitDefaults(syntax,
-                parentName.substring(0, parentOpen) + "<" + instantiated.join(",") + ">",
-                methods, visited)
+                substituteTraitTypeNames(qualifyTraitEdge(parentName, parameters, parentContext, contract.range), parameters, arguments),
+                methods, visited, parentContext)
         }
     }
 
@@ -893,9 +931,19 @@ class {
         if (memberGenerics.count != methodGenerics.count) return false
         let memberTypes = member.parameterTypeNames()
         let methodParameters = method.parameterValues()
+        let traitParameters = String[]:addAll(parameters)
+        traitParameters.addAll(memberGenerics)
+        traitParameters.add(contract.name)
+        let classParameters = String[]
+        if (syntax.genericParameterName) classParameters.add(syntax.genericParameterName)
+        classParameters.addAll(methodGenerics)
+        classParameters.add(syntax.name)
+        let memberContext = signatureContext ? signatureContext.scopeForSnapshot(member.range.snapshot) : null
+        let methodContext = signatureContext ? signatureContext.scopeForSnapshot(method.range.snapshot) : null
         var Int index
         while (index < memberTypes.count) {
-            if (!sameOverrideType(memberTypes[index], methodParameters[index].typeName,
+            if (!sameOverrideType(qualifyTraitEdge(memberTypes[index], traitParameters, memberContext, member.range),
+                qualifyTraitEdge(methodParameters[index].typeName, classParameters, methodContext, method.range),
                 contract.name, syntax.name, parameters, arguments,
                 memberGenerics, methodGenerics)) return false
             index++
@@ -1008,6 +1056,9 @@ class {
                 "class", syntax.name
             )
             let owner = UserClassSemanticType(ownerIdentity)
+            var SemanticType selfType = owner
+            if (syntax.genericParameterName) selfType = GenericInstanceSemanticType(owner,
+                [GenericParameterSemanticType(ownerIdentity, syntax.genericParameterName, 0)])
             var Int ordinal
             for (method in syntax.methodValues()) {
                 let methodKind = method.staticMethod ? "static-method" : "instance-method"
@@ -1049,7 +1100,7 @@ class {
                     let inferredObject = (Object)returnAnchor
                     let inferredSyntax = (PrimitiveReturnSyntax)inferredObject
                     if (inferredSyntax.value && inferredSyntax.value.class.isOfType(PrimitiveReferenceSyntax.class) &&
-                        ((PrimitiveReferenceSyntax)inferredSyntax.value).name == "this") inferredMethodReturn = owner
+                        ((PrimitiveReferenceSyntax)inferredSyntax.value).name == "this") inferredMethodReturn = selfType
                     if (inferredSyntax.value &&
                         inferredSyntax.value.class.isOfType(PrimitiveReferenceSyntax.class)) {
                         let reference = (PrimitiveReferenceSyntax)inferredSyntax.value
@@ -1060,6 +1111,40 @@ class {
                                 break
                             }
                             parameterIndex++
+                        }
+                    }
+                    if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value &&
+                        inferredSyntax.value.class.isOfType(PrimitiveMemberCallSyntax.class)) {
+                        let call = (PrimitiveMemberCallSyntax)inferredSyntax.value
+                        if (call.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                            let name = ((PrimitiveReferenceSyntax)call.receiver).name
+                            let context = signatureContext ? signatureContext.scopeForSnapshot(method.range.snapshot) : null
+                            var DeclarationIdentity targetIdentity
+                            var PrimitiveClassSyntax targetOwner
+                            if (context) {
+                                let visible = context.visibleCandidates(name)
+                                if (visible.count == 1 &&
+                                    !method.parameterValues().any((parameter) => parameter.name == name) &&
+                                    !syntax.fieldValues().any((field) => field.name == name)) {
+                                    targetIdentity = visible.first
+                                    targetOwner = context.classFor(targetIdentity)
+                                }
+                            } else targetOwner = syntaxes.firstOrNull((candidate) => candidate.name == name)
+                            if (targetOwner && !targetOwner.genericParameterName) {
+                                let targets = targetOwner.methodValues().filter((candidate) => candidate.staticMethod &&
+                                    candidate.name == call.memberName && !candidate.inferredReturnType &&
+                                    candidate.genericParameterNames().isEmpty &&
+                                    candidate.parameterValues().count == call.argumentValues().count)
+                                // A single declared contract can seed its result before its body settles.
+                                // Overloaded or contextual calls must still wait for typed selection.
+                                if (targets.count == 1) {
+                                    let target = targets.first
+                                    inferredMethodReturn = signatureType(target.returnTypeName, syntaxes, snapshot,
+                                        null, GenericParameterSemanticType[], targetOwner, target.range,
+                                        nativeArrayStorage: target.nativeArrayReturnModifierRange != null,
+                                        nativeScalarStorage: target.nativeReturnModifierRange != null && target.nativeArrayReturnModifierRange == null)
+                                }
+                            }
                         }
                     }
                     if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value &&
@@ -1120,7 +1205,7 @@ class {
                 let declaredReturnType = method.inferredReturnType
                     ? inferredMethodReturn
                     : method.returnTypeName == "this"
-                    ? owner :
+                    ? selfType :
                     signatureType(method.returnTypeName, syntaxes, snapshot, classGeneric, methodGenerics, syntax, method.range,
                         nativeArrayStorage: method.nativeArrayReturnModifierRange != null,
                         nativeScalarStorage: method.nativeReturnModifierRange != null && method.nativeArrayReturnModifierRange == null)
@@ -1373,17 +1458,14 @@ class {
             ) : null
             var Int ordinal
             for (field in syntax.fieldValues()) {
-                let fieldRange = SourceRange(
-                    syntaxSnapshot, field.range.startTokenIndex, field.range.endTokenIndex,
-                    field.range.start, field.range.end
-                )
+                let fieldRange = field.range
                 result.add(BoundFieldUnit(
-                    field.name, SymbolIdentity(ownerIdentity, "field", ordinal),
+                    field.name, PrimitiveFieldIdentity.create(ownerIdentity, field.name, field.range),
                     signatureType(field.typeName, syntaxes, snapshot, classGeneric,
                         implementationOwner: syntax, implementationRange: field.range,
                         nativeArrayStorage: field.nativeArrayStorage, nativeScalarStorage: field.nativeScalarStorage), fieldRange,
                     field.visibleField, staticField: field.staticField,
-                    mutableField: field.mutableField, nativeArrayStorage: field.nativeArrayStorage
+                    mutableField: field.mutableField, nativeArrayStorage: field.nativeArrayStorage, ownerIdentity: ownerIdentity
                 ))
                 ordinal++
             }
@@ -1399,10 +1481,7 @@ class {
             }
             for (parameter in constructorFields) {
                 if (syntax.fieldValues().any({ _.name == parameter.name })) continue
-                let parameterRange = SourceRange(
-                    syntaxSnapshot, parameter.range.startTokenIndex, parameter.range.endTokenIndex,
-                    parameter.range.start, parameter.range.end
-                )
+                let parameterRange = parameter.range
                 let parameterType = signatureType(parameter.typeName, syntaxes, snapshot,
                     classGeneric, implementationOwner: syntax, implementationRange: parameter.range,
                     nativeArrayStorage: parameter.nativeArrayStorage, nativeScalarStorage: parameter.nativeScalarStorage)
@@ -1410,13 +1489,13 @@ class {
                     parameter.defaultValue.class.isOfType(PrimitiveLiteralSyntax.class) &&
                     ((PrimitiveLiteralSyntax)parameter.defaultValue).sourceValue == "null"
                 result.add(BoundFieldUnit(
-                    parameter.name, SymbolIdentity(ownerIdentity, "field", ordinal),
+                    parameter.name, PrimitiveFieldIdentity.create(ownerIdentity, parameter.name, parameter.range),
                     nullableDefault && (parameterType.kind() == "array" ||
                         parameterType.kind() == "user-class" || parameterType.kind() == "generic-instance" ||
                         parameterType.kind() == "string" || parameterType.kind() == "object" ||
                         parameterType.kind() == "function")
                         ? NullableSemanticType(parameterType) : parameterType, parameterRange,
-                    parameter.visibleParameter, nativeArrayStorage: parameter.nativeArrayStorage                ))
+                    parameter.visibleParameter, nativeArrayStorage: parameter.nativeArrayStorage, ownerIdentity: ownerIdentity))
                 ordinal++
             }
         }

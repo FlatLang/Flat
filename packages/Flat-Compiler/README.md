@@ -178,6 +178,99 @@ registered suite unchanged. The subset is labelled diagnostic and never replaces
 full-suite or stage acceptance. Incremental process tests still require the fresh
 ordinary `dist/es6/index.js` compiler prerequisite; no test is skipped.
 
+## Guarded bootstrap and production CI (L24, IMPLEMENTED UNVALIDATED)
+
+The repository [full dogfood workflow](../../.github/workflows/full-dogfood-acceptance.yml)
+now orders the owning bootstrap/receipt regressions before protected provisioning,
+a **new** stage0/1/2 bootstrap, source/scaling-timer admission, stage2 production
+and independent supplemental evidence validation. The protected job retains local
+seed/guard identities on one ephemeral runner. Ordinary PR/push harness checks are
+not production acceptance; the final result explicitly says NOT REQUESTED. A
+dispatch cannot succeed if a prerequisite was skipped, unknown, failed, or lacked
+a terminal acceptance output. Bootstrap equality is necessary, not sufficient.
+
+Existing source entrypoints (commands for the later authorized validation wave):
+
+```sh
+# Narrow owning harness suites, not self-host acceptance.
+python3 -B -m unittest discover -s packages/Airship/test -p test_stage_bootstrap.py
+python3 -B -m unittest discover -s packages/Airship/test -p test_dogfood_acceptance.py
+# NEW_STAGES and NEW_PRODUCTION must not exist and must be outside checkout.
+python3 -B packages/Airship/test/stage_bootstrap.py \
+  --repo "$PWD" --output "$NEW_STAGES" --seeds "$SEEDS" \
+  --review "$REVIEW" --review-sha256 "$REVIEW_SHA256"
+python3 -B packages/Airship/test/dogfood_acceptance.py --produce \
+  --repo "$PWD" --output "$NEW_PRODUCTION" --bootstrap-output "$NEW_STAGES" \
+  --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256" \
+  --changed-input "$CHANGED" --removed-input "$REMOVED" \
+  --scaling-plan "$SCALING_PLAN" --scaling-plan-sha256 "$SCALING_PLAN_SHA256"
+```
+
+The producer requires real reviewed Core sources; invalid removal, missing driver
+contracts and unobserved gates fail, never skip. Full supplemental validation uses
+the existing non-`--produce` CLI with `--evidence` and an independently supplied
+`--evidence-sha256`; a producer receipt alone does not close all completion gates.
+Trusted seed/review provenance and source-bound scaling inputs must be provisioned
+and approved, not synthesized from whichever artifacts are present. Exact
+commands, tool/source hashes, logs and failure/unknown outcomes must remain
+available with the acceptance run. See the root CI/completion matrix for inputs,
+retention limits and unresolved operator prerequisites.
+
+All commands above and the workflow changes are **NOT RUN this wave**. The
+workflow-authored mocked producer tests cover nonterminal/unknown/missing status
+without executing production workloads. No current-wave completion is asserted.
+
+## Post-swarm delivery status
+
+All24 initial source writers settled. Production dispatch now has only two
+inputs, `dispatch_manifest` and its independently reviewed SHA-256, within GitHub's
+ten-input limit. Strict schema `flat.dogfood.dispatch.v1` includes exact current
+`source_revision` and all former configuration fields; paths, independent hashes,
+control characters and duplicate/missing/unknown keys are checked before exporting
+fixed environment names. No review bundle or digest is synthesized by CI. The
+root README defines the exact manifest contract.
+
+Current all7 integration barrier is open for coordinator validation; T7 performs
+offline workflow syntax checks only, not compiler execution. Direct bootstrap and
+producer validators now require external `review_sha256=REVIEW_SHA256` as well as
+the independent scaling-plan hash. The workflow supplies the exact separately
+reviewed digest from the pinned dispatch manifest; no receipt field or freshly
+computed hash substitutes for review. `validate_bootstrap_chain` reconstructs
+reviewed seeds and all three stages before public production evidence admission.
+Current bootstrap source requires three products (compiler, Airship, production
+driver), all seven ordinary suites, and separate guarded public workloads
+`airship-toolchain` and `core-lr` at each stage. Current producer repeats both in
+fresh scenario workspaces using stage2 tools. Workflow now explicitly validates
+bootstrap public evidence and both current producer and independent supplemental
+verdicts, with the independently pinned scaling hash forwarded to validators.
+`delivery_complete` can become true only from a successful authorized dispatch and
+all required terminal outcomes, never from source-ready wiring alone.
+
+The toolchain group produces `dist/es6/toolchain-test.js` and requires
+`AIRSHIP_TEST_FLATC_SCRIPT` pointing to the independently bootstrapped compiler.
+Its expected failures need explicit owning guard/lifecycle admission; do not add
+it to the seven-suite list or execute it unguarded as acceptance. The full Core
+workload contract is `core/workloads/ProductionCoreWorkload`, artifact
+`production-core-workload.js`, exact stdout `production-core-workload:ok\n`, empty
+stderr and exit zero against the complete Core closure. See root README for
+operator prerequisites. The old external swarm-1026 evidence tree was reported
+lost: no trusted seed/review, supplemental evidence, timer identity, reviewed
+changed/removable source or source-bound scaling plan is presumed available.
+Operators must re-provision exact independently reviewed bytes and hashes; CI
+must fail rather than manufacture or download replacements.
+
+Provisioning records exact reviewed/resolved seed paths and hashes and checks the
+reviewed canonical RSS timer before stages. Missing external bundle/timer/review
+is a retained failure, not permission to discover replacement artifacts. The
+reviewed plan is parsed with the existing 1 MiB reviewed-JSON bound; full schema
+and fresh source-manifest binding remain mandatory after bootstrap.
+
+Scaling budget numbers from L23 are unreviewed proposals. A final source-bound
+plan, actual RSS timer identity and independent plan hash are required. Workflow
+plan binding now checks producer and supplemental archived plan references against
+that independent hash and the fresh bootstrap source digest. No trusted seed,
+review, removable-source approval or measurement was fabricated.
+
 ## Deferred verification
 
 Source tests cover glob/dependency closure beyond 64 files, exclusions and finite

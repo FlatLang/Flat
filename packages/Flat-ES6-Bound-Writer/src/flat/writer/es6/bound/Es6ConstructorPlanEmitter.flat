@@ -1,0 +1,80 @@
+package flat/writer/es6/bound
+
+import flat/bound
+import flat/compiler/models
+
+/** Mechanical rendering of a checked normalized constructor schedule. */
+class {
+    public static allocationName(DeclarationIdentity entry) -> String =>
+        Es6NameMangler.mangle(entry.value) + "__allocate"
+
+    public emit(BoundFunctionUnit functionUnit, BoundTypeUnit owner) -> Es6CodeResult {
+        let plan = functionUnit.constructorPlan
+        let expressions = Es6ExpressionOrchestrator()
+        expressions.setTemporaryPrefix(Es6NameMangler.mangle(functionUnit.identity.value) + "__setup")
+        let statements = Es6StatementOrchestrator(expressions: expressions)
+        let parameters = functionUnit.parameterValues().map((value) => Es6NameMangler.mangle(value.identity.value))
+        var String defaults = ""
+        for (parameter in functionUnit.parameterValues()) {
+            if (!parameter.defaultValue) continue
+            let value = expressions.emit(parameter.defaultValue)
+            if (!value.emitted) return value
+            let name = Es6NameMangler.mangle(parameter.identity.value)
+            defaults += "if (" + name + " === undefined) {\n" + value.setup + name + " = " + value.code + ";\n}\n"
+        }
+        let setup = statements.emitAll(plan.preBaseStatements())
+        if (!setup.emitted) return setup
+        let mostDerived = "__flatMostDerived"
+        let object = "__flatConstructed"
+        var String allocation = "Object.create(" + mostDerived + ".prototype)"
+        var String parentSetup = ""
+        if (plan.parentCall) {
+            let parent = plan.parentCall
+            let converted = BoundExpression[]
+            let arguments = parent.argumentValues()
+            let conversions = parent.argumentConversions()
+            var Int index
+            while (index < arguments.count) {
+                converted.add(BoundConversionExpression(arguments[index].range, conversions[index].toType,
+                    arguments[index], conversions[index]))
+                index++
+            }
+            let emitted = expressions.emitArguments(converted)
+            if (!emitted.emitted) return emitted
+            let parentOwner = Es6NameMangler.mangle(parent.target.ownerType.declarationIdentity.value)
+            let helper = allocationName(parent.target.identity.declaration)
+            // Test the exact published protocol, never fall back to a primary constructor.
+            parentSetup = emitted.setup + "if (!Object.prototype.hasOwnProperty.call(" + parentOwner + ", '" + helper +
+                "')) throw new TypeError('Missing normalized parent constructor protocol');\n"
+            allocation = parentOwner + "." + helper + "(" + mostDerived +
+                (converted.isEmpty ? "" : ", " + emitted.code) + ")"
+        }
+        var String initialization = ""
+        for (call in plan.initializationCalls()) {
+            let converted = BoundExpression[]
+            let arguments = call.argumentValues()
+            let conversions = call.argumentConversions()
+            var Int index
+            while (index < arguments.count) {
+                converted.add(BoundConversionExpression(arguments[index].range, conversions[index].toType,
+                    arguments[index], conversions[index]))
+                index++
+            }
+            let emitted = expressions.emitArguments(converted)
+            if (!emitted.emitted) return emitted
+            initialization += emitted.setup + object + "." + Es6NameMangler.mangle(call.target.identity.declaration.value) +
+                "(" + emitted.code + ");\n"
+        }
+        let helperName = allocationName(functionUnit.identity)
+        let helperParameters = mostDerived + (parameters.isEmpty ? "" : ", " + parameters.join(", "))
+        let helper = "static " + helperName + "(" + helperParameters + ") {\n" + defaults + setup.code +
+            parentSetup + "const " + object + " = " + allocation + ";\n" + initialization + "return " + object + ";\n}\n"
+        // Forward omission exactly; parameter defaults execute only in the allocation helper.
+        let ownerName = Es6NameMangler.mangle(owner.identity.value)
+        let wrapper = functionUnit.identity.syntaxIdentity.kind == "constructor-overload" ?
+            "static " + Es6NameMangler.mangle(functionUnit.identity.value) + "(...__flatArguments) {\nreturn " +
+                ownerName + "." + helperName + "(this, ...__flatArguments);\n}\n" :
+            "constructor(...__flatArguments) {\nreturn " + ownerName + "." + helperName + "(new.target, ...__flatArguments);\n}\n"
+        return Es6CodeResult(code: wrapper + helper)
+    }
+}

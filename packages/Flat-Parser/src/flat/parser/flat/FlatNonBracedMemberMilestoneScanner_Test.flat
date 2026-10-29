@@ -5,6 +5,46 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `incomplete expression braces retain sparse source range before cleanup`() {
+        let values = significant(lex("public read() => value => { 1"))
+        let subject = scanner(32)
+        var Int cursor
+        for (token in values) {
+            subject.accept(token, 10 + cursor * 3)
+            cursor++
+        }
+        var ParseFailure failure
+        try { subject.end() }
+        catch (ParseFailure error) { failure = error }
+        expect(failure).toNotBe(null)
+        expect(failure.diagnostic.code).toBe("invalid-non-braced-member")
+        expect(failure.diagnostic.snapshot).toBe(subject.snapshot)
+        expect(failure.diagnostic.range.startTokenIndex).toBe(10)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(11 + (values.count - 1) * 3)
+        expect(failure.diagnostic.range.end.column).toBe(values.last.endColumn)
+        expect(subject.finished).toBe(true)
+        expect(subject.retainedTokenCount).toBe(0)
+        expect(subject.end().count).toBe(0)
+    }
+
+    async test `capacity and cancellation do not masquerade as syntax failures`() {
+        let values = significant(lex("public broken("))
+        let limited = scanner(1)
+        limited.accept(values.first, 4)
+        var Exception failure
+        try { limited.accept(values[1], 8) }
+        catch (Exception error) { failure = error }
+        expect(failure).toNotBe(null)
+        expect(failure.class.isOfType(ParseFailure.class)).toBe(false)
+        expect(limited.finished).toBe(true)
+        expect(limited.retainedTokenCount).toBe(0)
+        let cancelled = scanner(16)
+        cancelled.accept(values.first, 4)
+        cancelled.cancel()
+        expect(cancelled.end().isEmpty).toBe(true)
+        expect(cancelled.retainedTokenCount).toBe(0)
+    }
+
     async test `invalid non braced EOF reports retained member range before terminal cleanup`() {
         let tokens = significant(lex("public broken("))
         let subject = scanner(16)

@@ -3,9 +3,38 @@ package flat/semantic/binding/primitive
 import flat/bound
 import flat/compiler/models
 import flat/semantic/types
+import flat/parser/flat
+import flat/semantic/binding/BindingDiagnostic
 
 /** Resolves scalar text representation changes before publishing bound calls. */
 class {
+    /** Only source text syntax may acquire declared storage for a reference join.
+     * Native expressions and the opposite branch are never coerced here. The
+     * semantic common type still belongs to TypeOperations, not this adapter. */
+    public static conditionalText(PrimitiveExpressionSyntax syntax, BoundExpression value,
+        SemanticType opposite, PrimitiveResolvedDeclarationContext context,
+        CallableSignature[] callables) -> BoundExpression {
+        if (value.semanticType.kind() != "string" ||
+            (opposite.kind() != "user-class" && opposite.kind() != "generic-instance" &&
+                opposite.kind() != "generic-parameter")) return value
+        var Bool sourceText = syntax.class.isOfType(PrimitiveInterpolatedStringSyntax.class)
+        if (syntax.class.isOfType(PrimitiveLiteralSyntax.class)) {
+            sourceText = ((PrimitiveLiteralSyntax)syntax).tokenType == Token.Type.STRING
+        }
+        if (!sourceText) return value
+        try {
+            let canonical = context ? context.candidates("flat/String") : null
+            if (!canonical || canonical.count != 1)
+                throw Exception("Conditional source text requires one canonical flat/String declaration")
+            return wrap(value, UserClassSemanticType(canonical.first), context, callables)
+        } catch (Exception error) {
+            throw PrimitiveContextBindingException(BindingDiagnostic(
+                "binding.conditional-text-contract", error.message,
+                SyntaxIslandIdentity(syntax.range.snapshot, "conditional-text", syntax.range.startTokenIndex),
+                syntax.range))
+        }
+    }
+
     public static wrap(BoundExpression value, SemanticType required,
         PrimitiveResolvedDeclarationContext context, CallableSignature[] callables) -> BoundExpression {
         if (value.semanticType.value() == required.value()) return value
@@ -140,33 +169,52 @@ class {
             let targets = callables.filter((candidate) => candidate.callableKind.value == "instance-method" &&
                 candidate.ownerType.declarationIdentity.value == roots.first.value &&
                 candidate.name == "toString" && candidate.returnType.value() == required.value() &&
-                candidate.parameterTypes().isEmpty)
-            return call("toString", targets, value, BoundExpression[], context, callables, hierarchy)
+                candidate.parameterTypes().isEmpty && candidate.optionalParameterCount == 0 &&
+                candidate.genericParameters().isEmpty && !candidate.asyncFunction)
+            if (targets.count != 1)
+                throw Exception("Generic text conversion requires one canonical Object.toString() contract")
+            return checkedTextCall(targets.first, value, BoundExpression[], required, value.range, hierarchy)
         }
-        if (value.semanticType.value() == SemanticTypes.intType().value()) {
-            let declarations = context ? context.candidates("flat/primitive/number/Int") : null
-            if (!declarations || declarations.count != 1)
-                throw Exception("String addition requires one canonical Int declaration")
-            let candidates = callables.filter((candidate) => candidate.callableKind.value == "static-method" &&
-                candidate.ownerType && candidate.ownerType.declarationIdentity.value == declarations.first.value &&
-                candidate.name == "toString" && candidate.returnType.value() == required.value() &&
-                candidate.parameterTypes().count == 1 && candidate.optionalParameterCount == 0 &&
-                candidate.parameterTypes().first.value() == SemanticTypes.intType().value())
-            if (candidates.count != 1)
-                throw Exception("String addition requires one canonical Int.toString(Int) contract")
-            return call("toString", candidates, null, [value], context, callables, hierarchy, callRange: value.range)
-        }
-        if (value.semanticType.value() != SemanticTypes.charType().value())
+        let canonicalName = scalarTextOwner(value.semanticType)
+        if (!canonicalName)
             throw Exception("String addition requires a declared text conversion contract")
-        let declarations = context.candidates("flat/primitive/number/Char")
+        let declarations = context.candidates(canonicalName)
         if (declarations.count != 1)
-            throw Exception("String addition requires one canonical Char declaration")
+            throw Exception("String addition requires one canonical #canonicalName declaration")
+        let owner = UserClassSemanticType(declarations.first)
         let candidates = callables.filter((candidate) => candidate.callableKind.value == "static-method" &&
-            candidate.ownerType.declarationIdentity.value == declarations.first.value &&
-            candidate.name == "toString" && candidate.returnType.value() == required.value() &&
-            candidate.parameterTypes().count == 1 && candidate.optionalParameterCount == 0 &&
-            candidate.parameterTypes().first.value() == SemanticTypes.charType().value())
-        return call("toString", candidates, null, [value], context, callables, hierarchy, callRange: value.range)
+            candidate.ownerType.value() == owner.value() && candidate.name == "toString" &&
+            candidate.returnType.value() == required.value() && candidate.parameterTypes().count == 1 &&
+            candidate.optionalParameterCount == 0 && candidate.genericParameters().isEmpty &&
+            !candidate.asyncFunction && candidate.parameterTypes().first.value() == value.semanticType.value())
+        if (candidates.count != 1)
+            throw Exception("String addition requires one canonical #{canonicalName}.toString scalar contract")
+        // The scalar is an argument exactly once, never a boxed receiver or an adapted argument.
+        return checkedTextCall(candidates.first, null, [value], required, value.range, hierarchy)
+    }
+
+    /** Only concrete scalar contracts actually declared by Core are admitted. */
+    static scalarTextOwner(SemanticType type) -> String {
+        if (type.value() == SemanticTypes.boolType().value()) return "flat/primitive/Bool"
+        if (type.value() == SemanticTypes.byteType().value()) return "flat/primitive/number/Byte"
+        if (type.value() == SemanticTypes.shortType().value()) return "flat/primitive/number/Short"
+        if (type.value() == SemanticTypes.intType().value()) return "flat/primitive/number/Int"
+        if (type.value() == SemanticTypes.longType().value()) return "flat/primitive/number/Long"
+        if (type.value() == SemanticTypes.floatType().value()) return "flat/primitive/number/Float"
+        if (type.value() == SemanticTypes.doubleType().value()) return "flat/primitive/number/Double"
+        if (type.value() == SemanticTypes.charType().value()) return "flat/primitive/number/Char"
+        return null
+    }
+
+    /** No overload retry or representation adaptation may repair canonical evidence. */
+    static checkedTextCall(CallableSignature target, BoundExpression receiver, BoundExpression[] arguments,
+        SemanticType required, SourceRange range, TypeHierarchyComponent hierarchy) -> BoundCallExpression {
+        let checked = CallTypeChecker.check(target, receiver ? receiver.semanticType : null,
+            arguments.map((argument) => argument.semanticType), range, hierarchy)
+        if (!checked.valid) throw Exception(checked.diagnostic.message)
+        if (checked.semanticType.value() != required.value())
+            throw Exception("Canonical text conversion must return the declared String type")
+        return resolvedCall(checked, receiver, arguments, false, range, hierarchy)
     }
 
     /** Never publish the old representation-changing no-op conversion markers. */

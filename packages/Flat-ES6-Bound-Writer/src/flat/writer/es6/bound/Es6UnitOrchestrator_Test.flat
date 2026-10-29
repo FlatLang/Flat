@@ -5,6 +5,29 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    test `overlay static field emission keeps source slot and explicit canonical owner`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let owner = fixture.declaration("class", "OverlayOwner", 1450)
+        let overlay = SourceSnapshotIdentity(SourceIdentity("memory:OverlayOwner.js.flat"), "overlay")
+        let range = SourceRange(overlay, 4, 7, Location(lineNumber: 2, column: 1), Location(lineNumber: 2, column: 8))
+        let member = DeclarationIdentity(SyntaxIslandIdentity(overlay, "field", 4), "field", owner.value + ":nativeSlot")
+        let identity = SymbolIdentity(member, "field")
+        let field = BoundFieldUnit("nativeSlot", identity, SemanticTypes.intType(), range,
+            initializer: BoundLiteralExpression(range, SemanticTypes.intType(), "23"), staticField: true, ownerIdentity: owner)
+        let unit = BoundTypeUnit(owner, UserClassSemanticType(owner), BoundFunctionUnit[], fixture.range(), fieldValues: [field])
+        let emitted = Es6UnitOrchestrator().emitType(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        let qualified = Es6NameMangler.mangle(owner.value) + "." + Es6NameMangler.mangle(identity.value)
+        expect(emitted.fragment.code.contains(qualified + " = 23;")).toBe(true)
+        let reference = BoundReferenceExpression(range, SemanticTypes.intType(), "nativeSlot", identity,
+            staticOwner: field.canonicalOwner(), fieldOwnerIdentity: field.canonicalOwner())
+        let read = Es6ExpressionOrchestrator().emit(reference)
+        expect(read.emitted).toBe(true)
+        expect(read.code).toBe(qualified)
+        expect(field.identity.declaration.syntaxIdentity.snapshot).toBe(overlay)
+        expect(field.canonicalOwner().syntaxIdentity.snapshot).toBe(fixture.snapshot)
+    }
+
     test `recursively emits complete slice units`() {
         let fixture = Es6BoundWriter_TestFixture()
         let stringType = SemanticTypes.stringType()
@@ -71,7 +94,7 @@ testable class {
             "PI", fixture.symbol("field", "PI", 9), SemanticTypes.doubleType(),
             fixture.range(), true,
             BoundLiteralExpression(fixture.range(), SemanticTypes.doubleType(), "3.14"),
-            true
+            true, ownerIdentity: typeIdentity
         )
         let fieldType = BoundTypeUnit(
             typeIdentity, UserClassSemanticType(typeIdentity), [main], fixture.range(),
@@ -79,7 +102,7 @@ testable class {
         )
         let fieldResult = emitter.emitType(fieldType, 2)
         expect(fieldResult.fragment.code.contains(
-            Es6NameMangler.mangle(field.identity.value) + " = 3.14;"
+            Es6NameMangler.mangle(typeIdentity.value) + "." + Es6NameMangler.mangle(field.identity.value) + " = 3.14;"
         )).toBe(true)
         let abstractFunction = BoundFunctionUnit(
             fixture.declaration("instance-method", "required", 10),

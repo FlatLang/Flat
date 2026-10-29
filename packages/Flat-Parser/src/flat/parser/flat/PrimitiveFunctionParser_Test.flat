@@ -1,9 +1,87 @@
 package flat/parser/flat
 
 import flat/compiler/models
+import flat/parser/ParserDiagnostic
 import flat/lexer/Lexer
 
 testable class {
+    test `diagnostic index remapping preserves sparse spans and observed EOF boundaries`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:diagnostic-remap"), "original")
+        let location = Location(lineNumber: 3, column: 7)
+        let end = Location(lineNumber: 3, column: 9)
+        let original = ParseFailure(ParserDiagnostic("invalid-function-syntax", "unchanged",
+            snapshot, SourceRange(snapshot, 11, 13, location, end)))
+        let mapped = original.remapTokenIndexes([30, 34, 41, 50], 10)
+        expect(mapped.diagnostic.range.startTokenIndex).toBe(34)
+        expect(mapped.diagnostic.range.endTokenIndex).toBe(42)
+        expect(mapped.diagnostic.range.start).toBe(location)
+        expect(mapped.diagnostic.range.end).toBe(end)
+        expect(mapped.diagnostic.message).toBe(original.diagnostic.message)
+        expect(original.diagnostic.range.startTokenIndex).toBe(11)
+        let eofFailure = ParseFailure(ParserDiagnostic("invalid-function-syntax", "unchanged",
+            snapshot, SourceRange(snapshot, 12, 12, end, end)))
+        let eof = eofFailure.remapTokenIndexes([30, 34, 41, 50], 10)
+        expect(eof.diagnostic.range.startTokenIndex).toBe(35)
+        expect(eof.diagnostic.range.endTokenIndex).toBe(35)
+        expect(eof.diagnostic.range.start).toBe(end)
+    }
+
+    async test `function diagnostics map trivia gaps and EOF to original token indexes`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:function-diagnostic-gaps"), "original")
+        let sources = ["read( Int value, ) {}", "read( Int value"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let values = stream.consumeAll<Token>("data")
+            var ParseFailure failure
+            try { PrimitiveFunctionParser().parse(values, snapshot, 40) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure).toNotBe(null)
+            expect(failure.diagnostic.code).toBe("invalid-function-syntax")
+            expect(failure.diagnostic.snapshot).toBe(snapshot)
+            var Int expectedIndex = -1
+            var Int cursor
+            for (token in values) {
+                if (token.value == ")" && expectedIndex < 0) expectedIndex = cursor
+                cursor++
+            }
+            if (expectedIndex < 0) {
+                var Int lastSignificant = values.count - 1
+                while (values[lastSignificant].type == Token.Type.WHITESPACE ||
+                    values[lastSignificant].type == Token.Type.COMMENT) lastSignificant--
+                expectedIndex = lastSignificant + 1
+                expect(failure.diagnostic.range.endTokenIndex).toBe(40 + expectedIndex)
+                expect(failure.diagnostic.range.start.column).toBe(values[lastSignificant].endColumn)
+            } else {
+                expect(failure.diagnostic.range.endTokenIndex).toBe(41 + expectedIndex)
+                expect(failure.diagnostic.range.start.column).toBe(values[expectedIndex].location.column)
+            }
+            expect(failure.diagnostic.range.startTokenIndex).toBe(40 + expectedIndex)
+        }
+    }
+
+    async test `nested expression failure keeps function snapshot and original trivia indexes`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:function-nested-diagnostic"), "original")
+        let stream = Lexer().lex("read() => 1 + )")
+        stream.emit("start")
+        let values = stream.consumeAll<Token>("data")
+        var ParseFailure failure
+        try { PrimitiveFunctionParser().parse(values, snapshot, 12) }
+        catch (ParseFailure error) { failure = error }
+        expect(failure).toNotBe(null)
+        expect(failure.diagnostic.code).toBe("invalid-expression-syntax")
+        expect(failure.diagnostic.snapshot).toBe(snapshot)
+        var Int cursor
+        var Int closing
+        for (token in values) {
+            if (token.value == ")") closing = cursor
+            cursor++
+        }
+        expect(failure.diagnostic.range.startTokenIndex).toBe(12 + closing)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(13 + closing)
+        expect(failure.diagnostic.range.start.column).toBe(values[closing].location.column)
+    }
+
     async test `signature mode is explicit and preserves ordinary Unit defaults`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:signature-mode"), "one")
         let stream = Lexer().lex("notify(Int value)")

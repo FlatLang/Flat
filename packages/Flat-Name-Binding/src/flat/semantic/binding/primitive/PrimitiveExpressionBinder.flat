@@ -8,6 +8,26 @@ import flat/semantic/binding/BindingDiagnostic
 
 /** Types immutable primitive syntax into reduced Bound expressions. */
 class {
+    var PrimitiveFunctionSyntax[] functionDeclarations
+    var String[] defaultExpansionPath
+    var String[] defaultExpansionSites
+
+    public construct(PrimitiveFunctionSyntax[] declarations = PrimitiveFunctionSyntax[], String[] expansionPath = String[],
+        String[] expansionSites = String[]) {
+        if (!declarations || declarations.any((value) => !value) || !expansionPath)
+            throw Exception("Expression binding requires valid function declarations")
+        functionDeclarations = PrimitiveFunctionSyntax[]:addAll(declarations)
+        defaultExpansionPath = String[]:addAll(expansionPath)
+        defaultExpansionSites = String[]:addAll(expansionSites)
+    }
+
+    /** Identity-based immutable declaration lookup; never borrow caller locals by spelling. */
+    functionDeclaration(CallableSignature target) -> PrimitiveFunctionSyntax {
+        return functionDeclarations.firstOrNull((value) => DeclarationIdentity(
+            SyntaxIslandIdentity(value.range.snapshot, "function", value.range.startTokenIndex),
+            "function", value.name).value == target.identity.declaration.value)
+    }
+
     var SymbolIdentity[] specializedGenericParameters = SymbolIdentity[]
     var FunctionSemanticType originalCallbackContract
     var SourceRange originalCallbackRange
@@ -63,6 +83,10 @@ class {
     }
 
     boundReferences(BoundExpression expression, String identity) -> Bool {
+        if (expression.class.isOfType(BoundEvaluationExpression.class)) {
+            let evaluation = (BoundEvaluationExpression)expression
+            return statementReferences(evaluation.setup(), identity) || boundReferences(evaluation.value, identity)
+        }
         if (expression.class.isOfType(BoundReferenceExpression.class))
             return ((BoundReferenceExpression)expression).symbolIdentity.value == identity
         if (expression.class.isOfType(BoundFunctionInvocationExpression.class)) {
@@ -426,12 +450,102 @@ class {
         return false
     }
 
+    /** Candidate-local contextual binding; defaults expand only after unique selection. */
+    bindDeclaredFunctionCall(PrimitiveCallSyntax syntax, LocalBinding[] locals,
+        CallableSignature[] callables) -> BoundExpression {
+        let candidates = callables.filter((candidate) => candidate.name == syntax.name &&
+            (candidate.callableKind.value == "function" || candidate.callableKind.value == "static-method" ||
+             candidate.callableKind.value == "constructor"))
+        let checks = CallCheckResult[]
+        let calls = BoundCallExpression[]
+        for (candidate in candidates) {
+            if (syntax.argumentValues().count > candidate.parameterTypes().count ||
+                syntax.argumentValues().count < candidate.parameterTypes().count - candidate.optionalParameterCount) continue
+            try {
+                let arguments = BoundExpression[]
+                let candidateLocals = LocalBinding[]:addAll(locals)
+                var Int index
+                for (argument in syntax.argumentValues()) {
+                    let binder = PrimitiveExpressionBinder(functionDeclarations, defaultExpansionPath, defaultExpansionSites)
+                    let required = candidate.parameterTypes()[index]
+                    let result = argument.class.isOfType(PrimitiveLambdaSyntax.class) && required.kind() == "function"
+                        ? binder.bindCallback((PrimitiveLambdaSyntax)argument, (FunctionSemanticType)required,
+                            candidateLocals, callables, currentHierarchy, (FunctionSemanticType)required, currentDeclarationContext)
+                        : binder.bind(argument, locals: candidateLocals, callables: callables,
+                            hierarchy: currentHierarchy, declarationContext: currentDeclarationContext)
+                    if (!result.succeeded) throw Exception(result.diagnostic.message)
+                    arguments.add(required.kind() == "function" ? adaptCallbackReference(result.expression,
+                        (FunctionSemanticType)required, currentDeclarationContext, callables) : result.expression)
+                    index++
+                }
+                let checked = CallTypeChecker.check(candidate, null,
+                    arguments.map((argument) => argument.semanticType), syntax.range, currentHierarchy)
+                if (!checked.valid) continue
+                checks.add(checked)
+                calls.add(BoundCallExpression(syntax.range, checked.semanticType, checked.target,
+                    arguments, checked.argumentConversions()))
+            } catch (Exception error) {
+                // A candidate owns its contextual failure; other overloads remain independent.
+            }
+        }
+        let resolution = OverloadResolver.resolveChecked(syntax.name, candidates, checks, syntax.range)
+        if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+        let call = calls.firstOrNull((value) => value.target.identity.value == resolution.selected.identity.value)
+        if (call.argumentValues().count == call.target.parameterTypes().count) return call
+        let declaration = functionDeclaration(call.target)
+        if (!declaration) throw Exception("Omitted arguments require selected declaration default evidence")
+        if (defaultExpansionPath.contains(call.target.identity.value))
+            throw Exception("Cyclic omitted parameter default expansion")
+        let expansionPath = String[]:addAll(defaultExpansionPath)
+        expansionPath.add(call.target.identity.value)
+        let expansionSites = String[]:addAll(defaultExpansionSites)
+        expansionSites.add(syntax.range.snapshot.value + ":" + syntax.range.startTokenIndex)
+        let arguments = BoundExpression[]
+        let defaultLocals = LocalBinding[]
+        let supplied = call.argumentValues()
+        let conversions = call.argumentConversions()
+        let parameters = declaration.parameterValues()
+        var Int index
+        for (parameter in parameters) {
+            let type = call.target.parameterTypes()[index]
+            var BoundExpression value
+            var TypeConversion conversion
+            if (index < supplied.count) {
+                value = supplied[index]
+                conversion = conversions[index]
+            } else {
+                if (!parameter.defaultValue) throw Exception("Missing selected parameter default")
+                let result = PrimitiveExpressionBinder(functionDeclarations, expansionPath, expansionSites).bind(parameter.defaultValue,
+                    requiredType: type, locals: defaultLocals, callables: callables,
+                    hierarchy: currentHierarchy, declarationContext: currentDeclarationContext)
+                if (!result.succeeded) throw Exception(result.diagnostic.message)
+                value = result.expression
+                conversion = TypeConversions.classify(value.semanticType, type, hierarchy: currentHierarchy)
+            }
+            let identity = SymbolIdentity(DeclarationIdentity(
+                SyntaxIslandIdentity(syntax.range.snapshot, "call-default", syntax.range.startTokenIndex),
+                "call-default", call.target.identity.value + ":" + defaultExpansionSites.join("|")), "argument", index)
+            let retained = BoundReferenceExpression(syntax.range, type, "argument#index", identity)
+            arguments.add(BoundEvaluationExpression(syntax.range, type,
+                [BoundLocalDeclarationStatement(syntax.range, retained, value, conversion, evaluationLocal: true)], retained))
+            defaultLocals.add(LocalBinding(parameter.name, identity, type))
+            index++
+        }
+        let checked = CallTypeChecker.check(call.target, null,
+            arguments.map((argument) => argument.semanticType), syntax.range, currentHierarchy)
+        if (!checked.valid) throw Exception(checked.diagnostic.message)
+        return BoundCallExpression(syntax.range, checked.semanticType, checked.target,
+            arguments, checked.argumentConversions())
+    }
+
     bindSyntax(
         PrimitiveExpressionSyntax syntax,
         LocalBinding[] locals,
         CallableSignature[] callables,
         SemanticType requiredType = null
     ) -> BoundExpression {
+        let floatingLiteral = PrimitiveFloatingLiteralBinder.bind(syntax, requiredType)
+        if (floatingLiteral) return floatingLiteral
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class) &&
             ((PrimitiveMemberCallSyntax)syntax).memberName == "isOfType") {
             let call = (PrimitiveMemberCallSyntax)syntax
@@ -610,7 +724,7 @@ class {
             )
             if (!checked.valid) throw Exception(checked.diagnostic.message)
             return BoundCallExpression(
-                value.range, checked.semanticType, target, receiver,
+                value.range, checked.semanticType, checked.target, receiver,
                 arguments, checked.argumentConversions(), false,
                 TypeConversions.classify(receiver.semanticType, target.receiverType(), hierarchy: currentHierarchy)
             )
@@ -846,7 +960,11 @@ class {
                     parameter.name, parameter.identity)
             }
             let local = locals.reverse().firstOrNull({ _.name == value.name })
-            if (!local) throw Exception("Unknown local '#{value.name}'")
+            if (!local) {
+                let diagnostic = PrimitiveExpressionDiagnostic.unresolvedReference(value.name, value.range)
+                throw PrimitiveContextBindingException(BindingDiagnostic(diagnostic.code, diagnostic.message,
+                    SyntaxIslandIdentity(value.range.snapshot, "unresolved-reference", value.range.startTokenIndex), diagnostic.range))
+            }
             return BoundReferenceExpression(
                 value.range, local.semanticType, local.name, local.identity
             )
@@ -1093,16 +1211,16 @@ class {
                 )
                 if (getter) {
                     let index = bindSyntax(value.index, locals, callables)
-                    let checked = CallTypeChecker.check(
-                        getter, receiver.semanticType, [index.semanticType], value.range
-                    )
-                    if (!checked.valid) throw Exception(checked.diagnostic.message)
                     let selected = receiver.semanticType.kind() == "generic-instance" &&
                         getter.ownerGenericDeclaration ? getter.instantiateReceiver(
                             (GenericInstanceSemanticType)receiver.semanticType
                         ) : getter
+                    let checked = CallTypeChecker.check(
+                        selected, receiver.semanticType, [index.semanticType], value.range, currentHierarchy
+                    )
+                    if (!checked.valid) throw Exception(checked.diagnostic.message)
                     return BoundCallExpression(
-                        value.range, checked.semanticType, selected, receiver,
+                        value.range, checked.semanticType, checked.target, receiver,
                         [index], checked.argumentConversions()
                     )
                 }
@@ -1124,11 +1242,13 @@ class {
             if (value.namedArgumentValues().isNotEmpty) {
                 throw Exception("Named call arguments require callable parameter binding")
             }
+            let local = locals.reverse().firstOrNull({ _.name == value.name })
+            if (!local && callables.any((candidate) => candidate.name == value.name))
+                return bindDeclaredFunctionCall(value, locals, callables)
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
                 arguments.add(bindSyntax(argument, locals, callables))
             }
-            let local = locals.reverse().firstOrNull({ _.name == value.name })
             if (local) {
                 if (local.semanticType.kind() != "function") {
                     throw Exception("Local '#{value.name}' is not callable")
@@ -1180,22 +1300,39 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveConditionalSyntax.class)) {
             let value = (PrimitiveConditionalSyntax)syntax
-            let condition = bindSyntax(value.condition, locals, callables)
-            if (condition.semanticType.value() != SemanticTypes.boolType().value()) {
-                throw Exception("Conditional expression requires Bool condition")
-            }
+            let condition = PrimitiveControlStatementBinder().conditionValue(
+                bindSyntax(value.condition, locals, callables))
             var BoundExpression whenTrue = bindSyntax(value.whenTrue, locals, callables, requiredType)
             var BoundExpression whenFalse = bindSyntax(value.whenFalse, locals, callables, requiredType)
-            if (whenTrue.semanticType.value() != whenFalse.semanticType.value()) {
-                let common = SemanticTypes.objectType()
-                let trueConversion = TypeConversions.classify(whenTrue.semanticType, common, hierarchy: currentHierarchy)
-                let falseConversion = TypeConversions.classify(whenFalse.semanticType, common, hierarchy: currentHierarchy)
-                if (!trueConversion.applicable || !falseConversion.applicable) throw Exception("Conditional expression branches require common type")
-                whenTrue = BoundConversionExpression(value.whenTrue.range, common, whenTrue, trueConversion)
-                whenFalse = BoundConversionExpression(value.whenFalse.range, common, whenFalse, falseConversion)
+            if (requiredType) {
+                whenTrue = PrimitiveStringAdapter.conditionalText(value.whenTrue, whenTrue,
+                    requiredType, currentDeclarationContext, callables)
+                whenFalse = PrimitiveStringAdapter.conditionalText(value.whenFalse, whenFalse,
+                    requiredType, currentDeclarationContext, callables)
             }
+            whenTrue = PrimitiveStringAdapter.conditionalText(value.whenTrue, whenTrue,
+                whenFalse.semanticType, currentDeclarationContext, callables)
+            whenFalse = PrimitiveStringAdapter.conditionalText(value.whenFalse, whenFalse,
+                whenTrue.semanticType, currentDeclarationContext, callables)
+            let joined = TypeOperations.conditional(condition.semanticType,
+                whenTrue.semanticType, whenFalse.semanticType, value.range, currentHierarchy)
+            if (!joined.valid) throw PrimitiveContextBindingException(BindingDiagnostic(
+                joined.diagnostic.code, joined.diagnostic.message,
+                SyntaxIslandIdentity(value.range.snapshot, "conditional", value.range.startTokenIndex),
+                joined.diagnostic.range))
+            let trueConversion = TypeConversions.classify(whenTrue.semanticType, joined.semanticType,
+                hierarchy: currentHierarchy)
+            let falseConversion = TypeConversions.classify(whenFalse.semanticType, joined.semanticType,
+                hierarchy: currentHierarchy)
+            if (!trueConversion.applicable || !trueConversion.implicit ||
+                !falseConversion.applicable || !falseConversion.implicit)
+                throw Exception("Conditional join requires applicable implicit branch conversions")
+            if (trueConversion.conversionKind != "identity") whenTrue = BoundConversionExpression(
+                value.whenTrue.range, joined.semanticType, whenTrue, trueConversion)
+            if (falseConversion.conversionKind != "identity") whenFalse = BoundConversionExpression(
+                value.whenFalse.range, joined.semanticType, whenFalse, falseConversion)
             return BoundConditionalExpression(
-                value.range, whenTrue.semanticType, condition, whenTrue, whenFalse
+                value.range, joined.semanticType, condition, whenTrue, whenFalse
             )
         }
         if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) {
@@ -1209,7 +1346,9 @@ class {
                 if (absence) return absence
             }
             let typed = TypeOperations.unary(value.operator, operand.semanticType, value.range)
-            if (!typed.valid) throw Exception(typed.diagnostic.message)
+            if (!typed.valid) throw PrimitiveContextBindingException(BindingDiagnostic(
+                typed.diagnostic.code, typed.diagnostic.message,
+                SyntaxIslandIdentity(value.range.snapshot, "unary", value.range.startTokenIndex), typed.diagnostic.range))
             return BoundUnaryExpression(
                 value.range, typed.semanticType, value.operator, operand
             )
@@ -1218,6 +1357,10 @@ class {
             let value = (PrimitiveBinarySyntax)syntax
             var BoundExpression left = bindSyntax(value.left, locals, callables)
             var BoundExpression right = bindSyntax(value.right, locals, callables)
+            if (value.operator == "&&" || value.operator == "||") {
+                left = PrimitiveControlStatementBinder().conditionValue(left)
+                right = PrimitiveControlStatementBinder().conditionValue(right)
+            }
             if (value.operator == "==" || value.operator == "!=") {
                 if (right.semanticType.kind() == "null") left = specializedNullOperand(left)
                 if (left.semanticType.kind() == "null") right = specializedNullOperand(right)
@@ -1225,7 +1368,9 @@ class {
             let typed = TypeOperations.binary(
                 value.operator, left.semanticType, right.semanticType, value.range
             )
-            if (!typed.valid) throw Exception(typed.diagnostic.message)
+            if (!typed.valid) throw PrimitiveContextBindingException(BindingDiagnostic(
+                typed.diagnostic.code, typed.diagnostic.message,
+                SyntaxIslandIdentity(value.range.snapshot, "binary", value.range.startTokenIndex), typed.diagnostic.range))
             return BoundBinaryExpression(
                 value.range, typed.semanticType, value.operator, left, right
             )

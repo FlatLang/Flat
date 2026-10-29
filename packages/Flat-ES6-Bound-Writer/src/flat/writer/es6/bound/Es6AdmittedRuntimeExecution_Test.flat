@@ -1,0 +1,160 @@
+package flat/writer/es6/bound
+
+import flat/bound
+import flat/compiler/models
+import flat/semantic/types
+import flat/io
+import flat/system
+import flat/time/Time
+
+/** Generated execution regressions for admitted call and storage contracts. */
+testable class {
+    async test `evaluation local default captures are fresh on every loop occurrence`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let intType = SemanticTypes.intType()
+        let local = BoundReferenceExpression(range, intType, "defaultValue", fixture.symbol("local", "defaultValue", 480))
+        let callbackType = FunctionSemanticType(SemanticType[], intType)
+        let callback = BoundLambdaExpression(range, callbackType, BoundFunctionParameter[], [local], local)
+        let expression = BoundEvaluationExpression(range, callbackType,
+            [BoundLocalDeclarationStatement(range, local, BoundLiteralExpression(range, intType, "iteration"),
+                TypeConversions.classify(intType, intType), evaluationLocal: true)], callback)
+        let emitted = Es6ExpressionOrchestrator().emit(expression)
+        expect(emitted.emitted).toBe(true)
+        execute("const callbacks=[];for(let iteration=0;iteration<2;iteration++){\n" + emitted.setup +
+            "callbacks.push(" + emitted.code + ");}\n" +
+            "if(callbacks[0]()!==0 || callbacks[1]()!==1) throw new Error('reused default capture'); console.log('ok');\n")
+    }
+
+    async test `static target lookup precedes argument setup and preserves owner and async policy`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let intType = SemanticTypes.intType()
+        let ownerType = UserClassSemanticType(fixture.declaration("class", "StaticOwner", 401))
+        let owner = Es6NameMangler.mangle(ownerType.declarationIdentity.value)
+        Bool[] asyncChoices = [false, true]
+        Bool[] promiseChoices = [false, true]
+        for (asyncCall in asyncChoices) {
+            for (preservePromise in promiseChoices) {
+                let target = CallableSignature(fixture.symbol("method", "selected", 402), "selected",
+                    CallableKind("static-method"), [intType, intType], intType, ownerType,
+                    asyncFunction: asyncCall)
+                let method = Es6NameMangler.mangle(target.identity.declaration.value)
+                let left = BoundLiteralExpression(range, intType, "left()")
+                let right = BoundEvaluationExpression(range, intType,
+                    [host("events.push('setup'); Object.defineProperty(" + owner + ", '" + method +
+                        "', {value: () => { throw new Error('late static lookup'); }, configurable: true});")],
+                    BoundLiteralExpression(range, intType, "right()"))
+                let call = BoundCallExpression(range, intType, target, [left, right],
+                    [TypeConversions.classify(intType, intType), TypeConversions.classify(intType, intType)],
+                    suppressAwait: preservePromise)
+                let emitted = Es6ExpressionOrchestrator().emit(call)
+                expect(emitted.emitted).toBe(true)
+                let repeated = Es6ExpressionOrchestrator().emit(call)
+                expect(repeated.code).toBe(emitted.code)
+                expect(repeated.setup).toBe(emitted.setup)
+                execute("let events = []; class " + owner + " {}\n" +
+                    "Object.defineProperty(" + owner + ", '" + method + "', {configurable: true, get() { " +
+                    "events.push('lookup'); return " + (asyncCall ? "async " : "") + "function(a,b) { " +
+                    "if (this !== " + owner + ") throw new Error('static owner'); events.push('call'); return a+b; }; }});\n" +
+                    "function left(){events.push('L');return 10;} function right(){events.push('R');return 20;}\n" +
+                    "(async () => {\n" + emitted.setup + "const result = " + emitted.code + ";\n" +
+                    "if ((result instanceof Promise) !== " + (asyncCall && preservePromise ? "true" : "false") +
+                    ") throw new Error('await policy'); if (await result !== 30 || " +
+                    "events.join(',') !== 'lookup,L,setup,R,call') throw new Error('static LR once');\n" +
+                    "console.log('ok'); })().catch(error => { console.error(error); process.exitCode=1; });\n")
+            }
+        }
+    }
+
+    async test `constructor and overload factory are captured before argument setup`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let intType = SemanticTypes.intType()
+        let ownerType = UserClassSemanticType(fixture.declaration("class", "Constructed", 410))
+        let owner = Es6NameMangler.mangle(ownerType.declarationIdentity.value)
+        Bool[] overloadChoices = [false, true]
+        for (overloaded in overloadChoices) {
+            let declaration = DeclarationIdentity(SyntaxIslandIdentity(fixture.snapshot,
+                overloaded ? "constructor-overload" : "constructor-header", 411), "constructor", "new")
+            let target = CallableSignature(SymbolIdentity(declaration, "constructor"), "new",
+                CallableKind("constructor"), [intType], ownerType, ownerType)
+            let factory = Es6NameMangler.mangle(declaration.value)
+            let argument = BoundEvaluationExpression(range, intType, [host(
+                "events.push('setup'); " + (overloaded ?
+                    "Object.defineProperty(" + owner + ", '" + factory + "', {value: () => {throw new Error('late factory');}, configurable:true});" :
+                    owner + " = class { constructor(){throw new Error('late constructor');} };")
+                )], BoundLiteralExpression(range, intType, "read()"))
+            let call = BoundCallExpression(range, ownerType, target, [argument],
+                [TypeConversions.classify(intType, intType)])
+            let emitted = Es6ExpressionOrchestrator().emit(call)
+            expect(emitted.emitted).toBe(true)
+            execute("let events=[]; let " + owner + " = class {constructor(value){events.push('construct');this.value=value;}};\n" +
+                "const Original = " + owner + ";\n" + (overloaded ?
+                    "Object.defineProperty(" + owner + ", '" + factory + "', {configurable:true, get(){events.push('lookup');" +
+                    "return function(value){if(this !== Original) throw new Error('factory owner');return new this(value);};}});\n" : "") +
+                "function read(){events.push('R');return 37;}\n" + emitted.setup +
+                "const result = " + emitted.code + "; if (!(result instanceof Original) || result.value !== 37 || " +
+                "events.join(',') !== '" + (overloaded ? "lookup," : "") +
+                "setup,R,construct') throw new Error('constructor order'); console.log('ok');\n")
+        }
+    }
+
+    async test `native array backing projection preserves alias identity with evaluation setup`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let arrayType = ArraySemanticType(SemanticTypes.intType())
+        let receiver = BoundEvaluationExpression(fixture.range(), arrayType,
+            [host("events.push('setup');")], BoundLiteralExpression(fixture.range(), arrayType, "readArray()"))
+        let emitted = Es6ExpressionOrchestrator().emit(BoundNativeArrayDataExpression(fixture.range(), receiver))
+        expect(emitted.emitted).toBe(true)
+        execute("let events=[]; const values=[1,2]; function readArray(){events.push('read');return values;}\n" +
+            emitted.setup + "const storage=" + emitted.code + "; storage[0]=9;\n" +
+            "if(storage !== values || values[0] !== 9 || events.join(',') !== 'setup,read') " +
+            "throw new Error('backing projection copied or repeated'); console.log('ok');\n")
+    }
+
+    async test `async callback with setup boxes resolved scalar result after await only`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let intType = SemanticTypes.intType()
+        let wrapper = UserClassSemanticType(fixture.declaration("class", "CallbackInteger", 420))
+        let constructor = CallableSignature(fixture.symbol("constructor", "box", 421), "box",
+            CallableKind("constructor"), [intType], wrapper, wrapper)
+        let generic = GenericParameterSemanticType(fixture.declaration("function", "map", 422), "T", 0)
+        let concrete = FunctionSemanticType(SemanticType[], intType, asyncFunction: true)
+        let declaration = FunctionSemanticType(SemanticType[], generic, asyncFunction: true)
+        let producer = CallableSignature(fixture.symbol("function", "produce", 423), "produce",
+            CallableKind("function"), SemanticType[], intType, asyncFunction: true)
+        let body = BoundEvaluationExpression(range, intType, [host("events.push('body');")],
+            BoundCallExpression(range, intType, producer, BoundExpression[], TypeConversion[]))
+        let lambda = BoundLambdaExpression(range, concrete, BoundFunctionParameter[], BoundReferenceExpression[],
+            body, declarationContract: declaration, resultBoxingConstructor: constructor)
+        let emitted = Es6ExpressionOrchestrator().emit(lambda)
+        expect(emitted.emitted).toBe(true)
+        let owner = Es6NameMangler.mangle(wrapper.declarationIdentity.value)
+        let produce = Es6NameMangler.mangle(producer.identity.declaration.value)
+        execute("let events=[], boxes=0, release; class " + owner + " {constructor(value){boxes++;this.value=value;}}\n" +
+            "async function " + produce + "(){events.push('produce');await new Promise(resolve => {release=resolve;});return 19;}\n" +
+            "const callback=" + emitted.code + "; if(events.length || boxes) throw new Error('eager callback');\n" +
+            "const pending=callback(); if(!(pending instanceof Promise) || boxes || events.join(',') !== 'body,produce') " +
+            "throw new Error('callback ownership'); release(); pending.then(result => {\n" +
+            "if(!(result instanceof " + owner + ") || result.value !== 19 || boxes !== 1) " +
+            "throw new Error('resolved payload boxing'); console.log('ok');\n" +
+            "}).catch(error => {console.error(error);process.exitCode=1;});\n")
+    }
+
+    host(String code) -> BoundExternalStatement => BoundExternalStatement(
+        Es6BoundWriter_TestFixture().range(), "es6", [BoundExternalCodeSegment(Es6BoundWriter_TestFixture().range(), code)])
+
+    async execute(String code) {
+        let root = File(".flat-es6-admitted-runtime-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "regression.js")
+            Es6ArtifactCommitter().commit(destination, code)
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("ok\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+}

@@ -1,0 +1,13 @@
+package flat/semantic/types
+
+/** Literal provenance plus the exact rounded decimal constant, or a diagnostic.
+ * canonicalValue is value text, never target code or an implicit conversion. */
+class {
+    public construct(visible LiteralType literal, visible String canonicalValue,
+        visible TypeDiagnostic diagnostic = null) {
+        if ((!diagnostic && (!literal || !canonicalValue)) ||
+            (diagnostic && (literal || canonicalValue)))
+            throw Exception("Floating literal result requires either a constant or a diagnostic")
+    }
+    visible Bool valid => diagnostic == null
+}

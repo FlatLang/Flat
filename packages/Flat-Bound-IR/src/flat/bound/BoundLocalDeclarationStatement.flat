@@ -8,7 +8,9 @@ data class extends BoundStatement {
         SourceRange range,
         visible BoundReferenceExpression local,
         visible BoundExpression initializer = null,
-        visible TypeConversion conversion = null
+        visible TypeConversion conversion = null,
+        /** A fresh binding per evaluation occurrence; never visible beyond its evaluation site. */
+        visible Bool evaluationLocal = false
     ) {
         if (!range || !local ||
             (initializer && (!conversion || !conversion.applicable ||

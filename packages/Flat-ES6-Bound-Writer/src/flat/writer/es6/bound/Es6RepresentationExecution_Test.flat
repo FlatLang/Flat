@@ -271,7 +271,7 @@ testable class {
         let field = BoundFieldUnit("typeName", fixture.symbol("field", "typeName", 23),
             SemanticTypes.stringType(), fixture.range(), true,
             BoundLiteralExpression(fixture.range(), SemanticTypes.stringType(),
-                owner + ".__flatType.name"), true)
+                owner + ".__flatType.name"), true, ownerIdentity: identity)
         let unit = BoundTypeUnit(identity, UserClassSemanticType(identity), BoundFunctionUnit[],
             fixture.range(), [BoundMetadataUnit("reified", "type-argument", "quote' slash\\ line\nend")], [field])
         let emitted = Es6UnitOrchestrator().emitType(unit, 0)

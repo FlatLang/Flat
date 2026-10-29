@@ -8,6 +8,9 @@ import flat/semantic/binding/BindingDiagnostic
 
 /** Binds one reduced class with fields, constructor, and instance methods. */
 class {
+    var BoundFunctionUnit[] constructorSetupUnits = BoundFunctionUnit[]
+    var BoundStatement[] constructorFieldStatements = BoundStatement[]
+    var CallableSignature[] directParentConstructors = CallableSignature[]
     var GenericParameterSemanticType genericParameter
     var CallableSignature[] constructors
     var UserClassSemanticType boundType
@@ -23,6 +26,11 @@ class {
     var SourceRange declarationLookupRange
     var LocalBinding[] callbackParameters = LocalBinding[]
     var Int callbackParameterIndex
+
+    /** Self result retains the declaration-owned class argument, never a method generic. */
+    selfType(UserClassSemanticType type) -> SemanticType {
+        return genericParameter ? GenericInstanceSemanticType(type, [genericParameter]) : type
+    }
 
     public bind(
         PrimitiveClassSyntax syntax,
@@ -42,6 +50,16 @@ class {
             throw Exception("Primitive class binding requires syntax snapshot and inherited fields")
         }
         declarationContext = resolvedContext
+        constructorSetupUnits = BoundFunctionUnit[]
+        constructorFieldStatements = BoundStatement[]
+        directParentConstructors = CallableSignature[]
+        if (parentConstructor) {
+            directParentConstructors.addAll(availableConstructors.filter((candidate) =>
+                candidate.callableKind.value == "constructor" && candidate.ownerType &&
+                candidate.ownerType.value() == parentConstructor.ownerType.value()))
+            if (directParentConstructors.none({ _.identity.value == parentConstructor.identity.value }))
+                directParentConstructors.add(parentConstructor)
+        }
         declarationLookupRange = syntax.range
         if ((syntax.parentName != null) != (parentConstructor != null) ||
             (!parentConstructor && inheritedFields.isNotEmpty) ||
@@ -63,6 +81,38 @@ class {
         genericParameter = syntax.genericParameterName ? GenericParameterSemanticType(
             typeIdentity, syntax.genericParameterName, 0
         ) : null
+        if (parentConstructor && syntax.parentType && syntax.parentType.typeArguments().isNotEmpty) {
+            let resolver = PrimitiveStructuralTypeResolver(callables: availableConstructors,
+                genericParameter: genericParameter, receiverType: type,
+                interfaces: interfaceSyntaxValues, implementationOwner: syntax,
+                implementationRange: syntax.parentType.range, declarationContext: declarationContext,
+                lookupRange: syntax.parentType.range)
+            let resolved = resolver.resolveReference(syntax.parentType)
+            if (!resolved.class.isOfType(GenericInstanceSemanticType.class))
+                throw Exception("Declared parent requires a generic class application")
+            Object instanceSource = resolved
+            GenericInstanceSemanticType instance = (GenericInstanceSemanticType)instanceSource
+            if (instance.declarationType.value() != parentConstructor.ownerType.value())
+                throw Exception("Declared parent application does not match direct parent declaration")
+            let specialized = CallableSignature[]
+            for (candidate in directParentConstructors) {
+                if (!candidate.ownerGenericDeclaration ||
+                    candidate.ownerGenericDeclaration.genericParameters().count != instance.typeArguments().count)
+                    throw Exception("Declared parent generic arity mismatch: " + candidate.identity.value)
+                let parameters = candidate.ownerGenericDeclaration.genericParameters()
+                let arguments = instance.typeArguments()
+                let substitution = GenericSubstitution(parameters, arguments)
+                var Int index
+                for (parameter in parameters) {
+                    if (parameter.constraint && !TypeConversions.classify(arguments[index],
+                        substitution.apply(parameter.constraint), hierarchy: typeHierarchy).applicable)
+                        throw Exception("Declared parent generic constraint rejected: " + candidate.identity.value)
+                    index++
+                }
+                specialized.add(candidate.instantiateConstructor(arguments))
+            }
+            directParentConstructors = specialized
+        }
         publishedFields = BoundFieldUnit[]
         publishedFields.addAll(availableFields)
         constructors = CallableSignature[]
@@ -163,7 +213,7 @@ class {
                 let inferredObject = (Object)returnAnchor
                 let inferredSyntax = (PrimitiveReturnSyntax)inferredObject
                 if (inferredSyntax.value && inferredSyntax.value.class.isOfType(PrimitiveReferenceSyntax.class) &&
-                    ((PrimitiveReferenceSyntax)inferredSyntax.value).name == "this") inferredMethodReturn = type
+                    ((PrimitiveReferenceSyntax)inferredSyntax.value).name == "this") inferredMethodReturn = selfType(type)
                 if (inferredSyntax.value &&
                     inferredSyntax.value.class.isOfType(PrimitiveReferenceSyntax.class)) {
                     let reference = (PrimitiveReferenceSyntax)inferredSyntax.value
@@ -187,7 +237,7 @@ class {
             var SemanticType declaredMethodReturnType = method.inferredReturnType
                 ? inferredMethodReturn
                 : method.returnTypeName == "this"
-                ? type : methodTypeOf(method.returnTypeName, method)
+                ? selfType(type) : methodTypeOf(method.returnTypeName, method)
             let methodReturnType = PrimitiveStructuralTypeResolver(interfaces: interfaces).fallbackResultType(
                 method, declaredMethodReturnType)
             let existing = constructors.firstOrNull((candidate) =>
@@ -235,11 +285,8 @@ class {
             if (declarationContext) declarationContext = declarationContext.scopeForSnapshot(field.range.snapshot)
             declarationLookupRange = field.range
             try {
-            let identity = SymbolIdentity(typeIdentity, "field", fieldIndex)
-            let fieldRange = SourceRange(
-                snapshot, field.range.startTokenIndex, field.range.endTokenIndex,
-                field.range.start, field.range.end
-            )
+            let identity = PrimitiveFieldIdentity.create(typeIdentity, field.name, field.range)
+            let fieldRange = field.range
             var SemanticType fieldType = typeOf(field.typeName, field.nativeArrayStorage, field.nativeScalarStorage)
             if (fieldParameters.any((parameter) => parameter.name == field.name && nullDefault(parameter))) {
                 if (!referenceType(fieldType)) {
@@ -274,7 +321,7 @@ class {
             fields.add(BoundFieldUnit(
                 field.name, identity, fieldType, fieldRange,
                 field.visibleField, initializer, field.staticField, field.mutableField,
-                nativeArrayStorage: field.nativeArrayStorage
+                nativeArrayStorage: field.nativeArrayStorage, ownerIdentity: typeIdentity
             ))
             fieldIndex++
             } finally {
@@ -285,12 +332,12 @@ class {
         for (parameter in fieldParameters) {
             if (fieldSyntaxValues.none({ _.name == parameter.name })) {
                 fields.add(BoundFieldUnit(
-                    parameter.name, SymbolIdentity(typeIdentity, "field", fieldIndex),
+                    parameter.name, PrimitiveFieldIdentity.create(typeIdentity, parameter.name, parameter.range),
                     nullDefault(parameter) ? NullableSemanticType(
                         typeOf(parameter.typeName, parameter.nativeArrayStorage, parameter.nativeScalarStorage, parameter.range)
                     ) : typeOf(parameter.typeName, parameter.nativeArrayStorage, parameter.nativeScalarStorage, parameter.range),
                     parameter.range, parameter.visibleParameter,
-                    nativeArrayStorage: parameter.nativeArrayStorage                ))
+                    nativeArrayStorage: parameter.nativeArrayStorage, ownerIdentity: typeIdentity))
                 fieldIndex++
             }
         }
@@ -376,9 +423,12 @@ class {
         for (implementedType in syntax.implementedTypeNames()) {
             metadata.add(BoundMetadataUnit("implements", implementedType, implementedType))
         }
+        let plannedFunctions = PrimitiveConstructorPlanner().normalize(type, functions,
+            constructorFieldStatements, syntax.range, constructors, constructorSetupUnits)
         return PrimitiveClassBindingResult(BoundTypeUnit(
-            typeIdentity, type, functions, syntax.range,
-            metadataValues: metadata, fieldValues: fields
+            typeIdentity, type, plannedFunctions, syntax.range,
+            metadataValues: metadata, fieldValues: fields,
+            parentType: parentConstructor ? parentConstructor.ownerType : null
         ))
     }
 
@@ -399,6 +449,13 @@ class {
         try {
             return bindConstructorBody(owner, syntax, ordinal, typeIdentity, type, fields,
                 parentConstructor, inheritedFields)
+        } catch (Exception error) {
+            if (error.class.isOfType(PrimitiveContextBindingException.class)) throw error
+            throw Exception("Constructor binding failed; type=" + typeIdentity.value +
+                "; constructorOrdinal=" + ordinal + "; source=" + syntax.range.snapshot.source.value +
+                "; tokens=[" + syntax.range.startTokenIndex + "," + syntax.range.endTokenIndex + ")" +
+                "; location=" + syntax.range.start.lineNumber + ":" + syntax.range.start.column +
+                "-" + syntax.range.end.lineNumber + ":" + syntax.range.end.column + "; " + error.message)
         } finally {
             declarationContext = previousContext
             declarationLookupRange = previousRange
@@ -481,16 +538,83 @@ class {
                 let target = BoundMemberAccessExpression(
                     field.range, field.semanticType, receiver, field.name, field.identity
                 )
-                statements.add(BoundMemberAssignmentStatement(
+                if (ordinal == 0) constructorFieldStatements.add(BoundMemberAssignmentStatement(
                     field.range, target, field.initializer,
                     TypeConversions.classify(field.initializer.semanticType, field.semanticType)
                 ))
             }
         }
         var BoundConstructorDelegation delegation
-        let delegationSyntax = syntax.statements().firstOrNull({
-            _.class.isOfType(PrimitiveConstructorDelegationSyntax.class)
-        })
+        let sourceStatements = syntax.statements()
+        let delegationValues = sourceStatements.filter({ _.class.isOfType(PrimitiveConstructorDelegationSyntax.class) })
+        var Int prefixCount
+        while (prefixCount < sourceStatements.count &&
+            !sourceStatements[prefixCount].class.isOfType(PrimitiveConstructorDelegationSyntax.class)) prefixCount++
+        if (delegationValues.isEmpty) prefixCount = 0
+        let prefix = sourceStatements.take(prefixCount)
+        // Admit only the native-local setup form. Never move arbitrary user effects
+        // across delegation, nor leave setup locals captured by a later body helper.
+        var Bool nativeLocals = true
+        for (statement in prefix) {
+            if (statement.class.isOfType(PrimitiveLocalDeclarationSyntax.class)) {
+                Object localSource = statement
+                PrimitiveLocalDeclarationSyntax declaration = (PrimitiveLocalDeclarationSyntax)localSource
+                if ((!declaration.nativeArrayStorage && !declaration.nativeScalarStorage) || declaration.initializer)
+                    nativeLocals = false
+            }
+        }
+        let nativeSetup = nativeLocals && prefix.isNotEmpty &&
+            prefix.first.class.isOfType(PrimitiveLocalDeclarationSyntax.class) && prefix.all((statement) =>
+            statement.class.isOfType(PrimitiveLocalDeclarationSyntax.class) ||
+            statement.class.isOfType(PrimitiveExternalStatementSyntax.class)) &&
+            prefix.any({ _.class.isOfType(PrimitiveLocalDeclarationSyntax.class) }) &&
+            prefixCount + 1 == sourceStatements.count
+        if (delegationValues.count > 1 || (prefixCount > 0 && !nativeSetup)) {
+            throw Exception("Constructor delegation must be the single first statement" +
+                "; type=" + typeIdentity.value + "; constructor=" + identity.value +
+                "; source=" + syntax.range.snapshot.source.value +
+                "; tokens=[" + syntax.range.startTokenIndex + "," + syntax.range.endTokenIndex + ")" +
+                "; location=" + syntax.range.start.lineNumber + ":" + syntax.range.start.column +
+                "-" + syntax.range.end.lineNumber + ":" + syntax.range.end.column +
+                "; statementCount=" + sourceStatements.count + "; directDelegationCount=" + delegationValues.count +
+                "; statementKinds=" + sourceStatements.map({ _.statementKind() }).join(","))
+        }
+        let delegationSyntax = delegationValues.firstOrNull({ true })
+        var PrimitiveStatementBindingResult bodyBinding
+        try {
+            bodyBinding = PrimitiveControlStatementBinder().bind(
+                PrimitiveStatementSyntaxResult(syntax.statements().filter({
+                    !_.class.isOfType(PrimitiveConstructorDelegationSyntax.class)
+                })), syntax.range.snapshot,
+                locals, constructors, receiver, allFields, arrayGetter, arraySetter,
+                publishedFields, PrimitiveStructuralTypeResolver(
+                    callables: constructors, genericParameter: genericParameter,
+                    receiverType: type, interfaces: interfaces, implementationOwner: owner,
+                    implementationRange: syntax.range, declarationContext: declarationContext,
+                    lookupRange: syntax.range), typeHierarchy
+            )
+        } catch (Exception error) {
+            throw Exception("Constructor #{owner.name} token #{syntax.range.startTokenIndex}: #{error.message}")
+        }
+        locals = bodyBinding.locals()
+        if (prefixCount > 0) {
+            let setupStatements = bodyBinding.statements()
+            var Int setupOrdinal
+            for (statement in setupStatements) {
+                if (statement.class.isOfType(BoundLocalDeclarationStatement.class)) {
+                    Object localSource = statement
+                    BoundLocalDeclarationStatement declaration = (BoundLocalDeclarationStatement)localSource
+                    Object syntaxSource = prefix[setupOrdinal]
+                    PrimitiveLocalDeclarationSyntax localSyntax = (PrimitiveLocalDeclarationSyntax)syntaxSource
+                    locals.add(LocalBinding(declaration.local.name, declaration.local.symbolIdentity,
+                        declaration.local.semanticType, localSyntax.nativeArrayStorage))
+                }
+                setupOrdinal++
+            }
+            if (setupStatements.count != prefixCount) throw Exception("Constructor setup syntax/bound statement count mismatch: " + identity.value)
+            constructorSetupUnits.add(BoundFunctionUnit(identity, owner.name, SemanticTypes.unitType(),
+                setupStatements, syntax.range))
+        } else statements.addAll(bodyBinding.statements())
         if (delegationSyntax) {
             let value = (PrimitiveConstructorDelegationSyntax)delegationSyntax
             let arguments = BoundExpression[]
@@ -515,36 +639,35 @@ class {
                 resolution.selected, arguments, checked.argumentConversions(), value.range
             )
         }
-        var PrimitiveStatementBindingResult bodyBinding
-        try {
-            bodyBinding = PrimitiveControlStatementBinder().bind(
-                PrimitiveStatementSyntaxResult(syntax.statements().filter({
-                    !_.class.isOfType(PrimitiveConstructorDelegationSyntax.class)
-                })), syntax.range.snapshot,
-                locals, constructors, receiver, allFields, arrayGetter, arraySetter,
-                publishedFields, PrimitiveStructuralTypeResolver(
-                    callables: constructors, genericParameter: genericParameter,
-                    receiverType: type, interfaces: interfaces, implementationOwner: owner,
-                    implementationRange: syntax.range, declarationContext: declarationContext,
-                    lookupRange: syntax.range), typeHierarchy
-            )
-        } catch (Exception error) {
-            throw Exception("Constructor #{owner.name} token #{syntax.range.startTokenIndex}: #{error.message}")
-        }
-        statements.addAll(bodyBinding.statements())
-        locals = bodyBinding.locals()
         var BoundParentConstructorCall parentCall
         if (parentConstructor && !delegation) {
             let arguments = BoundExpression[]
             for (argumentSyntax in syntax.parentArgumentValues()) {
                 arguments.add(expression(argumentSyntax, receiver, fields, locals))
             }
+            let parentResolution = OverloadResolver.resolve(parentConstructor.name,
+                directParentConstructors, null, arguments.map({ _.semanticType }), syntax.range, typeHierarchy)
+            if (!parentResolution.resolved) {
+                let evidence = String[]
+                for (candidate in directParentConstructors) {
+                    let check = CallTypeChecker.check(candidate, null, arguments.map({ _.semanticType }),
+                        syntax.range, typeHierarchy)
+                    evidence.add("id=" + candidate.identity.value + "; kind=" + candidate.callableKind.value +
+                        "; owner=" + candidate.ownerType.value() + "; result=" + candidate.returnType.value() +
+                        "; expected=(" + candidate.parameterTypes().map({ _.value() }).join(",") + ")" +
+                        "; optional=" + candidate.optionalParameterCount +
+                        "; ownerGeneric=" + (candidate.ownerGenericDeclaration != null) +
+                        "; check=" + (check.diagnostic ? check.diagnostic.message : "valid"))
+                }
+                throw Exception(parentResolution.diagnostic.message + "; receiver=none; actual=(" +
+                    arguments.map({ _.semanticType.value() }).join(",") + "); candidates=[" + evidence.join(" | ") + "]")
+            }
             let checked = CallTypeChecker.check(
-                parentConstructor, null, arguments.map({ _.semanticType }), syntax.range
+                parentResolution.selected, null, arguments.map({ _.semanticType }), syntax.range, typeHierarchy
             )
             if (!checked.valid) throw Exception(checked.diagnostic.message)
             parentCall = BoundParentConstructorCall(
-                parentConstructor, arguments, checked.argumentConversions(), syntax.range
+                checked.target, arguments, checked.argumentConversions(), syntax.range
             )
         } else if (syntax.parentArgumentValues().isNotEmpty) {
             throw Exception("Root constructor cannot delegate to a parent")
@@ -793,8 +916,9 @@ class {
             publishedSignature.returnType.kind() != "unknown"
         let declaredReturnType = publishedInferredReturn
             ? publishedSignature.returnType
-            : syntax.returnTypeName == "this" ||
-            (type.declarationIdentity.name == "String" && !syntax.nativeReturnModifierRange &&
+            : syntax.returnTypeName == "this"
+            ? selfType(type)
+            : (type.declarationIdentity.name == "String" && !syntax.nativeReturnModifierRange &&
              syntax.returnTypeName == "String")
             ? type
             : methodTypeOf(syntax.returnTypeName, syntax)
@@ -885,7 +1009,9 @@ class {
         }
         if (syntax.returnTypeName == "this" && statements.isNotEmpty) {
             statements.add(BoundReturnStatement(
-                syntax.range, type, receiver, TypeConversions.classify(type, type)
+                syntax.range, returnType,
+                BoundReferenceExpression(syntax.range, selfType(type), receiver.name, receiver.symbolIdentity),
+                TypeConversions.classify(selfType(type), returnType, hierarchy: typeHierarchy)
             ))
         }
         return BoundFunctionUnit(
@@ -1171,11 +1297,19 @@ class {
                     defaultValue = bound.expression
                 } else if (receiver) {
                     defaultValue = expression(
-                        value.defaultValue, receiver, fields, defaultLocals
+                        value.defaultValue, receiver, fields, defaultLocals, requiredType: type
                     )
                 } else {
-                    bound = PrimitiveExpressionBinder().bind(value.defaultValue, locals: defaultLocals,
-                        declarationContext: declarationContext)
+                    var Bool sourceText = value.defaultValue.class.isOfType(PrimitiveInterpolatedStringSyntax.class)
+                    if (value.defaultValue.class.isOfType(PrimitiveLiteralSyntax.class)) {
+                        Object literalSource = value.defaultValue
+                        PrimitiveLiteralSyntax literal = (PrimitiveLiteralSyntax)literalSource
+                        sourceText = literal.tokenType == Token.Type.STRING
+                    }
+                    // Source text acquires canonical declared storage through adaptText
+                    // below, before assignment checking; native references remain checked.
+                    bound = PrimitiveExpressionBinder().bind(value.defaultValue, requiredType: sourceText ? null : type,
+                        locals: defaultLocals, callables: constructors, declarationContext: declarationContext)
                     if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                     defaultValue = bound.expression
                 }
@@ -1382,6 +1516,11 @@ class {
                 resultBoxingConstructor: PrimitiveExpressionBinder.callbackBoxingConstructor(
                     body.semanticType, originalContract ?: context, declarationContext, callables)))
         } catch (Exception error) {
+            if (error.class.isOfType(PrimitiveContextBindingException.class)) {
+                let diagnostic = ((PrimitiveContextBindingException)error).diagnostic
+                return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                    diagnostic.code, diagnostic.name, diagnostic.range))
+            }
             return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
                 "semantic.primitive-expression", error.message, syntax.range))
         } finally {
@@ -1425,8 +1564,21 @@ class {
         if (value.class.isOfType(BoundCallExpression.class)) {
             let call = (BoundCallExpression)value
             let arguments = callbackArguments(call.target, call.argumentValues())
+            let conversions = TypeConversion[]
+            let originalConversions = call.argumentConversions()
+            let parameters = call.target.parameterTypes()
+            var Int index
+            for (argument in arguments) {
+                let previous = originalConversions[index]
+                let conversion = previous.fromType.value() == argument.semanticType.value() &&
+                    previous.toType.value() == parameters[index].value() ? previous :
+                    TypeConversions.classify(argument.semanticType, parameters[index], hierarchy: typeHierarchy)
+                if (!conversion.applicable) throw Exception("Adapted callback does not satisfy selected parameter")
+                conversions.add(conversion)
+                index++
+            }
             value = BoundCallExpression(call.range, call.semanticType, call.target, call.receiver,
-                arguments, call.argumentConversions(), safeAccess: call.safeAccess,
+                arguments, conversions, safeAccess: call.safeAccess,
                 receiverConversion: call.receiverConversion, suppressAwait: call.suppressAwait)
         } else if (requiredType && requiredType.kind() == "function") {
             value = PrimitiveExpressionBinder.adaptCallbackReference(value,
@@ -1458,6 +1610,8 @@ class {
         FunctionSemanticType originalCallbackContract = null
     ) -> BoundExpression {
         if (!syntax) throw Exception("Reduced method expression syntax is required")
+        let floatingLiteral = PrimitiveFloatingLiteralBinder.bind(syntax, requiredType)
+        if (floatingLiteral) return floatingLiteral
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class) &&
             ((PrimitiveMemberCallSyntax)syntax).chainNavigation) {
             let chain = (PrimitiveMemberCallSyntax)syntax
@@ -1492,7 +1646,7 @@ class {
             candidates.addAll(publishedFields)
             let field = candidates.firstOrNull((candidate) =>
                 !candidate.staticField && candidate.name == access.memberName &&
-                ownerType.value() == "class:#{candidate.identity.declaration.value}")
+                ownerType.value() == "class:#{candidate.canonicalOwner().value}")
             if (!field) {
                 let properties = constructors.filter((candidate) =>
                     candidate.callableKind.value == "instance-method" &&
@@ -1586,7 +1740,7 @@ class {
                                 )
                                 if (!checked.valid) throw Exception(checked.diagnostic.message)
                                 boundValue = BoundCallExpression(
-                                    path.range, checked.semanticType, property, receiver,
+                                    path.range, checked.semanticType, checked.target, receiver,
                                     BoundExpression[], checked.argumentConversions()
                                 )
                             }
@@ -1877,7 +2031,7 @@ class {
                         )
                         if (!checked.valid) throw Exception(checked.diagnostic.message)
                         return BoundCallExpression(
-                            value.range, checked.semanticType, target,
+                            value.range, checked.semanticType, checked.target,
                             arguments, checked.argumentConversions()
                         )
                     }
@@ -1959,7 +2113,17 @@ class {
                         for (argument in value.argumentValues()) {
                             if (argument.class.isOfType(PrimitiveLambdaSyntax.class)) arguments.add(null)
                             else {
-                                let bound = expression(argument, receiver, fields, locals)
+                                var BoundExpression bound = expression(argument, receiver, fields, locals)
+                                // A source text literal infers the visible language String contract.
+                                // Explicit native expressions keep their storage representation.
+                                if (candidate.parameterTypes()[index].kind() == "generic-parameter" &&
+                                    argument.class.isOfType(PrimitiveLiteralSyntax.class) &&
+                                    ((PrimitiveLiteralSyntax)argument).tokenType == Token.Type.STRING &&
+                                    bound.semanticType.value() == SemanticTypes.stringType().value() && declarationContext) {
+                                    let strings = declarationContext.candidates("flat/String")
+                                    if (strings.count == 1) bound = PrimitiveStringAdapter.wrap(bound,
+                                        UserClassSemanticType(strings.first), declarationContext, constructors)
+                                }
                                 arguments.add(bound)
                                 formals.add(candidate.parameterTypes()[index])
                                 actuals.add(bound.semanticType)
@@ -2161,9 +2325,9 @@ class {
             let target = BoundReferenceExpression(
                 value.range, local.semanticType, local.name, local.identity
             )
-            let assigned = expression(value.value, receiver, fields, locals)
+            let assigned = expression(value.value, receiver, fields, locals, requiredType: target.semanticType)
             let conversion = TypeConversions.classify(
-                assigned.semanticType, target.semanticType
+                assigned.semanticType, target.semanticType, hierarchy: typeHierarchy
             )
             if (!conversion.applicable) throw Exception("Assignment value type mismatch")
             return BoundAssignmentValueExpression(
@@ -2244,7 +2408,7 @@ class {
                     )
                     if (!checked.valid) throw Exception(checked.diagnostic.message)
                     return BoundCallExpression(
-                        value.range, checked.semanticType, selected, indexedReceiver,
+                        value.range, checked.semanticType, checked.target, indexedReceiver,
                         [index], checked.argumentConversions()
                     )
                 }
@@ -2285,18 +2449,8 @@ class {
             let target = (BoundMemberAccessExpression)targetObject
             if (target.safeAccess) throw Exception("Safe member assignment is not supported")
             let operand = expression(value.value, receiver, fields, locals)
-            let operator = compoundOperator(value.assignmentOperator)
-            let typed = TypeOperations.binary(
-                operator, target.semanticType, operand.semanticType, value.range
-            )
-            if (!typed.valid) throw Exception(typed.diagnostic.message)
-            let conversion = TypeConversions.classify(
-                typed.semanticType, target.semanticType
-            )
-            if (!conversion.applicable) throw Exception("Member assignment value type mismatch")
-            return BoundMemberAssignmentValueExpression(
-                value.range, typed.semanticType, target, operator, operand, conversion
-            )
+            return bindMemberCompound(value.range, target, value.assignmentOperator, operand,
+                declarationContext, constructors, typeHierarchy)
         }
         if (syntax.class.isOfType(PrimitiveCastSyntax.class)) {
             let value = (PrimitiveCastSyntax)syntax
@@ -2361,15 +2515,26 @@ class {
             var BoundExpression whenFalse = expression(
                 value.whenFalse, receiver, fields, locals, requiredType
             )
+            whenTrue = PrimitiveStringAdapter.conditionalText(value.whenTrue, whenTrue,
+                whenFalse.semanticType, declarationContext, constructors)
+            whenFalse = PrimitiveStringAdapter.conditionalText(value.whenFalse, whenFalse,
+                whenTrue.semanticType, declarationContext, constructors)
             if (requiredType) {
+                // Context does not authorize a cast. Explicit source casts have
+                // already been bound inside their branches before this join.
+                // Keep the established contextual Char scalar representation
+                // contract separate from implicit common-reference joining.
+                let charContext = requiredType.value() == "primitive:Char" &&
+                    whenTrue.semanticType.kind() == "primitive" && whenFalse.semanticType.kind() == "primitive"
                 var TypeConversion trueConversion = TypeConversions.classify(
-                    whenTrue.semanticType, requiredType, explicit: true
+                    whenTrue.semanticType, requiredType, explicit: charContext, hierarchy: typeHierarchy
                 )
                 var TypeConversion falseConversion = TypeConversions.classify(
-                    whenFalse.semanticType, requiredType, explicit: true
+                    whenFalse.semanticType, requiredType, explicit: charContext, hierarchy: typeHierarchy
                 )
-                if (!trueConversion.applicable || !falseConversion.applicable) {
-                    throw Exception("Reduced conditional branches cannot convert to required type")
+                if (!trueConversion.applicable || (!trueConversion.implicit && !charContext) ||
+                    !falseConversion.applicable || (!falseConversion.implicit && !charContext)) {
+                    throw Exception("Reduced conditional branches require implicit conversions to context")
                 }
                 if (trueConversion.conversionKind != "identity") {
                     whenTrue = BoundConversionExpression(
@@ -2382,16 +2547,16 @@ class {
                     )
                 }
             }
-            if (!requiredType) {
-                if (whenTrue.semanticType.kind() == "string" && whenFalse.semanticType.kind() == "user-class")
-                    whenTrue = adaptText(whenTrue, whenFalse.semanticType)
-                else if (whenFalse.semanticType.kind() == "string" && whenTrue.semanticType.kind() == "user-class")
-                    whenFalse = adaptText(whenFalse, whenTrue.semanticType)
-            }
-            let joined = TypeOperations.conditional(condition.semanticType, whenTrue.semanticType, whenFalse.semanticType, value.range)
-            if (!joined.valid) throw Exception(joined.diagnostic.message)
-            let trueJoin = TypeConversions.classify(whenTrue.semanticType, joined.semanticType)
-            let falseJoin = TypeConversions.classify(whenFalse.semanticType, joined.semanticType)
+            let joined = TypeOperations.conditional(condition.semanticType, whenTrue.semanticType,
+                whenFalse.semanticType, value.range, typeHierarchy)
+            if (!joined.valid) throw PrimitiveContextBindingException(BindingDiagnostic(
+                joined.diagnostic.code, joined.diagnostic.message,
+                SyntaxIslandIdentity(value.range.snapshot, "conditional", value.range.startTokenIndex),
+                joined.diagnostic.range))
+            let trueJoin = TypeConversions.classify(whenTrue.semanticType, joined.semanticType, hierarchy: typeHierarchy)
+            let falseJoin = TypeConversions.classify(whenFalse.semanticType, joined.semanticType, hierarchy: typeHierarchy)
+            if (!trueJoin.applicable || !trueJoin.implicit || !falseJoin.applicable || !falseJoin.implicit)
+                throw Exception("Conditional join requires applicable implicit branch conversions")
             if (trueJoin.conversionKind != "identity") whenTrue = BoundConversionExpression(
                 value.whenTrue.range, joined.semanticType, whenTrue, trueJoin)
             if (falseJoin.conversionKind != "identity") whenFalse = BoundConversionExpression(
@@ -2501,41 +2666,16 @@ class {
                     )
                 )
             }
-            if ((value.operator == "==" || value.operator == "!=") &&
-                ((left.semanticType.kind() == "user-class" &&
-                    right.semanticType.value() == SemanticTypes.stringType().value()) ||
-                 (right.semanticType.kind() == "user-class" &&
-                    left.semanticType.value() == SemanticTypes.stringType().value()))) {
-                let declared = left.semanticType.kind() == "user-class" ? left : right
-                let nativeText = left.semanticType.kind() == "user-class" ? right : left
-                let canonical = declarationContext ? declarationContext.candidates("flat/String") : null
-                if (nativeText.expressionKind() == "literal" &&
-                    canonical && canonical.count == 1 &&
-                    ((UserClassSemanticType)declared.semanticType).declarationIdentity.value == canonical.first.value) {
-                    let adapted = PrimitiveStringAdapter.wrap(nativeText, declared.semanticType,
-                        declarationContext, constructors)
-                    let candidates = constructors.filter((candidate) =>
-                        candidate.callableKind.value == "instance-method" && candidate.name == "equals" &&
-                        candidate.ownerType.value() == declared.semanticType.value() &&
-                        candidate.parameterTypes().count == 1 &&
-                        candidate.parameterTypes().first.value() == declared.semanticType.value() &&
-                        candidate.returnType.value() == SemanticTypes.boolType().value())
-                    let resolution = OverloadResolver.resolve("equals", candidates, declared.semanticType,
-                        [adapted.semanticType], value.range, hierarchy: typeHierarchy)
-                    if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
-                    let checked = CallTypeChecker.check(resolution.selected, declared.semanticType,
-                        [adapted.semanticType], value.range, hierarchy: typeHierarchy)
-                    if (!checked.valid) throw Exception(checked.diagnostic.message)
-                    let call = BoundCallExpression(value.range, checked.semanticType, checked.target,
-                        declared, [adapted], checked.argumentConversions())
-                    return value.operator == "!=" ? BoundUnaryExpression(value.range,
-                        SemanticTypes.boolType(), "!", call) : call
-                }
-            }
+            let textEquality = bindTextEquality(value.operator, left, right, value.range,
+                declarationContext, constructors, typeHierarchy)
+            if (textEquality) return textEquality
             if (value.operator == "+") {
                 let resolved = PrimitiveStringAdapter.plus(left, right, declarationContext, constructors, typeHierarchy)
                 if (resolved) return resolved
             }
+            let declaredOperation = bindDeclaredOperator(value.operator, left, right, value.range,
+                declarationContext, constructors, typeHierarchy)
+            if (declaredOperation) return declaredOperation
             if (value.operator == "+" && boundType &&
                 boundType.declarationIdentity.name == "String" &&
                 left.semanticType.value() == boundType.value() &&
@@ -2601,7 +2741,7 @@ class {
             let field = fields.firstOrNull({ _.name == value.name })
             if (field) {
                 if (field.staticField) return BoundReferenceExpression(value.range, field.semanticType,
-                    field.name, field.identity, staticOwner: field.identity.declaration)
+                    field.name, field.identity, staticOwner: field.canonicalOwner(), fieldOwnerIdentity: field.canonicalOwner())
                 if (!receiver) throw Exception("Static method cannot access instance field '#{field.name}'")
                 return BoundMemberAccessExpression(
                     value.range, field.semanticType, receiver, field.name, field.identity
@@ -2639,7 +2779,9 @@ class {
                 return BoundCallExpression(value.range, checked.semanticType, checked.target,
                     BoundExpression[], checked.argumentConversions())
             }
-            throw Exception("Unknown constructor/method name '#{value.name}'")
+            let diagnostic = PrimitiveExpressionDiagnostic.unresolvedReference(value.name, value.range)
+            throw PrimitiveContextBindingException(BindingDiagnostic(diagnostic.code, diagnostic.message,
+                SyntaxIslandIdentity(value.range.snapshot, "unresolved-reference", value.range.startTokenIndex), diagnostic.range))
         }
         if (syntax.class.isOfType(PrimitiveConstructionSyntax.class)) {
             let value = (PrimitiveConstructionSyntax)syntax
@@ -2674,8 +2816,17 @@ class {
                 candidate.callableKind.value == "constructor" &&
                 (resolvedOwner ? candidate.ownerType.declarationIdentity.value == resolvedOwner.value :
                     candidate.name == value.typeName)
-            ).map((candidate) => typeArguments.isEmpty ? candidate :
-                candidate.instantiateConstructor(constructedType ? constructedType.typeArguments() : typeArguments.map({ typeOf(_) })))
+            ).map((candidate) => {
+                if (typeArguments.isNotEmpty) return candidate.instantiateConstructor(constructedType ?
+                    constructedType.typeArguments() : typeArguments.map({ typeOf(_) }))
+                if (requiredType && requiredType.kind() == "generic-instance" && candidate.ownerGenericDeclaration) {
+                    Object contextSource = requiredType
+                    GenericInstanceSemanticType context = (GenericInstanceSemanticType)contextSource
+                    if (context.declarationType.value() == candidate.ownerType.value())
+                        return candidate.instantiateConstructor(context.typeArguments())
+                }
+                return candidate
+            })
             if (candidates.isEmpty && value.typeName == "Array" &&
                 typeArguments.count == 1 && arguments.count == 1) {
                 if (arguments.first.semanticType.value() != SemanticTypes.intType().value()) {
@@ -2874,15 +3025,11 @@ class {
                 )
                 if (!checked.valid) throw Exception(checked.diagnostic.message)
                 return BoundCallExpression(
-                    value.range, checked.semanticType, target, receiver,
+                    value.range, checked.semanticType, checked.target, receiver,
                     arguments, checked.argumentConversions()
                 )
             }
-            let possibleInstanceCandidates = constructors.filter((candidate) =>
-                candidate.name == value.name &&
-                candidate.callableKind.value == "instance-method" && receiver &&
-                candidate.ownerType.value() == receiver.semanticType.value()
-            )
+            let possibleInstanceCandidates = implicitInstanceCandidates(value.name, receiver)
             let contextualInstanceCandidates = possibleInstanceCandidates.filter((candidate) =>
                 callbackArgumentShape(candidate, value.argumentValues()))
             let arguments = BoundExpression[]
@@ -2919,12 +3066,8 @@ class {
                     (boundType && candidate.ownerType.value() == boundType.value())) &&
                 (!resolvedConstructor || candidate.callableKind.value != "constructor" ||
                     candidate.ownerType.declarationIdentity.value == resolvedConstructor.value)
-            )
-            let instanceCandidates = constructors.filter((candidate) =>
-                candidate.name == value.name &&
-                candidate.callableKind.value == "instance-method" && receiver &&
-                candidate.ownerType.value() == receiver.semanticType.value()
-            )
+            ).map((candidate) => contextualConstructor(candidate, requiredType))
+            let instanceCandidates = possibleInstanceCandidates
             var BoundExpression[] callArguments = arguments
             if (instanceCandidates.count == 1 &&
                 instanceCandidates.first.parameterTypes().count == arguments.count) {
@@ -2949,7 +3092,7 @@ class {
             let applicableInstanceCandidates = instanceCandidates.filter((candidate) =>
                 CallTypeChecker.check(
                     candidate, receiver.semanticType,
-                    callArguments.map({ _.semanticType }), value.range
+                    callArguments.map({ _.semanticType }), value.range, typeHierarchy
                 ).valid
             )
             let candidates = applicableInstanceCandidates.isNotEmpty
@@ -2962,27 +3105,43 @@ class {
                     value.range, SemanticTypes.stringType(), "String", arguments
                 )
             }
-            if (candidates.isEmpty) throw Exception("Unknown function '#{value.name}'")
+            if (candidates.isEmpty) {
+                let evidence = constructors.filter({ _.name == value.name }).map((candidate) =>
+                    candidate.identity.value + "; owner=" + candidate.ownerType.value() +
+                    "; receiver=" + candidate.receiverType().value() +
+                    "; check=" + (receiver ? CallTypeChecker.check(candidate, receiver.semanticType,
+                        callArguments.map({ _.semanticType }), value.range, typeHierarchy).diagnostic?.message : "none"))
+                throw Exception("Unknown function '#{value.name}'; receiver=" +
+                    (receiver ? receiver.semanticType.value() : "none") + "; candidates=" + evidence.join(" | "))
+            }
             let callReceiver = applicableInstanceCandidates.isNotEmpty ? receiver : null
             if (!callReceiver && candidates.all({ _.callableKind.value == "constructor" }))
                 return PrimitiveStringAdapter.call(value.name, candidates, null, arguments,
                     declarationContext, constructors, typeHierarchy, callRange: value.range)
             let resolution = OverloadResolver.resolve(
                 value.name, candidates, callReceiver ? callReceiver.semanticType : null,
-                callArguments.map({ _.semanticType }), value.range
+                callArguments.map({ _.semanticType }), value.range, typeHierarchy
             )
-            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+            if (!resolution.resolved) {
+                let evidence = candidates.map((candidate) => candidate.identity.value + "; expected=(" +
+                    candidate.parameterTypes().map({ _.value() }).join(",") + "); check=" +
+                    CallTypeChecker.check(candidate, callReceiver ? callReceiver.semanticType : null,
+                        callArguments.map({ _.semanticType }), value.range, typeHierarchy).diagnostic?.message)
+                throw Exception(resolution.diagnostic.message + "; actual=(" + callArguments.map({ _.semanticType.value() }).join(",") +
+                    "); candidates=" + evidence.join(" | "))
+            }
             let target = resolution.selected
             let checked = CallTypeChecker.check(
                 target, callReceiver ? callReceiver.semanticType : null,
-                callArguments.map({ _.semanticType }), value.range
+                callArguments.map({ _.semanticType }), value.range, typeHierarchy
             )
             if (!checked.valid) throw Exception(checked.diagnostic.message)
             return callReceiver ? BoundCallExpression(
-                value.range, checked.semanticType, target, callReceiver,
-                callArguments, checked.argumentConversions()
+                value.range, checked.semanticType, checked.target, callReceiver,
+                callArguments, checked.argumentConversions(), receiverConversion: TypeConversions.classifyReceiver(
+                    callReceiver.semanticType, checked.target.receiverType(), typeHierarchy)
             ) : BoundCallExpression(
-                value.range, checked.semanticType, target,
+                value.range, checked.semanticType, checked.target,
                 callArguments, checked.argumentConversions()
             )
         }
@@ -2999,13 +3158,14 @@ class {
                     }
                     let staticField = publishedFields.firstOrNull((candidate) =>
                         candidate.staticField && candidate.name == access.memberName &&
-                        (ownerIdentity ? candidate.identity.declaration.value == ownerIdentity.value :
-                            candidate.identity.declaration.name == ownerName))
+                        (ownerIdentity ? candidate.canonicalOwner().value == ownerIdentity.value :
+                            candidate.canonicalOwner().name == ownerName))
                     if (staticField) {
-                        if (!staticField.visibleField && staticField.identity.declaration.value != boundType.declarationIdentity.value)
+                        if (!staticField.visibleField && staticField.canonicalOwner().value != boundType.declarationIdentity.value)
                             throw Exception("Field '#{staticField.name}' is not visible at #{access.range.startTokenIndex}")
                         return BoundReferenceExpression(access.range, staticField.semanticType,
-                            staticField.name, staticField.identity, staticOwner: staticField.identity.declaration)
+                            staticField.name, staticField.identity, staticOwner: staticField.canonicalOwner(),
+                            fieldOwnerIdentity: staticField.canonicalOwner())
                     }
                     let staticCandidates = constructors.filter((candidate) =>
                         candidate.callableKind.value == "static-method" &&
@@ -3073,7 +3233,7 @@ class {
                     )
                     let declaredField = publishedFields.firstOrNull((candidate) =>
                         candidate.name == access.memberName &&
-                        local.semanticType.value() == "class:#{candidate.identity.declaration.value}"
+                        local.semanticType.value() == "class:#{candidate.canonicalOwner().value}"
                     )
                     if (declaredField) return BoundMemberAccessExpression(
                         access.range, declaredField.semanticType, localReceiver,
@@ -3127,8 +3287,8 @@ class {
                     ? declarationContext.resolve("String", access.range) : null
                 let field = publishedFields.firstOrNull((candidate) =>
                     candidate.name == access.memberName && !candidate.staticField && candidate.visibleField &&
-                    (declaredText ? candidate.identity.declaration.value == declaredText.value :
-                        candidate.identity.declaration.name == "String"))
+                    (declaredText ? candidate.canonicalOwner().value == declaredText.value :
+                        candidate.canonicalOwner().name == "String"))
                 if (field) return BoundMemberAccessExpression(access.range, field.semanticType,
                     projectedReceiver, field.name, field.identity)
                 // Native text still uses the source-declared canonical String property contract.
@@ -3152,7 +3312,7 @@ class {
                 let instanceObject = (Object)projectedReceiver.semanticType
                 let instance = (GenericInstanceSemanticType)instanceObject
                 let field = publishedFields.firstOrNull((candidate) =>
-                    instance.declarationType.value() == "class:#{candidate.identity.declaration.value}" &&
+                    instance.declarationType.value() == "class:#{candidate.canonicalOwner().value}" &&
                     candidate.name == access.memberName)
                 let owner = constructors.firstOrNull((candidate) =>
                     candidate.ownerType && candidate.ownerType.value() == instance.declarationType.value() &&
@@ -3172,14 +3332,14 @@ class {
                     let target = property.instantiateReceiver(instance)
                     let checked = CallTypeChecker.check(target, instance, SemanticType[], access.range)
                     if (!checked.valid) throw Exception(checked.diagnostic.message)
-                    return BoundCallExpression(access.range, checked.semanticType, target,
+                    return BoundCallExpression(access.range, checked.semanticType, checked.target,
                         projectedReceiver, BoundExpression[], checked.argumentConversions())
                 }
             }
             if (projectedReceiver.semanticType.kind() == "user-class") {
                 let field = publishedFields.firstOrNull((candidate) =>
                     projectedReceiver.semanticType.value() ==
-                        "class:#{candidate.identity.declaration.value}" &&
+                        "class:#{candidate.canonicalOwner().value}" &&
                     candidate.name == access.memberName
                 )
                 if (field && !field.visibleField) throw Exception("Field '#{field.name}' is not visible at #{access.range.startTokenIndex}")
@@ -3220,7 +3380,7 @@ class {
                     )
                     if (!checked.valid) throw Exception(checked.diagnostic.message)
                     return BoundCallExpression(
-                        access.range, checked.semanticType, property,
+                        access.range, checked.semanticType, checked.target,
                         projectedReceiver, BoundExpression[],
                         checked.argumentConversions()
                     )
@@ -3228,7 +3388,7 @@ class {
             }
             let ownedField = fields.firstOrNull((field) =>
                 field.name == access.memberName && projectedReceiver.semanticType.value() ==
-                    "class:#{field.identity.declaration.value}")
+                    "class:#{field.canonicalOwner().value}")
             if (ownedField) return BoundMemberAccessExpression(access.range, ownedField.semanticType,
                 projectedReceiver, ownedField.name, ownedField.identity)
             let inherited = locals.firstOrNull((field) =>
@@ -3306,6 +3466,147 @@ class {
         return expression(parameter.defaultValue, receiver, fields, defaultLocals)
     }
 
+    /** Canonical mixed text equality retains source operand order even for native-left calls. */
+    public static bindTextEquality(String operator, BoundExpression left, BoundExpression right,
+        SourceRange range, PrimitiveResolvedDeclarationContext context, CallableSignature[] callables,
+        TypeHierarchyComponent hierarchy = null) -> BoundExpression {
+        if (!context || (operator != "==" && operator != "!=")) return null
+        let strings = context.candidates("flat/String")
+        if (strings.count != 1) return null
+        let type = UserClassSemanticType(strings.first)
+        let nativeLeft = left.semanticType.value() == SemanticTypes.stringType().value() &&
+            right.semanticType.value() == type.value()
+        let nativeRight = right.semanticType.value() == SemanticTypes.stringType().value() &&
+            left.semanticType.value() == type.value()
+        let declaredPair = left.semanticType.value() == type.value() && right.semanticType.value() == type.value()
+        if (!nativeLeft && !nativeRight && !declaredPair) return null
+        let candidates = callables.filter((candidate) => candidate.callableKind.value == "instance-method" &&
+            candidate.name == "equals" && candidate.ownerType && candidate.ownerType.value() == type.value() &&
+            candidate.parameterTypes().count == 1 && candidate.optionalParameterCount == 0 &&
+            candidate.parameterTypes().first.value() == type.value() &&
+            candidate.returnType.value() == SemanticTypes.boolType().value() && !candidate.asyncFunction)
+        let setup = BoundStatement[]
+        var BoundExpression receiver = left
+        var BoundExpression argument
+        if (nativeLeft) {
+            let owner = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "text-equality", range.startTokenIndex),
+                "text-equality", "operands")
+            let wrapped = PrimitiveStringAdapter.wrap(left, type, context, callables)
+            let first = BoundReferenceExpression(range, type, "textLeft", SymbolIdentity(owner, "left"))
+            let second = BoundReferenceExpression(range, type, "textRight", SymbolIdentity(owner, "right"))
+            setup.add(BoundLocalDeclarationStatement(range, first, wrapped, TypeConversions.classify(type, type)))
+            setup.add(BoundLocalDeclarationStatement(range, second, right, TypeConversions.classify(type, type)))
+            receiver = second
+            argument = first
+        } else argument = nativeRight ? PrimitiveStringAdapter.wrap(right, type, context, callables) : right
+        let call = PrimitiveStringAdapter.call("equals", candidates, receiver, [argument], context,
+            callables, hierarchy, callRange: range)
+        let result = operator == "!=" ? BoundUnaryExpression(range, SemanticTypes.boolType(), "!", call) : call
+        return setup.isEmpty ? result : BoundEvaluationExpression(range, result.semanticType, setup, result)
+    }
+
+    /** Retain receiver, operation and stored result in source order without replaying the lvalue. */
+    public static bindMemberCompound(SourceRange range, BoundMemberAccessExpression target,
+        String assignmentOperator, BoundExpression operand, PrimitiveResolvedDeclarationContext context,
+        CallableSignature[] callables, TypeHierarchyComponent hierarchy = null,
+        Bool explicitStorage = false) -> BoundEvaluationExpression {
+        if (target.safeAccess) throw Exception("Safe member assignment is not supported")
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "member-compound", range.startTokenIndex),
+            "member-compound", target.memberIdentity.value)
+        let retained = BoundReferenceExpression(range, target.receiver.semanticType, "compoundReceiver",
+            SymbolIdentity(owner, "local"))
+        let field = BoundMemberAccessExpression(target.range, target.semanticType, retained,
+            target.memberName, target.memberIdentity)
+        let setup = BoundStatement[]
+        setup.add(BoundLocalDeclarationStatement(range, retained, target.receiver,
+            TypeConversions.classify(target.receiver.semanticType, retained.semanticType)))
+        var BoundExpression operation = bindDeclaredOperator(assignmentOperator, field, operand,
+            range, context, callables, hierarchy)
+        let operator = PrimitiveClassBinder().compoundOperator(assignmentOperator)
+        if (!operation && operator == "+") operation = PrimitiveStringAdapter.plus(field, operand, context, callables, hierarchy)
+        if (!operation) operation = bindDeclaredOperator(operator, field, operand, range, context, callables, hierarchy)
+        if (!operation) {
+            let typed = TypeOperations.binary(operator, field.semanticType, operand.semanticType, range)
+            if (!typed.valid) throw Exception(typed.diagnostic.message)
+            operation = BoundBinaryExpression(range, typed.semanticType, operator, field, operand)
+        }
+        let storage = TypeConversions.classify(operation.semanticType, field.semanticType,
+            explicit: explicitStorage, hierarchy: hierarchy)
+        if (!storage.applicable) throw Exception("Member compound assignment type mismatch")
+        let stored = BoundReferenceExpression(range, field.semanticType, "compoundStored", SymbolIdentity(owner, "stored"))
+        setup.add(BoundLocalDeclarationStatement(range, stored, operation, storage))
+        setup.add(BoundMemberAssignmentStatement(range, field, stored,
+            TypeConversions.classify(stored.semanticType, field.semanticType)))
+        return BoundEvaluationExpression(range, stored.semanticType, setup, stored)
+    }
+
+    /** Bind only source-declared canonical operator contracts; primitive rules remain separate. */
+    public static bindDeclaredOperator(String operator, BoundExpression left, BoundExpression right,
+        SourceRange range, PrimitiveResolvedDeclarationContext context,
+        CallableSignature[] callables, TypeHierarchyComponent hierarchy = null) -> BoundCallExpression {
+        // Absence tests are intrinsic reference observations, never a dispatch
+        // to a user overload (which may dereference its argument or receiver).
+        // TypeOperations owns whether the operand category permits this test.
+        if ((operator == "==" || operator == "!=") &&
+            (left.semanticType.kind() == "null" || right.semanticType.kind() == "null")) return null
+        if (!context || (left.semanticType.kind() != "user-class" &&
+            left.semanticType.kind() != "generic-instance")) return null
+        var String traitName
+        var String methodName
+        var Bool comparison
+        if (operator == "+") { traitName = "PlusOperator"; methodName = "plus"; }
+        else if (operator == "-") { traitName = "MinusOperator"; methodName = "minus"; }
+        else if (operator == "*") { traitName = "MultiplyOperator"; methodName = "multiply"; }
+        else if (operator == "+=") { traitName = "PlusEqualsOperator"; methodName = "plusEquals"; }
+        else if (operator == "-=") { traitName = "MinusEqualsOperator"; methodName = "minusEquals"; }
+        else if (operator == "*=") { traitName = "MultiplyEqualsOperator"; methodName = "multiplyEquals"; }
+        else if (operator == "<") { traitName = "LessThanOperator"; methodName = "lessThan"; comparison = true; }
+        else if (operator == "<=") { traitName = "LessThanOrEqualToOperator"; methodName = "lessThanOrEqualTo"; comparison = true; }
+        else if (operator == ">") { traitName = "GreaterThanOperator"; methodName = "greaterThan"; comparison = true; }
+        else if (operator == ">=") { traitName = "GreaterThanOrEqualToOperator"; methodName = "greaterThanOrEqualTo"; comparison = true; }
+        else if (operator == "!=") { traitName = "NotEqualToOperator"; methodName = "notEqualTo"; comparison = true; }
+        else return null
+        let traits = context.candidates("flat/operators/" + traitName)
+        if (traits.count != 1) return null
+        let instance = left.semanticType.kind() == "generic-instance"
+            ? (GenericInstanceSemanticType)left.semanticType : null
+        let owner = instance ? instance.declarationType : (UserClassSemanticType)left.semanticType
+        let syntax = context.classFor(owner.declarationIdentity)
+        if (!syntax) return null
+        let parameters = GenericParameterSemanticType[]
+        if (syntax.genericParameterName) {
+            parameters.add(GenericParameterSemanticType(owner.declarationIdentity, syntax.genericParameterName, 0))
+        }
+        let substitution = instance ? GenericSubstitution(parameters, instance.typeArguments()) : null
+        let resolver = PrimitiveStructuralTypeResolver(declarationContext: context.scopeFor(owner.declarationIdentity),
+            receiverType: owner, methodGenericParameters: parameters, lookupRange: syntax.range)
+        let candidates = CallableSignature[]
+        for (name in syntax.implementedTypeNames()) {
+            let declared = resolver.resolve(name)
+            let implemented = substitution ? substitution.apply(declared) : declared
+            if (implemented.kind() != "generic-instance") continue
+            let contract = (GenericInstanceSemanticType)implemented
+            SemanticType[] arguments = contract.typeArguments()
+            if (contract.declarationType.declarationIdentity.value != traits.first.value ||
+                arguments.count != (comparison ? 1 : 2)) continue
+            let resultType = comparison ? SemanticTypes.boolType() : arguments.get(1)
+            for (original in callables) {
+                if (original.callableKind.value != "instance-method" || original.name != methodName ||
+                    !original.ownerType || original.ownerType.value() != owner.value()) continue
+                let candidate = instance && original.ownerGenericDeclaration ? original.instantiateReceiver(instance) : original
+                if (candidate.parameterTypes().count != 1 || candidate.optionalParameterCount != 0 ||
+                    candidate.parameterTypes().first.value() != arguments.first.value() ||
+                    candidate.returnType.value() != resultType.value() || candidate.asyncFunction) continue
+                if (!candidates.any((existing) => existing.identity.value == candidate.identity.value))
+                    candidates.add(candidate)
+            }
+        }
+        if (candidates.isEmpty) return null
+        // Ranking and ambiguity belong to the type system, including adapter candidates.
+        return PrimitiveStringAdapter.call(methodName, candidates, left, [right], context,
+            callables, hierarchy, callRange: range)
+    }
+
     compoundOperator(String assignmentOperator) -> String {
         if (assignmentOperator == "+=") return "+"
         if (assignmentOperator == "-=") return "-"
@@ -3321,7 +3622,7 @@ class {
         let owner = declarationContext.classFor(target.ownerType.declarationIdentity)
         let scope = declarationContext.scopeForSnapshot(syntax.range.snapshot)
         let ownerFields = publishedFields.filter((field) =>
-            field.identity.declaration.value == target.ownerType.declarationIdentity.value)
+            field.canonicalOwner().value == target.ownerType.declarationIdentity.value)
         let scopedLocals = LocalBinding[]:addAll(parameterLocals)
         scopedLocals.add(LocalBinding("this", retained.symbolIdentity, retained.semanticType))
         let resolver = PrimitiveStructuralTypeResolver(callables: constructors,
@@ -3417,6 +3718,69 @@ class {
             index++
         }
         throw Exception("Resolved named static call has no bound invocation")
+    }
+
+    implicitInstanceCandidates(String name, BoundReferenceExpression receiver) -> CallableSignature[] {
+        if (!receiver) return CallableSignature[]
+        let candidates = constructors.filter((candidate) => candidate.name == name &&
+            candidate.callableKind.value == "instance-method" &&
+            TypeConversions.classifyReceiver(receiver.semanticType, candidate.receiverType(), typeHierarchy).applicable)
+        // A nearer declaration hides only the same parameter contract, not other
+        // overloads. Preserve the original selected callable and default metadata.
+        return candidates.filter((candidate) => !candidates.any((other) =>
+            (other.identity.value == candidate.identity.value ||
+                implementationParameters(candidate, other)) &&
+            other.ownerType.value() != candidate.ownerType.value() &&
+            TypeConversions.classifyReceiver(other.ownerType, candidate.ownerType, typeHierarchy).applicable))
+    }
+
+    implementationParameters(CallableSignature inherited, CallableSignature implementation) -> Bool {
+        if (inherited.parameterTypes().map({ _.value() }) == implementation.parameterTypes().map({ _.value() })) return true
+        let formals = inherited.ownerGenericDeclaration?.genericParameters() ?: GenericParameterSemanticType[]
+        let actuals = implementation.ownerGenericDeclaration?.genericParameters() ?: GenericParameterSemanticType[]
+        if (formals.count != actuals.count || inherited.parameterTypes().count != implementation.parameterTypes().count) return false
+        let substitution = GenericSubstitution(formals, actuals.map({ _ }))
+        var Int index
+        for (parameter in inherited.parameterTypes()) {
+            if (!implementationType(substitution.apply(parameter), implementation.parameterTypes()[index++],
+                inherited.ownerType, implementation.ownerType)) return false
+        }
+        return true
+    }
+
+    implementationType(SemanticType inherited, SemanticType implementation,
+        UserClassSemanticType inheritedOwner, UserClassSemanticType implementationOwner) -> Bool {
+        if (inherited.value() == implementation.value()) return true
+        if (inherited.kind() == "function" && implementation.kind() == "function") {
+            let left = (FunctionSemanticType)inherited
+            let right = (FunctionSemanticType)implementation
+            if (left.asyncFunction != right.asyncFunction || left.parameterTypes().count != right.parameterTypes().count ||
+                !implementationType(left.returnType, right.returnType, inheritedOwner, implementationOwner)) return false
+            var Int index
+            for (parameter in left.parameterTypes()) {
+                if (!implementationType(parameter, right.parameterTypes()[index++], inheritedOwner, implementationOwner)) return false
+            }
+            return true
+        }
+        if (inherited.kind() == "generic-instance" && implementation.kind() == "generic-instance") {
+            let left = (GenericInstanceSemanticType)inherited
+            let right = (GenericInstanceSemanticType)implementation
+            if (left.declarationType.value() != inheritedOwner.value() || right.declarationType.value() != implementationOwner.value() ||
+                left.typeArguments().count != right.typeArguments().count) return false
+            return left.typeArguments().map({ _.value() }) == right.typeArguments().map({ _.value() })
+        }
+        return inherited.value() == inheritedOwner.value() && implementation.value() == implementationOwner.value()
+    }
+
+    contextualConstructor(CallableSignature candidate, SemanticType requiredType) -> CallableSignature {
+        if (candidate.callableKind.value == "constructor" && candidate.ownerGenericDeclaration &&
+            candidate.returnType.kind() == "user-class" && requiredType && requiredType.kind() == "generic-instance") {
+            Object contextSource = requiredType
+            GenericInstanceSemanticType context = (GenericInstanceSemanticType)contextSource
+            if (context.declarationType.value() == candidate.ownerType.value())
+                return candidate.instantiateConstructor(context.typeArguments())
+        }
+        return candidate
     }
 
     /** Shape narrows contextual typing only; the normal checker still selects the overload. */

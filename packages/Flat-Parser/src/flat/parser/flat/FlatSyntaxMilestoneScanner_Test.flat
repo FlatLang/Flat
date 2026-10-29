@@ -5,6 +5,26 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    test `incomplete front matter keeps sparse retained indexes and clears terminal state`() {
+        let subject = FlatSyntaxMilestoneScanner(snapshot(), 16)
+        subject.accept(token("package", Token.Type.IDENTIFIER, 1), 5)
+        subject.accept(token("flat", Token.Type.IDENTIFIER, 9), 11)
+        subject.accept(token("/", Token.Type.SYMBOL, 13), 20)
+        var ParseFailure failure
+        try { subject.end() }
+        catch (ParseFailure error) { failure = error }
+        expect(failure).toNotBe(null)
+        expect(failure.diagnostic.code).toBe("invalid-front-matter")
+        expect(failure.diagnostic.snapshot).toBe(subject.snapshot)
+        expect(failure.diagnostic.range.startTokenIndex).toBe(5)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(21)
+        expect(failure.diagnostic.range.start.column).toBe(1)
+        expect(failure.diagnostic.range.end.column).toBe(14)
+        expect(subject.finished).toBe(true)
+        expect(subject.retainedTokenCount).toBe(0)
+        expect(subject.end().isEmpty).toBe(true)
+    }
+
     test `publishes package and imports before later declarations`() {
         let scanner = FlatSyntaxMilestoneScanner(snapshot(), 16)
         let islands = SyntaxIsland[]

@@ -7,6 +7,11 @@ import flat/semantic/types
  * Selected async calls await their result unless the producer marks a
  * promise-preserving context with suppressAwait. This is contextual evidence,
  * not a backend scheduling choice; copies and lowering must preserve it.
+ * Arguments are already in selected parameter order. Their count must cover
+ * required parameters and may omit only the optional suffix. Each published
+ * conversion must be applicable and connect the operand type to its selected
+ * parameter type. Preserve that evidence rather than resolving it in a writer.
+ * Receiver conversion evidence belongs only to a present instance receiver.
  */
 data class extends BoundExpression {
     var BoundExpression[] arguments
@@ -31,9 +36,14 @@ data class extends BoundExpression {
                     target.returnType.value() != ((NullableSemanticType)semanticType).underlyingType.value())))) {
             throw Exception("Bound call requires target, result type, and aligned arguments/conversions")
         }
+        let parameterTypes = target.parameterTypes()
+        if (argumentValues.count < parameterTypes.count - target.optionalParameterCount ||
+            argumentValues.count > parameterTypes.count) {
+            throw Exception("Bound call argument count does not match selected target")
+        }
         let instanceCall = target.callableKind.value == "instance-method"
-        if (instanceCall != (receiver != null)) {
-            throw Exception("Bound instance calls require exactly one receiver")
+        if (instanceCall != (receiver != null) || (!receiver && receiverConversion)) {
+            throw Exception("Bound instance calls require exactly one receiver and receiver evidence")
         }
         if (safeAccess && !instanceCall) throw Exception("Safe call requires an instance target")
         let receiverType = receiver && safeAccess && receiver.semanticType.kind() == "nullable" ?
@@ -48,8 +58,10 @@ data class extends BoundExpression {
         var Int index
         while (index < argumentValues.count) {
             if (!argumentValues[index] || !argumentConversions[index] ||
-                argumentConversions[index].fromType.value() != argumentValues[index].semanticType.value()) {
-                throw Exception("Bound call argument conversion does not match its expression")
+                !argumentConversions[index].applicable ||
+                argumentConversions[index].fromType.value() != argumentValues[index].semanticType.value() ||
+                argumentConversions[index].toType.value() != parameterTypes[index].value()) {
+                throw Exception("Bound call argument conversion does not match its expression and selected parameter")
             }
             index++
         }

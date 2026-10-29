@@ -15,7 +15,8 @@ import flat/future
  */
 class CompilerSourceReadSchedule {
     visible Int capacity
-    visible String completionOrder
+    visible String completionOrder => reverseCompletion ? "reverse" : "forward"
+    var Bool reverseCompletion
     var Future<Bool>[] gates = Future<Bool>[]
     var Int remaining
     var Int released
@@ -23,13 +24,13 @@ class CompilerSourceReadSchedule {
     var Bool claimed
     var Future.CompletableFuture<Bool> drained = Future.create<Bool>()
 
-    private construct(Int capacity, String order) {
+    private construct(Int capacity, Bool reverseCompletion) {
         if (capacity <= 0 || capacity > 256) throw Exception("Controlled read capacity must be from 1 to 256")
         this.capacity = capacity
-        completionOrder = order
+        this.reverseCompletion = reverseCompletion
     }
-    public static forward(Int capacity) -> CompilerSourceReadSchedule => CompilerSourceReadSchedule(capacity, "forward")
-    public static reverse(Int capacity) -> CompilerSourceReadSchedule => CompilerSourceReadSchedule(capacity, "reverse")
+    public static forward(Int capacity) -> CompilerSourceReadSchedule => CompilerSourceReadSchedule(capacity, false)
+    public static reverse(Int capacity) -> CompilerSourceReadSchedule => CompilerSourceReadSchedule(capacity, true)
 
     protected claim() {
         if (claimed) throw Exception("Controlled read schedule is single-use")
@@ -37,6 +38,7 @@ class CompilerSourceReadSchedule {
     }
 
     protected admit() -> Future<Bool> {
+        if (!claimed) throw Exception("Controlled read schedule must be claimed before admission")
         if (sealed && remaining == 0) {
             gates.clear()
             sealed = false
@@ -52,15 +54,19 @@ class CompilerSourceReadSchedule {
     protected seal() {
         if (sealed || gates.isEmpty) return
         sealed = true
-        released = completionOrder == "forward" ? 0 : gates.count - 1
+        released = reverseCompletion ? gates.count - 1 : 0
         releaseGate()
     }
 
     protected settle() {
+        if (!sealed || remaining <= 0) throw Exception("Controlled read settlement requires a sealed active window")
         remaining--
         if (remaining == 0) drained.complete(true)
         else {
-            released += completionOrder == "forward" ? 1 : -1
+            // Keep the direction branch separate from compound assignment. The
+            // legacy bootstrap parses compound-assignment ternaries incorrectly.
+            if (reverseCompletion) released--
+            else released++
             releaseGate()
         }
     }

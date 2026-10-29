@@ -7,6 +7,269 @@ import flat/bound
 import flat/lexer/Lexer
 
 testable class {
+    expressionRange(String name) -> SourceRange {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:" + name), "one")
+        return SourceRange(snapshot, 0, 1, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 12))
+    }
+
+    test `floating literal context retains canonical provenance and precise failure range`() {
+        let range = expressionRange("floating-context")
+        let syntax = PrimitiveLiteralSyntax(range, Token.Type.FLOAT, "0.00000001")
+        let result = PrimitiveExpressionBinder().bind(syntax, requiredType: SemanticTypes.floatType())
+        expect(result.succeeded).toBe(true)
+        Object literalSource = result.expression
+        BoundLiteralExpression literal = (BoundLiteralExpression)literalSource
+        let checked = FloatingLiteralTyping.contextualize("0.00000001", SemanticTypes.floatType(), range)
+        expect(literal.sourceValue).toBe("0.00000001")
+        expect(literal.canonicalValue).toBe(checked.canonicalValue)
+        expect(literal.range).toBe(range)
+        expect(literal.semanticType.value()).toBe(SemanticTypes.floatType().value())
+        let rejected = PrimitiveExpressionBinder().bind(PrimitiveLiteralSyntax(range, Token.Type.FLOAT, "1e100"), requiredType: SemanticTypes.floatType())
+        expect(rejected.succeeded).toBe(false)
+        expect(rejected.diagnostic.code).toBe("type.floating-literal-overflow")
+        expect(rejected.diagnostic.range).toBe(range)
+        let underflow = PrimitiveExpressionBinder().bind(PrimitiveLiteralSyntax(range, Token.Type.FLOAT, "1e-100"), requiredType: SemanticTypes.floatType())
+        expect(underflow.succeeded).toBe(false)
+        expect(underflow.diagnostic.code).toBe("type.floating-literal-underflow")
+        expect(underflow.diagnostic.range).toBe(range)
+    }
+
+    test `floating conditionals retain nested unary zero and reject Double expressions`() {
+        let range = expressionRange("floating-unary-conditional")
+        let zero = PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "0")
+        let negative = PrimitiveUnarySyntax(range, "-", zero)
+        let nested = PrimitiveUnarySyntax(range, "-", negative)
+        let syntax = PrimitiveConditionalSyntax(range, PrimitiveLiteralSyntax(range, Token.Type.BOOL, "true"), negative, nested)
+        let result = PrimitiveExpressionBinder().bind(syntax, requiredType: SemanticTypes.floatType())
+        expect(result.succeeded).toBe(true)
+        Object conditionalSource = result.expression
+        BoundConditionalExpression conditional = (BoundConditionalExpression)conditionalSource
+        expect(conditional.whenTrue.semanticType.value()).toBe(SemanticTypes.floatType().value())
+        expect(conditional.whenFalse.semanticType.value()).toBe(SemanticTypes.floatType().value())
+        Object unarySource = conditional.whenTrue
+        BoundUnaryExpression unary = (BoundUnaryExpression)unarySource
+        Object zeroSource = unary.operand
+        BoundLiteralExpression literal = (BoundLiteralExpression)zeroSource
+        expect(unary.operator).toBe("-")
+        expect(literal.sourceValue).toBe("0")
+        expect(literal.canonicalValue).toBe("0")
+        expect(literal.range).toBe(range)
+        let declaration = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "local", 0), "local", "doubleValue")
+        let locals = [LocalBinding("doubleValue", SymbolIdentity(declaration, "local"), SemanticTypes.doubleType())]
+        let rejected = PrimitiveExpressionBinder().bind(PrimitiveUnarySyntax(range, "-", PrimitiveReferenceSyntax(range, "doubleValue")), requiredType: SemanticTypes.floatType(), locals: locals)
+        expect(rejected.succeeded).toBe(false)
+    }
+
+    test `null comparison does not grant null assignment to references`() {
+        let range = arrayRange("reference-null-equality")
+        let declaration = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "class", 30), "class", "StringCharArray")
+        let declared = UserClassSemanticType(declaration)
+        let generic = GenericParameterSemanticType(declaration, "E", 0)
+        let references = SemanticType[]
+        references.add(declared)
+        references.add(SemanticTypes.objectType())
+        references.add(SemanticTypes.stringType())
+        references.add(generic)
+        references.add(GenericInstanceSemanticType(declared, [generic]))
+        references.add(ArraySemanticType(SemanticTypes.charType()))
+        references.add(FunctionSemanticType(SemanticType[], SemanticTypes.boolType()))
+        let nullRange = SourceRange(range.snapshot, 183, 184,
+            Location(lineNumber: 61, column: 13), Location(lineNumber: 61, column: 18))
+        let referenceRange = SourceRange(range.snapshot, 185, 186,
+            Location(lineNumber: 61, column: 22), Location(lineNumber: 61, column: 26))
+        for (type in references) {
+            let identity = SymbolIdentity(declaration, "local", 0)
+            let locals = [LocalBinding("other", identity, type)]
+            String[] operators = ["==", "!="]
+            for (operator in operators) {
+                let syntax = PrimitiveBinarySyntax(range, operator,
+                    PrimitiveReferenceSyntax(referenceRange, "other"),
+                    PrimitiveLiteralSyntax(nullRange, Token.Type.NULL, "null"))
+                let result = PrimitiveExpressionBinder().bind(syntax, locals: locals)
+                expect(result.succeeded).toBe(true)
+                expect(result.expression.semanticType.value()).toBe(SemanticTypes.boolType().value())
+                Object binarySource = result.expression
+                BoundBinaryExpression binary = (BoundBinaryExpression)binarySource
+                expect(binary.range).toBe(range)
+                expect(binary.left.semanticType.value()).toBe(type.value())
+                expect(binary.left.range).toBe(referenceRange)
+                expect(binary.right.semanticType.kind()).toBe("null")
+                expect(binary.right.range).toBe(nullRange)
+                expect(binary.left.expressionKind()).toBe("reference")
+                let reverse = PrimitiveBinarySyntax(range, operator, syntax.right, syntax.left)
+                let reversed = PrimitiveExpressionBinder().bind(reverse, locals: locals)
+                expect(reversed.succeeded).toBe(true)
+                expect(reversed.expression.semanticType.value()).toBe(SemanticTypes.boolType().value())
+            }
+            // Equality is observation, not implicit widening of storage or calls.
+            // Generic null assignment retains its independent preexisting policy.
+            if (type.kind() != "generic-parameter") {
+                expect(TypeConversions.classify(SemanticTypes.nullType(), type).applicable).toBe(false)
+                let assigned = PrimitiveExpressionBinder().bind(
+                    PrimitiveLiteralSyntax(nullRange, Token.Type.NULL, "null"), requiredType: type)
+                expect(assigned.succeeded).toBe(false)
+            }
+        }
+        let primitives = [SemanticTypes.intType(), SemanticTypes.boolType(), SemanticTypes.charType()]
+        for (type in primitives) {
+            let locals = [LocalBinding("value", SymbolIdentity(declaration, "local", 1), type)]
+            let syntax = PrimitiveBinarySyntax(range, "==", PrimitiveReferenceSyntax(referenceRange, "value"),
+                PrimitiveLiteralSyntax(nullRange, Token.Type.NULL, "null"))
+            let result = PrimitiveExpressionBinder().bind(syntax, locals: locals)
+            expect(result.succeeded).toBe(false)
+            expect(result.diagnostic.code).toBe("type.binary")
+            expect(result.diagnostic.range).toBe(range)
+        }
+    }
+
+    test `null absence comparison bypasses declared inequality dispatch`() {
+        let range = arrayRange("null-intrinsic-dispatch")
+        let context = arrayTextContext(range)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let original = BoundReferenceExpression(range, text, "text",
+            SymbolIdentity(text.declarationIdentity, "local", 0))
+        let absent = BoundLiteralExpression(range, SemanticTypes.nullType(), "null")
+        // No callable lookup is needed to determine absence. This also keeps
+        // later NotEqualToOperator contracts from intercepting the observation.
+        let dispatched = PrimitiveClassBinder.bindDeclaredOperator("!=", original, absent,
+            range, context, CallableSignature[])
+        expect(dispatched == null).toBe(true)
+    }
+
+    test `conditional source text publishes checked reference branches`() {
+        let range = arrayRange("conditional-reference-text")
+        let context = arrayTextContext(range)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let rootIdentity = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "class", 100), "class", "Object")
+        let root = UserClassSemanticType(rootIdentity)
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "class", 200), "class", "Array")
+        let element = GenericParameterSemanticType(owner, "E", 0)
+        let identity = SymbolIdentity(owner, "local", 0)
+        let locals = [LocalBinding("element", identity, element)]
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(text, "class", [root]))
+        hierarchy.seal()
+        let branchRange = SourceRange(range.snapshot, 17, 18,
+            Location(lineNumber: 3, column: 12), Location(lineNumber: 3, column: 32))
+        let falseRange = SourceRange(range.snapshot, 19, 20,
+            Location(lineNumber: 3, column: 35), Location(lineNumber: 3, column: 42))
+        let texts = PrimitiveExpressionSyntax[]
+        texts.add(PrimitiveLiteralSyntax(branchRange, Token.Type.STRING, "\"quoted\""))
+        texts.add(PrimitiveInterpolatedStringSyntax(branchRange, [PrimitiveInterpolatedStringSegmentSyntax(
+            branchRange, null, PrimitiveReferenceSyntax(branchRange, "element"))]))
+        for (sourceText in texts) {
+            let syntax = PrimitiveConditionalSyntax(range,
+                PrimitiveLiteralSyntax(range, Token.Type.BOOL, "true"), sourceText,
+                PrimitiveReferenceSyntax(falseRange, "element"))
+            let result = PrimitiveExpressionBinder().bind(syntax, locals: locals,
+                callables: [arrayTextConstructor(text)], hierarchy: hierarchy, declarationContext: context)
+            expect(result.succeeded).toBe(true)
+            Object conditionalValue = result.expression
+            BoundConditionalExpression conditional = (BoundConditionalExpression)conditionalValue
+            expect(conditional.semanticType.value()).toBe(root.value())
+            expect(conditional.range).toBe(range)
+            let wrapped = arrayConversion(conditional.whenTrue)
+            let retained = arrayConversion(conditional.whenFalse)
+            expect(wrapped.conversion.conversionKind).toBe("reference-upcast")
+            expect(retained.conversion.conversionKind).toBe("reference-upcast")
+            expect(wrapped.conversion.applicable && wrapped.conversion.implicit).toBe(true)
+            expect(retained.conversion.applicable && retained.conversion.implicit).toBe(true)
+            expect(wrapped.range).toBe(branchRange)
+            expect(retained.range).toBe(falseRange)
+            let construction = arrayCall(wrapped.value)
+            expect(construction.target.identity.value).toBe(arrayTextConstructor(text).identity.value)
+            expect(construction.range).toBe(branchRange)
+            expect(construction.argumentValues().first.semanticType.value()).toBe(SemanticTypes.stringType().value())
+            expect(retained.value.expressionKind()).toBe("reference")
+            expect(retained.value.semanticType.value()).toBe(element.value())
+            Object retainedValue = retained.value
+            BoundReferenceExpression reference = (BoundReferenceExpression)retainedValue
+            expect(reference.symbolIdentity.value).toBe(identity.value)
+            let reversed = PrimitiveConditionalSyntax(range, syntax.condition,
+                syntax.whenFalse, syntax.whenTrue)
+            let reverseResult = PrimitiveExpressionBinder().bind(reversed, locals: locals,
+                callables: [arrayTextConstructor(text)], hierarchy: hierarchy, declarationContext: context)
+            expect(reverseResult.succeeded).toBe(true)
+            Object reverseValue = reverseResult.expression
+            BoundConditionalExpression reverseConditional = (BoundConditionalExpression)reverseValue
+            expect(reverseConditional.semanticType.value()).toBe(root.value())
+            expect(arrayConversion(reverseConditional.whenTrue).value.expressionKind()).toBe("reference")
+            expect(arrayConversion(reverseConditional.whenFalse).value.expressionKind()).toBe("call")
+
+            // No constructor or declaration is not permission to guess storage.
+            let missing = PrimitiveExpressionBinder().bind(syntax, locals: locals,
+                hierarchy: hierarchy, declarationContext: context)
+            expect(missing.succeeded).toBe(false)
+            expect(missing.diagnostic.code).toBe("binding.conditional-text-contract")
+            expect(missing.diagnostic.range).toBe(branchRange)
+            let absent = PrimitiveExpressionBinder().bind(syntax, locals: locals,
+                callables: [arrayTextConstructor(text)], hierarchy: hierarchy)
+            expect(absent.succeeded).toBe(false)
+            expect(absent.diagnostic.code).toBe("binding.conditional-text-contract")
+            expect(absent.diagnostic.range).toBe(branchRange)
+            // The canonical root is semantic authority, not the spelling Object.
+            let noRoot = TypeHierarchyComponent()
+            noRoot.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+            noRoot.add(TypeHierarchyDeclaration(text, "class", [root]))
+            noRoot.seal()
+            let unregistered = PrimitiveExpressionBinder().bind(syntax, locals: locals,
+                callables: [arrayTextConstructor(text)], hierarchy: noRoot, declarationContext: context)
+            expect(unregistered.succeeded).toBe(false)
+            expect(unregistered.diagnostic.code).toBe("type.conditional-branches")
+            expect(unregistered.diagnostic.range).toBe(range)
+        }
+    }
+
+    test `conditional native text is not declared storage`() {
+        let range = arrayRange("conditional-native-text")
+        let context = arrayTextContext(range)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let root = UserClassSemanticType(DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "class", 100), "class", "Object"))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "class", 200), "class", "Array")
+        let element = GenericParameterSemanticType(owner, "E", 0)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(text, "class", [root]))
+        hierarchy.seal()
+        let locals = [LocalBinding("nativeText", SymbolIdentity(owner, "local", 0), SemanticTypes.stringType()),
+            LocalBinding("element", SymbolIdentity(owner, "local", 1), element)]
+        let syntax = PrimitiveConditionalSyntax(range,
+            PrimitiveLiteralSyntax(range, Token.Type.BOOL, "true"),
+            PrimitiveReferenceSyntax(range, "nativeText"), PrimitiveReferenceSyntax(range, "element"))
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: locals,
+            callables: [arrayTextConstructor(text)], hierarchy: hierarchy, declarationContext: context)
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.code).toBe("type.conditional-branches")
+        expect(result.diagnostic.range).toBe(range)
+        // Reference-free native text conditionals keep the native representation.
+        let native = PrimitiveConditionalSyntax(range, syntax.condition, syntax.whenTrue,
+            PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"fallback\""))
+        let unchanged = PrimitiveExpressionBinder().bind(native, locals: locals,
+            callables: [arrayTextConstructor(text)], hierarchy: hierarchy, declarationContext: context)
+        expect(unchanged.succeeded).toBe(true)
+        expect(unchanged.expression.semanticType.value()).toBe(SemanticTypes.stringType().value())
+    }
+
+    test `unknown primitive reference retains exact range across diagnostic boundary`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:unknown-reference-range"), "one")
+        let range = SourceRange(snapshot, 17, 18, Location(lineNumber: 3, column: 12), Location(lineNumber: 3, column: 32))
+        let result = PrimitiveExpressionBinder().bind(PrimitiveReferenceSyntax(range, "dogfoodMissingSymbol"))
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.code).toBe("binding.unresolved-reference")
+        expect(result.diagnostic.range).toBe(range)
+        let captured = result.diagnostic
+        let unrelated = PrimitiveExpressionBinder().bind(PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1"))
+        expect(unrelated.succeeded).toBe(true)
+        expect(captured.range.snapshot).toBe(snapshot)
+        expect(captured.range.startTokenIndex).toBe(17)
+        expect(captured.range.endTokenIndex).toBe(18)
+        expect(captured.range.start.column).toBe(12)
+        expect(captured.range.end.column).toBe(32)
+    }
+
     // Erase legacy generic-array projections before narrowing their bound node.
     arrayNode(Object value) -> BoundArrayExpression => (BoundArrayExpression)value
     arrayCall(Object value) -> BoundCallExpression => (BoundCallExpression)value
@@ -822,8 +1085,12 @@ testable class {
         )
 
         expect(result.succeeded).toBe(true)
-        expect(result.expression.expressionKind()).toBe("conversion")
+        expect(result.expression.expressionKind()).toBe("literal")
         expect(result.expression.semanticType.value()).toBe("primitive:Float")
+        Object literalSource = result.expression
+        BoundLiteralExpression literal = (BoundLiteralExpression)literalSource
+        expect(literal.sourceValue).toBe("0.5")
+        expect(literal.canonicalValue).toBe("0.5")
     }
 
     test `binds builtin String construction from Char array`() {
@@ -913,6 +1180,59 @@ testable class {
         expect(widened.expression.semanticType.value()).toBe("primitive:Long")
         expect(reference.succeeded).toBe(true)
         expect(reference.expression.semanticType.value()).toBe("primitive:Int")
+    }
+
+    test `conditional null join preserves nullable type instead of erasing to Object`() {
+        let range = arrayRange("conditional-null-join")
+        let syntax = PrimitiveConditionalSyntax(range,
+            PrimitiveLiteralSyntax(range, Token.Type.BOOL, "true"),
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "7"),
+            PrimitiveLiteralSyntax(range, Token.Type.NULL, "null"))
+        let result = PrimitiveExpressionBinder().bind(syntax)
+        expect(result.succeeded).toBe(true)
+        expect(result.expression.semanticType.value()).toBe(NullableSemanticType(SemanticTypes.intType()).value())
+        let conditional = (BoundConditionalExpression)result.expression
+        expect(conditional.whenTrue.semanticType.value()).toBe(conditional.semanticType.value())
+        expect(conditional.whenFalse.semanticType.value()).toBe(conditional.semanticType.value())
+        expect(conditional.whenTrue.expressionKind()).toBe("conversion")
+    }
+
+    test `conditional invalid branches preserve typed diagnostic and nested source range`() {
+        let range = arrayRange("conditional-bad-branches", 8)
+        let syntax = PrimitiveConditionalSyntax(range,
+            PrimitiveLiteralSyntax(range, Token.Type.BOOL, "true"),
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "7"),
+            PrimitiveLiteralSyntax(range, Token.Type.BOOL, "false"))
+        let result = PrimitiveExpressionBinder().bind(syntax)
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.code).toBe("type.conditional-branches")
+        expect(result.diagnostic.range.startTokenIndex).toBe(8)
+        expect(result.diagnostic.range.snapshot).toBe(range.snapshot)
+    }
+
+    test `conditional numeric condition preserves typed condition diagnostic`() {
+        let range = arrayRange("conditional-bad-condition", 12)
+        let result = PrimitiveExpressionBinder().bind(PrimitiveConditionalSyntax(range,
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1"),
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "2"),
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "3")))
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.code).toBe("type.conditional-condition")
+        expect(result.diagnostic.range.startTokenIndex).toBe(12)
+    }
+
+    test `nested unary type failure keeps operator range rather than enclosing conditional`() {
+        let outer = arrayRange("nested-typed-diagnostic", 2)
+        let operandRange = arrayRange("nested-typed-diagnostic", 20)
+        let invalid = PrimitiveUnarySyntax(operandRange, "-",
+            PrimitiveLiteralSyntax(operandRange, Token.Type.BOOL, "true"))
+        let result = PrimitiveExpressionBinder().bind(PrimitiveConditionalSyntax(outer,
+            PrimitiveLiteralSyntax(outer, Token.Type.BOOL, "true"), invalid,
+            PrimitiveLiteralSyntax(outer, Token.Type.INTEGER, "1")))
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.code).toBe("type.unary")
+        expect(result.diagnostic.range.startTokenIndex).toBe(20)
+        expect(result.diagnostic.range.endTokenIndex).toBe(21)
     }
 
     test `binds conditional with Bool condition and common branch type`() {
@@ -1738,7 +2058,7 @@ testable class {
         expect(incompatible.diagnostic.code).toBe("type.primitive-conversion")
         expect(incompatible.diagnostic.range.snapshot).toBe(snapshot)
         expect(unknown.succeeded).toBe(false)
-        expect(unknown.diagnostic.code).toBe("semantic.primitive-expression")
+        expect(unknown.diagnostic.code).toBe("binding.unresolved-reference")
     }
 
     test `binds and lowers rich collection forms`() {

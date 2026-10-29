@@ -133,6 +133,62 @@ function lifecycleMatch(entry, args, options) {
   return true;
 }
 
+function toolchainMatch(entry, args, options) {
+  if (JSON.stringify(args) !== JSON.stringify(['-e', 'process.exit(7)'])) return false;
+  const owner = path.join(policy.root, 'packages/Airship');
+  const cwd = fs.realpathSync(options.cwd || process.cwd());
+  return path.dirname(cwd) === owner && /^\.airship-toolchain-test-[0-9]{1,16}$/.test(path.basename(cwd));
+}
+
+function toolchainCliMatch(entry, args, options) {
+  if (!process.argv[1] || entry.runner !== fs.realpathSync(process.argv[1])) return false;
+  if (args[0] !== entry.selected) return false;
+  const owner = path.join(policy.root, 'packages/Airship');
+  const root = args[3];
+  if (typeof root !== 'string' || path.dirname(root) !== owner ||
+      !/^\.airship-toolchain-test-[0-9]{1,16}$/.test(path.basename(root)) ||
+      fs.realpathSync(root) !== root || fs.realpathSync(options.cwd || process.cwd()) !== owner) return false;
+  const compiler = entry.sourceState === 'absent-compiler' ? path.join(root, 'absent-compiler.js') : entry.compiler;
+  const expected = [entry.selected, '--use-links', '-f', root, '--flatc-runtime', 'flat',
+    '--flatc-script', compiler, '-t', 'es6', '-r', 'node', ...entry.operation];
+  if (JSON.stringify(args) !== JSON.stringify(expected)) return false;
+  verify(entry.selected, entry.selectedSha256);
+  verify(entry.compiler, entry.compilerSha256);
+  if (fs.realpathSync(entry.selected) !== entry.selected ||
+      !entry.selected.startsWith(owner + path.sep)) throw Error('Public CLI tool identity changed');
+  if (!['present', 'invalid', 'absent-compiler'].includes(entry.sourceState) ||
+      JSON.stringify(entry.outcome) !== JSON.stringify({exit: 1, signal: null})) throw Error('Invalid public CLI outcome');
+  if (entry.sourceState !== 'present' &&
+      fs.readFileSync(path.join(root, 'src/Main.flat'), 'utf8') !== 'not valid Flat syntax') {
+    throw Error('Public CLI mutation state changed');
+  }
+  if (entry.sourceState === 'absent-compiler' && fs.existsSync(compiler)) throw Error('Missing compiler fixture exists');
+  return true;
+}
+
+function toolchainCompileMatch(entry, args, options) {
+  if (!process.argv[1] || entry.runner !== fs.realpathSync(process.argv[1])) return false;
+  const owner = path.join(policy.root, 'packages/Airship');
+  if (fs.realpathSync(options.cwd || process.cwd()) !== owner || args.length < 2) return false;
+  const root = path.dirname(args[1]);
+  if (path.dirname(root) !== owner || !/^\.airship-toolchain-test-[0-9]{1,16}$/.test(path.basename(root)) ||
+      args[1] !== path.join(root, 'src') || fs.realpathSync(root) !== root) return false;
+  const missing = entry.sourceState === 'absent-compiler';
+  if (args[0] !== (missing ? path.join(root, 'absent-compiler.js') : entry.compiler)) return false;
+  verify(entry.compiler, entry.compilerSha256);
+  if (missing && fs.existsSync(args[0])) throw Error('Missing compiler fixture exists');
+  if (fs.readFileSync(path.join(root, 'src/Main.flat'), 'utf8') !== 'not valid Flat syntax') return false;
+  // Exact replay of the previously admitted ordinary main compile argv, with
+  // only the reviewed missing-script substitution. Bound by the existing 16MiB
+  // journal ceiling. No new flag, source, output, or dependency is admitted.
+  if (fs.statSync(policy.journal).size > 16 * 1024 * 1024) throw Error('Journal capacity exceeded');
+  const expected = [entry.compiler, ...args.slice(1)];
+  const prior = fs.readFileSync(policy.journal, 'utf8').trim().split('\n').map(line => JSON.parse(line));
+  return args.includes('-main') && args[args.indexOf('-main') + 1] === 'app/Main' &&
+    prior.some(record => record.decision === 'allow' && record.command === policy.node &&
+      JSON.stringify(record.args) === JSON.stringify(expected));
+}
+
 function admit(command, args = [], options = {}) {
   const original = command;
   let expectedExit = 0;
@@ -154,9 +210,12 @@ function admit(command, args = [], options = {}) {
     const fixtures = policy.fixtures || [];
     if (fixtures.length > 128) throw Error('Fixture declaration capacity exceeded');
     fixture = fixtures.find(entry => entry.command === command &&
-      (entry.lifecycleStep === undefined ? JSON.stringify(entry.args) === JSON.stringify(args) :
-        lifecycleMatch(entry, args, options)) &&
-      entry.cwd === fs.realpathSync(options.cwd || process.cwd()) &&
+      (entry.toolchainCompile ? toolchainCompileMatch(entry, args, options) :
+        (entry.toolchainCli ? toolchainCliMatch(entry, args, options) :
+        (entry.toolchainFixture ? toolchainMatch(entry, args, options) :
+        (entry.lifecycleStep === undefined ? JSON.stringify(entry.args) === JSON.stringify(args) :
+          lifecycleMatch(entry, args, options))))) &&
+      (entry.toolchainCompile || entry.toolchainCli || entry.toolchainFixture || entry.cwd === fs.realpathSync(options.cwd || process.cwd())) &&
       process.argv[1] && entry.runner === fs.realpathSync(process.argv[1]));
     if (fixture) {
       if (!fixture.runner.startsWith(policy.root + path.sep) ||
@@ -166,6 +225,7 @@ function admit(command, args = [], options = {}) {
         throw Error('Invalid immutable fixture declaration');
       }
       verify(fixture.runner, fixture.runnerSha256);
+      if (fixture.toolchainCli || fixture.toolchainCompile) expectedExit = 1;
       if (!Array.isArray(fixture.files) || fixture.files.length > 16) throw Error('Fixture file capacity exceeded');
       for (const file of fixture.files) {
         if (fs.realpathSync(file.path) !== file.path || !file.path.startsWith(policy.root + path.sep)) {
@@ -185,7 +245,7 @@ function admit(command, args = [], options = {}) {
         throw Error('Subprocess cwd outside stage');
       }
     }
-    if (fixture) {
+    if (fixture && !fixture.toolchainCli && !fixture.toolchainCompile) {
       if (command === 'node' || command === policy.node) {
         verify(policy.node, policy.nodeSha256);
         command = policy.node;
@@ -225,13 +285,25 @@ function admit(command, args = [], options = {}) {
         nodeProbe = true;
       }
       if (!nodeProbe) {
+      if (fixture && fixture.toolchainCompile) {
+        verify(policy.node, policy.nodeSha256);
+        command = policy.node;
+      } else {
       if (!args.length || args[0].startsWith('-')) throw Error('Node requires a script, not flags/eval');
       let script = path.resolve(options.cwd || process.cwd(), args[0]);
       const lookup = path.join(fs.realpathSync(path.dirname(script)), path.basename(script));
+      if (policy.stage > 0 && policy.compilerOutput &&
+          (script === policy.compilerOutput || fs.realpathSync(script) === policy.compilerOutput)) {
+        throw Error('Compiler output is not an admitted compiler input');
+      }
       if (lookup === policy.compiler && policy.stage > 0) {
         // Admission only: Airship explicitly selected this immutable script.
         // Retain realpath/hash checks; never substitute another compiler argv.
         if (fs.realpathSync(script) !== policy.seed) throw Error('Compiler script is not the immutable seed');
+        const seedStat = fs.lstatSync(policy.seed);
+        if (!seedStat.isFile() || fs.realpathSync(policy.seed) !== policy.seed || (seedStat.mode & 0o222)) {
+          throw Error('Compiler seed must remain a canonical read-only regular file');
+        }
         verify(policy.seed, policy.seedSha256);
       } else if (script === policy.airship) {
         verify(script, policy.airshipSha256);
@@ -249,6 +321,7 @@ function admit(command, args = [], options = {}) {
         script = real;
       }
       args[0] = script;
+      }
       }
       if (policy.nodeSha256) verify(policy.node, policy.nodeSha256);
       command = policy.node;

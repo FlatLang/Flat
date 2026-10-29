@@ -31,11 +31,17 @@ class {
         for (source in sources) {
             for (syntax in source.classValues()) {
                 let qualified = source.namespaceName.isEmpty ? syntax.name : "#{source.namespaceName}/#{syntax.name}"
-                if (qualified == qualifiedName) result.add(classIdentity(syntax))
+                if (qualified == qualifiedName) {
+                    let identity = classIdentity(syntax)
+                    if (result.none((existing) => existing.value == identity.value)) result.add(identity)
+                }
             }
             for (syntax in source.interfaceValues()) {
                 let qualified = source.namespaceName.isEmpty ? syntax.name : "#{source.namespaceName}/#{syntax.name}"
-                if (qualified == qualifiedName) result.add(interfaceIdentity(syntax))
+                if (qualified == qualifiedName) {
+                    let identity = interfaceIdentity(syntax)
+                    if (result.none((existing) => existing.value == identity.value)) result.add(identity)
+                }
             }
         }
         return result.sort({ _a.value.compareTo(_b.value) })
@@ -149,6 +155,21 @@ class {
         let configured = configuredTypeCandidates(name, consumerRange)
         if (configured.isNotEmpty) return configured
         return defaultCandidates(name)
+    }
+
+    /** Canonical spelling is used only while transporting already-resolved syntax type edges. */
+    public qualifiedName(DeclarationIdentity identity) -> String {
+        for (source in sources) {
+            for (syntax in source.classValues()) {
+                if (classIdentity(syntax).value == identity.value)
+                    return source.namespaceName.isEmpty ? syntax.name : source.namespaceName + "/" + syntax.name
+            }
+            for (syntax in source.interfaceValues()) {
+                if (interfaceIdentity(syntax).value == identity.value)
+                    return source.namespaceName.isEmpty ? syntax.name : source.namespaceName + "/" + syntax.name
+            }
+        }
+        throw Exception("Declaration identity is not admitted in this context")
     }
 
     public resolve(String name, SourceRange range) -> DeclarationIdentity {

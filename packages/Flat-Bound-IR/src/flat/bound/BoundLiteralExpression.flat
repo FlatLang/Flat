@@ -4,9 +4,17 @@ import flat/compiler/models
 import flat/semantic/types
 
 data class extends BoundExpression {
-    public construct(SourceRange range, SemanticType semanticType, visible String sourceValue) {
+    public construct(SourceRange range, SemanticType semanticType, visible String sourceValue,
+        visible String canonicalValue = null) {
         if (!range || !semanticType || !sourceValue) throw Exception("Bound literal requires range, type, and value")
+        if (canonicalValue != null && (canonicalValue.count == 0 ||
+            (semanticType.value() != SemanticTypes.floatType().value() &&
+             semanticType.value() != SemanticTypes.doubleType().value()))) {
+            throw Exception("Canonical floating literal requires Float or Double and selected constant text")
+        }
         super(range, semanticType)
     }
+    /** Selected semantic constant text is distinct from the original source lexeme. */
+    public emissionValue() -> String => canonicalValue ?: sourceValue
     override public expressionKind() => "literal"
 }

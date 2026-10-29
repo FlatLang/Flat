@@ -35,9 +35,20 @@ class {
         if (fromType.value() == toType.value()) {
             return TypeConversion(fromType, toType, "identity", true, true, false, 0)
         }
-        if (fromType.kind() == "generic-parameter" && toType.kind() == "user-class" && hierarchy &&
-            hierarchy.isRootClass((UserClassSemanticType)toType)) {
-            return TypeConversion(fromType, toType, "reference-upcast", true, true, false, 10)
+        if (fromType.kind() == "generic-parameter" && toType.kind() == "user-class" && hierarchy) {
+            let parameter = (GenericParameterSemanticType)fromType
+            if (parameter.constraint) {
+                // Only concrete non-nullable reference bounds prove upcasts.
+                // Never recurse through parameter bounds or use an explicit cast.
+                if (!isReference(parameter.constraint) || parameter.constraint.kind() == "generic-parameter")
+                    return none(fromType, toType)
+                let bound = classify(parameter.constraint, toType, hierarchy: hierarchy)
+                if (bound.applicable && bound.implicit) return TypeConversion(
+                    fromType, toType, "reference-upcast", true, true, false, 10 + bound.cost)
+                return none(fromType, toType)
+            }
+            if (hierarchy.isRootClass((UserClassSemanticType)toType))
+                return TypeConversion(fromType, toType, "reference-upcast", true, true, false, 10)
         }
         if (fromType.kind() == "user-class" && toType.kind() == "generic-instance" && hierarchy) {
             let distance = hierarchy.concreteGenericDistance((UserClassSemanticType)fromType,
@@ -188,7 +199,8 @@ class {
             type.value() == "primitive:UInt" || type.value() == "primitive:ULong"
     }
 
-    static isReference(SemanticType type) -> Bool {
+    /** Non-nullable reference category; does not imply any conversion is legal. */
+    public static isReference(SemanticType type) -> Bool {
         return type.kind() == "string" || type.kind() == "object" || type.kind() == "array" ||
             type.kind() == "user-class" || type.kind() == "generic-instance" ||
             type.kind() == "generic-parameter" || type.kind() == "function"

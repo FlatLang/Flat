@@ -6,6 +6,212 @@ import flat/writer/es6/bound
 
 /** Lexical artifact identities; roots and directory trees are caller-trusted. */
 testable class {
+    test `rename failure preserves previous destination and cleanup permits exact retry`() {
+        let root = File(".flat-artifact-rename-retry-#{Time.currentTimeMillis}")
+        let output = File(root, "a.js")
+        let observer = LifecycleRecorder(output.normalizedLocation)
+        let files = FilesystemCompilerArtifactSink(root, 1, "revision-1", observer)
+        native var Object originalRename
+        try {
+            Es6ArtifactFiles.write(output, "previous")
+            external {
+                #{originalRename} = #{File.FileGlobal.fs}.renameSync;
+                #{File.FileGlobal.fs}.renameSync = () => { throw new Error('controlled rename failure'); };
+            }
+            try {
+                var String failure = ""
+                try { files.write(CompilerArtifact("a.js", "replacement")) }
+                catch (Exception error) { failure = error.message }
+                expect(failure).toBe("controlled rename failure")
+                expect(files.artifacts().count).toBe(0)
+                expect(files.pendingCleanupCount).toBe(0)
+                expect(observer.publications).toBe(0)
+                expect(observer.created).toBe(2)
+                expect(observer.removed).toBe(2)
+                expect(observer.invalidObservation).toBe(false)
+                expect(Es6ArtifactFiles.read(output)).toBe("previous")
+                expect(root.getChildFiles(includeDirectories: true).count).toBe(1)
+            } finally { external { #{File.FileGlobal.fs}.renameSync = #{originalRename}; } }
+            files.write(CompilerArtifact("a.js", "replacement"))
+            expect(files.artifacts().count).toBe(1)
+            expect(files.pendingCleanupCount).toBe(0)
+            expect(observer.publications).toBe(1)
+            expect(observer.created).toBe(4)
+            expect(observer.removed).toBe(4)
+            expect(observer.invalidObservation).toBe(false)
+            expect(Es6ArtifactFiles.read(output)).toBe("replacement")
+            expect(root.getChildFiles(includeDirectories: true).count).toBe(1)
+        } finally { files.retryCleanup(); Es6ArtifactFiles.remove(root) }
+    }
+
+    test `memory sink owns bounded detached snapshots and rejects admission atomically`() {
+        let memory = MemoryCompilerArtifactSink(2, 40)
+        let identity = "b.js".concat("")
+        let code = "B".concat("")
+        memory.write(CompilerArtifact(identity, code))
+        identity.chars[0] = 'z'
+        code.chars[0] = 'Z'
+        expect(memory.artifacts().first.identity).toBe("b.js")
+        expect(memory.artifacts().first.code).toBe("B")
+        let snapshot = memory.artifacts().first
+        snapshot.identity.chars[0] = 'x'
+        snapshot.code.chars[0] = 'X'
+        expect(memory.artifacts().first.identity).toBe("b.js")
+        expect(memory.artifacts().first.code).toBe("B")
+        var Int rejected
+        try { memory.write(CompilerArtifact("a.js", "AA")) } catch (Exception error) { rejected++ }
+        expect(memory.artifacts().count).toBe(1)
+        memory.write(CompilerArtifact("a.js", "A"))
+        try { memory.write(CompilerArtifact("c.js", "C")) } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+        expect(memory.artifacts().count).toBe(2)
+        expect(memory.artifacts().first.identity).toBe("a.js")
+        expect(memory.artifacts().last.identity).toBe("b.js")
+        rejected = 0
+        try { MemoryCompilerArtifactSink(0) } catch (Exception error) { rejected++ }
+        try { MemoryCompilerArtifactSink(1, 0) } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    class ReentrantLifecycleObserver extends CompilerArtifactLifecycleObserver {
+        visible var FilesystemCompilerArtifactSink files
+        visible var Int rejected
+        visible var Int publications
+
+        override public temporaryCreated(CompilerArtifactLifecycleBinding binding, String path) {
+            try { files.write(CompilerArtifact("intruder.js", "intruder")) }
+            catch (Exception error) { rejected++ }
+            try { files.retryCleanup() } catch (Exception error) { rejected++ }
+        }
+        override public published(CompilerArtifactLifecycleBinding binding) { publications++ }
+    }
+
+    test `filesystem observer reentry cannot steal reservation or publish another artifact`() {
+        let root = File(".flat-artifact-reentry-#{Time.currentTimeMillis}")
+        let observer = ReentrantLifecycleObserver()
+        let files = FilesystemCompilerArtifactSink(root, 1, "revision-1", observer)
+        observer.files = files
+        try {
+            files.write(CompilerArtifact("a.js", "A"))
+            expect(observer.rejected).toBe(4)
+            expect(observer.publications).toBe(1)
+            expect(files.artifacts().count).toBe(1)
+            expect(files.pendingCleanupCount).toBe(0)
+            expect(File(root, "intruder.js").exists).toBe(false)
+            expect(Es6ArtifactFiles.read(File(root, "a.js"))).toBe("A")
+        } finally { files.retryCleanup(); Es6ArtifactFiles.remove(root) }
+    }
+
+    class SpoolReentrantLifecycleObserver extends CompilerArtifactLifecycleObserver {
+        visible var SpooledCompilerArtifactSink spool
+        visible var Int rejected
+        override public temporaryCreated(CompilerArtifactLifecycleBinding binding, String path) {
+            try { spool.dispose() } catch (Exception error) { rejected++ }
+            try { spool.write(CompilerArtifact("intruder.js", "intruder")) }
+            catch (Exception error) { rejected++ }
+        }
+    }
+
+    test `spool observer cannot dispose storage during admission`() {
+        let root = File(".flat-spool-reentry-#{Time.currentTimeMillis}")
+        let output = File(root, "output")
+        let observer = SpoolReentrantLifecycleObserver()
+        let spool = SpooledCompilerArtifactSink(File(root, "spool"), 1, 1024,
+            "revision-1", output, observer)
+        let files = FilesystemCompilerArtifactSink(output)
+        observer.spool = spool
+        try {
+            spool.write(CompilerArtifact("a.js", "A"))
+            expect(observer.rejected).toBe(4)
+            expect(spool.stagedFile().exists).toBe(true)
+            spool.commitTo(files)
+            expect(Es6ArtifactFiles.read(File(output, "a.js"))).toBe("A")
+            expect(spool.artifacts().count).toBe(0)
+            expect(File(root, "spool").getChildFiles(includeDirectories: true).count).toBe(0)
+        } finally { spool.dispose(); files.retryCleanup(); Es6ArtifactFiles.remove(root) }
+    }
+
+    test `filesystem metadata snapshot cannot be changed by caller strings`() {
+        let root = File(".flat-files-snapshot-#{Time.currentTimeMillis}")
+        let files = FilesystemCompilerArtifactSink(root)
+        let identity = "a.js".concat("")
+        let code = "A".concat("")
+        try {
+            files.write(CompilerArtifact(identity, code))
+            identity.chars[0] = 'z'
+            code.chars[0] = 'Z'
+            let snapshot = files.artifacts().first
+            snapshot.identity.chars[0] = 'x'
+            snapshot.code.chars[0] = 'X'
+            expect(files.artifacts().first.identity).toBe("a.js")
+            expect(files.artifacts().first.code).toBe("A")
+            expect(Es6ArtifactFiles.read(File(root, "a.js"))).toBe("A")
+            var Bool rejected
+            try { files.write(CompilerArtifact("a.js", "replacement")) }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            expect(Es6ArtifactFiles.read(File(root, "a.js"))).toBe("A")
+        } finally { files.retryCleanup(); Es6ArtifactFiles.remove(root) }
+    }
+
+    test `cleanup inspection failure retains receipt and cannot authorize republishing`() {
+        let root = File(".flat-artifact-inspection-#{Time.currentTimeMillis}")
+        let observer = LifecycleRecorder(File(root, "a.js").normalizedLocation)
+        let files = FilesystemCompilerArtifactSink(root, 1, "revision-1", observer)
+        native var Object originalStat
+        try {
+            external {
+                #{originalStat} = #{File.FileGlobal.fs}.lstatSync;
+                #{File.FileGlobal.fs}.lstatSync = () => {
+                    const error = new Error('controlled inaccessible artifact storage');
+                    error.code = 'EACCES';
+                    throw error;
+                };
+            }
+            try {
+                files.write(CompilerArtifact("a.js", "A"))
+                expect(files.pendingCleanupCount).toBe(1)
+                expect(files.cleanupError("a.js").message).toBe("controlled inaccessible artifact storage")
+                expect(observer.publications).toBe(1)
+                expect(observer.failedFinalizers).toBe(1)
+                var Bool rejected
+                try { files.write(CompilerArtifact("a.js", "replacement")) }
+                catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(Es6ArtifactFiles.read(File(root, "a.js"))).toBe("A")
+            } finally { external { #{File.FileGlobal.fs}.lstatSync = #{originalStat}; } }
+            files.retryCleanup()
+            expect(files.pendingCleanupCount).toBe(0)
+            expect(observer.publications).toBe(1)
+            expect(Es6ArtifactFiles.read(File(root, "a.js"))).toBe("A")
+        } finally { files.retryCleanup(); Es6ArtifactFiles.remove(root) }
+    }
+
+    test `dangling temporary link is present storage until checked removal`() {
+        let root = File(".flat-artifact-dangling-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let link = File(root, "dangling")
+        let receipt = CompilerArtifactLifecycleStorage(link, null, null)
+        native var Object originalRemove
+        try {
+            external {
+                #{File.FileGlobal.fs}.symlinkSync('missing-target', #{link.normalizedLocation.chars.data});
+                #{originalRemove} = #{File.FileGlobal.fs}.rmSync;
+                #{File.FileGlobal.fs}.rmSync = () => {};
+            }
+            try {
+                expect(CompilerArtifactLifecycleStorage.pathPresent(link)).toBe(true)
+                var Bool rejected
+                try { receipt.remove() } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(receipt.failure != null).toBe(true)
+            } finally { external { #{File.FileGlobal.fs}.rmSync = #{originalRemove}; } }
+            receipt.remove()
+            expect(CompilerArtifactLifecycleStorage.pathPresent(link)).toBe(false)
+            expect(receipt.failure == null).toBe(true)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     test `filesystem and spool reject unsafe paths before admission or publication`() {
         let root = File(".flat-artifact-path-test-#{Time.currentTimeMillis}")
         let output = File(root, "output")

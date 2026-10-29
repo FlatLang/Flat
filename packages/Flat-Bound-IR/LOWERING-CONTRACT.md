@@ -1,5 +1,121 @@
 # Bound lowering handoff (source-only)
 
+## Contextual floating constants (T1/T2/T3 source wave, NOT RUN)
+
+`BoundLiteralExpression(range, semanticType, sourceValue, canonicalValue=null)`
+retains original source lexeme and range independently from selected canonical
+Float/Double constant text. `emissionValue()` chooses canonicalValue if supplied,
+otherwise the legacy sourceValue. Canonical text is accepted only on primitive
+Float/Double, nonempty; semantic syntax/rounding/overflow/underflow are exclusively
+Type-System decisions consumed by Binder. No backend host parse, Math.fround or
+rounding rule. Recursive/core/collection/deferred lowering retains immutable
+literal evidence. ES6 emits selected decimal text verbatim, including -0; exact
+binary32 values are exactly representable as ES6 Numbers. BoundIRAssertions
+continues to report sourceValue as provenance, not executable constant text.
+
+Registered source-only BoundFloatingLiteral_Test checks canonical/source/range
+preservation and backward compatibility. Es6FloatingLiteralExecution_Test authors
+binary32 oracle execution (1e-8, even/odd midpoint ties, subnormal, signed zero),
+exact just-above-midpoint double-rounding trap, binary64 round trip and unary
+negative zero. Math.fround appears only in regression oracle programs, never
+production emission. Tests NOT RUN until all semantic producer/IR/backend source
+writers finish. No dependency/queue/barrier or shared mutable index added.
+
+## Approved normalized constructor plans (T2/T3 implementation, NOT RUN)
+
+`BoundConstructorPlan(entry, fieldInitializer, preBaseStatements, parentCall,
+initializationCalls, delegationPath, range)` is immutable target-independent
+allocation evidence. `BoundFunctionUnit` appends optional `constructorPlan`.
+Planned entries have empty raw body/parent/delegation. All constructor entries in
+one owner are planned together; raw guards remain unchanged for raw owners.
+Defaults stay on entry parameters and execute only in allocation-helper prologue;
+preBase contains delegation bindings/defaults, not duplicate entry defaults.
+
+Plan validation checks unique selected path, reverse body-stage identities,
+shared once-first field helper, exact published synchronous Unit helper signatures,
+helper parameter ownership, complete path suffix consistency, exact direct-parent
+evidence, receiver-free lexical setup, default forward/self reference rejection,
+and no suspension/control escape. Typed native references are visited; opaque
+receiver/control/eval source rejects conservatively rather than rewriting text.
+All array storage is defensive. Helpers derive identities through the two public
+static BoundConstructorPlan identity functions, never from display names.
+
+Recursive lowering copies plans/defaults/setup/selected calls with conversion
+objects/ranges/path identity intact. ES6 planned emission preserves primary new
+and selected overload static-factory ABI, forwarding original omission unchanged.
+Private allocation helper runs entry prologue/setup then exact selected parent
+allocation helper, root allocates one most-derived reference object, then current
+fields and reversed constructor body stages run on that same receiver. Separate
+Unit helpers preserve return/finally boundaries. Missing own parent protocol is
+an explicit TypeError, never a raw-primary or Reflect fallback. Ordinary raw
+emission remains separate. Root/native admission is producer-owned; no native
+internal-slot allocation inference added.
+
+Registered source-only BoundConstructorPlan_Test and
+Es6ConstructorPlanExecution_Test cover immutable copies, cycles, stage mismatches,
+missing targets, receiver/capture/forward-default/base rejection, multihop unwind,
+parent overload selection, entry/dependent defaults, stage/parent argument once,
+fields/prototype/receiver identity once, return/finally and exception isolation,
+supplied null versus omission, and missing raw-parent protocol. No tests run in
+the two-lane implementation wave. Owner-local constructor graph normalization
+belongs to Binder; no project barrier/queue/dependency was added here.
+
+## T3 conditional common-reference handoff (2026-10-28, NOT RUN)
+
+The existing `BoundConditionalExpression` and `BoundConversionExpression` are
+sufficient for a hierarchy-proven common reference join. No new IR node, generic
+erasure, native text coercion, or backend type-selection rule is needed.
+
+The semantic producer supplies a Bool condition and a chosen common result type.
+Each differing branch is converted _inside its branch_ using applicable evidence
+whose source is the original branch type and destination is the chosen result.
+For the Array text-mapping frontier this means declared SourceString -> canonical
+declared Object and generic E -> that same proven Object. The false branch keeps
+the original generic expression under its reference-upcast node, not a String
+conversion, primitive builtin Object replacement, or erased literal. Nullable
+results require explicit nullable-lift/null evidence; a nullable branch cannot be
+published as a nonnullable result. Canonical declaration identity and hierarchy
+registration are producer evidence, never inferred from runtime values or names.
+
+`BoundConditionalEvidence_Test` covers evidence, source types, reference identity
+and range preservation through recursive, core-language and collection-control
+copies; mismatched unconverted branches and nullable narrowing remain rejected.
+`Es6ConditionalReferenceExecution_Test` authors generated execution for declared
+Object array mapping with quoted/interpolated text, original generic object and
+boxed scalar identity, branch-only conversion/allocation, condition/operand once,
+raw quote/apostrophe/backslash/newline preservation, and both direct conditional
+and branch-local setup paths. Separate nullable execution checks null selection
+and original reference identity. Tests are registered but **NOT RUN** in this
+implementation-first wave. No production behavior change was required in the
+lowering or writer: existing copies retain selected conversion objects and the
+writer emits reference upcasts as value-preserving operations.
+
+No queue, barrier, dependency, whole-project materialization or mutable index is
+introduced. Only existing expression-local immutable nodes and test-local arrays
+are used. Full semantic producer integration and real Core execution remain for
+the coordinator after all seven implementers finish.
+
+## L07 initial-wave selected-call evidence tightening (unvalidated)
+
+`BoundCallExpression` now rejects missing required or excess arguments,
+non-applicable argument conversions, conversion destinations that do not match
+selected parameter types, and receiver-conversion evidence without a receiver.
+The existing source-type check and defensive array snapshots remain intact.
+Optional trailing parameters may still be omitted. Arguments are in selected
+parameter order; source-order named-argument evaluation remains a producer
+responsibility. These checks mirror the existing constructor-delegation evidence
+contract and add no backend dependency or public constructor signature change.
+Canonical text wrapping remains a selected constructor call; its argument
+conversion targets native storage, not the constructed text result type.
+
+New `BoundIR_Test` regressions cover arity, optional suffix omission, inapplicable
+and mismatched evidence, null entries, immutable argument/conversion snapshots,
+selected async dispatch evidence through recursive lowering, text constructor
+storage evidence, and orphan receiver evidence. Tests were authored only. No
+build, test, syntax check, formatting check or other verification was performed
+for this initial wave, per user override. Historical evidence below is unchanged
+and is not evidence for these changes.
+
 ## Implemented contracts
 
 `BoundTreeLoweringPass` is the package-local-domain recursive rewrite contract for

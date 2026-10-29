@@ -1,6 +1,28 @@
 package flat/datastruct/list
 
 testable class {
+    class DisplayValue {
+        visible var Int textCalls
+        override public toString() -> String {
+            textCalls++
+            return "marker"
+        }
+    }
+
+    test `mixed display mapping retains the nontext element identity`() {
+        let marker = DisplayValue()
+        Object[] values = ["hello", marker]
+        let mapped = values.map((value) => value != null && value.class.isOfType(String.class)
+            ? "\"#{value}\"" : value)
+        expect(mapped.count).toBe(2)
+        expect(mapped[0]).toBe("\"hello\"")
+        expect(mapped[1] == marker).toBe(true)
+        expect(marker.textCalls).toBe(0)
+        expect(values.toString()).toBe("[\"hello\", marker]")
+        expect(marker.textCalls).toBe(1)
+        expect(values[1] == marker).toBe(true)
+    }
+
     test `reversed arrays append without overwriting existing values`() {
         let original = ["first", "second", "third"]
         let reversed = original.reverse()

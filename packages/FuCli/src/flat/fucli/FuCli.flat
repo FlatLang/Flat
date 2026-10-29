@@ -13,7 +13,11 @@ class {
     visible CliArg[] args => binaryArg.args
     visible String description => binaryArg.description
 
-    this[String argName] => binaryArg[argName]
+    this[String argName] -> CliArg {
+        get {
+            return binaryArg[argName]
+        }
+    }
 
     public construct(
         String binaryName,

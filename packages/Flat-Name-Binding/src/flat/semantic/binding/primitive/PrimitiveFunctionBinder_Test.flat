@@ -3,8 +3,340 @@ package flat/semantic/binding/primitive
 import flat/compiler/models
 import flat/parser/flat
 import flat/bound
+import flat/lexer/Lexer
+import flat/semantic/types
 
 testable class {
+    // These finite fixture token arrays belong only to the owning binder tests.
+    async bindCallbackSource(String source, String name) -> PrimitiveFunctionBindingResult {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:l04:#name"), "one")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveFunctionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        return PrimitiveFunctionBinder().bind(syntax, snapshot)
+    }
+
+    async test `standalone calls contextually select callbacks and materialize preceding defaults once`() {
+        for (mode in 0..2) {
+            let overloads = [
+                "read(next(Int value) -> Int) -> Int { return next(4); } ",
+                "read(next(Bool value) -> Bool) -> Bool { return next(true); } "
+            ]
+            let source = (mode == 0 ? overloads : overloads.reverse()).join("") +
+                "offset() -> Int { return 7; } " +
+                "use(Int earlier, Int later = earlier + 1, next(Int value) -> Int = lambda(Int value) => value + later) -> Int { return next(earlier); } " +
+                "run(Int later) -> Int { var selected = read(lambda(Int value) => value + 2); return use(offset()); }"
+            let result = bindCallbackSource(source, "integrated-context-default-#mode")
+            let run = result.functionValues().firstOrNull((value) => value.name == "run")
+            let statements = run.statements()
+            Object localSource = statements.first
+            BoundLocalDeclarationStatement selected = (BoundLocalDeclarationStatement)localSource
+            Object readSource = selected.initializer
+            BoundCallExpression read = (BoundCallExpression)readSource
+            expect(read.target.returnType.value()).toBe(SemanticTypes.intType().value())
+            let readArguments = read.argumentValues()
+            expect(readArguments.first.expressionKind()).toBe("lambda")
+            Object returnedSource = statements.last
+            BoundReturnStatement returned = (BoundReturnStatement)returnedSource
+            Object callSource = returned.value
+            BoundCallExpression call = (BoundCallExpression)callSource
+            let arguments = call.argumentValues()
+            expect(arguments.count).toBe(3)
+            Object firstSource = arguments.first
+            BoundEvaluationExpression first = (BoundEvaluationExpression)firstSource
+            let firstSetup = first.setup()
+            Object retainedSource = firstSetup.first
+            BoundLocalDeclarationStatement retained = (BoundLocalDeclarationStatement)retainedSource
+            Object offsetSource = retained.initializer
+            BoundCallExpression offset = (BoundCallExpression)offsetSource
+            expect(offset.target.name).toBe("offset")
+            Object secondSource = arguments[1]
+            BoundEvaluationExpression second = (BoundEvaluationExpression)secondSource
+            let secondSetup = second.setup()
+            Object secondRetainedSource = secondSetup.first
+            BoundLocalDeclarationStatement secondRetained = (BoundLocalDeclarationStatement)secondRetainedSource
+            Object additionSource = secondRetained.initializer
+            BoundBinaryExpression addition = (BoundBinaryExpression)additionSource
+            Object referenceSource = addition.left
+            BoundReferenceExpression reference = (BoundReferenceExpression)referenceSource
+            expect(reference.symbolIdentity.value).toBe(retained.local.symbolIdentity.value)
+            Object thirdSource = arguments[2]
+            BoundEvaluationExpression third = (BoundEvaluationExpression)thirdSource
+            let thirdSetup = third.setup()
+            Object callbackLocalSource = thirdSetup.first
+            BoundLocalDeclarationStatement callbackLocal = (BoundLocalDeclarationStatement)callbackLocalSource
+            Object callbackSource = callbackLocal.initializer
+            BoundLambdaExpression callback = (BoundLambdaExpression)callbackSource
+            expect(callback.captureValues().count).toBe(1)
+            expect(callback.captureValues().first.symbolIdentity.value).toBe(secondRetained.local.symbolIdentity.value)
+            expect(callback.captureValues().first.symbolIdentity.value == run.parameterValues().first.identity.value).toBe(false)
+            for (conversion in call.argumentConversions()) {
+                expect(conversion.applicable).toBe(true)
+                expect(conversion.conversionKind).toBe("identity")
+            }
+        }
+    }
+
+    async test `standalone contextual callback repeated default sites retain distinct captured identities`() {
+        let result = bindCallbackSource("read(Int value = 1) -> Int { return value; } " +
+            "apply(Int value = read()) -> Int { return value; } " +
+            "run() -> Int { return apply() + apply(); }", "integrated-default-identities")
+        let run = result.functionValues().firstOrNull((value) => value.name == "run")
+        let statements = run.statements()
+        Object returnedSource = statements.first
+        BoundReturnStatement returned = (BoundReturnStatement)returnedSource
+        Object additionSource = returned.value
+        BoundBinaryExpression addition = (BoundBinaryExpression)additionSource
+        Object leftSource = addition.left
+        BoundCallExpression left = (BoundCallExpression)leftSource
+        Object rightSource = addition.right
+        BoundCallExpression right = (BoundCallExpression)rightSource
+        let leftArguments = left.argumentValues()
+        Object leftEvaluationSource = leftArguments.first
+        BoundEvaluationExpression leftEvaluation = (BoundEvaluationExpression)leftEvaluationSource
+        let rightArguments = right.argumentValues()
+        Object rightEvaluationSource = rightArguments.first
+        BoundEvaluationExpression rightEvaluation = (BoundEvaluationExpression)rightEvaluationSource
+        let leftSetup = leftEvaluation.setup()
+        Object leftLocalSource = leftSetup.first
+        BoundLocalDeclarationStatement leftLocal = (BoundLocalDeclarationStatement)leftLocalSource
+        let rightSetup = rightEvaluation.setup()
+        Object rightLocalSource = rightSetup.first
+        BoundLocalDeclarationStatement rightLocal = (BoundLocalDeclarationStatement)rightLocalSource
+        expect(leftLocal.evaluationLocal).toBe(true)
+        expect(rightLocal.evaluationLocal).toBe(true)
+        expect(leftLocal.local.symbolIdentity.value == rightLocal.local.symbolIdentity.value).toBe(false)
+        Object nestedLeftSource = leftLocal.initializer
+        BoundCallExpression nestedLeft = (BoundCallExpression)nestedLeftSource
+        Object nestedRightSource = rightLocal.initializer
+        BoundCallExpression nestedRight = (BoundCallExpression)nestedRightSource
+        let nestedLeftArguments = nestedLeft.argumentValues()
+        Object nestedLeftEvaluationSource = nestedLeftArguments.first
+        BoundEvaluationExpression nestedLeftEvaluation = (BoundEvaluationExpression)nestedLeftEvaluationSource
+        let nestedRightArguments = nestedRight.argumentValues()
+        Object nestedRightEvaluationSource = nestedRightArguments.first
+        BoundEvaluationExpression nestedRightEvaluation = (BoundEvaluationExpression)nestedRightEvaluationSource
+        Object nestedLeftReferenceSource = nestedLeftEvaluation.value
+        BoundReferenceExpression nestedLeftReference = (BoundReferenceExpression)nestedLeftReferenceSource
+        Object nestedRightReferenceSource = nestedRightEvaluation.value
+        BoundReferenceExpression nestedRightReference = (BoundReferenceExpression)nestedRightReferenceSource
+        expect(nestedLeftReference.symbolIdentity.value == nestedRightReference.symbolIdentity.value).toBe(false)
+        var Bool rejected
+        try { bindCallbackSource("read(Int value = read()) -> Int { return value; } run() -> Int { return read(); }", "cyclic-default") }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    async test `standalone ambiguous callbacks reject rather than taking candidate order`() {
+        var Bool rejected
+        try {
+            bindCallbackSource("read(next(Int value) -> Int) -> Int { return next(1); } " +
+                "read(next(Bool value) -> Bool) -> Bool { return next(true); } " +
+                "run() -> Int { return read(lambda => _); }", "integrated-ambiguous-callback")
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    async test `function defaults retain async callback names and captured preceding parameters`() {
+        let result = bindCallbackSource(
+            "async read(Int offset = 2, async next(Int value) -> Int = lambda(Int value) => value + offset) -> Int { return next(40); }",
+            "captured-default")
+        let function = result.functionValues().first
+        expect(function.asyncFunction).toBe(true)
+        let parameters = function.parameterValues()
+        expect(parameters.first.defaultValue != null).toBe(true)
+        Object typeSource = parameters[1].semanticType
+        FunctionSemanticType type = (FunctionSemanticType)typeSource
+        expect(type.asyncFunction).toBe(true)
+        expect(type.parameterNames()).toBe(["value"])
+        expect(type.returnType.value()).toBe(SemanticTypes.intType().value())
+        Object defaultSource = parameters[1].defaultValue
+        BoundLambdaExpression callback = (BoundLambdaExpression)defaultSource
+        expect(callback.captureValues().count).toBe(1)
+        expect(callback.captureValues().first.name).toBe("offset")
+        expect(callback.captureValues().first.symbolIdentity.value).toBe(parameters.first.identity.value)
+        Object statementSource = function.statements().first
+        BoundReturnStatement returned = (BoundReturnStatement)statementSource
+        expect(returned.value.class.isOfType(BoundFunctionInvocationExpression.class)).toBe(true)
+    }
+
+    async test `function defaults preserve conversion and never capture later parameters`() {
+        let result = bindCallbackSource(
+            "read(Int first = 2, Long second = first) -> Long { return second; }", "default-conversion")
+        let parameters = result.functionValues().first.parameterValues()
+        Object convertedSource = parameters[1].defaultValue
+        BoundConversionExpression converted = (BoundConversionExpression)convertedSource
+        expect(converted.semanticType.value()).toBe(SemanticTypes.longType().value())
+        Object referenceSource = converted.value
+        BoundReferenceExpression reference = (BoundReferenceExpression)referenceSource
+        expect(reference.symbolIdentity.value).toBe(parameters.first.identity.value)
+        let invalid = [
+            "read(Int first = later, Int later = 2) -> Int { return first; }",
+            "read(Int first = first) -> Int { return first; }",
+            "read(Int first = 2, Int later) -> Int { return first; }",
+            "read(Int offset = 2, next(Int value) -> Bool = lambda(Int value) => value + offset) -> Int { return offset; }",
+            "read(next(Int value) -> Int = lambda(Int value) => null) -> Int { return next(1); }",
+            "read(next(Int value) -> Int) -> Int { return next(1); } run() -> Int { return read(null); }",
+            "read(next(Int value) -> Int) -> Int { return next(true); }"
+        ]
+        var Int index
+        for (source in invalid) {
+            var Bool rejected
+            try { bindCallbackSource(source, "invalid-default-#index") }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            index++
+        }
+    }
+
+    async test `callback signature identity ignores contextual parameter spelling`() {
+        var Bool rejected
+        try {
+            bindCallbackSource(
+                "read(next(Int left) -> Int) -> Int { return next(1); } read(next(Int right) -> Int) -> Int { return next(2); }",
+                "duplicate-callback-signature")
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        let distinct = bindCallbackSource(
+            "read(next(Int value) -> Int) -> Int { return next(1); } read(next(Bool value) -> Int) -> Int { return next(true); }",
+            "distinct-callback-signature")
+        expect(distinct.functionValues().count).toBe(2)
+    }
+
+    async test `async function declaration metadata reaches forward call selection`() {
+        let result = bindCallbackSource(
+            "async run() -> Int { return later(1); } async later(Int value) -> Int { return value; }",
+            "async-forward-call")
+        let functions = result.functionValues()
+        Object returnedSource = functions.first.statements().first
+        BoundReturnStatement returned = (BoundReturnStatement)returnedSource
+        Object callSource = returned.value
+        BoundCallExpression call = (BoundCallExpression)callSource
+        expect(call.target.asyncFunction).toBe(true)
+        expect(functions[1].asyncFunction).toBe(true)
+        expect(call.target.identity.declaration.value).toBe(functions[1].identity.value)
+    }
+
+    async test `callback overload selection is independent of declaration order`() {
+        let intOverload = "read(next(Int value) -> Int) -> Int { return next(1); } "
+        let boolOverload = "read(next(Bool value) -> Int) -> Int { return next(true); } "
+        let caller = "run(next(Int value) -> Int) -> Int { return read(next); }"
+        let sources = [intOverload + boolOverload + caller, boolOverload + intOverload + caller]
+        for (source in sources) {
+            let functions = bindCallbackSource(source, "ordered-callback-overloads").functionValues()
+            let run = functions.firstOrNull((function) => function.name == "run")
+            Object returnedSource = run.statements().first
+            BoundReturnStatement returned = (BoundReturnStatement)returnedSource
+            Object callSource = returned.value
+            BoundCallExpression call = (BoundCallExpression)callSource
+            Object typeSource = call.target.parameterTypes().first
+            FunctionSemanticType type = (FunctionSemanticType)typeSource
+            expect(type.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+        }
+    }
+
+    async test `canonical callback boxing ignores duplicate admission but not distinct declarations`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:l04:canonical-boxing"), "one")
+        let stream = Lexer().lex("class Int { public construct(Int value) {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let source = PrimitiveSourceBindingContext("flat/primitive/number", snapshot, [syntax])
+        let context = PrimitiveResolvedDeclarationContext(source, [source, source])
+        let identity = context.classIdentity(syntax)
+        let owner = UserClassSemanticType(identity)
+        let constructor = CallableSignature(SymbolIdentity(identity, "constructor"), "Int",
+            CallableKind("constructor"), [SemanticTypes.intType()], owner, owner)
+        let declaration = FunctionSemanticType([SemanticTypes.intType()],
+            GenericParameterSemanticType(identity, "Out", 0), asyncFunction: true)
+        expect(context.candidates("flat/primitive/number/Int").count).toBe(1)
+        expect(PrimitiveExpressionBinder.callbackBoxingConstructor(SemanticTypes.intType(),
+            declaration, context, [constructor]).identity.value).toBe(constructor.identity.value)
+        let wrongStorage = CallableSignature(SymbolIdentity(identity, "constructor", 1), "Int",
+            CallableKind("constructor"), [SemanticTypes.boolType()], owner, owner)
+        var Bool storageRejected
+        try { PrimitiveExpressionBinder.callbackBoxingConstructor(SemanticTypes.intType(), declaration,
+            context, [wrongStorage]) }
+        catch (Exception error) { storageRejected = true }
+        expect(storageRejected).toBe(true)
+
+        let otherSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:l04:other-Int"), "one")
+        let otherStream = Lexer().lex("class Int { public construct(Int value) {} }")
+        otherStream.emit("start")
+        let otherSyntax = PrimitiveClassParser().parse(otherStream.consumeAll<Token>("data"), otherSnapshot)
+        let other = PrimitiveSourceBindingContext("flat/primitive/number", otherSnapshot, [otherSyntax])
+        let ambiguous = PrimitiveResolvedDeclarationContext(source, [other, source, source])
+        expect(ambiguous.candidates("flat/primitive/number/Int").count).toBe(2)
+        var Bool rejected
+        try { PrimitiveExpressionBinder.callbackBoxingConstructor(SemanticTypes.intType(), declaration,
+            ambiguous, [constructor]) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        rejected = false
+        let impostorContext = PrimitiveResolvedDeclarationContext(source,
+            [PrimitiveSourceBindingContext("app", snapshot, [syntax])])
+        try { PrimitiveExpressionBinder.callbackBoxingConstructor(SemanticTypes.intType(), declaration,
+            impostorContext, [constructor]) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+    async test `contextual callback candidate fallback preserves explicit parameter contracts`() {
+        let sources = [
+            "class Value { static apply(next(Int value) -> Int) -> Int { return next(1); } static run() -> Int { return Value.apply(lambda(Bool value) => 1); } }",
+            "class Value { static apply(next(Int value) -> Int) -> Int { return next(1); } static apply(next(Bool value) -> Int) -> Int { return next(true); } static run() -> Int { return Value.apply({ 1 }); } }",
+            "class Value { static apply(next(Int value) -> Int) -> Int { return next(1); } static run() -> Int { return Value.apply(lambda(Int value) => null); } }"
+        ]
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:l04:invalid-context-#index"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            index++
+        }
+    }
+
+    async test `contextual async calls retain capture and canonical boxing after candidate reversal`() {
+        let generic = "static async apply<Out, In>(In value, async callback(In value, Int index) -> Out) -> Out { return callback(value, 2); } "
+        let incompatible = "static async apply(Int value, async callback(Bool value, Int index) -> Int) -> Int { return 0; } "
+        let reader = "static async read(Int offset = 2, async next(Int value) -> Int = lambda(Int value) => value + offset) -> Int { return Value.apply(40, lambda(Int value, Int index) => next(value) + index); }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:l04:contextual-order"), "one")
+        let scalarSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:l04:canonical-Int"), "one")
+        let scalarStream = Lexer().lex("class Int { public construct(public Int value) {} }")
+        scalarStream.emit("start")
+        let scalar = PrimitiveClassParser().parse(scalarStream.consumeAll<Token>("data"), scalarSnapshot)
+        let scalarContext = PrimitiveSourceBindingContext("flat/primitive/number", scalarSnapshot, [scalar])
+        let sourceOrders = [generic + incompatible, incompatible + generic]
+        for (methods in sourceOrders) {
+            let stream = Lexer().lex("class Value { #methods #reader }")
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            let context = PrimitiveSourceBindingContext("app", snapshot, [syntax])
+            let program = PrimitiveClassPartitionBinder().bindContexts([scalarContext, context])
+            let type = program.typeUnits().firstOrNull((unit) => unit.identity.name == "Value")
+            let method = type.functionUnits().firstOrNull((function) => function.name == "read")
+            let parameters = method.parameterValues()
+            Object defaultSource = parameters[1].defaultValue
+            BoundLambdaExpression defaultCallback = (BoundLambdaExpression)defaultSource
+            expect(defaultCallback.captureValues().first.symbolIdentity.value).toBe(parameters.first.identity.value)
+            Object returnSource = method.statements().first
+            BoundReturnStatement returned = (BoundReturnStatement)returnSource
+            Object callSource = returned.value
+            BoundCallExpression call = (BoundCallExpression)callSource
+            expect(call.semanticType.value()).toBe(SemanticTypes.intType().value())
+            Object callbackSource = call.argumentValues()[1]
+            BoundLambdaExpression callback = (BoundLambdaExpression)callbackSource
+            expect(callback.captureValues().count).toBe(1)
+            expect(callback.captureValues().first.symbolIdentity.value).toBe(parameters[1].identity.value)
+            expect(callback.resultBoxingConstructor.ownerType.declarationIdentity.syntaxIdentity.snapshot).toBe(scalarSnapshot)
+            expect(callback.resultBoxingConstructor.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+            expect(callback.declarationContract.returnType.kind()).toBe("generic-parameter")
+        }
+    }
+
     test `binds representation modified array parameter structurally`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:representation-parameter-bind"), "revision:one"

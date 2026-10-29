@@ -67,6 +67,7 @@ testable class {
                                 #{captured}.diagnostics++;
                                 #{captured}.revision = value.revision;
                                 #{captured}.complete = value.complete;
+                                #{captured}.failure = value.terminalFailure;
                                 #{captured}.records = value.records.length;
                                 #{captured}.sealedBefore = #{captured}.sealedBefore && #{stream.sealed};
                             }
@@ -87,6 +88,11 @@ testable class {
                     #{complete} = #{captured}.complete;
                     #{records} = #{captured}.records;
                     #{bound} = #{captured}.sealedBefore && #{captured}.revision === #{stream.revision.chars.data};
+                }
+                external js {
+                    if (!#{captured}.complete || !#{captured}.sealedBefore || #{captured}.diagnostics !== 1 || #{captured}.records !== 1) {
+                        throw new Error('Invalid-input admission observations: ' + JSON.stringify(#{captured}));
+                    }
                 }
                 expect(code).toBe(1)
                 expect(stream.sources).toBe(1)
@@ -214,6 +220,40 @@ testable class {
         }
     }
 
+    test `native admission frames remain independent across pending presentation and escaped identities`() {
+        let revision = "sha256:revision"
+        let identity = "source\"\\\nλ.flat"
+        native var Object originalLog
+        native var Object frames
+        external js {
+            #{originalLog} = console.log;
+            #{frames} = [];
+            console.log = (...args) => { #{frames}.push(args); };
+        }
+        try {
+            let stream = CompilerInvocationAdmissionStream()
+            Console.out.write("pending first presentation ")
+            stream.source(revision, 1, identity, "sha256:content-one")
+            Console.out.write("pending second presentation ")
+            stream.source(revision, 2, "Second.flat", "sha256:content-two")
+            stream.seal(revision, "program.js", "sha256:tool", "sha256:options",
+                "sha256:config", "sha256:inventory", 2)
+            Bool valid
+            external js {
+                const capturedFrames = #{frames};
+                const records = capturedFrames.map(args => args.length === 1 && typeof args[0] === 'string' ? JSON.parse(args[0]) : null);
+                #{valid} = records.length === 3 && records.every(record => record && record.revision === #{revision.chars.data}) &&
+                    records[0].schema === 'flat.compiler.invocation-source.v1' && records[0].sequence === 1 &&
+                    records[0].identity === #{identity.chars.data} && records[0].contentFingerprint === 'sha256:content-one' &&
+                    records[1].schema === 'flat.compiler.invocation-source.v1' && records[1].sequence === 2 &&
+                    records[1].identity === 'Second.flat' && records[1].contentFingerprint === 'sha256:content-two' &&
+                    records[2].schema === 'flat.compiler.invocation-admission.v1' && records[2].sourceCount === 2 &&
+                    records[2].sourceInventoryFingerprint === 'sha256:inventory';
+            }
+            expect(valid).toBe(true)
+        } finally { external js { console.log = #{originalLog}; } }
+    }
+
     class MutatingStream extends Stream {
         public construct(private File input) {}
         override public source(String revision, Int sequence, String identity, String contentFingerprint) {
@@ -240,6 +280,46 @@ testable class {
             expect(rejected).toBe(true)
             expect(stream.sources).toBe(1)
             expect(stream.sealed).toBe(false)
+            expect(output.exists).toBe(false)
+        } finally {
+            state.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    class ToolMutatingStream extends Stream {
+        public construct(private File tool) {}
+        override public source(String revision, Int sequence, String identity, String contentFingerprint) {
+            super.source(revision, sequence, identity, contentFingerprint)
+            Es6ArtifactFiles.write(tool, "changed-tool")
+        }
+    }
+
+    test `tool corruption during delivery cannot seal or replay admission`() {
+        let root = File(".flat-admission-tool-race-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let input = File(root, "Main.flat")
+        let tool = File(root, "compiler.js")
+        let output = File(root, "program.js")
+        Es6ArtifactFiles.write(input, "class Main {}")
+        Es6ArtifactFiles.write(tool, "original-tool")
+        let files = [input]
+        let state = CompilerIncrementalState(FilesystemCompilerSourceProvider(files), files,
+            ["-library"], output, 1048576, 65536, toolLocation: tool.normalizedLocation)
+        try {
+            let stream = ToolMutatingStream(tool)
+            var Bool rejected
+            try { state.emitAdmission(stream) } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            expect(stream.sources).toBe(1)
+            expect(stream.sealed).toBe(false)
+            Es6ArtifactFiles.write(tool, "original-tool")
+            let replay = Stream()
+            var Bool replayRejected
+            try { state.emitAdmission(replay) } catch (Exception error) { replayRejected = true }
+            expect(replayRejected).toBe(true)
+            expect(replay.sources).toBe(0)
+            expect(replay.sealed).toBe(false)
             expect(output.exists).toBe(false)
         } finally {
             state.dispose()

@@ -54,6 +54,7 @@ class {
     async checkInstallCompiler() {
         validateCompilerSelection()
         let runtime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() ?: "java"
+        if (runtime == "flat") validateFlatCompilerTarget()
 
         match runtime {
             "native" =>
@@ -243,7 +244,9 @@ class {
         let currentDependency = dependencyService.getDependencyFromPackage("local:#{currentDependencyCanonicalLocation}")
         let sourceLocations = dependencyService.getDependencySourceLocations(currentDependency, installationTarget)
         let excludeSources = dependencyService.getDependencyExclusions(currentDependency, installationTarget)
-        let excludeSource = installationTarget == "test" ? null : dependencyService.getDependencySourceGlobLocation(currentDependency, "test")
+        let testSource = airship.package.testSource?.source
+        let excludeSource = installationTarget != "test" && testSource && testSource != source.source
+            ? dependencyService.getDependencySourceGlobLocation(currentDependency, "test") : null
         let canonicalSourceLocations = sourceLocations.mapParallel({ getCanonicalSourceLocation(_) }).unique()
 
         log.trace("Adding source locations: #{sourceLocations}")
@@ -394,10 +397,20 @@ class {
         return true
     }
 
-    public async getFlatcInstallArguments(String installationTarget, PackageSource source) -> String[] {
-        if (cliArgs.targetRuntimeArg.enabled) {
-            throw ExecutionFailureException("Flat compiler target-runtime selection is not supported")
+    // The generated executable currently emits ES6 for Node. Runtime selection
+    // still controls Airship manifest overlays, but has no compiler flag: the
+    // generated CLI rejects every runtime flag, including its own Node default.
+    public validateFlatCompilerTarget() {
+        if ((airship.target ?: "es6").toLowerCase() != "es6") {
+            throw ExecutionFailureException("Flat compiler supports only target es6")
         }
+        if (airship.targetRuntime && airship.targetRuntime.toLowerCase() != "node") {
+            throw ExecutionFailureException("Flat compiler supports only target runtime node")
+        }
+    }
+
+    public async getFlatcInstallArguments(String installationTarget, PackageSource source) -> String[] {
+        validateFlatCompilerTarget()
         let args = String[]
         let sourceLocations = String[]
         if (airship.package.mainSource) {
@@ -407,7 +420,7 @@ class {
         if (!sourceLocations.contains(selectedLocation)) sourceLocations.add(selectedLocation)
         let excludeSources = source.excludedSources.map({ airship.packageLocation.normalizedLocation + "/" + _.location })
         let testSource = airship.package.testSource?.source
-        let excludeSource = installationTarget != "test" && testSource
+        let excludeSource = installationTarget != "test" && testSource && testSource != source.source
             ? airship.packageLocation.normalizedLocation + "/" + testSource : null
 
         args.addAll(sourceLocations)
@@ -514,8 +527,7 @@ class {
         let source = airship.getSourceForPackage(package, airship.parent ? airship.package.defaultSource : null)
 
         if (!source) {
-            log.debug("No source for local package #{airship.packageLocation.normalizedLocation}. Skipping installation")
-            return
+            throw InvalidCommandException("Package #{airship.package.name} has no source named #package")
         }
 
         // Reject incompatible or unavailable tool selection before dependency
@@ -592,7 +604,13 @@ class {
         PackageSource source,
         Bool install = false
     ) -> Dependency[] {
-        let response = dependencyService.getDependenciesForSource(package, source)
+        let flatRuntime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() == "flat"
+        // Acquisition must use exactly the same production-only dependency
+        // selection as generated command construction. In particular a root
+        // test source does not select dependency test sources or build scripts.
+        let response = flatRuntime
+            ? dependencyService.getCompilationDependencies(source, download: true)
+            : dependencyService.getDependenciesForSource(package, source)
 
         log.trace("Installing dependencies for source #{source}")
         log.trace("Dependencies #{response.dependencies}")
@@ -600,7 +618,7 @@ class {
         for (dependency in response.dependencies) {
             installDependency(
                 dependency,
-                build: response.dependenciesDownloaded.contains(dependency),
+                build: !flatRuntime && response.dependenciesDownloaded.contains(dependency),
                 install: false,
                 installDependencies: false
             )
@@ -625,7 +643,10 @@ class {
 
         let childship = Airship(args, airship)
 
-        if (build && childship.package?.scripts?.containsKey("build")) {
+        // Generated compilation uses dependency sources directly. Package build
+        // scripts can invoke legacy Java toolchains and must not run implicitly.
+        let generated = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() == "flat"
+        if (build && !generated && childship.package?.scripts?.containsKey("build")) {
             if (childship.package.scripts.containsKey("clean")) {
                 childship.runScriptService.runScript("clean")
             }

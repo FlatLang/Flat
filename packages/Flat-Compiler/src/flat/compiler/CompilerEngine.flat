@@ -51,7 +51,7 @@ class {
         if (session.cancelled) return session
         let identities = sources.identities()
         if (!identities || identities.any({ !_ })) throw Exception("Compiler start requires source identities")
-        let ordered = identities.sort({ _a.compareTo(_b) })
+        let ordered = identities.map((identity) => copySubmissionString(identity)).sort((first, second) => first.compareTo(second))
         var Int index
         while (index < ordered.count) {
             if (!ordered[index] || ordered[index].trim().count == 0 ||
@@ -115,7 +115,8 @@ class {
             identities.any((identity) => !identity || identity.trim().count == 0)) {
             throw Exception("Package compilation requires nonempty bounded source identities")
         }
-        let ordered = identities.sort((first, second) => Es6SourceSelection.compare(first, second))
+        let ordered = identities.map((identity) => copySubmissionString(identity)).sort(
+            (first, second) => Es6SourceSelection.compare(first, second))
         var Int index = 1
         while (index < ordered.count) {
             if (ordered[index - 1] == ordered[index]) {
@@ -159,8 +160,7 @@ class {
             start(sources, sink, session)
             session.completion.get()
         } finally {
-            if (!session.completion.completed) session.cancel()
-            drained.get()
+            awaitCompatibilityCleanup(session, drained)
         }
         return session
     }
@@ -179,8 +179,7 @@ class {
             startPackage(sources, artifacts, artifactIdentity, session, mainClass, defaultImports)
             session.completion.get()
         } finally {
-            if (!session.completion.completed) session.cancel()
-            drained.get()
+            awaitCompatibilityCleanup(session, drained)
         }
         return session
     }
@@ -211,10 +210,17 @@ class {
             let summary = session.completion.get()
             packageReuse.remember(snapshot, summary)
         } finally {
-            if (!session.completion.completed) session.cancel()
-            drained.get()
+            awaitCompatibilityCleanup(session, drained)
         }
         return session
+    }
+
+    async awaitCompatibilityCleanup(CompilerSession session, Future<Bool> drained) {
+        try {
+            if (!session.completion.completed) session.cancel()
+            // Closing notification channels is not action cleanup evidence.
+            session.completion.get()
+        } finally { drained.get() }
     }
 
     async drainArtifacts(CompilerSession session) -> Bool {
@@ -238,9 +244,11 @@ class {
     ) {
         if (session.cancelled) return
         session.enter()
-        let reads = PackageCompilerSourceProvider(SessionCompilerSourceProvider(sources, session), session, ordered,
-            maxActiveSources, packageLinker.maxSourceCharacters, sourceReadSchedule, sourceReadObserver, invocationObserver)
+        var PackageCompilerSourceProvider reads
+        var Bool artifactCallbackActive
         try {
+            reads = PackageCompilerSourceProvider(SessionCompilerSourceProvider(sources, session), session, ordered,
+                maxActiveSources, packageLinker.maxSourceCharacters, sourceReadSchedule, sourceReadObserver, invocationObserver)
             let cached = snapshot ? packageReuse.find(snapshot) : null
             if (snapshot) session.recordReuse(packageReuse.evidence(snapshot, cached != null))
             let code = cached != null ? cached : packageLinker.linkSources(reads, ordered,
@@ -249,14 +257,17 @@ class {
                 // Capture private cache bytes before exposing mutable code to the sink or stream.
                 if (snapshot) snapshot.recordCode(code)
                 let artifact = CompilerArtifact(artifactIdentity, code)
+                artifactCallbackActive = true
                 sink.write(artifact)
                 session.recordArtifact()
                 if (invocationObserver) invocationObserver.artifactAccepted(session, artifactIdentity)
+                artifactCallbackActive = false
                 publishArtifact(session, artifact)
                 if (!session.cancelled) publishProgress(session, "Compiled package artifact #artifactIdentity")
             }
         } catch (Exception error) {
-            if (!session.cancelled) {
+            if (!session.cancelled || artifactCallbackActive ||
+                error.class.isOfType(CompilerSourceReadObserver.Failure.class)) {
                 var String message = error.message
                 if (error.class.isOfType(ParseFailure.class)) {
                     let failure = (ParseFailure)error
@@ -274,7 +285,15 @@ class {
                 }
                 publishDiagnostic(session, "Failed to compile package '#artifactIdentity': #message")
             }
-        } finally { reads.dispose() }
+        } finally {
+            if (reads) {
+                try { reads.dispose() }
+                catch (Exception error) {
+                    // Drained-observer failure is still terminal failure after cancel.
+                    session.recordFailure("Failed package source cleanup: #{error.message}")
+                }
+            }
+        }
     }
 
     protected async publishArtifact(CompilerSession session, CompilerArtifact artifact) {

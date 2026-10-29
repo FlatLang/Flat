@@ -26,7 +26,7 @@ class CompilerCli {
             if (tokens.count > 0 && (tokens.first == "help" || tokens.first == "--help")) {
                 Console.log("flatc <sources...> [-l dependency] [-x exclusion] -target es6 (-library | -main qualified/Class) (-o file | -d directory)\n" +
                     "Node executable and library compilation.\n" +
-                    "Aliases: --target, --exclude, --threads. -threads N bounds overlapping source reads, not semantic workers. -t is ambiguous and unsupported.\n" +
+                    "Aliases: --target, --target-runtime, --exclude, --threads. Runtime: -target-runtime node (optional; Node is the only ES6 runtime). -threads N bounds overlapping source reads, not semantic workers. -t is ambiguous and unsupported.\n" +
                     "Configured defaults: -default-import owner, -default-static-import owner.\n" +
                     "Sources may be files, directories or globs; .flat, .js.flat and .es6.flat are selected in overlay order.\n" +
                     "Artifact staging: --max-artifact-bytes N (default 67108864, maximum 2147483647).\n" +
@@ -57,6 +57,7 @@ class CompilerCli {
                 else if (token == "--quiet" || token == "-q") quiet = true
                 else if (token == "--no-log-progress") {}
                 else if (token == "--target") arguments.add("-target")
+                else if (token == "--target-runtime") arguments.add("-target-runtime")
                 else if (token == "--exclude") arguments.add("-x")
                 else if (token == "--threads") arguments.add("-threads")
                 else if (token == "-t") throw Exception("Ambiguous -t is unsupported; use -target or -threads")
@@ -68,9 +69,11 @@ class CompilerCli {
             if (options.target.toLowerCase() != "es6") {
                 throw Exception("Compilation supports only -target es6")
             }
-            if (options.runtime) throw Exception("Library target runtime selection is unsupported")
+            if (options.runtime && options.runtime.toLowerCase() != "node") {
+                throw Exception("ES6 compilation supports only -target-runtime node")
+            }
             let compilerConcurrency = options.maxConcurrency
-            if (options.applicationProperties.count > 0) throw Exception("Application properties are unsupported for library compilation")
+            if (options.applicationProperties.count > 0) throw Exception("Application properties are unsupported for ES6 compilation")
             let package = project.packages.first
             let linker = FlatEs6PackageLinker(maxSources: maxSources, maxTypes: maxTypes, maxFragments: maxTypes)
             if (package.defaultImports.count > linker.maxTokensPerSource) {
@@ -94,6 +97,8 @@ class CompilerCli {
             var String terminalBatch
             var String publicationMessage
             var String persistentEvidence
+            var Bool outputPublished
+            var Exception transactionFailure
             try {
                 diagnosticRevision = incremental.revision()
                 let stream = admissionStream ?: CompilerInvocationAdmissionStream()
@@ -121,32 +126,50 @@ class CompilerCli {
                             options.mainClass, defaultImports: defaultImports)
                         summary = session.completion.get()
                         terminalSummary = summary
-                        Console.log(CompilerEvidence.render(summary, "cli-package"))
-                        if (summary.cancelled || summary.diagnosticCount > 0 || summary.artifactCount != 1) {
+                        CompilerEvidence.emitSession(summary, "cli-package")
+                        if (!summary.succeeded || summary.artifactCount != 1) {
                             throw Exception(summary.packageDiagnostic ?: "Package compilation failed; output unchanged")
                         }
                         validateClosure(package, files, maxSources)
                         incremental.preparePublication(spool.stagedFile(), summary)
                     } catch (Exception error) { failure = error }
                     publishArtifacts(spool, destination, failure)
-                    incremental.commit(summary)
+                    outputPublished = true
+                    try { incremental.commit(summary) }
+                    catch (Exception error) {
+                        throw Exception("Output published; incremental finalization failed: #{error.message}")
+                    }
                     persistentEvidence = CompilerEvidence.renderPersistent(incremental)
                     terminalBatch = CompilerEvidence.renderDiagnostics(summary, diagnosticRevision)
                     publicationMessage = "Compiled #{options.library ? "library" : "executable"} #{output.destination.normalizedLocation}"
                 }
-            } finally { incremental.dispose() }
+            } catch (Exception error) { transactionFailure = error }
+            finally {
+                try { incremental.dispose() }
+                catch (Exception cleanup) {
+                    if (!transactionFailure) transactionFailure = outputPublished
+                        ? Exception("Output published; cleanup failed: #{cleanup.message}") : cleanup
+                    else Console.log("flatc cleanup: #{cleanup.message}")
+                    // One bounded retry retains transaction ownership and the original
+                    // failure. A successful retry is cleanup, not successful compilation.
+                    try { incremental.dispose() }
+                    catch (Exception retry) { Console.log("flatc cleanup retry: #{retry.message}") }
+                }
+            }
+            if (transactionFailure) throw transactionFailure
             // Success is observable only after artifact, manifest and owned lock
             // cleanup settle. A failed finalizer instead reaches the failure batch.
             Console.log(persistentEvidence)
-            Console.log(terminalBatch)
+            if (terminalSummary) CompilerEvidence.emitDiagnostics(terminalSummary, diagnosticRevision)
+            else CompilerEvidence.emitDiagnosticFrame(terminalBatch)
             diagnosticBatchEmitted = true
             if (!quiet) Console.log(publicationMessage)
             return 0
         } catch (Exception error) {
             if (!diagnosticBatchEmitted) {
-                Console.log(CompilerEvidence.renderDiagnostics(
+                CompilerEvidence.emitDiagnostics(
                     terminalSummary ?: CompilationSummary(0, 0, 1, false), diagnosticRevision,
-                    terminalSummary && terminalSummary.packageDiagnostic == error.message ? null : error.message))
+                    terminalSummary && terminalSummary.packageDiagnostic == error.message ? null : error.message)
             }
             Console.log("flatc: #{error.message}")
             return 1
@@ -208,11 +231,17 @@ class CompilerCli {
             }
         } finally {
             try { spool.dispose() }
-            catch (Exception error) { cleanupFailure = error }
+            catch (Exception error) {
+                cleanupFailure = error
+                try { spool.dispose() }
+                catch (Exception retry) { Console.log("flatc cleanup retry: #{retry.message}") }
+            }
             try { destination.retryCleanup() }
             catch (Exception error) {
                 if (!cleanupFailure) cleanupFailure = error
                 else Console.log("flatc cleanup: #{error.message}")
+                try { destination.retryCleanup() }
+                catch (Exception retry) { Console.log("flatc cleanup retry: #{retry.message}") }
             }
         }
         if (failure) {

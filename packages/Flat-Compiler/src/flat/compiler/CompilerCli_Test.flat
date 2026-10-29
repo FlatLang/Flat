@@ -13,6 +13,178 @@ import flat/writer/es6/bound
 
 /** Public CLI library and executable acceptance; production sources are never rewritten. */
 testable class {
+    test `production driver selects explicit cancellation phase and settlement order`() {
+        String[] forwardModes = ["forward", "cancel-after-read", "cancel-after-stage", "cancel-after-read-forward", "cancel-after-stage-forward"]
+        String[] reverseModes = ["reverse", "cancel-after-read-reverse", "cancel-after-stage-reverse"]
+        String[] readModes = ["cancel-after-read", "cancel-after-read-forward", "cancel-after-read-reverse"]
+        String[] stageModes = ["cancel-after-stage", "cancel-after-stage-forward", "cancel-after-stage-reverse"]
+        for (mode in forwardModes) {
+            expect(CompilerProductionDriver.reverseOrder(mode)).toBe(false)
+        }
+        for (mode in reverseModes) {
+            expect(CompilerProductionDriver.reverseOrder(mode)).toBe(true)
+        }
+        expect(CompilerProductionDriver.cancellationPhase("forward")).toBe(null)
+        expect(CompilerProductionDriver.cancellationPhase("reverse")).toBe(null)
+        for (mode in readModes) {
+            expect(CompilerProductionDriver.cancellationPhase(mode)).toBe("read")
+        }
+        for (mode in stageModes) {
+            expect(CompilerProductionDriver.cancellationPhase(mode)).toBe("stage")
+        }
+        var Bool rejected
+        try { CompilerProductionDriver.reverseOrder("cancel-after-read-unknown") }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    async test `production driver drains actual cold schedules and cancellation counterparts`() {
+        let root = File(".flat-cli-production-matrix-#{Time.currentTimeMillis}")
+        let sources = File(root, "src")
+        Es6ArtifactFiles.ensureDirectory(sources)
+        try {
+            Es6ArtifactFiles.write(File(sources, "A.flat"), "class A {}")
+            Es6ArtifactFiles.write(File(sources, "B.flat"), "class B {}")
+            Es6ArtifactFiles.write(File(sources, "C.flat"), "class C {}")
+            Int[] capacities = [1, 3]
+            String[] modes = ["forward", "reverse", "cancel-after-read-forward", "cancel-after-stage-reverse"]
+            for (capacity in capacities) {
+                for (mode in modes) {
+                    let output = File(root, mode + "-" + capacity + ".js")
+                    native var Object captured
+                    native var Object originalLog
+                    external js {
+                        #{captured} = {report:null, count:0};
+                        #{originalLog} = console.log;
+                        console.log = (...args) => {
+                            for (const text of args) {
+                                if (typeof text !== 'string' || !text.startsWith('{')) continue;
+                                let value;
+                                try { value = JSON.parse(text); } catch (_) { continue; }
+                                if (value.schema === 'flat.compiler.source-reads.v1') {
+                                    #{captured}.report = value;
+                                    #{captured}.count++;
+                                }
+                            }
+                        };
+                    }
+                    var Int code
+                    try {
+                        code = CompilerProductionDriver.run([mode, "#{capacity}", sources.normalizedLocation,
+                            "-target", "es6", "-target-runtime", "node", "-library", "-o", output.normalizedLocation])
+                    } finally { external js { console.log = #{originalLog}; } }
+                    let cancelled = CompilerProductionDriver.cancellationPhase(mode) != null
+                    expect(code).toBe(cancelled ? 1 : 0)
+                    expect(output.isFile).toBe(!cancelled)
+                    expect(File(output.normalizedLocation + ".flat-incremental.json").isFile).toBe(!cancelled)
+                    expect(File(output.normalizedLocation + ".flat-incremental.json.lock").exists).toBe(false)
+                    var Bool complete
+                    external js {
+                        const value = #{captured}.report;
+                        #{complete} = #{captured}.count === 1 && value !== null &&
+                            value.scenario === #{mode.chars.data} && value.capacity === #{capacity} &&
+                            value.admitted === value.settled && value.admitted > 0 &&
+                            value.activeAfter === 0 && value.retainedAfter === 0 &&
+                            value.peakActive <= #{capacity} && value.peakRetained <= #{capacity} &&
+                            value.cancellationRequested === #{cancelled} &&
+                            value.session.cancelled === #{cancelled} && value.session.cleanupSettled === true &&
+                            value.artifactDeliveryFailures === 0 && value.manifestDeliveryFailures === 0;
+                    }
+                    expect(complete).toBe(true)
+                }
+            }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `ordinary CLI accepts explicit Node runtime for library and selected main`() {
+        let root = File(".flat-cli-explicit-node-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let source = File(root, "Main.flat")
+            Es6ArtifactFiles.write(source, "package app class Main { public static main() { external js { console.log('ordinary-main'); } } }")
+            let library = File(root, "library.js")
+            let executable = File(root, "main.js")
+            expect(CompilerCli.run(["flatc", source.normalizedLocation, "--target", "es6",
+                "--target-runtime", "node", "-library", "-o", library.normalizedLocation])).toBe(0)
+            expect(CompilerCli.run(["flatc", source.normalizedLocation, "-target", "es6",
+                "-target-runtime", "node", "-main", "app/Main", "-o", executable.normalizedLocation])).toBe(0)
+            let loaded = System.execute(["node", library.normalizedLocation], silent: true, shell: false)
+            expect(loaded.exitCode).toBe(0)
+            expect(loaded.stdout.join("")).toBe("")
+            let executed = System.execute(["node", executable.normalizedLocation], silent: true, shell: false)
+            expect(executed.exitCode).toBe(0)
+            expect(executed.stdout.join("")).toBe("ordinary-main\n")
+            let before = Es6ArtifactFiles.read(executable)
+            expect(CompilerCli.run(["flatc", source.normalizedLocation, "-target", "es6",
+                "-target-runtime", "browser", "-main", "app/Main", "-o", executable.normalizedLocation])).toBe(1)
+            expect(Es6ArtifactFiles.read(executable)).toBe(before)
+            expect(File(executable.normalizedLocation + ".flat-incremental.json.lock").exists).toBe(false)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `ordinary complete Core closure executes the production workload unchanged`() {
+        let root = File(".flat-cli-production-core-workload-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let workload = File("../Flat-Core/workloads/ProductionCoreWorkload.flat")
+            let original = Es6ArtifactFiles.read(workload)
+            let output = File(root, "production-core-workload.js")
+            let arguments = [workload.normalizedLocation, "-l", "../Flat-Core/src",
+                "-x", "../Flat-Core/src/**/*_Test*.flat", "-target", "es6",
+                "-target-runtime", "node", "-main", "core/workloads/ProductionCoreWorkload",
+                "-o", output.normalizedLocation]
+            let project = AirshipCompilerArguments().fromArguments(arguments)
+            let expected = CompilerSourceDiscovery().discover(project.packages.first)
+            expect(expected.count > 64).toBe(true)
+            let observer = CoreWorkloadObservation()
+            let invocation = ["flatc"]
+            invocation.addAll(arguments)
+            expect(CompilerCli.run(invocation, observer)).toBe(0)
+            expect(observer.admittedCount).toBe(expected.count)
+            expect(observer.settledCount).toBe(expected.count)
+            expect(observer.readsDrained).toBe(true)
+            let summary = observer.session.completion.get()
+            expect(summary.sourceCount).toBe(expected.count)
+            expect(summary.succeeded).toBe(true)
+            expect(summary.artifactCount).toBe(1)
+            expect(output.isFile).toBe(true)
+            let code = Es6ArtifactFiles.read(output)
+            let response = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("production-core-workload:ok\n")
+            expect(response.stderr.join("")).toBe("")
+            expect(Es6ArtifactFiles.read(output)).toBe(code)
+            expect(Es6ArtifactFiles.read(workload)).toBe(original)
+            let manifest = File(output.normalizedLocation + ".flat-incremental.json")
+            let admittedManifest = Es6ArtifactFiles.read(manifest)
+            let warm = CoreWorkloadObservation()
+            expect(CompilerCli.run(invocation, warm)).toBe(0)
+            expect(warm.admittedCount).toBe(0)
+            expect(warm.readsDrained).toBe(false)
+            expect(warm.session).toBe(null)
+            expect(Es6ArtifactFiles.read(output)).toBe(code)
+            expect(Es6ArtifactFiles.read(manifest)).toBe(admittedManifest)
+            expect(File(manifest.normalizedLocation + ".lock").exists).toBe(false)
+            let warmResponse = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(warmResponse.exitCode).toBe(0)
+            expect(warmResponse.stdout.join("")).toBe(response.stdout.join(""))
+            expect(warmResponse.stderr.join("")).toBe("")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    class CoreWorkloadObservation extends CompilerInvocationObserver {
+        visible var Int admittedCount
+        visible var Int settledCount
+        visible var Bool readsDrained
+        visible var CompilerSession session
+        override public drained(Int admitted, Int settled, Int peakActive, Int peakRetained) {
+            admittedCount = admitted
+            settledCount = settled
+            readsDrained = true
+        }
+        override public artifactAccepted(CompilerSession session, String identity) { this.session = session }
+    }
+
     async test `cold and warm CLI diagnostic batches follow actual lock cleanup`() {
         let root = File(".flat-cli-diagnostic-finalization-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
@@ -40,7 +212,9 @@ testable class {
         }
         try {
             let arguments = ["flatc", source.normalizedLocation, "-target", "es6", "-library", "-o", output.normalizedLocation]
+            Console.write("pending cold diagnostics prefix")
             expect(CompilerCli.run(arguments)).toBe(0)
+            Console.write("pending warm diagnostics prefix")
             expect(CompilerCli.run(arguments)).toBe(0)
             Int batches
             Bool complete
@@ -72,6 +246,61 @@ testable class {
             expect(Es6ArtifactFiles.read(output)).toBe(previous)
         } finally {
             external { console.log = #{originalLog}; }
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    async test `CLI retries transient owned lock cleanup without reporting publication success`() {
+        let root = File(".flat-cli-lock-retry-integration-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let source = File(root, "Main.flat")
+        let output = File(root, "program.js")
+        Es6ArtifactFiles.write(source, "class Main {}")
+        let lock = output.normalizedLocation + ".flat-incremental.json.lock"
+        native var Object originalRemove
+        native var Object originalLog
+        native var Object captured
+        external js {
+            #{captured} = {removals:0, batches:[], logs:[]};
+            #{originalRemove} = #{File.FileGlobal.fs}.rmdirSync;
+            #{originalLog} = console.log;
+            #{File.FileGlobal.fs}.rmdirSync = function(path, ...rest) {
+                if (require('path').resolve(path) === require('path').resolve(#{lock.chars.data})) {
+                    #{captured}.removals++;
+                    if (#{captured}.removals === 1) throw new globalThis.Error('controlled lock release failure');
+                }
+                return #{originalRemove}.call(this, path, ...rest);
+            };
+            console.log = (...args) => {
+                for (const text of args) {
+                    if (typeof text !== 'string') continue;
+                    #{captured}.logs.push(text);
+                    if (!text.startsWith('{')) continue;
+                    let value;
+                    try { value = JSON.parse(text); } catch (_) { continue; }
+                    if (value.schema === 'flat.compiler.diagnostics.v1') #{captured}.batches.push(value);
+                }
+            };
+        }
+        try {
+            expect(CompilerCli.run(["flatc", source.normalizedLocation, "-target", "es6", "-library",
+                "-o", output.normalizedLocation])).toBe(1)
+            expect(output.isFile).toBe(true)
+            expect(File(lock).exists).toBe(false)
+            var Bool exact
+            external js {
+                const batches = #{captured}.batches;
+                #{exact} = #{captured}.removals === 2 && batches.length === 1 &&
+                    batches[0].complete === false &&
+                    batches[0].terminalFailure === 'Output published; cleanup failed: controlled lock release failure' &&
+                    !#{captured}.logs.some(text => text.startsWith('Compiled library '));
+            }
+            expect(exact).toBe(true)
+        } finally {
+            external js {
+                #{File.FileGlobal.fs}.rmdirSync = #{originalRemove};
+                console.log = #{originalLog};
+            }
             Es6ArtifactFiles.remove(root)
         }
     }
@@ -746,7 +975,7 @@ testable class {
             Es6ArtifactCommitter().commit(output, "previous artifact\n")
             expect(CompilerCli.run([
                 "flatc", sources.normalizedLocation, "-target", "es6", "-library",
-                "-d", outputDirectory.normalizedLocation, "-o", "index.js"
+                "-d", outputDirectory.normalizedLocation, "-o", "index.js", "--max-sources", "64"
             ])).toBe(1)
             expect(Es6ArtifactFiles.read(output)).toBe("previous artifact\n")
             expect(CompilerCli.run([

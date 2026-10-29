@@ -1,0 +1,224 @@
+package flat/writer/es6/bound
+
+import flat/bound
+import flat/compiler/models
+import flat/semantic/types
+import flat/io
+import flat/system
+import flat/time/Time
+
+/** Generated normalized allocation protocol tests, independent of producer scheduling. */
+testable class {
+    async test `normalized allocation keeps parent overload defaults fields and continuation scopes once`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let rootIdentity = fixture.declaration("class", "Root", 1000)
+        let root = UserClassSemanticType(rootIdentity)
+        let parentIdentity = fixture.declaration("class", "Parent", 1001)
+        let parent = UserClassSemanticType(parentIdentity)
+        let childIdentity = fixture.declaration("class", "Child", 1002)
+        let child = UserClassSemanticType(childIdentity)
+        let rootEntry = entry(fixture, root, "constructor", 1010)
+        let rootFunctions = BoundFunctionUnit[]
+        addStages(fixture, rootFunctions, root, [rootEntry], ["events.push('root');"])
+        rootFunctions.add(planned(fixture, rootEntry, null, [rootEntry.identity.declaration], BoundStatement[], BoundFunctionParameter[], BoundExpression[]))
+        let rootUnit = BoundTypeUnit(rootIdentity, root, rootFunctions, range)
+        let parentPrimary = entry(fixture, parent, "constructor", 1020)
+        let parentOverloadIdentity = DeclarationIdentity(SyntaxIslandIdentity(fixture.snapshot, "constructor-overload", 1021), "constructor", "Parent")
+        let parentOverload = CallableSignature(SymbolIdentity(parentOverloadIdentity, "constructor"), "Parent",
+            CallableKind("constructor"), [SemanticTypes.boolType()], parent, parent)
+        let parentParameter = BoundFunctionParameter("flag", SymbolIdentity(parentOverloadIdentity, "parameter", 0), SemanticTypes.boolType())
+        let parentFunctions = BoundFunctionUnit[]
+        addStages(fixture, parentFunctions, parent, [parentPrimary, parentOverload],
+            ["events.push('wrong-parent');", "events.push('parent'); if(failBase) throw new Error('base');"])
+        let rootCall = BoundParentConstructorCall(rootEntry, BoundExpression[], TypeConversion[], range)
+        parentFunctions.add(planned(fixture, parentPrimary, rootCall, [parentPrimary.identity.declaration], BoundStatement[], BoundFunctionParameter[], BoundExpression[]))
+        parentFunctions.add(planned(fixture, parentOverload, rootCall, [parentOverload.identity.declaration], BoundStatement[], [parentParameter], BoundExpression[]))
+        let parentUnit = BoundTypeUnit(parentIdentity, parent, parentFunctions, range, parentType: root)
+        let childEntry = entry(fixture, child, "constructor", 1030, true)
+        let middle = entry(fixture, child, "constructor-overload", 1031)
+        let terminal = entry(fixture, child, "constructor-overload", 1032)
+        let childFunctions = BoundFunctionUnit[]
+        addStages(fixture, childFunctions, child, [childEntry, middle, terminal], [
+            "events.push('outer');", "events.push('middle');",
+            "try { events.push('terminal'); if(failBody) throw new Error('body'); return; } finally { events.push('finally'); }"])
+        let firstParameter = BoundFunctionParameter("value", SymbolIdentity(childEntry.identity.declaration, "parameter", 0),
+            SemanticTypes.intType(), BoundNativeCallExpression(range, SemanticTypes.intType(), "entryDefault", BoundExpression[]))
+        let firstReference = BoundReferenceExpression(range, SemanticTypes.intType(), "value", firstParameter.identity)
+        let secondParameter = BoundFunctionParameter("capacity", SymbolIdentity(childEntry.identity.declaration, "parameter", 1),
+            SemanticTypes.intType(), BoundNativeCallExpression(range, SemanticTypes.intType(), "dependentDefault", [firstReference]))
+        let retained = BoundReferenceExpression(range, SemanticTypes.intType(), "retained", fixture.symbol("local", "retained", 1033))
+        let setup = [BoundLocalDeclarationStatement(range, retained,
+            BoundNativeCallExpression(range, SemanticTypes.intType(), "edgeDefault", BoundExpression[]),
+            TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType()))]
+        let parentCall = BoundParentConstructorCall(parentOverload,
+            [BoundNativeCallExpression(range, SemanticTypes.boolType(), "parentArgument", BoundExpression[])],
+            [TypeConversions.classify(SemanticTypes.boolType(), SemanticTypes.boolType())], range)
+        childFunctions.add(planned(fixture, childEntry, parentCall,
+            [childEntry.identity.declaration, middle.identity.declaration, terminal.identity.declaration],
+            setup, [firstParameter, secondParameter], BoundExpression[]))
+        childFunctions.add(planned(fixture, middle, parentCall, [middle.identity.declaration, terminal.identity.declaration],
+            BoundStatement[], BoundFunctionParameter[], BoundExpression[]))
+        childFunctions.add(planned(fixture, terminal, parentCall, [terminal.identity.declaration],
+            BoundStatement[], BoundFunctionParameter[], BoundExpression[]))
+        let childUnit = BoundTypeUnit(childIdentity, child, childFunctions, range, parentType: parent)
+        let units = [rootUnit, parentUnit, childUnit]
+        var String code = "let events=[], receivers=[], failBase=false, failBody=false, fields=0;\n" +
+            "globalThis.entryDefault=()=>{events.push('default');return 7;};\n" +
+            "globalThis.dependentDefault=(value)=>{events.push('dependent:'+value);return value+1;};\n" +
+            "globalThis.edgeDefault=()=>{events.push('edge');return 9;};\n" +
+            "globalThis.parentArgument=()=>{events.push('base-arg');return true;};\n"
+        for (unit in units) {
+            let emitted = Es6UnitOrchestrator().emitType(unit, 0)
+            expect(emitted.emitted).toBe(true)
+            code += emitted.fragment.code
+        }
+        let childName = Es6NameMangler.mangle(childIdentity.value)
+        let parentName = Es6NameMangler.mangle(parentIdentity.value)
+        let rootName = Es6NameMangler.mangle(rootIdentity.value)
+        let factory = Es6NameMangler.mangle(middle.identity.declaration.value)
+        code += "const value=new " + childName + "();\n" +
+            "if(!(value instanceof " + childName + ") || !(value instanceof " + parentName + ") || !(value instanceof " + rootName +
+            ")) throw new Error('single most-derived object');\n" +
+            "if(events.join(',')!=='default,dependent:7,edge,base-arg,fields,root,fields,parent,fields,terminal,finally,middle,outer' || fields!==3) " +
+            "throw new Error('normalized order or duplicate fields');\n" +
+            "if(receivers.length!==8 || receivers.some(receiver=>receiver!==value)) throw new Error('receiver replay');\n" +
+            "events=[];receivers=[];fields=0;const alternate=" + childName + "." + factory + "();\n" +
+            "if(!(alternate instanceof " + childName + ") || events.join(',')!=='base-arg,fields,root,fields,parent,fields,terminal,finally,middle' || fields!==3) " +
+            "throw new Error('overload path');\n" +
+            "if(receivers.length!==7 || receivers.some(receiver=>receiver!==alternate)) throw new Error('factory receiver replay');\n" +
+            "events=[];receivers=[];fields=0;failBase=true;try{new " + childName + "(8);throw new Error('missing base throw');}catch(error){if(error.message!=='base')throw error;}\n" +
+            "if(events.join(',')!=='dependent:8,edge,base-arg,fields,root,fields,parent' || fields!==2) throw new Error('base failure isolation');\n" +
+            "events=[];receivers=[];fields=0;failBase=false;failBody=true;try{new " + childName + "(8);throw new Error('missing body throw');}catch(error){if(error.message!=='body')throw error;}\n" +
+            "if(events.join(',')!=='dependent:8,edge,base-arg,fields,root,fields,parent,fields,terminal,finally' || fields!==3) throw new Error('body failure unwind');\n" +
+            "console.log('ok');\n"
+        execute(code)
+    }
+
+    async test `normalized parent protocol rejects a raw parent without invoking its primary`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let parentIdentity = fixture.declaration("class", "RawParent", 1100)
+        let parent = UserClassSemanticType(parentIdentity)
+        let childIdentity = fixture.declaration("class", "PlannedChild", 1101)
+        let child = UserClassSemanticType(childIdentity)
+        let parentEntry = entry(fixture, parent, "constructor", 1110)
+        let childEntry = entry(fixture, child, "constructor", 1111)
+        let parentCall = BoundParentConstructorCall(parentEntry, BoundExpression[], TypeConversion[], fixture.range())
+        let functions = BoundFunctionUnit[]
+        addStages(fixture, functions, child, [childEntry], ["throw new Error('initializer ran');"])
+        functions.add(planned(fixture, childEntry, parentCall, [childEntry.identity.declaration],
+            BoundStatement[], BoundFunctionParameter[], BoundExpression[]))
+        let unit = BoundTypeUnit(childIdentity, child, functions, fixture.range(), parentType: parent)
+        let emitted = Es6UnitOrchestrator().emitType(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        let parentName = Es6NameMangler.mangle(parentIdentity.value)
+        let childName = Es6NameMangler.mangle(childIdentity.value)
+        execute("let events=[],receivers=[],fields=0;class " + parentName + " {constructor(){throw new Error('raw parent fallback');}}\n" +
+            emitted.fragment.code + "try{new " + childName + "();throw new Error('missing protocol admitted');}" +
+            "catch(error){if(error.message!=='Missing normalized parent constructor protocol')throw error;}" +
+            "if(events.length || fields)throw new Error('partial initializer');console.log('ok');\n")
+    }
+
+    async test `normalized stage arguments and supplied null bypass defaults without replay`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let identity = fixture.declaration("class", "OptionalOwner", 1200)
+        let owner = UserClassSemanticType(identity)
+        let constructorIdentity = DeclarationIdentity(SyntaxIslandIdentity(fixture.snapshot, "constructor", 1201), "constructor", "OptionalOwner")
+        let nullable = NullableSemanticType(SemanticTypes.intType())
+        let target = CallableSignature(SymbolIdentity(constructorIdentity, "constructor"), "OptionalOwner",
+            CallableKind("constructor"), [nullable], owner, owner, 1)
+        let parameter = BoundFunctionParameter("value", SymbolIdentity(constructorIdentity, "parameter", 0), nullable,
+            BoundNativeCallExpression(range, nullable, "optionalDefault", BoundExpression[]))
+        let reference = BoundReferenceExpression(range, nullable, "value", parameter.identity)
+        let fieldIdentity = BoundConstructorPlan.fieldInitializerIdentity(identity)
+        let bodyIdentity = BoundConstructorPlan.bodyInitializerIdentity(constructorIdentity)
+        let receiver = BoundReferenceExpression(range, owner, "this", SymbolIdentity(identity, "receiver"))
+        let field = stage(fixture, owner, fieldIdentity, receiver)
+        let bodyTarget = CallableSignature(SymbolIdentity(bodyIdentity, "instance-method"), "body", CallableKind("instance-method"),
+            [nullable], SemanticTypes.unitType(), owner)
+        let argument = BoundNativeCallExpression(range, nullable, "stageArgument", [reference])
+        let call = BoundCallExpression(range, SemanticTypes.unitType(), bodyTarget, receiver, [argument],
+            [TypeConversions.classify(nullable, nullable)])
+        let plan = BoundConstructorPlan(target, fieldIdentity, BoundStatement[], null, [field, call], [constructorIdentity], range)
+        let bodyParameter = BoundFunctionParameter("payload", SymbolIdentity(bodyIdentity, "parameter", 0), nullable)
+        let bodyReference = BoundReferenceExpression(range, nullable, "payload", bodyParameter.identity)
+        let body = BoundExternalStatement(range, "es6", [BoundExternalCodeSegment(range, "this.payload = "),
+            BoundExternalCodeSegment(range, "", bodyReference, "identity"), BoundExternalCodeSegment(range, ";")])
+        let functions = [BoundFunctionUnit(constructorIdentity, "OptionalOwner", SemanticTypes.unitType(), BoundStatement[], range,
+            [parameter], constructorFunction: true, constructorPlan: plan),
+            BoundFunctionUnit(fieldIdentity, "fields", SemanticTypes.unitType(), [host(fixture, "fields++;")], range),
+            BoundFunctionUnit(bodyIdentity, "body", SemanticTypes.unitType(), [body], range, [bodyParameter])]
+        let unit = BoundTypeUnit(identity, owner, functions, range)
+        let emitted = Es6UnitOrchestrator().emitType(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        let name = Es6NameMangler.mangle(identity.value)
+        execute("let fields=0,defaults=0,argumentsRead=0;globalThis.optionalDefault=()=>{defaults++;return 5;};" +
+            "globalThis.stageArgument=value=>{argumentsRead++;return value;};\n" + emitted.fragment.code +
+            "const missing=new " + name + "();const supplied=new " + name + "(null);" +
+            "if(missing.payload!==5 || supplied.payload!==null || defaults!==1 || argumentsRead!==2 || fields!==2)" +
+            "throw new Error('omission or stage argument replay');console.log('ok');\n")
+    }
+
+    entry(Es6BoundWriter_TestFixture fixture, UserClassSemanticType owner, String kind, Int ordinal,
+        Bool optional = false) -> CallableSignature {
+        let identity = DeclarationIdentity(SyntaxIslandIdentity(fixture.snapshot, kind, ordinal), "constructor", owner.declarationIdentity.name)
+        let types = SemanticType[]
+        if (optional) types.addAll([SemanticTypes.intType(), SemanticTypes.intType()])
+        return CallableSignature(SymbolIdentity(identity, "constructor"), owner.declarationIdentity.name,
+            CallableKind("constructor"), types, owner, owner, optional ? 2 : 0)
+    }
+
+    addStages(Es6BoundWriter_TestFixture fixture, BoundFunctionUnit[] functions, UserClassSemanticType owner,
+        CallableSignature[] entries, String[] bodies) {
+        let field = BoundConstructorPlan.fieldInitializerIdentity(owner.declarationIdentity)
+        functions.add(BoundFunctionUnit(field, "fields", SemanticTypes.unitType(),
+            [host(fixture, "receivers.push(this);events.push('fields');fields++;")], fixture.range()))
+        var Int index
+        for (entry in entries) {
+            let identity = BoundConstructorPlan.bodyInitializerIdentity(entry.identity.declaration)
+            functions.add(BoundFunctionUnit(identity, "body", SemanticTypes.unitType(), [host(fixture, "receivers.push(this);" + bodies[index])], fixture.range()))
+            index++
+        }
+    }
+
+    planned(Es6BoundWriter_TestFixture fixture, CallableSignature target, BoundParentConstructorCall parent,
+        DeclarationIdentity[] path, BoundStatement[] setup, BoundFunctionParameter[] parameters,
+        BoundExpression[] arguments) -> BoundFunctionUnit {
+        let owner = target.ownerType
+        let receiver = BoundReferenceExpression(fixture.range(), owner, "this", SymbolIdentity(owner.declarationIdentity, "receiver"))
+        let calls = BoundCallExpression[]
+        calls.add(stage(fixture, owner, BoundConstructorPlan.fieldInitializerIdentity(owner.declarationIdentity), receiver))
+        var Int index = path.count - 1
+        while (index >= 0) {
+            calls.add(stage(fixture, owner, BoundConstructorPlan.bodyInitializerIdentity(path[index]), receiver))
+            index--
+        }
+        let plan = BoundConstructorPlan(target, BoundConstructorPlan.fieldInitializerIdentity(owner.declarationIdentity),
+            setup, parent, calls, path, fixture.range())
+        return BoundFunctionUnit(target.identity.declaration, owner.declarationIdentity.name, SemanticTypes.unitType(),
+            BoundStatement[], fixture.range(), parameters, constructorFunction: true, constructorPlan: plan)
+    }
+
+    stage(Es6BoundWriter_TestFixture fixture, UserClassSemanticType owner, DeclarationIdentity identity,
+        BoundExpression receiver) -> BoundCallExpression {
+        let target = CallableSignature(SymbolIdentity(identity, "instance-method"), "stage", CallableKind("instance-method"),
+            SemanticType[], SemanticTypes.unitType(), owner)
+        return BoundCallExpression(fixture.range(), SemanticTypes.unitType(), target, receiver, BoundExpression[], TypeConversion[])
+    }
+
+    host(Es6BoundWriter_TestFixture fixture, String code) -> BoundExternalStatement =>
+        BoundExternalStatement(fixture.range(), "es6", [BoundExternalCodeSegment(fixture.range(), code)])
+
+    async execute(String code) {
+        let root = File(".flat-es6-constructor-plan-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "regression.js")
+            Es6ArtifactCommitter().commit(destination, code)
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("ok\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+}

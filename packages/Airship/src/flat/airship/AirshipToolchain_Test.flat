@@ -1,0 +1,107 @@
+package flat/airship
+
+import flat/io
+import flat/time/Time
+
+/** Real generated-tool integration. The coordinator supplies an independently
+ * bootstrapped compiler; this suite never selects an incidental dist artifact.
+ * AIRSHIP_TEST_FLATC_SCRIPT and AIRSHIP_TEST_AIRSHIP_SCRIPT are mandatory.
+ * The fixture invokes public CLI commands and leaves compiler admission records
+ * inherited for coordinator evidence collection, without synthesizing receipts.
+ */
+testable class {
+    async runSelectedAirship(String executable, String compiler, File root, String[] command) -> Int {
+        let arguments = ["node", executable, "--use-links", "-f", root.normalizedLocation,
+            "--flatc-runtime", "flat", "--flatc-script", compiler, "-t", "es6", "-r", "node"]
+        arguments.addAll(command)
+        return AirshipProcess.execute(arguments)
+    }
+
+    test async `clean package install custom test and run use explicitly selected generated compiler`() {
+        let selected = System.getEnv("AIRSHIP_TEST_FLATC_SCRIPT")
+        if (!selected || !File(selected).isFile) {
+            throw Exception("AIRSHIP_TEST_FLATC_SCRIPT must select an existing generated Flat compiler")
+        }
+        let compiler = File(selected).normalizedLocation
+        let selectedAirship = System.getEnv("AIRSHIP_TEST_AIRSHIP_SCRIPT")
+        if (!selectedAirship || !File(selectedAirship).isFile) {
+            throw Exception("AIRSHIP_TEST_AIRSHIP_SCRIPT must select an independently built Airship executable")
+        }
+        let executable = File(selectedAirship).normalizedLocation
+        let root = File(".airship-toolchain-test-#{Time.currentTimeMillis}")
+        let sources = File(root, "src")
+        sources.mkdirs()
+        try {
+            let dependency = File(root, "dependency")
+            File(dependency, "src").mkdirs()
+            File(dependency, "test").mkdirs()
+            let dependencyLocation = dependency.normalizedLocation.replace("\\", "\\\\").replace("\"", "\\\"")
+            let missingLocation = File(root, "test-only-missing-package").normalizedLocation.replace("\\", "\\\\").replace("\"", "\\\"")
+            FileWriter(File(dependency, "flat.json")):write(
+                "{\"name\":\"Production fixture dependency\",\"version\":\"0.0.0\",\"defaultTarget\":\"es6\"," +
+                "\"scripts\":{\"build\":[[\"node\",\"-e\",\"process.exit(91)\"]]}," +
+                "\"sources\":{\"main\":{\"source\":\"src\"},\"test\":{\"source\":\"test\",\"dependencies\":{\"" + missingLocation + "\":\"local\"}}}}"):close()
+            FileWriter(File(dependency, "src/Value.flat")):write("package fixture\nclass Value { public static marker() -> String { return \"production\" } } "):close()
+            FileWriter(File(dependency, "test/Invalid.flat")):write("not valid Flat syntax"):close()
+            FileWriter(File(root, "flat.json")):write(
+                "{\"name\":\"Airship toolchain fixture\",\"version\":\"0.0.0\",\"defaultTarget\":\"es6\"," +
+                "\"scripts\":{\"main\":\"node dist/es6/index.js\",\"test\":\"node dist/es6/test.js\",\"custom-test\":\"node dist/es6/fixture-test.js\",\"fail\":[[\"node\",\"-e\",\"process.exit(7)\"],[\"node\",\"-e\",\"require('fs').writeFileSync('must-not-run','bad')\"]]}," +
+                "\"sources\":{\"main\":{\"source\":\"src\",\"mainClass\":\"app/Main\",\"dependencies\":{\"" + dependencyLocation + "\":\"local\"}}," +
+                "\"test\":{\"source\":\"src/**/*_Test.flat\",\"mainClass\":\"app/Fixture_Test\"}," +
+                "\"fixture-test\":{\"source\":\"src/**/*_Test.flat\",\"mainClass\":\"app/Fixture_Test\",\"outFile\":\"fixture-test.js\"}}}"):close()
+            // Real Core is implicit. Do not substitute a reduced source closure.
+            FileWriter(File(sources, "Main.flat")):write(
+                "package app\nimport fixture/Value\nclass Main { public static main() { if (Value.marker() != \"production\") throw Exception(\"Wrong dependency\"); external js { require('fs').writeFileSync('main-executed.txt', 'generated-flat'); } } }"):close()
+            FileWriter(File(sources, "Fixture_Test.flat")):write(
+                "package app\nclass Fixture_Test { public static main() { external js { require('fs').writeFileSync('executed.txt', 'generated-flat'); require('fs').writeFileSync('arguments.txt', JSON.stringify(process.argv.slice(2))); } } }"):close()
+            let airship = Airship(["--use-links", "-f", root.normalizedLocation,
+                "--flatc-runtime", "flat", "--flatc-script", compiler, "-t", "es6", "-r", "node"])
+            expect(File(root, "dist").exists).toBe(false)
+            expect(runSelectedAirship(executable, compiler, root, ["install", "main"])).toBe(0)
+            expect(File(root, "dist/es6/index.js").isFile).toBe(true)
+            expect(runSelectedAirship(executable, compiler, root, ["run", "main"])).toBe(0)
+            expect(File(root, "main-executed.txt").isFile).toBe(true)
+            expect(runSelectedAirship(executable, compiler, root, ["install", "test"])).toBe(0)
+            expect(File(root, "dist/es6/test.js").isFile).toBe(true)
+            expect(File(root, "test-only-missing-package").exists).toBe(false)
+            expect(runSelectedAirship(executable, compiler, root, ["run", "test"])).toBe(0)
+            expect(File(root, "executed.txt").isFile).toBe(true)
+            File(root, "executed.txt").delete()
+            expect(runSelectedAirship(executable, compiler, root, ["install", "fixture-test"])).toBe(0)
+            expect(File(root, "dist/es6/fixture-test.js").isFile).toBe(true)
+            expect(runSelectedAirship(executable, compiler, root, ["run", "custom-test", "--", "literal ; $HOME *"])).toBe(0)
+            expect(File(root, "executed.txt").isFile).toBe(true)
+            expect(FileReader(File(root, "arguments.txt")).readAllContents()).toBe("[\"literal ; $HOME *\"]")
+            expect(runSelectedAirship(executable, compiler, root, ["run", "fail"])).toBe(1)
+            expect(File(root, "must-not-run").exists).toBe(false)
+            let Exception failure = Exception.catchTypeAsync(async {
+                airship.runScriptService.runScript("fail")
+            }, ExecutionFailureException.class)
+            expect(failure).toNotBe(null)
+            expect(failure.message).toBe("Script exited with exit code 7")
+            expect(File(root, "must-not-run").exists).toBe(false)
+            FileWriter(File(sources, "Main.flat")):write("not valid Flat syntax"):close()
+            expect(runSelectedAirship(executable, compiler, root, ["install", "main"])).toBe(1)
+            let Exception compileFailure = Exception.catchTypeAsync(async {
+                airship.installService.install("main")
+            }, FlatInstallationFailureException.class)
+            expect(compileFailure).toNotBe(null)
+            // A failed changed source must not be accepted due to the prior file.
+            // Atomic output ownership remains with the actual generated compiler.
+            expect(File(root, "dist/es6/index.js").isFile).toBe(true)
+            expect(runSelectedAirship(executable, compiler, root, ["install", "not-a-source"])).toBe(1)
+            expect(runSelectedAirship(executable, File(root, "absent-compiler.js").normalizedLocation, root, ["install", "main"])).toBe(1)
+            let missing = Airship(["--use-links", "-f", root.normalizedLocation,
+                "--flatc-runtime", "flat", "--flatc-script", File(root, "absent-compiler.js").normalizedLocation,
+                "-t", "es6"])
+            let Exception unavailable = Exception.catchTypeAsync(async {
+                missing.installService.install("main")
+            }, ExecutionFailureException.class)
+            expect(unavailable).toNotBe(null)
+            expect(File(root, "dist/es6/index.js").isFile).toBe(true)
+        } finally {
+            if (File(root, "flat.json").isFile) Airship.clearCache(File(root, "flat.json").normalizedLocation)
+            root.delete(recursive: true)
+        }
+    }
+}

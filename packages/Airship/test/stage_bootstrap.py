@@ -145,46 +145,236 @@ class ScopeChannel:
             os.close(fd)
 
 
-def settle_process_group(process, observation=None):
-    """Never equate leader close or kill delivery with descendant absence."""
-    def present():
+def process_identity(pid):
+    """Kernel start identity; never infer ownership from a PID or command text."""
+    if sys.platform.startswith('linux'):
+        fields = Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()
+        return {'pid': pid, 'pgid': int(fields[2]), 'session': int(fields[3]),
+                'start': fields[19], 'state': fields[0], 'source': 'proc-stat'}
+    if sys.platform == 'darwin':
+        import ctypes
+        class BSDInfo(ctypes.Structure):
+            _fields_ = ([(name, ctypes.c_uint32) for name in (
+                'flags', 'status', 'xstatus', 'pid', 'ppid', 'uid', 'gid', 'ruid',
+                'rgid', 'svuid', 'svgid', 'rfu')] +
+                [('comm', ctypes.c_char * 16), ('name', ctypes.c_char * 32)] +
+                [(name, ctypes.c_uint32) for name in (
+                    'nfiles', 'pgid', 'pjobc', 'e_tdev', 'e_tpgid')] +
+                [('nice', ctypes.c_int32), ('start_sec', ctypes.c_uint64),
+                 ('start_usec', ctypes.c_uint64)])
+        info = BSDInfo()
+        libproc = ctypes.CDLL('/usr/lib/libproc.dylib', use_errno=True)
+        libproc.proc_pidinfo.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_uint64,
+                                        ctypes.c_void_p, ctypes.c_int]
+        libproc.proc_pidinfo.restype = ctypes.c_int
+        size = libproc.proc_pidinfo(pid, 3, 0, ctypes.byref(info), ctypes.sizeof(info))
+        if size != ctypes.sizeof(info) or info.pid != pid:
+            raise OSError(ctypes.get_errno(), 'Cannot obtain kernel process identity')
+        return {'pid': pid, 'pgid': info.pgid, 'session': os.getsid(pid),
+                'start': f'{info.start_sec}:{info.start_usec}',
+                'state': 'Z' if info.status == 5 else 'running', 'source': 'proc-pidinfo'}
+    raise OSError('Kernel process start identity unsupported on this platform')
+
+
+def unreaped_child_finished(pid):
+    """Observe our exited child without releasing its kernel PID reservation.
+
+    Darwin libproc stops reporting BSD identity for zombies. waitid WNOWAIT
+    proves this is still our unreaped direct child, not a recycled PID.
+    """
+    if sys.platform != 'darwin':
+        return False
+    import ctypes
+    libc = ctypes.CDLL(None, use_errno=True)
+    info = (ctypes.c_int * 32)()
+    libc.waitid.argtypes = [ctypes.c_int, ctypes.c_uint, ctypes.c_void_p, ctypes.c_int]
+    libc.waitid.restype = ctypes.c_int
+    # Darwin P_PID=1, WNOHANG=1, WEXITED=4, WNOWAIT=0x20.
+    result = libc.waitid(1, pid, ctypes.byref(info), 1 | 4 | 0x20)
+    if result != 0:
+        raise OSError(ctypes.get_errno(), 'Cannot observe unreaped child')
+    return info[0] == signal.SIGCHLD and info[3] == pid and info[2] in (1, 2, 3)
+
+
+def owned_process_identity(process):
+    expected = getattr(process, '_stage_identity', None)
+    if expected is None or process.returncode is not None:
+        return False
+    if expected.get('source') == 'proc-pidinfo' and unreaped_child_finished(process.pid):
+        return True
+    try:
+        actual = process_identity(process.pid)
+    except ProcessLookupError:
+        # Only WNOWAIT evidence for this direct child permits use of its pinned
+        # spawn identity after libproc stops exposing zombie metadata.
+        return unreaped_child_finished(process.pid)
+    matched = all(actual[key] == expected[key] for key in (
+        'pid', 'pgid', 'session', 'start', 'source')) and actual['pgid'] == actual['session'] == process.pid
+    if not matched:
+        process._stage_identity_observation = {'expected': dict(expected), 'observed': actual, 'error': None}
+    return matched
+
+
+def process_finished(process):
+    """Observe completion without reaping or combining separate identity samples.
+
+    Darwin can drop BSD/session metadata between the WNOWAIT probe and the
+    libproc read. Only a later WNOWAIT result for this still-unreaped direct
+    child resolves that transition; a live mismatching identity is never owned.
+    """
+    expected = getattr(process, '_stage_identity', None)
+    if expected is None or process.returncode is not None:
+        raise ValueError('Process scope identity unavailable or changed')
+    keys = ('pid', 'pgid', 'session', 'start', 'source')
+    darwin = expected.get('source') == 'proc-pidinfo'
+    attempts = 6 if darwin else 1
+    for attempt in range(attempts):
+        if darwin and unreaped_child_finished(process.pid):
+            return True
+        actual, failure = None, None
         try:
-            os.killpg(process.pid, 0)
+            actual = process_identity(process.pid)
+        except OSError as error:
+            failure = {'type': type(error).__name__, 'errno': error.errno, 'message': str(error)}
+        if actual is not None and all(actual[key] == expected[key] for key in keys):
+            return actual['state'] == 'Z'
+        process._stage_identity_observation = {'expected': dict(expected), 'observed': actual, 'error': failure}
+        # Recheck after the identity read, not before it alone. No signal or
+        # reap occurs while the kernel is transitioning the child to terminal.
+        if darwin and unreaped_child_finished(process.pid):
+            return True
+        if attempt + 1 < attempts:
+            time.sleep(0.01)
+    raise ValueError('Process scope identity unavailable or changed: '
+                     + json.dumps(process._stage_identity_observation, sort_keys=True))
+
+
+def durable_process_receipt(path, value):
+    """Exclusive receipts: a previous unknown observation is never rewritten."""
+    with Path(path).open('x') as target:
+        json.dump(value, target, sort_keys=True)
+        target.write('\n')
+        target.flush()
+        os.fsync(target.fileno())
+    directory = os.open(str(Path(path).parent), os.O_RDONLY)
+    try:
+        os.fsync(directory)
+    finally:
+        os.close(directory)
+
+
+def settle_process_group(process, observation=None):
+    """Bounded finalization; signals require a still-pinned spawn identity."""
+    observation = observation if observation is not None else {}
+    observation.update(pid=process.pid, identity=getattr(process, '_stage_identity', None),
+                       status='cleanup-unknown', cleanup_unknown=True,
+                       wait_completed=False, child_reaped=False,
+                       process_group_absent=False, errors=[])
+    errors = observation['errors']
+    pgid = (getattr(process, '_stage_identity', None) or {}).get('pgid')
+    def present():
+        if pgid is None:
+            return True
+        try:
+            os.killpg(pgid, 0)
             return True
         except ProcessLookupError:
             return False
-        except PermissionError:
-            # macOS may expose a dying/orphaned group as EPERM. This is not
-            # evidence of absence; keep observing and fail if unconfirmed.
+        except OSError as error:
+            probes = observation.setdefault('group_probe_errors', [])
+            if len(probes) < 8:
+                probes.append(str(error))
             return True
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        pass
-    deadline = time.monotonic() + 2
-    while time.monotonic() < deadline:
-        process.poll()
-        if not present():
-            break
-        time.sleep(0.01)
-    if present():
+    def deliver(signum):
         try:
-            os.killpg(process.pid, signal.SIGKILL)
+            if not owned_process_identity(process):
+                errors.append('Signal withheld: spawn identity unavailable or changed')
+                return
+            os.killpg(pgid, signum)
         except ProcessLookupError:
             pass
-    process.wait(timeout=2)
-    deadline = time.monotonic() + 2
-    while present() and time.monotonic() < deadline:
-        time.sleep(0.01)
-    absent = not present()
-    if observation is not None:
-        observation.update(pid=process.pid, exit_code=process.returncode,
-                           wait_completed=True, child_reaped=True, process_group_absent=absent)
-    if not absent:
-        raise ValueError('Process scope cleanup unconfirmed: process group still present')
+        except (OSError, ValueError) as error:
+            errors.append(f'Signal {signum} unconfirmed: {error}')
+    try:
+        # A naturally exited child still reserves its PID until wait. Reap it
+        # before probing Darwin groups: a zombie-only group can return EPERM.
+        # Do not turn that error into absence, and never signal after reaping.
+        finished = False
+        try:
+            finished = process_finished(process)
+        except (OSError, ValueError) as error:
+            errors.append(f'completion identity unconfirmed: {error}')
+        if finished:
+            # A live descendant keeps the group signalable even after leader
+            # exit. While the unreaped leader still pins PGID, settle those
+            # descendants. EPERM here is not absence: defer to post-wait probe.
+            try:
+                os.killpg(pgid, 0)
+            except ProcessLookupError:
+                pass
+            except PermissionError:
+                pass
+            else:
+                deliver(signal.SIGTERM)
+                deadline = time.monotonic() + 2
+                while time.monotonic() < deadline:
+                    try:
+                        os.killpg(pgid, 0)
+                    except (ProcessLookupError, PermissionError):
+                        break
+                    time.sleep(0.01)
+                else:
+                    deliver(signal.SIGKILL)
+        if not finished:
+            deliver(signal.SIGTERM)
+            deadline = time.monotonic() + 2
+            while time.monotonic() < deadline:
+                try:
+                    if process_finished(process):
+                        finished = True
+                        break
+                except (OSError, ValueError) as error:
+                    # Kernel exit metadata can disappear before waitid exposes
+                    # the terminal child. Retry within the same finite grace;
+                    # final wait plus group absence still owns the verdict.
+                    if (getattr(process, '_stage_identity', None) or {}).get('source') != 'proc-pidinfo':
+                        errors.append(f'completion identity unconfirmed: {error}')
+                        break
+                time.sleep(0.01)
+            if not finished:
+                if not finished:
+                    deliver(signal.SIGKILL)
+            if finished:
+                # Retain leader ownership until surviving descendants are killed.
+                try:
+                    os.killpg(pgid, 0)
+                except (ProcessLookupError, PermissionError):
+                    pass
+                else:
+                    deliver(signal.SIGKILL)
+    finally:
+        # Even permission/identity failures must attempt a finite reap and leave
+        # explicit non-success evidence. Never signal after this wait reaps PID.
+        try:
+            process.wait(timeout=2)
+            observation.update(wait_completed=True, child_reaped=True)
+            if isinstance(getattr(process, '_stage_identity_observation', None), dict):
+                observation['completion_identity_observation'] = process._stage_identity_observation
+        except (subprocess.TimeoutExpired, OSError) as error:
+            errors.append(f'wait unconfirmed: {error}')
+        deadline = time.monotonic() + 2
+        while present() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        absent = not present()
+        observation.update(exit_code=process.returncode, process_group_absent=absent)
+        if absent and observation['child_reaped'] and pgid is not None and not errors:
+            observation.update(status='settled', cleanup_unknown=False)
+    if observation['status'] != 'settled':
+        raise ValueError('Process scope cleanup-unknown: owned group absence/reap unconfirmed')
 
 HERE = Path(__file__).resolve().parent
-PRODUCTS = ("packages/Flat-Compiler/dist/es6/index.js", "packages/Airship/dist/airship.js")
+PRODUCTS = ("packages/Flat-Compiler/dist/es6/index.js", "packages/Airship/dist/airship.js",
+            "packages/Flat-Compiler/dist/es6/production-driver.js")
 # README acceptance set; all are mandatory, never conditional on availability.
 REQUIRED_SUITES = ('Airship', 'Flat-Project-Loading', 'Flat-Parser', 'Flat-Name-Binding',
                    'Flat-Bound-IR', 'Flat-ES6-Bound-Writer', 'Flat-Compiler')
@@ -228,11 +418,31 @@ class RunBudget:
                     raise ValueError('Aggregate run deadline exceeded')
 
 
+def reviewed_json(path, expected_sha256, label):
+    """Hash and parse the same bounded bytes; reject ambiguous duplicate keys."""
+    with Path(path).open('rb') as source:
+        raw = source.read(1024 * 1024 + 1)
+    if len(raw) > 1024 * 1024:
+        raise ValueError(f'{label} exceeds receipt capacity')
+    if not expected_sha256 or hashlib.sha256(raw).hexdigest() != expected_sha256:
+        raise ValueError(f'{label} digest mismatch')
+    def unique_object(pairs):
+        value = {}
+        for key, entry in pairs:
+            if key in value:
+                raise ValueError(f'{label} contains duplicate key: {key}')
+            value[key] = entry
+        return value
+    def finite_constant(value):
+        raise ValueError(f'{label} contains non-finite number: {value}')
+    return json.loads(raw, object_pairs_hook=unique_object, parse_constant=finite_constant)
+
+
 def reviewed_seeds(seeds, review, expected_sha256):
-    if not expected_sha256 or digest(review) != expected_sha256:
-        raise ValueError('Review receipt digest mismatch')
-    value = json.loads(review.read_text())
-    if set(value) != {'schema', 'seeds_sha256', 'reviewer', 'provenance', 'source_revision'} or value['schema'] != 1:
+    value = reviewed_json(review, expected_sha256, 'Review receipt')
+    if (not isinstance(value, dict) or
+            set(value) != {'schema', 'seeds_sha256', 'reviewer', 'provenance', 'source_revision'} or
+            type(value['schema']) is not int or value['schema'] != 1):
         raise ValueError('Unsupported seed review receipt schema')
     if value['seeds_sha256'] != digest(seeds):
         raise ValueError('Reviewed seed manifest mismatch')
@@ -248,7 +458,7 @@ SEED_NAMES = {'node', 'git', 'java', 'airship', 'java_compiler', 'java_backend'}
 def load_reviewed_bundle(seeds_file, review_file, review_sha256):
     """Validate an independently provisioned bundle; never create its trust root."""
     review = reviewed_seeds(seeds_file, review_file, review_sha256)
-    entries = json.loads(seeds_file.read_text())
+    entries = reviewed_json(seeds_file, review['seeds_sha256'], 'Reviewed seed manifest')
     if not isinstance(entries, dict) or set(entries) != SEED_NAMES:
         raise ValueError('--seeds requires exactly: ' + ', '.join(sorted(SEED_NAMES)))
     seeds = {name: (verified_seed(entries[name]), entries[name]['sha256'])
@@ -430,8 +640,13 @@ def run_command(command, cwd, env, log, journal, timeout=600, budget=None,
     channel = ScopeChannel(env) if env.get('FLAT_BOOTSTRAP_POLICY') else None
     previous_handlers = {}
     def interrupted(signum, frame):
+        if observation.get('status') == 'spawning':
+            observation['pending_host_signal'] = signum
+            return
         raise ValueError(f'Process scope cancelled by host signal {signum}')
     observation = cleanup_observation if cleanup_observation is not None else {}
+    observation.update(status='spawning', wait_completed=False, child_reaped=False,
+                       process_group_absent=False)
     try:
         for signum in (signal.SIGINT, signal.SIGTERM):
             previous_handlers[signum] = signal.signal(signum, interrupted)
@@ -441,15 +656,17 @@ def run_command(command, cwd, env, log, journal, timeout=600, budget=None,
         for signum, handler in previous_handlers.items():
             signal.signal(signum, handler)
         if channel:
-            write_json(log.with_suffix(log.suffix + '.scope.json'), {
-                'schema': 'flat.stage.process-scope.v1', 'scope': channel.scope,
-                'ownership': 'external-command-group', 'scope_cancelled': channel.cancelled,
-                'hello_count': channel.hellos, 'frame_count': channel.frames,
-                'events': channel.events,
-                'fixtures_started': len(channel.started), 'fixtures_finished': len(channel.finished),
-                'cleanup': observation,
-                'claim': 'command-scope only; not per-operation descendant cleanup'})
-            channel.close()
+            try:
+                write_json(log.with_suffix(log.suffix + '.scope.json'), {
+                    'schema': 'flat.stage.process-scope.v1', 'scope': channel.scope,
+                    'ownership': 'external-command-group', 'scope_cancelled': channel.cancelled,
+                    'hello_count': channel.hellos, 'frame_count': channel.frames,
+                    'events': channel.events,
+                    'fixtures_started': len(channel.started), 'fixtures_finished': len(channel.finished),
+                    'cleanup': observation,
+                    'claim': 'command-scope only; not per-operation descendant cleanup'})
+            finally:
+                channel.close()
 
 
 def _run_command(command, cwd, env, log, journal, timeout, budget, ready_gate,
@@ -460,9 +677,21 @@ def _run_command(command, cwd, env, log, journal, timeout, budget, ready_gate,
                                    pass_fds=(channel.write, channel.ack_read) if channel else ())
         deadline = time.monotonic() + timeout
         try:
+            identity = process_identity(process.pid)
+            if identity['pgid'] != process.pid or identity['session'] != process.pid:
+                raise ValueError('Spawn did not create an owned process session')
+            process._stage_identity = identity
+            cleanup_observation.update(pid=process.pid, pgid=identity['pgid'],
+                                       identity=identity)
+            durable_process_receipt(log.with_suffix(log.suffix + '.process.json'), {
+                'schema': 'flat.stage.process-identity.v1', 'identity': identity,
+                'status': 'running', 'claim': 'spawn identity, not cleanup evidence'})
+            cleanup_observation['status'] = 'running'
+            if cleanup_observation.get('pending_host_signal'):
+                raise ValueError('Process scope cancelled by host signal during spawn')
             if ready_gate:
                 ready_gate(process)
-            while process.poll() is None:
+            while not process_finished(process):
                 if channel:
                     channel.drain()
                 if budget:
@@ -473,16 +702,20 @@ def _run_command(command, cwd, env, log, journal, timeout, budget, ready_gate,
                 time.sleep(0.05)
             if channel:
                 channel.drain()
-            if process.returncode:
-                raise CommandFailure(command, process.returncode, log)
         finally:
             # Cleanup must not be interrupted by a repeated caller signal.
             saved = {s: signal.signal(s, signal.SIG_IGN) for s in (signal.SIGINT, signal.SIGTERM)}
             try:
                 settle_process_group(process, cleanup_observation)
             finally:
-                for s, handler in saved.items():
-                    signal.signal(s, handler)
+                try:
+                    durable_process_receipt(log.with_suffix(log.suffix + '.settlement.json'), {
+                        'schema': 'flat.stage.process-settlement.v1', **cleanup_observation})
+                finally:
+                    for s, handler in saved.items():
+                        signal.signal(s, handler)
+        if process.returncode:
+            raise CommandFailure(command, process.returncode, log)
     if channel:
         channel.drain()
         if (not channel.hellos or channel.buffer or len(channel.finished) != len(channel.started)
@@ -571,13 +804,34 @@ def observe_subprocess_cleanup(output, python=None, timeout=10):
         receipt.update(status='observed', children_reaped=True, temporary_outputs_removed=True)
         return receipt
     except BaseException as error:
-        receipt.update(status='failed', error=str(error))
+        unknown = any(item.get('cleanup_unknown') for item in receipt['scenarios'])
+        receipt.update(status='cleanup-unknown' if unknown else 'failed',
+                       cleanup_unknown=unknown, error=str(error))
         raise
     finally:
         write_json(output / 'subprocess-cleanup.json', receipt)
 
 
 def snapshot(repo, destination, manifest, budget=None):
+    # Validate the bounded manifest before creating any output. A reviewed source
+    # identity must never be interpreted as an absolute path or traversal.
+    repo, destination = Path(repo).resolve(), Path(destination).resolve()
+    if destination == repo or repo in destination.parents or destination in repo.parents:
+        raise ValueError('Source snapshot and output must be separate trees')
+    if not manifest or len(manifest) > MAX_FILES:
+        raise ValueError('Source manifest must be nonempty and within file capacity')
+    for name in manifest:
+        if not isinstance(name, str):
+            raise ValueError('Source manifest paths must be strings')
+        relative = Path(name)
+        if (relative.is_absolute() or
+                relative.as_posix() != name or any(part in ('.', '..') for part in relative.parts) or
+                not relative.parts or relative.parts[0] != 'packages' or
+                any(part in EXCLUDED for part in relative.parts)):
+            raise ValueError(f'Invalid source manifest path: {name}')
+        source = repo / relative
+        if not source.is_file() or source.resolve() != source:
+            raise ValueError(f'Source must be a canonical regular file: {source}')
     fresh_directory(destination)
     for name, expected in manifest.items():
         if budget:
@@ -594,10 +848,14 @@ def snapshot(repo, destination, manifest, budget=None):
 
 
 def copy_seed(source, destination, expected):
+    source, destination = Path(source), Path(destination)
+    if destination.exists() or destination.is_symlink() or source.resolve() == destination.resolve():
+        raise ValueError(f'Seed destination must be fresh and separate: {destination}')
     if digest(source) != expected:
         raise ValueError(f"Producer seed changed: {source}")
     destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(source, destination)
+    with source.open('rb') as input_file, destination.open('xb') as output_file:
+        shutil.copyfileobj(input_file, output_file, length=1024 * 1024)
     destination.chmod(0o444)
     if digest(destination) != expected:
         raise ValueError(f"Copied seed digest mismatch: {destination}")
@@ -631,7 +889,7 @@ def verify_resolution(log, expected, runtime='flat'):
 LIFECYCLE_SOURCE = 'packages/Airship/src/flat/airship/Airship_Test.flat'
 # Frozen consumer source reviewed for these three literal compiler probes. A
 # source change requires an explicit inventory review, never automatic discovery.
-LIFECYCLE_SOURCE_SHA256 = '1221b785ea5d530d888341ac683e4a77c21d4f140b9fc054372f4d371d1b95a8'
+LIFECYCLE_SOURCE_SHA256 = '9b6a6cbb16a5fcf3f1a8e43e5a42a8828103481b79d56d7bdc9c078221d983bc'
 LIFECYCLE_SCRIPTS = (
     'process.exit(0);',
     "const fs=require('fs'); if(fs.readFileSync(process.argv[2],'utf8')!=='committed') process.exit(9); process.exit(7);",
@@ -774,6 +1032,17 @@ def stage_command(node, runner, workspace, number, package, operation, source=No
     if operation == 'install':
         command += ['--flatc-jar', str(jar)] if number == 0 else ['--flatc-script', str(compiler_seed)]
     return command
+
+
+def stage_public_workloads(repo, output, directory, sources, seeds, products, budget, seconds):
+    """Separate fresh public workloads, alongside (never replacing) seven suites."""
+    import dogfood_acceptance as acceptance
+    results = {}
+    for name in ('airship-toolchain', 'core-lr'):
+        context = acceptance.create_production_workspace(repo, output / (directory.name + '-public-' + name),
+                                                         sources, seeds, products, directory, budget)
+        results[name] = acceptance.run_public_workload(context, name, seeds, budget, seconds)
+    return results
 
 
 def stage(number, repo, output, sources, seeds, previous=None, budget=None, command_seconds=600,
@@ -951,6 +1220,7 @@ def _stage(number, repo, output, sources, seeds, previous=None, budget=None, com
     try:
         companion_contract(workspace)
         execute("Flat-Compiler", "install", "flatc")
+        execute("Flat-Compiler", "install", "production-driver")
         execute("Airship", "install")
         products = artifacts(workspace)
         generated_runner_hash = products[PRODUCTS[1]]
@@ -961,6 +1231,8 @@ def _stage(number, repo, output, sources, seeds, previous=None, budget=None, com
             execute(package, "run", "test", runner=workspace / PRODUCTS[1])
         manifest['process_companion_gates'] = process_companion_gates(
             workspace, directory, env, policy, seeds['node'][0], execute, budget, command_seconds)
+        manifest['public_workloads'] = stage_public_workloads(repo, output, directory, sources, seeds,
+                                                              products, budget, command_seconds)
         if artifacts(workspace) != products:
             raise ValueError("Acceptance tests changed stage tool outputs")
         if snapshot_origin_manifest(workspace) != origin_metadata:
@@ -971,7 +1243,8 @@ def _stage(number, repo, output, sources, seeds, previous=None, budget=None, com
             raise ValueError("Build mutated an immutable seed")
         manifest.update(status="passed", products=products, admissions_sha256=digest(journal))
         return {"compiler": workspace / PRODUCTS[0], "compiler_hash": products[PRODUCTS[0]],
-                "airship": workspace / PRODUCTS[1], "airship_hash": products[PRODUCTS[1]]}
+                "airship": workspace / PRODUCTS[1], "airship_hash": products[PRODUCTS[1]],
+                "driver": workspace / PRODUCTS[2], "driver_hash": products[PRODUCTS[2]]}
     except BaseException as error:
         if manifest["commands"] and manifest["commands"][-1]["status"] == "running":
             manifest["commands"][-1]["status"] = "failed"
@@ -986,6 +1259,10 @@ def _stage(number, repo, output, sources, seeds, previous=None, budget=None, com
                     for suffix in ('', '-resolution')
                     for path in (logs / f'{index:02d}{suffix}.log',
                                  logs / f'{index:02d}{suffix}.log.scope.json')]
+        retained += [sidecar for index in range(1, len(manifest['commands']) + 1)
+                     for suffix in ('', '-resolution')
+                     for ending in ('.process.json', '.settlement.json')
+                     for sidecar in (logs / f'{index:02d}{suffix}.log{ending}',)]
         retained += [logs / 'ordinary-companion.log']
         for signum in ('SIGINT', 'SIGTERM'):
             retained += [logs / f'external-{signum}.log', logs / f'external-{signum}.log.scope.json',
@@ -1024,8 +1301,8 @@ def main():
     args = parser.parse_args()
     run_seconds, command_seconds = execution_limits(args.run_seconds, args.command_seconds)
     repo, output = args.repo.resolve(), args.output.resolve()
-    if output == repo or repo in output.parents:
-        parser.error("--output must be a new directory outside the checkout")
+    if output == repo or repo in output.parents or output in repo.parents:
+        parser.error("--output must be a new directory separate from the checkout")
     entries, review, seeds = load_reviewed_bundle(args.seeds, args.review, args.review_sha256)
     budget = RunBudget(output, seconds=run_seconds)
     if args.preflight_only:
@@ -1085,7 +1362,8 @@ def main():
                 'stage': number, 'manifest': f'stage{number}/manifest.json',
                 'manifest_sha256': digest(output / f'stage{number}/manifest.json'),
                 'runtime': 'java' if number == 0 else 'flat',
-                'products': {PRODUCTS[0]: previous['compiler_hash'], PRODUCTS[1]: previous['airship_hash']}})
+                'products': {PRODUCTS[0]: previous['compiler_hash'], PRODUCTS[1]: previous['airship_hash'],
+                             PRODUCTS[2]: previous['driver_hash']}})
             write_json(output / 'acceptance.json', receipt)
         compare_products({key: value for key, value in stages[1].items() if key.endswith('_hash')},
                          {key: value for key, value in stages[2].items() if key.endswith('_hash')})

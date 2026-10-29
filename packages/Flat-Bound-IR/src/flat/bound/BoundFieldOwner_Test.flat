@@ -1,0 +1,99 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Member provenance and canonical owner are separate immutable evidence. */
+testable class {
+    test `overlay field keeps member source while canonical owner survives lowering`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Owner", 1400)
+        let overlay = SourceSnapshotIdentity(SourceIdentity("memory:Owner.js.flat"), "overlay")
+        let range = SourceRange(overlay, 10, 15, Location(lineNumber: 3, column: 2), Location(lineNumber: 3, column: 17))
+        let declaration = DeclarationIdentity(SyntaxIslandIdentity(overlay, "field", 10), "field", owner.value + ":storage")
+        let identity = SymbolIdentity(declaration, "field")
+        let value = BoundLiteralExpression(range, SemanticTypes.intType(), "7")
+        let field = BoundFieldUnit("storage", identity, SemanticTypes.intType(), range,
+            initializer: value, staticField: true, ownerIdentity: owner)
+        expect(field.canonicalOwner()).toBe(owner)
+        expect(field.identity).toBe(identity)
+        expect(field.range).toBe(range)
+        let copies = BoundFieldUnit[]
+        copies.add(BoundTreeLoweringPass().lowerField(field))
+        copies.add(CoreLanguageLoweringPass().lowerField(field))
+        copies.add(CollectionControlLoweringPass().lowerField(field))
+        for (copy in copies) {
+            expect(copy.ownerIdentity).toBe(owner)
+            expect(copy.canonicalOwner()).toBe(owner)
+            expect(copy.identity).toBe(identity)
+            expect(copy.range).toBe(range)
+            expect(copy.initializer.semanticType.value()).toBe(value.semanticType.value())
+            expect(copy.staticField).toBe(true)
+        }
+        let unit = BoundTypeUnit(owner, UserClassSemanticType(owner), BoundFunctionUnit[], fixture.range(), fieldValues: [field])
+        let retained = TypeFeatureLowering.lowerLazyProperties(unit).fieldUnits().first
+        expect(retained.canonicalOwner()).toBe(owner)
+        expect(retained.identity.declaration.syntaxIdentity.snapshot).toBe(overlay)
+        let legacy = BoundFieldUnit("legacy", fixture.symbol("field", "legacy", 1401), SemanticTypes.intType(), fixture.range())
+        expect(legacy.ownerIdentity).toBe(null)
+        expect(legacy.canonicalOwner()).toBe(legacy.identity.declaration)
+    }
+
+    test `canonical owner never bypasses member snapshot or initializer guards`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Owner", 1410)
+        let overlay = SourceSnapshotIdentity(SourceIdentity("memory:Owner.js.flat"), "overlay")
+        let range = SourceRange(overlay, 0, 1, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let declaration = DeclarationIdentity(SyntaxIslandIdentity(overlay, "field", 0), "field", "storage")
+        let identity = SymbolIdentity(declaration, "field")
+        var Int rejected
+        try { BoundFieldUnit("storage", identity, SemanticTypes.intType(), fixture.range(), ownerIdentity: owner) }
+        catch (Exception error) { expect(error.message.contains("rangeSnapshot=" + fixture.snapshot.value)).toBe(true); rejected++ }
+        let bad = BoundLiteralExpression(range, SemanticTypes.stringType(), "'wrong'")
+        try { BoundFieldUnit("storage", identity, SemanticTypes.intType(), range, initializer: bad, ownerIdentity: owner) }
+        catch (Exception error) { expect(error.message.contains("initializerType=" + SemanticTypes.stringType().value())).toBe(true); rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    test `overlay lazy property storage retains getter source and canonical owner`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Owner", 1430)
+        let overlay = SourceSnapshotIdentity(SourceIdentity("memory:Owner.js.flat"), "overlay")
+        let range = SourceRange(overlay, 12, 16, Location(lineNumber: 4, column: 1), Location(lineNumber: 4, column: 12))
+        let getterIdentity = DeclarationIdentity(SyntaxIslandIdentity(overlay, "static-method", 12), "static-method", "cached")
+        let type = SemanticTypes.intType()
+        let getter = BoundFunctionUnit(getterIdentity, "cached", type,
+            [BoundReturnStatement(range, type, BoundLiteralExpression(range, type, "9"), TypeConversions.classify(type, type))],
+            range, staticFunction: true, lazyProperty: true)
+        let unit = BoundTypeUnit(owner, UserClassSemanticType(owner), [getter], fixture.range())
+        let lowered = TypeFeatureLowering.lowerLazyProperties(unit)
+        expect(lowered.fieldUnits().count).toBe(2)
+        for (field in lowered.fieldUnits()) {
+            expect(field.range).toBe(range)
+            expect(field.identity.declaration.syntaxIdentity.snapshot).toBe(overlay)
+            expect(field.canonicalOwner()).toBe(owner)
+            expect(field.staticField).toBe(true)
+        }
+    }
+
+    test `static member references require explicit canonical owner evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Owner", 1420)
+        let other = fixture.declaration("class", "Other", 1421)
+        let member = fixture.symbol("field", "member", 1422)
+        var Int rejected
+        try { BoundReferenceExpression(fixture.range(), SemanticTypes.intType(), "member", member, staticOwner: owner) }
+        catch (Exception error) { rejected++ }
+        try { BoundReferenceExpression(fixture.range(), SemanticTypes.intType(), "member", member,
+            staticOwner: other, fieldOwnerIdentity: owner) }
+        catch (Exception error) { rejected++ }
+        let valid = BoundReferenceExpression(fixture.range(), SemanticTypes.intType(), "member", member,
+            staticOwner: owner, fieldOwnerIdentity: owner)
+        Object copiedSource = BoundTreeLoweringPass().lowerExpression(valid)
+        BoundReferenceExpression copy = (BoundReferenceExpression)copiedSource
+        expect(copy.symbolIdentity).toBe(member)
+        expect(copy.staticOwner).toBe(owner)
+        expect(copy.fieldOwnerIdentity).toBe(owner)
+        expect(rejected).toBe(2)
+    }
+}

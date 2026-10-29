@@ -16,6 +16,29 @@ testable class {
         expect(ordered).toBe(["src/Value.flat", "src/Value.js.flat", "src/Value.es6.flat"])
     }
 
+    test `project import configuration rejects empty aliases and preserves separate snapshots`() {
+        var Int rejected
+        try { ProjectImport("flat/example/Value", alias: "") }
+        catch (Exception error) { rejected++ }
+        try { ProjectImport("flat/example/Value", alias: "   ") }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+        let roots = [SourceRoot("src")]
+        let imports = [ProjectImport("flat/example/Value", alias: "Renamed")]
+        let defaults = [DefaultImport("flat/example/Helpers", true)]
+        let package = ProjectPackage("snapshots", roots, imports: imports, defaultImports: defaults)
+        roots.clear()
+        imports.clear()
+        defaults.clear()
+        expect(package.sourceRoots.count).toBe(1)
+        expect(package.imports.count).toBe(1)
+        expect(package.imports.first.alias).toBe("Renamed")
+        expect(package.imports.first.staticImport).toBe(false)
+        expect(package.defaultImports.count).toBe(1)
+        expect(package.defaultImports.first.staticImport).toBe(true)
+        expect(ProjectImport("flat/example/Value").alias).toBe(null)
+    }
+
     test `project model owns immutable package dependency import and target options`() {
         let properties = HashMap<String, String>():add("name", "Example")
         let options = CompilerOptions(

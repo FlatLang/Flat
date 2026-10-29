@@ -14,13 +14,12 @@ class AcceptanceTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name)
+        self.root = Path(self.temporary.name).resolve()
         self.stages = self.root / 'bootstrap'
         (self.stages / 'stage2').mkdir(parents=True)
         self.sources = {'packages/Flat-Core/flat.json': '1' * 64,
                         'packages/Flat-Core/src/Input.flat': '2' * 64}
-        self.tools = {'packages/Flat-Compiler/dist/es6/index.js': '3' * 64,
-                      'packages/Airship/dist/airship.js': '4' * 64}
+        self.tools = {name: '3' * 64 for name in gate.bootstrap.PRODUCTS}
         self.write(self.stages / 'sources.json', self.sources)
         self.write(self.stages / 'acceptance.json', {'schema': 2, 'status': 'passed'})
         for number in range(3):
@@ -382,7 +381,7 @@ class AcceptanceTests(unittest.TestCase):
         event('started', 1, 0, 1, 1)
         cancelled = scenario.startswith('cancel-')
         if cancelled:
-            event('cancel-readiness-after-read' if scenario == 'cancel-after-read'
+            event('cancel-readiness-after-read' if scenario.startswith('cancel-after-read')
                   else 'cancel-readiness-after-stage', 1, 0, 1, 1)
         event('settled', 1, 1, 0, 1)
         event('consumed', 1, 1, 0, 0)
@@ -457,6 +456,7 @@ class AcceptanceTests(unittest.TestCase):
              mock.patch.object(gate, 'production_read_records', side_effect=report), \
              mock.patch.object(gate, 'manifest_lifecycle', return_value=[]), \
              mock.patch.object(gate, 'artifact_lifecycle', return_value=True), \
+             mock.patch.object(gate, 'process_receipt_references', return_value={}), \
              mock.patch.object(gate, 'driver_source_inputs', return_value={}):
             result = gate.run_production_driver(context, {'node': (node, gate.bootstrap.digest(node))}, None, 20)
         self.assertEqual([call.args[1] for call in prepare.call_args_list], ['Flat-Compiler', 'Flat-Core'])
@@ -464,7 +464,7 @@ class AcceptanceTests(unittest.TestCase):
         self.assertEqual(calls[0][:2], [str(node), str(compiler)])
         self.assertIn('flat/compiler/CompilerProductionDriver', calls[0])
         self.assertEqual({(run['scenario'], run['capacity']) for run in result['runs']},
-            {(scenario, capacity) for scenario in ('forward', 'reverse', 'cancel-after-read', 'cancel-after-stage')
+            {(scenario, capacity) for scenario in gate.DRIVER_SCENARIOS
              for capacity in (1, 3)})
         self.assertEqual(result['driver']['sha256'], gate.bootstrap.digest(driver))
 
@@ -496,7 +496,7 @@ class AcceptanceTests(unittest.TestCase):
         value = {'source_manifest_sha256': gate.fingerprint(sources), 'build_source_manifest': sources,
                  'compiler_sha256': gate.bootstrap.digest(compiler), 'compiler': reference(compiler),
                  'driver': reference(driver), 'build_log': reference(build_log), 'runs': []}
-        for scenario in ('forward', 'reverse', 'cancel-after-read', 'cancel-after-stage'):
+        for scenario in gate.DRIVER_SCENARIOS:
             for capacity in (1, 3):
                 log = self.root / f'equivalence-{scenario}-{capacity}.log'
                 log.write_text(json.dumps({'schema': 'flat.compiler.diagnostics.v1', 'records': []}) + '\n')
@@ -508,6 +508,8 @@ class AcceptanceTests(unittest.TestCase):
                     'temporary_outputs_after': [], 'artifact_lifecycle': [], 'manifest_lifecycle': [],
                     'artifacts': {'test.js': reference(artifact)} if not scenario.startswith('cancel-') else {}})
         with mock.patch.object(gate, 'production_read_records', return_value=report), \
+             mock.patch.object(gate, 'validate_process_receipts', side_effect=lambda root, run, code: run['process_cleanup']), \
+             mock.patch.object(gate, 'validate_driver_inputs'), \
              mock.patch.object(gate, 'manifest_lifecycle', return_value=[]), \
              mock.patch.object(gate, 'artifact_lifecycle', return_value=True):
             self.assertTrue(gate.validate_driver_evidence(self.root, value, gate.fingerprint(sources),
@@ -595,7 +597,8 @@ class AcceptanceTests(unittest.TestCase):
         source_sha = 'a' * 64
         plan = {'schema': 'flat.dogfood.scaling-plan.v1', 'source_manifest_sha256': source_sha,
             'tiers': [{'package': package, 'min_source_bytes': 100 * 2 ** index,
-                       'min_sources': 1, 'max_rss_bytes': 100000000}
+                       'min_sources': 1, 'max_rss_bytes': 100000000,
+                       'max_retained_sources': 3, 'max_retained_source_bytes': 1000000}
                       for index, package in enumerate(('Flat-Core', 'Flat-Parser', 'Flat-Compiler'))],
             'max_rss_growth_numerator': 2, 'max_rss_growth_denominator': 1,
             'min_input_growth_factor': 2,
@@ -630,7 +633,8 @@ class AcceptanceTests(unittest.TestCase):
         source_sha = 'a' * 64
         plan = {'schema': 'flat.dogfood.scaling-plan.v1', 'source_manifest_sha256': source_sha,
             'tiers': [{'package': package, 'min_source_bytes': 10 * 2 ** index,
-                       'min_sources': 1, 'max_rss_bytes': 1000} for index, package in enumerate(packages)],
+                       'min_sources': 1, 'max_rss_bytes': 1000,
+                       'max_retained_sources': 3, 'max_retained_source_bytes': 1000000} for index, package in enumerate(packages)],
             'max_rss_growth_numerator': 2, 'max_rss_growth_denominator': 1,
             'min_input_growth_factor': 2,
             'timer': {'kind': 'gnu-time', 'path': '/usr/bin/time', 'sha256': 'b' * 64}}
@@ -639,7 +643,11 @@ class AcceptanceTests(unittest.TestCase):
             tier['max_rss_bytes'] = 100000
         self.write(plan_path, plan)
         reference = lambda path: {'path': path.relative_to(self.root).as_posix(), 'sha256': gate.bootstrap.digest(path)}
-        value = {'plan': reference(plan_path), 'tiers': []}
+        timer = self.root / 'timer.bin'
+        timer.write_bytes(b'reviewed test timer')
+        plan['timer']['sha256'] = gate.bootstrap.digest(timer)
+        self.write(plan_path, plan)
+        value = {'plan': reference(plan_path), 'timer': reference(timer), 'tiers': []}
         baseline = {}
         for index, package in enumerate(packages):
             source = self.root / f'source-{index}.flat'
@@ -657,13 +665,26 @@ class AcceptanceTests(unittest.TestCase):
             ordinary = {'package': package, 'workspace': workspace.relative_to(self.root).as_posix(),
                 'commands': [{'compiler_argv': ['/node', '/compiler.js', 'src']}],
                 'artifacts': {'test.js': gate.bootstrap.digest(artifact)}}
+            source = workspace / identity
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text('x' * (10 * 2 ** index))
+            events = []
+            for sequence, (transition, retained) in enumerate((('admitted', 1), ('started', 1), ('settled', 1), ('consumed', 0)), 1):
+                events.append({'schema': 'flat.compiler.source-read-event.v1', 'source': str(source),
+                               'sequence': sequence, 'transition': transition, 'retained': retained})
+            log.write_text(''.join(json.dumps(event) + '\n' for event in events)
+                           + json.dumps({'schema': 'flat.compiler.diagnostics.v1', 'complete': True, 'records': []}) + '\n')
             value['tiers'].append({'package': package, 'log': reference(log), 'rss': reference(rss),
                 'ordinary': ordinary,
                 'artifact': reference(artifact), 'arguments': gate.driver_arguments(['src'], artifact), 'destination': str(artifact),
-                'report': {'admitted': 1}, 'rss_bytes': 10240,
+                'report': {'admitted': 1, 'capacity': 3, 'peakRetained': 1, 'retainedAfter': 0}, 'rss_bytes': 10240,
+                'retention': {'scope': 'accepted-driver-source-read-window', 'peak_sources': 1,
+                              'peak_source_bytes': source.stat().st_size, 'sources_after': 0, 'source_bytes_after': 0},
                 'inputs': {identity: {'sha256': baseline[identity], 'bytes': source.stat().st_size,
                                      'reference': reference(source)}}})
-        with mock.patch.object(gate, 'production_read_records', return_value={'admitted': 1}), \
+        with mock.patch.object(gate, 'production_read_records', return_value={
+                 'admitted': 1, 'capacity': 3, 'peakRetained': 1, 'retainedAfter': 0}), \
+             mock.patch.object(gate, 'validate_scaling_command'), \
              mock.patch.object(gate, 'validate_production_run', return_value=baseline), \
              mock.patch.object(gate, 'semantic_diagnostics', return_value={'complete': True, 'records': []}):
             self.assertTrue(gate.validate_scaling(self.root, value, source_sha, baseline, 'c' * 64))
@@ -678,6 +699,7 @@ class AcceptanceTests(unittest.TestCase):
                 gate.validate_scaling(self.root, value, source_sha, baseline, 'c' * 64)
             tier['artifact'] = original_reference
             log = self.root / tier['log']['path']
+            original_log = log.read_text()
             log.write_text(json.dumps({'schema': 'flat.compiler.diagnostics.v1', 'complete': True,
                 'records': [{'code': 'wrong', 'message': 'different semantic result',
                              'source': 'src/Input.flat', 'range': None}]}) + '\n')
@@ -688,7 +710,7 @@ class AcceptanceTests(unittest.TestCase):
             tier['log'] = reference(log)
             with self.assertRaisesRegex(ValueError, 'Incomplete scaling/baseline diagnostics'):
                 gate.validate_scaling(self.root, value, source_sha, baseline, 'c' * 64)
-            log.write_text(json.dumps({'schema': 'flat.compiler.diagnostics.v1', 'complete': True, 'records': []}) + '\n')
+            log.write_text(original_log)
             tier['log'] = reference(log)
             ordinary_digest = tier['ordinary']['artifacts']['test.js']
             tier['ordinary']['artifacts']['test.js'] = '0' * 64
@@ -699,12 +721,12 @@ class AcceptanceTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'RSS budget'):
                 gate.validate_scaling(self.root, value, source_sha, baseline, 'c' * 64)
             value['tiers'][1]['rss_bytes'] = 10240
-            plan['tiers'][0]['min_source_bytes'] = 11
+            plan['tiers'][-1]['min_source_bytes'] = 41
             self.write(plan_path, plan)
             value['plan'] = reference(plan_path)
             with self.assertRaisesRegex(ValueError, 'below predeclared'):
                 gate.validate_scaling(self.root, value, source_sha, baseline, 'c' * 64)
-            plan['tiers'][0]['min_source_bytes'] = 10
+            plan['tiers'][-1]['min_source_bytes'] = 40
             plan['max_rss_growth_numerator'] = 1
             plan['max_rss_growth_denominator'] = 2
             self.write(plan_path, plan)
@@ -1320,7 +1342,7 @@ class AcceptanceTests(unittest.TestCase):
         log.write_text('ordinary successful run\n')
         journal = directory / 'admissions.jsonl'
         journal.write_text(json.dumps({'decision': 'allow', 'command': '/node',
-                                       'args': ['/generated/test.js']}) + '\n')
+                                       'args': [str(workspace / 'packages/Flat-Core/dist/test.js')]}) + '\n')
         def reference(path):
             return {'path': path.relative_to(self.root).as_posix(), 'sha256': gate.bootstrap.digest(path)}
         command = {'status': 'passed', 'exit_status': 0, 'argv': ['/node', '/airship.js', 'run', 'test'],
@@ -1346,6 +1368,26 @@ class AcceptanceTests(unittest.TestCase):
             observed.update(cleanup_reference=reference(cleanup_path), process_cleanup=process,
                             temporary_outputs_after=[])
         self.assertEqual(gate.validate_production_run(self.root, run, 'a' * 64), self.sources)
+        original_argv = copy.deepcopy(run['commands'][1]['argv'])
+        # A reviewed hash on the journal does not make an unrelated suite ours.
+        journal.write_text(json.dumps({'decision': 'allow', 'command': '/node',
+                                       'args': ['/unrelated/dist/test.js']}) + '\n')
+        for observed in run['commands']:
+            observed['admission_reference'] = reference(journal)
+        with mock.patch.object(gate, 'command_cleanup'), self.assertRaisesRegex(
+                ValueError, 'Missing generated suite execution admission'):
+            gate.validate_production_run(self.root, run, 'a' * 64)
+        journal.write_text(json.dumps({'decision': 'allow', 'command': '/node',
+            'args': [str(workspace / 'packages/Flat-Core/dist/test.js')]}) + '\n')
+        for observed in run['commands']:
+            observed['admission_reference'] = reference(journal)
+        self.assertEqual(run['commands'][1]['argv'], original_argv)
+        for index, observed in enumerate(run['commands']):
+            cleanup_path = directory / f'cleanup-{index}.json'
+            cleanup = gate.read_json(cleanup_path)
+            cleanup['admissions_sha256'] = observed['admission_reference']['sha256']
+            self.write(cleanup_path, cleanup)
+            observed['cleanup_reference'] = reference(cleanup_path)
         run['commands'][0]['lifecycle'] = [self.lifecycle_sample()]
         with self.assertRaisesRegex(ValueError, 'Lifecycle observations changed'):
             gate.validate_production_run(self.root, run, 'a' * 64)
@@ -1361,6 +1403,134 @@ class AcceptanceTests(unittest.TestCase):
         log.write_text('tampered')
         with self.assertRaisesRegex(ValueError, 'changed evidence'):
             gate.validate_production_run(self.root, run, 'a' * 64)
+
+    def test_l21_receipt_schema_and_numbers_fail_closed(self):
+        path = self.root / 'unknown-receipt.json'
+        for schema in (True, 2.0, 3, '2', None):
+            with self.subTest(schema=schema):
+                self.write(path, {'schema': schema, 'status': 'passed'})
+                with self.assertRaisesRegex(ValueError, 'Unknown evidence receipt schema'):
+                    gate.validate_evidence(path, gate.bootstrap.digest(path), self.stages)
+        for literal in ('NaN', 'Infinity', '-Infinity'):
+            path.write_text('{"schema":2,"measurement":' + literal + '}')
+            with self.assertRaisesRegex(ValueError, 'Non-finite'):
+                gate.read_json(path)
+
+    def test_l21_unknown_producer_version_is_not_missing_evidence(self):
+        log = self.root / 'unknown-version.log'
+        for schema in ('flat.compiler.lifecycle.v2', 'flat.compiler.lifecycle.v999'):
+            log.write_text(json.dumps({'schema': schema}) + '\n')
+            with self.assertRaisesRegex(ValueError, 'Unknown producer schema version'):
+                gate.lifecycle_records(log)
+
+    def test_l21_manifest_paths_cannot_alias_evidence(self):
+        for name in ('./test.js', 'nested//test.js', 'nested\\test.js', '../test.js', '/test.js'):
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, 'Invalid artifact entry'):
+                gate.hash_manifest({name: 'a' * 64}, 'artifact')
+
+    def test_l21_exact_stage2_selection_rejects_forged_commands(self):
+        directory = self.root / 'selection'
+        (directory / 'seeds').mkdir(parents=True)
+        workspace = directory / 'workspace'
+        workspace.mkdir()
+        compiler, runner, node = directory / 'seeds/flatc.js', directory / 'seeds/airship.js', directory / 'node'
+        for path in (compiler, runner, node):
+            path.write_text(path.name)
+        tools = {gate.bootstrap.PRODUCTS[0]: gate.bootstrap.digest(compiler),
+                 gate.bootstrap.PRODUCTS[1]: gate.bootstrap.digest(runner)}
+        seed = {'path': str(node), 'sha256': gate.bootstrap.digest(node)}
+        commands = []
+        for operation in ('install', 'run'):
+            argv = [str(node), str(runner), '--use-links', '-f', str(workspace / 'packages/Flat-Core'),
+                    '--flatc-runtime', 'flat', operation, 'test', '-t', 'es6']
+            if operation == 'install':
+                argv += ['--flatc-script', str(compiler)]
+            commands.append({'argv': argv})
+        run = {'package': 'Flat-Core', 'workspace': 'selection/workspace', 'commands': commands}
+        self.assertEqual(gate.validate_production_selection(self.root, run, 'Flat-Core', tools, seed), workspace)
+        for index, position, replacement in ((0, 0, '/unreviewed/node'), (0, 1, '/other/airship.js'),
+                (0, 4, str(workspace / 'packages/Flat-Compiler')), (0, 6, 'java'),
+                (0, 10, 'js'), (0, 12, '/other/compiler.js'), (1, 8, 'main')):
+            forged = copy.deepcopy(run)
+            forged['commands'][index]['argv'][position] = replacement
+            with self.subTest(position=position), self.assertRaisesRegex(ValueError, 'command selection mismatch'):
+                gate.validate_production_selection(self.root, forged, 'Flat-Core', tools, seed)
+        forged = copy.deepcopy(run)
+        forged['commands'][0]['argv'] += ['--flatc-runtime', 'java']
+        with self.assertRaisesRegex(ValueError, 'command selection mismatch'):
+            gate.validate_production_selection(self.root, forged, 'Flat-Core', tools, seed)
+        compiler.write_text('stale stage2 bytes')
+        with self.assertRaisesRegex(ValueError, 'changed evidence'):
+            gate.validate_production_selection(self.root, run, 'Flat-Core', tools, seed)
+
+    def test_l21_source_reference_must_pin_inventory_itself(self):
+        observed = self.root / 'observed-sources.json'
+        unrelated = self.root / 'unrelated.json'
+        self.write(observed, self.sources)
+        self.write(unrelated, {'unrelated': True})
+        run = {'status': 'passed', 'source_receipt': {'path': 'unrelated.json',
+            'sha256': gate.bootstrap.digest(unrelated)}, 'sources_sha256': gate.fingerprint(self.sources)}
+        with self.assertRaisesRegex(ValueError, 'reference must identify observed inventory'):
+            gate.validate_production_run(self.root, run, 'a' * 64)
+        run['source_receipt'] = {'path': 'observed-sources.json', 'sha256': gate.bootstrap.digest(observed)}
+        self.write(observed, dict(self.sources, **{'packages/Flat-Core/src/Stale.flat': 'f' * 64}))
+        with self.assertRaisesRegex(ValueError, 'changed evidence'):
+            gate.validate_production_run(self.root, run, 'a' * 64)
+
+    def test_l21_artifacts_cannot_be_empty_or_omit_executed_suite(self):
+        sources = self.root / 'observed-sources.json'
+        self.write(sources, self.sources)
+        run = {'status': 'passed', 'package': 'Flat-Core', 'workspace': 'workspace',
+               'source_receipt': {'path': 'observed-sources.json', 'sha256': gate.bootstrap.digest(sources)},
+               'sources_sha256': gate.fingerprint(self.sources)}
+        for artifacts in ({}, {'main.js': 'a' * 64}):
+            run['artifacts'] = artifacts
+            with self.subTest(artifacts=artifacts), self.assertRaises(ValueError):
+                gate.validate_production_run(self.root, run, 'a' * 64)
+
+    def test_l21_core_cleanup_cannot_hide_behind_suite_cleanup(self):
+        observed = {'process_cleanup': {'wait_completed': True, 'child_reaped': True,
+                                       'process_group_absent': True}, 'temporary_outputs_after': []}
+        receipt = {'stage2_suites': {'Airship': {'commands': [observed]}},
+                   'workloads': {'cold': {'retained_output': {'commands': [dict(observed,
+                       temporary_outputs_after=['owned.flat-tmp-stale'])]},
+                       'clean': {'commands': [observed]}}}}
+        # Comparison fields are present but intentionally do not claim diagnostics.
+        for run in receipt['workloads']['cold'].values():
+            run.update(artifacts={}, sources_sha256='a' * 64)
+        verdict = gate.production_gates(receipt)
+        self.assertFalse(verdict['gates']['production-terminal-staging-absent'])
+
+    def test_l21_ordered_cancellation_matrix_excludes_legacy_receipts(self):
+        scenarios = ('forward', 'reverse', 'cancel-after-read-forward', 'cancel-after-stage-reverse')
+        runs = [{'scenario': scenario, 'capacity': capacity} for scenario in scenarios for capacity in (1, 3)]
+        receipt = {'production_driver': {'runs': runs}}
+        self.assertTrue(gate.production_gates(receipt)['gates']['production-workload-controlled-schedules'])
+        for scenario in ('cancel-after-read', 'cancel-after-stage', 'cancel-after-read-reverse', 'unknown'):
+            changed = copy.deepcopy(receipt)
+            changed['production_driver']['runs'][4]['scenario'] = scenario
+            with self.subTest(scenario=scenario):
+                self.assertFalse(gate.production_gates(changed)['gates']['production-workload-controlled-schedules'])
+        receipt['production_driver']['runs'].pop()
+        self.assertFalse(gate.production_gates(receipt)['gates']['production-workload-controlled-schedules'])
+
+    def test_l21_cancellation_phase_is_independent_of_order_suffix(self):
+        for scenario in ('cancel-after-read-forward', 'cancel-after-stage-reverse',
+                         'cancel-after-read', 'cancel-after-stage'):
+            with self.subTest(scenario=scenario):
+                log, arguments, destination, events, report, batch, write = self.driver_log(scenario, 1)
+                measured = gate.production_read_records(log, arguments, scenario, 1, 'a' * 64, destination)
+                self.assertEqual(measured, report)
+
+    def test_l21_missing_or_unknown_production_evidence_stays_blocked(self):
+        receipt = {'schema': 2, 'status': 'passed', 'full_acceptance': True,
+                   'ordinary_products': {'products': {'Airship': {}}}}
+        verdict = gate.production_gates(receipt)
+        self.assertFalse(verdict['full_acceptance'])
+        self.assertIn('ordinary-production-products', verdict['blockers'])
+        self.assertIn('production-measured-memory-scaling', verdict['blockers'])
+        self.assertIn('production-command-reaping', verdict['blockers'])
+        self.assertIn('incremental-cold', verdict['blockers'])
 
     def test_complete_receipt_aggregates_without_executing_tools(self):
         result = self.validate()

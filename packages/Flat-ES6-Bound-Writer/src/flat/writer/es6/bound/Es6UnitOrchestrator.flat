@@ -37,6 +37,8 @@ class {
 
     public emitFunction(BoundFunctionUnit functionUnit, Int ordinal) -> Es6EmissionResult {
         if (!functionUnit) throw Exception("ES6 function unit is required")
+        if (functionUnit.constructorPlan) return Es6EmissionResult(diagnostic: Es6BackendDiagnostic(
+            "es6.constructor-plan-owner-required", "Normalized constructor allocation requires its published type"))
         statements.expressions.resetOwner()
         if (functionUnit.abstractFunction) {
             return Es6EmissionResult(diagnostic: Es6BackendDiagnostic(
@@ -75,6 +77,8 @@ class {
 
     public emitMethod(BoundFunctionUnit functionUnit) -> Es6CodeResult {
         if (!functionUnit) throw Exception("ES6 method unit is required")
+        if (functionUnit.constructorPlan) return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+            "es6.constructor-plan-owner-required", "Normalized constructor allocation requires its published type"))
         statements.expressions.resetOwner()
         if (functionUnit.abstractFunction) {
             return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
@@ -202,12 +206,14 @@ class {
         }
         let loweredType = BoundTypeUnit(
             typeUnit.identity, typeUnit.semanticType, loweredFunctions, typeUnit.range,
-            typeUnit.metadata(), typeUnit.fieldUnits(), typeUnit.parentType
+            typeUnit.metadata(), typeUnit.fieldUnits().map((field) => CollectionControlLoweringPass().lowerField(field)), typeUnit.parentType
         )
         let methods = String[]
         for (functionUnit in loweredType.functionUnits()) {
             if (functionUnit.abstractFunction) continue
-            let method = functionUnit.constructorFunction &&
+            let method = functionUnit.constructorPlan ?
+                Es6ConstructorPlanEmitter().emit(functionUnit, loweredType) :
+                functionUnit.constructorFunction &&
                 functionUnit.identity.syntaxIdentity.kind == "constructor-overload"
                 ? emitTypeConstructorOverload(functionUnit, typeUnit)
                 : emitTypeMethod(functionUnit, typeUnit)
@@ -229,7 +235,8 @@ class {
             if (!initializer.emitted) {
                 return Es6EmissionResult(diagnostic: initializer.diagnostic)
             }
-            staticFields += initializer.setup + owner + "." + Es6NameMangler.mangle(field.identity.value) +
+            let fieldOwner = Es6NameMangler.mangle(field.canonicalOwner().value)
+            staticFields += initializer.setup + fieldOwner + "." + Es6NameMangler.mangle(field.identity.value) +
                 " = " + initializer.code + ";\n"
         }
         return Es6EmissionResult(fragment: Es6ArtifactFragment(

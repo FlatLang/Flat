@@ -67,6 +67,50 @@ testable class {
             File(workingDirectory, "exampleone.flat"))).toBe(false)
     }
 
+    test `glob matching rejects bases sibling prefixes and outside targets`() {
+        let base = File(workingDirectory, "src/flat/glob")
+        expect(Glob.matchesGlobPattern("**", base, base)).toBe(false)
+        expect(Glob.matchesGlobPattern("**", base, workingDirectory)).toBe(false)
+        expect(Glob.matchesGlobPattern("**", base,
+            File(workingDirectory, "src/flat/glob-other/Value.flat"))).toBe(false)
+        expect(Glob.matchesGlobPattern("**/*.flat", base,
+            File(base, "nested/Value.flat"))).toBe(true)
+    }
+
+    test `filesystem root glob uses exactly one separator`() {
+        expect(Glob.matchesGlobPattern("**/*.flat", File("/"), File("/Value.flat"))).toBe(true)
+        expect(Glob.matchesGlobPattern("Value.flat", File("/"), File("/Value.flat"))).toBe(true)
+        expect(Glob.matchesGlobPattern("alue.flat", File("/"), File("/Value.flat"))).toBe(false)
+    }
+
+    test `directory traversal candidates are distinct from exact exclusion matches`() {
+        let base = File(workingDirectory, "src")
+        let directory = File(base, "flat")
+        expect(Glob.mayContainGlobMatch("**/*_Test.flat", base, directory)).toBe(true)
+        expect(Glob.matchesGlobPattern("**/*_Test.flat", base, directory)).toBe(false)
+        expect(Glob.mayContainGlobMatch("flat/glob/*.flat", base, directory)).toBe(true)
+        expect(Glob.mayContainGlobMatch("flat/glob/*.flat", base, File(base, "other"))).toBe(false)
+        expect(Glob.mayContainGlobMatch("*.flat", base, directory)).toBe(false)
+    }
+
+    test `repeated wildcard segments preserve all literal negative constraints`() {
+        let String[] misses = ["preAmidBend.flat/Extra.flat", "preAmidBendXflat",
+            "preAmidBend.flat.bak", "preA/no-midBend.flat", "XpreAmidBend.flat"]
+        for (name in misses) {
+            expect(Glob.matchesGlobPattern("pre*mid*end.flat", workingDirectory,
+                File(workingDirectory, name))).toBe(false)
+        }
+        expect(Glob.matchesGlobPattern("pre*mid*end.flat", workingDirectory,
+            File(workingDirectory, "preAmidBend.flat"))).toBe(true)
+    }
+
+    async test `including hidden entries does not request recursive directory materialization`() {
+        let base = File(workingDirectory, "src")
+        let files = Glob.glob("**/Glob.flat", base, includeHidden: true)
+        expect(files.count).toBe(1)
+        expect(files.first).toBe(File(base, "flat/glob/Glob.flat"))
+    }
+
     async test `globstar traversal includes files at its starting directory`() {
         let base = File(workingDirectory, "src/flat/glob")
         let value = Glob.glob("**/*_Test*.flat", base, includeHidden: false)

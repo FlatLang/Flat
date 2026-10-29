@@ -5,6 +5,33 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `incomplete type header captures sparse retained range before cleanup`() {
+        let values = lex("class Example")
+        let subject = scanner(16)
+        var Int cursor
+        var Int first = -1
+        var Int last = -1
+        for (token in values) {
+            if (token.type != Token.Type.WHITESPACE && token.type != Token.Type.COMMENT) {
+                if (first < 0) first = 7 + cursor * 3
+                last = 7 + cursor * 3
+            }
+            subject.accept(token, 7 + cursor * 3)
+            cursor++
+        }
+        var ParseFailure failure
+        try { subject.end() }
+        catch (ParseFailure error) { failure = error }
+        expect(failure).toNotBe(null)
+        expect(failure.diagnostic.code).toBe("invalid-type-header")
+        expect(failure.diagnostic.snapshot).toBe(subject.snapshot)
+        expect(failure.diagnostic.range.startTokenIndex).toBe(first)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(last + 1)
+        expect(subject.finished).toBe(true)
+        expect(subject.retainedHeaderTokenCount).toBe(0)
+        expect(subject.end().isEmpty).toBe(true)
+    }
+
     async test `valid prefix incomplete type suffix fails with original snapshot and observed brace to EOF range`() {
         let source = "class Valid {}\nclass DogfoodInvalidSyntax {\n"
         let values = lex(source)

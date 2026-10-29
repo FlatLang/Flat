@@ -1,0 +1,84 @@
+package flat/bound
+
+import flat/semantic/types
+import flat/compiler/models
+
+/** Cross-reference validation at one immutable type publication boundary. */
+class {
+    public static validate(DeclarationIdentity identity, UserClassSemanticType owner,
+        UserClassSemanticType parent, BoundFunctionUnit[] functions) {
+        let constructors = functions.filter((value) => value.constructorFunction)
+        if (constructors.none((value) => value.constructorPlan != null)) return
+        if (constructors.any((value) => value.constructorPlan == null)) {
+            throw Exception("Constructor owner cannot mix raw and planned entries: " + identity.value)
+        }
+        let fieldIdentity = BoundConstructorPlan.fieldInitializerIdentity(identity)
+        for (constructor in constructors) {
+            let plan = constructor.constructorPlan
+            if (plan.entry.ownerType.value() != owner.value() ||
+                plan.fieldInitializer.value != fieldIdentity.value ||
+                (parent != null) != (plan.parentCall != null) ||
+                (parent && plan.parentCall.target.ownerType.value() != parent.value())) {
+                throw Exception("Constructor plan requires exact owner and direct parent: " + constructor.identity.value)
+            }
+            let expectedOptional = constructor.parameterValues().filter((parameter) => parameter.defaultValue != null).count
+            if (plan.entry.optionalParameterCount != expectedOptional ||
+                plan.entry.parameterTypes().count != constructor.parameterValues().count) {
+                throw Exception("Constructor plan entry signature does not match published parameters")
+            }
+            let path = plan.delegationPath()
+            var Int pathIndex
+            for (step in path) {
+                let selected = constructors.filter((candidate) => candidate.identity.value == step.value)
+                if (selected.count != 1) {
+                    throw Exception("Constructor plan path target is not published: " + step.value)
+                }
+                let suffix = selected.first.constructorPlan.delegationPath()
+                if (suffix.count != path.count - pathIndex) throw Exception("Constructor delegation suffix mismatch")
+                var Int suffixIndex
+                while (suffixIndex < suffix.count) {
+                    if (suffix[suffixIndex].value != path[pathIndex + suffixIndex].value) {
+                        throw Exception("Constructor delegation path disagrees with selected target plan")
+                    }
+                    suffixIndex++
+                }
+                pathIndex++
+            }
+            for (call in plan.initializationCalls()) {
+                let matches = functions.filter((candidate) => candidate.identity.value == call.target.identity.declaration.value)
+                if (matches.count != 1) throw Exception("Constructor initializer target is not published")
+                let helper = matches.first
+                if (helper.constructorFunction || helper.constructorPlan || helper.parentConstructorCall ||
+                    helper.constructorDelegation || helper.staticFunction || helper.asyncFunction ||
+                    helper.abstractFunction || helper.externalName || helper.dispatchIdentity ||
+                    helper.returnType.value() != SemanticTypes.unitType().value() ||
+                    helper.parameterValues().any((parameter) => parameter.defaultValue != null) ||
+                    helper.parameterValues().count != call.target.parameterTypes().count ||
+                    call.target.optionalParameterCount != 0 ||
+                    call.argumentValues().count != helper.parameterValues().count) {
+                    throw Exception("Constructor initializer must be an exact ordinary Unit helper")
+                }
+                var Int index
+                for (parameter in helper.parameterValues()) {
+                    if (parameter.identity.declaration.value != helper.identity.value ||
+                        parameter.semanticType.value() != call.target.parameterTypes()[index].value()) {
+                        throw Exception("Constructor helper parameter ownership or signature mismatch")
+                    }
+                    index++
+                }
+                if (helper.identity.value == fieldIdentity.value && helper.parameterValues().isNotEmpty) {
+                    throw Exception("Constructor field initializer cannot depend on entry parameters")
+                }
+                if (!call.receiver.class.isOfType(BoundReferenceExpression.class)) {
+                    throw Exception("Constructor initializer requires explicit lexical receiver")
+                }
+                Object receiverSource = call.receiver
+                BoundReferenceExpression receiver = (BoundReferenceExpression)receiverSource
+                if (receiver.symbolIdentity.symbolKind != "receiver" ||
+                    receiver.symbolIdentity.declaration.value != identity.value) {
+                    throw Exception("Constructor initializer receiver must be the allocated owner")
+                }
+            }
+        }
+    }
+}

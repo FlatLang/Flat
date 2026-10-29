@@ -1,0 +1,80 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Common-reference evidence is selected upstream and must survive all copies. */
+testable class {
+    test `conditional keeps declared text and generic source conversions through lowering`() {
+        let fixture = BoundIR_TestFixture()
+        let range = fixture.range()
+        let root = UserClassSemanticType(fixture.declaration("class", "CanonicalObject", 801))
+        let text = UserClassSemanticType(fixture.declaration("class", "SourceString", 802))
+        let generic = GenericParameterSemanticType(fixture.declaration("class", "Array", 803), "E", 0)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(text, "class", [root]))
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.seal()
+        let textConversion = TypeConversions.classify(text, root, hierarchy: hierarchy)
+        let genericConversion = TypeConversions.classify(generic, root, hierarchy: hierarchy)
+        expect(textConversion.conversionKind).toBe("reference-upcast")
+        expect(genericConversion.conversionKind).toBe("reference-upcast")
+        let original = BoundReferenceExpression(range, generic, "value", fixture.symbol("parameter", "value", 804))
+        let textValue = BoundLiteralExpression(range, text, "quotedText")
+        let expression = BoundConditionalExpression(range, root,
+            BoundLiteralExpression(range, SemanticTypes.boolType(), "selected"),
+            BoundConversionExpression(range, root, textValue, textConversion),
+            BoundConversionExpression(range, root, original, genericConversion))
+        let copies = BoundExpression[]
+        copies.add(BoundTreeLoweringPass().lowerExpression(expression))
+        copies.add(CoreLanguageLoweringPass().lowerExpression(expression))
+        copies.add(CollectionControlLoweringPass().lowerExpression(expression))
+        for (copy in copies) {
+            Object conditionalSource = copy
+            BoundConditionalExpression conditional = (BoundConditionalExpression)conditionalSource
+            expect(conditional.semanticType.value()).toBe(root.value())
+            expect(conditional.range).toBe(range)
+            Object yesSource = conditional.whenTrue
+            BoundConversionExpression yes = (BoundConversionExpression)yesSource
+            Object noSource = conditional.whenFalse
+            BoundConversionExpression no = (BoundConversionExpression)noSource
+            expect(yes.conversion).toBe(textConversion)
+            expect(no.conversion).toBe(genericConversion)
+            expect(yes.value.semanticType.value()).toBe(text.value())
+            expect(no.value.semanticType.value()).toBe(generic.value())
+            Object referenceSource = no.value
+            BoundReferenceExpression reference = (BoundReferenceExpression)referenceSource
+            expect(reference.symbolIdentity.value).toBe(original.symbolIdentity.value)
+            expect(yes.range).toBe(range)
+            expect(no.range).toBe(range)
+        }
+    }
+
+    test `conditional rejects implicit branch erasure and nullable narrowing`() {
+        let fixture = BoundIR_TestFixture()
+        let range = fixture.range()
+        let root = UserClassSemanticType(fixture.declaration("class", "CanonicalObject", 811))
+        let text = UserClassSemanticType(fixture.declaration("class", "SourceString", 812))
+        let generic = GenericParameterSemanticType(fixture.declaration("class", "Array", 813), "E", 0)
+        let yes = BoundLiteralExpression(range, text, "text")
+        let no = BoundLiteralExpression(range, generic, "value")
+        let condition = BoundLiteralExpression(range, SemanticTypes.boolType(), "true")
+        var Int rejected
+        try { BoundConditionalExpression(range, root, condition, yes, no) }
+        catch (Exception error) { rejected++ }
+        let nullable = NullableSemanticType(root)
+        let nullValue = BoundLiteralExpression(range, SemanticTypes.nullType(), "null")
+        let nullConversion = TypeConversions.classify(nullValue.semanticType, nullable)
+        let rootValue = BoundLiteralExpression(range, root, "original")
+        let lifted = BoundConversionExpression(range, nullable, rootValue, TypeConversions.classify(root, nullable))
+        let nullBranch = BoundConversionExpression(range, nullable, nullValue, nullConversion)
+        let valid = BoundConditionalExpression(range, nullable, condition, lifted, nullBranch)
+        expect(valid.whenFalse.semanticType.value()).toBe(nullable.value())
+        expect(nullConversion.conversionKind).toBe("null")
+        try { BoundConditionalExpression(range, root, condition, rootValue, nullBranch) }
+        catch (Exception error) { rejected++ }
+        expect(TypeConversions.classify(nullable, root).applicable).toBe(false)
+        expect(rejected).toBe(2)
+    }
+}

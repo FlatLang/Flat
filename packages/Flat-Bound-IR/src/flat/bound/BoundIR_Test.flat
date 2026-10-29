@@ -4,6 +4,171 @@ import flat/compiler/models
 import flat/semantic/types
 
 testable class {
+    test `evaluation local lifetime evidence survives both immutable lowering paths`() {
+        let fixture = BoundIR_TestFixture()
+        let type = SemanticTypes.intType()
+        let local = BoundReferenceExpression(fixture.range(), type, "retained", fixture.symbol("local", "retained", 490))
+        let declaration = BoundLocalDeclarationStatement(fixture.range(), local,
+            BoundLiteralExpression(fixture.range(), type, "1"), TypeConversions.classify(type, type), evaluationLocal: true)
+        let expression = BoundEvaluationExpression(fixture.range(), type, [declaration], local)
+        let lowered = BoundTreeLoweringPass().lowerExpression(expression)
+        Object evaluationSource = lowered
+        BoundEvaluationExpression evaluation = (BoundEvaluationExpression)evaluationSource
+        let setup = evaluation.setup()
+        Object declarationSource = setup.first
+        BoundLocalDeclarationStatement retained = (BoundLocalDeclarationStatement)declarationSource
+        expect(retained.evaluationLocal).toBe(true)
+        let collectionLowered = CollectionControlLoweringPass().lowerExpression(expression)
+        Object collectionSource = collectionLowered
+        BoundEvaluationExpression collection = (BoundEvaluationExpression)collectionSource
+        let collectionSetup = collection.setup()
+        Object collectionDeclarationSource = collectionSetup.first
+        BoundLocalDeclarationStatement collectionDeclaration = (BoundLocalDeclarationStatement)collectionDeclarationSource
+        expect(collectionDeclaration.evaluationLocal).toBe(true)
+        expect(collectionDeclaration.local.symbolIdentity.value).toBe(local.symbolIdentity.value)
+    }
+
+    test `selected call rejects missing excessive and unaligned arguments`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let one = BoundLiteralExpression(fixture.range(), intType, "1")
+        let conversion = TypeConversions.classify(intType, intType)
+        let target = CallableSignature(fixture.symbol("function", "take", 101), "take",
+            CallableKind("function"), [intType, intType], intType, optionalParameterCount: 1)
+        var Int rejected
+        try {
+            BoundCallExpression(fixture.range(), intType, target, BoundExpression[], TypeConversion[])
+        } catch (Exception error) { rejected++ }
+        try {
+            BoundCallExpression(fixture.range(), intType, target, [one, one, one],
+                [conversion, conversion, conversion])
+        } catch (Exception error) { rejected++ }
+        try {
+            BoundCallExpression(fixture.range(), intType, target, [one], TypeConversion[])
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(3)
+        expect(BoundCallExpression(fixture.range(), intType, target, [one],
+            [conversion]).argumentValues()).toBe([one])
+        expect(BoundCallExpression(fixture.range(), intType, target, [one, one],
+            [conversion, conversion]).argumentValues()).toBe([one, one])
+    }
+
+    test `selected call rejects inapplicable source and destination conversion evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let longType = SemanticTypes.longType()
+        let one = BoundLiteralExpression(fixture.range(), intType, "1")
+        let target = CallableSignature(fixture.symbol("function", "takeLong", 102), "takeLong",
+            CallableKind("function"), [longType], intType)
+        var Int rejected
+        try {
+            BoundCallExpression(fixture.range(), intType, target, [one],
+                [TypeConversion(intType, longType, "inapplicable", false, false, false, 0)])
+        } catch (Exception error) { rejected++ }
+        try {
+            BoundCallExpression(fixture.range(), intType, target, [one],
+                [TypeConversions.classify(longType, longType)])
+        } catch (Exception error) { rejected++ }
+        try {
+            BoundCallExpression(fixture.range(), intType, target, [one],
+                [TypeConversions.classify(intType, intType)])
+        } catch (Exception error) { rejected++ }
+        let missingArguments = BoundExpression[]
+        missingArguments.add(null)
+        try {
+            BoundCallExpression(fixture.range(), intType, target, missingArguments,
+                [TypeConversions.classify(intType, longType)])
+        } catch (Exception error) { rejected++ }
+        let missingConversions = TypeConversion[]
+        missingConversions.add(null)
+        try {
+            BoundCallExpression(fixture.range(), intType, target, [one], missingConversions)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(5)
+    }
+
+    test `selected call snapshots checked arguments and preserves widening through lowering`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let longType = SemanticTypes.longType()
+        let one = BoundLiteralExpression(fixture.range(), intType, "1")
+        let conversion = TypeConversions.classify(intType, longType)
+        let owner = UserClassSemanticType(fixture.declaration("class", "AsyncConsumer", 106))
+        let receiver = BoundLiteralExpression(fixture.range(), owner, "receiver")
+        let receiverConversion = TypeConversions.classify(owner, owner)
+        let target = CallableSignature(fixture.symbol("instance-method", "takeLong", 103), "takeLong",
+            CallableKind("instance-method"), [longType], intType, owner, asyncFunction: true,
+            externalName: "takeLongAsync", dispatchIdentity: "slot:takeLong")
+        let arguments = BoundExpression[]
+        arguments.add(one)
+        let conversions = TypeConversion[]
+        conversions.add(conversion)
+        let call = BoundCallExpression(fixture.range(), intType, target, receiver, arguments, conversions,
+            receiverConversion: receiverConversion, suppressAwait: true)
+        arguments.add(one)
+        conversions.add(conversion)
+        let publishedArguments = call.argumentValues()
+        publishedArguments.add(one)
+        let publishedConversions = call.argumentConversions()
+        publishedConversions.add(conversion)
+        expect(call.argumentValues()).toBe([one])
+        expect(call.argumentConversions()).toBe([conversion])
+        let unit = BoundFunctionUnit(fixture.declaration("function", "run", 104), "run", intType,
+            [BoundReturnStatement(fixture.range(), intType, call,
+                TypeConversions.classify(intType, intType))], fixture.range())
+        let lowered = CoreLanguageLoweringPass().lower(unit)
+        let statements = lowered.statements()
+        Object statementObject = statements.first
+        BoundReturnStatement returned = (BoundReturnStatement)statementObject
+        Object expressionObject = returned.value
+        BoundCallExpression result = (BoundCallExpression)expressionObject
+        expect(result.target).toBe(target)
+        expect(result.receiver).toBe(receiver)
+        expect(result.receiverConversion).toBe(receiverConversion)
+        expect(result.argumentValues()).toBe([one])
+        expect(result.argumentConversions()).toBe([conversion])
+        expect(result.suppressAwait).toBe(true)
+        expect(result.target.asyncFunction).toBe(true)
+        expect(result.target.externalName).toBe("takeLongAsync")
+        expect(result.target.dispatchIdentity).toBe("slot:takeLong")
+    }
+
+    test `canonical text constructor remains a selected call with checked storage evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let storageType = SemanticTypes.stringType()
+        let textType = UserClassSemanticType(fixture.declaration("class", "String", 107))
+        let storage = BoundLiteralExpression(fixture.range(), storageType, "\"text\"")
+        let conversion = TypeConversions.classify(storageType, storageType)
+        let constructor = CallableSignature(fixture.symbol("constructor", "String", 108), "String",
+            CallableKind("constructor"), [storageType], textType, textType)
+        let call = BoundCallExpression(fixture.range(), textType, constructor, [storage], [conversion])
+        expect(call.semanticType).toBe(textType)
+        expect(call.target).toBe(constructor)
+        expect(call.receiver == null).toBe(true)
+        expect(call.argumentValues()).toBe([storage])
+        expect(call.argumentConversions()).toBe([conversion])
+        var Bool rejected
+        try {
+            BoundCallExpression(fixture.range(), textType, constructor, [storage],
+                [TypeConversion(storageType, textType, "storage-wrapper", true, true, false, 0)])
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    test `receiver conversion evidence cannot belong to a receiverless call`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let target = CallableSignature(fixture.symbol("function", "read", 105), "read",
+            CallableKind("function"), SemanticType[], intType)
+        var Bool rejected
+        try {
+            BoundCallExpression(fixture.range(), intType, target, null,
+                BoundExpression[], TypeConversion[],
+                receiverConversion: TypeConversions.classify(intType, intType))
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
     test `numeric projection and casts expose integral truncation including Long`() {
         let fixture = BoundIR_TestFixture()
         let number = UserClassSemanticType(fixture.declaration("class", "Number", 90))

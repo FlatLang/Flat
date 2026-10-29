@@ -6,6 +6,9 @@ package flat/compiler
  * are isolated from storage ownership and cannot turn a completed rename into a
  * retry. No callback is inferred from session completion or a successful rm call.
  * finalized describes the named temporary tree, not all invocation/process state.
+ * Sink mutation is single-owner and non-reentrant, including from these callbacks.
+ * Delivery failures are isolated; storage inspection errors are cleanup failures,
+ * never evidence that an owned path was removed.
  */
 abstract class {
     public temporaryCreated(CompilerArtifactLifecycleBinding binding, String path) {}

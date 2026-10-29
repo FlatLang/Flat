@@ -1,0 +1,128 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Constructor plan local and owner-publication evidence regressions. */
+testable class {
+    test `constructor plan snapshots stages and survives all recursive lowering`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Planned", 950)
+        let type = UserClassSemanticType(owner)
+        let identity = fixture.declaration("constructor", "Planned", 951)
+        let entry = CallableSignature(SymbolIdentity(identity, "constructor"), "Planned",
+            CallableKind("constructor"), SemanticType[], type, type)
+        let fieldIdentity = BoundConstructorPlan.fieldInitializerIdentity(owner)
+        let bodyIdentity = BoundConstructorPlan.bodyInitializerIdentity(identity)
+        let receiver = BoundReferenceExpression(fixture.range(), type, "this", SymbolIdentity(owner, "receiver"))
+        let field = helperCall(fixture, type, fieldIdentity, receiver)
+        let body = helperCall(fixture, type, bodyIdentity, receiver)
+        let calls = BoundCallExpression[]:addAll([field, body])
+        let path = DeclarationIdentity[]:addAll([identity])
+        let setup = BoundStatement[]
+        let plan = BoundConstructorPlan(entry, fieldIdentity, setup, null, calls, path, fixture.range())
+        calls.clear()
+        path.clear()
+        let snapshot = plan.initializationCalls()
+        snapshot.clear()
+        expect(plan.initializationCalls().count).toBe(2)
+        expect(plan.delegationPath().count).toBe(1)
+        let constructor = BoundFunctionUnit(identity, "Planned", SemanticTypes.unitType(), BoundStatement[],
+            fixture.range(), constructorFunction: true, constructorPlan: plan)
+        let lowered = CollectionControlLoweringPass().lower(CoreLanguageLoweringPass().lower(constructor))
+        expect(lowered.constructorPlan.entry).toBe(entry)
+        expect(lowered.constructorPlan.range).toBe(plan.range)
+        expect(lowered.constructorPlan.fieldInitializer.value).toBe(fieldIdentity.value)
+        expect(lowered.constructorPlan.initializationCalls().last.target).toBe(body.target)
+        expect(lowered.constructorPlan.delegationPath().first.value).toBe(identity.value)
+        let functions = [lowered,
+            BoundFunctionUnit(fieldIdentity, "fields", SemanticTypes.unitType(), BoundStatement[], fixture.range()),
+            BoundFunctionUnit(bodyIdentity, "body", SemanticTypes.unitType(), BoundStatement[], fixture.range())]
+        let unit = BoundTypeUnit(owner, type, functions, fixture.range())
+        expect(unit.functionUnits().first.constructorPlan.entry).toBe(entry)
+    }
+
+    test `constructor plan rejects cycles stage target substitution and missing owner helpers`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Planned", 960)
+        let type = UserClassSemanticType(owner)
+        let identity = fixture.declaration("constructor", "Planned", 961)
+        let entry = CallableSignature(SymbolIdentity(identity, "constructor"), "Planned",
+            CallableKind("constructor"), SemanticType[], type, type)
+        let fieldIdentity = BoundConstructorPlan.fieldInitializerIdentity(owner)
+        let bodyIdentity = BoundConstructorPlan.bodyInitializerIdentity(identity)
+        let receiver = BoundReferenceExpression(fixture.range(), type, "this", SymbolIdentity(owner, "receiver"))
+        let field = helperCall(fixture, type, fieldIdentity, receiver)
+        let body = helperCall(fixture, type, bodyIdentity, receiver)
+        var Int rejected
+        try { BoundConstructorPlan(entry, fieldIdentity, BoundStatement[], null, [field, body, body],
+            [identity, identity], fixture.range()) }
+        catch (Exception error) { rejected++ }
+        try { BoundConstructorPlan(entry, fieldIdentity, BoundStatement[], null, [body, field], [identity], fixture.range()) }
+        catch (Exception error) { rejected++ }
+        let plan = BoundConstructorPlan(entry, fieldIdentity, BoundStatement[], null, [field, body], [identity], fixture.range())
+        let constructor = BoundFunctionUnit(identity, "Planned", SemanticTypes.unitType(), BoundStatement[],
+            fixture.range(), constructorFunction: true, constructorPlan: plan)
+        try { BoundTypeUnit(owner, type, [constructor], fixture.range()) }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(3)
+        let otherSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:other-constructor"), "one")
+        let otherRange = SourceRange(otherSnapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        try { BoundConstructorPlan(entry, fieldIdentity, BoundStatement[], null, [field, body], [identity], otherRange) }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(4)
+    }
+
+    test `constructor setup rejects receiver capture forward defaults and invented base absence`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Planned", 970)
+        let type = UserClassSemanticType(owner)
+        let identity = fixture.declaration("constructor", "Planned", 971)
+        let entry = CallableSignature(SymbolIdentity(identity, "constructor"), "Planned",
+            CallableKind("constructor"), SemanticType[], type, type)
+        let fieldIdentity = BoundConstructorPlan.fieldInitializerIdentity(owner)
+        let bodyIdentity = BoundConstructorPlan.bodyInitializerIdentity(identity)
+        let receiver = BoundReferenceExpression(fixture.range(), type, "this", SymbolIdentity(owner, "receiver"))
+        let calls = [helperCall(fixture, type, fieldIdentity, receiver), helperCall(fixture, type, bodyIdentity, receiver)]
+        let unsafe = BoundConstructorPlan(entry, fieldIdentity,
+            [BoundExpressionStatement(fixture.range(), receiver)], null, calls, [identity], fixture.range())
+        var Int rejected
+        try { BoundFunctionUnit(identity, "Planned", SemanticTypes.unitType(), BoundStatement[], fixture.range(),
+            constructorFunction: true, constructorPlan: unsafe) }
+        catch (Exception error) { rejected++ }
+        let callbackType = FunctionSemanticType(SemanticType[], type)
+        let callback = BoundLambdaExpression(fixture.range(), callbackType, BoundFunctionParameter[], [receiver], receiver)
+        let capture = BoundConstructorPlan(entry, fieldIdentity,
+            [BoundExpressionStatement(fixture.range(), callback)], null, calls, [identity], fixture.range())
+        try { BoundFunctionUnit(identity, "Planned", SemanticTypes.unitType(), BoundStatement[], fixture.range(),
+            constructorFunction: true, constructorPlan: capture) }
+        catch (Exception error) { rejected++ }
+        let intType = SemanticTypes.intType()
+        let first = BoundFunctionParameter("first", SymbolIdentity(identity, "parameter", 0), intType,
+            BoundReferenceExpression(fixture.range(), intType, "second", SymbolIdentity(identity, "parameter", 1)))
+        let second = BoundFunctionParameter("second", SymbolIdentity(identity, "parameter", 1), intType,
+            BoundLiteralExpression(fixture.range(), intType, "1"))
+        let optionalEntry = CallableSignature(SymbolIdentity(identity, "constructor"), "Planned",
+            CallableKind("constructor"), [intType, intType], type, type, 2)
+        let forward = BoundConstructorPlan(optionalEntry, fieldIdentity, BoundStatement[], null, calls, [identity], fixture.range())
+        try { BoundFunctionUnit(identity, "Planned", SemanticTypes.unitType(), BoundStatement[], fixture.range(),
+            [first, second], constructorFunction: true, constructorPlan: forward) }
+        catch (Exception error) { rejected++ }
+        let valid = BoundConstructorPlan(entry, fieldIdentity, BoundStatement[], null, calls, [identity], fixture.range())
+        let constructor = BoundFunctionUnit(identity, "Planned", SemanticTypes.unitType(), BoundStatement[],
+            fixture.range(), constructorFunction: true, constructorPlan: valid)
+        let parent = UserClassSemanticType(fixture.declaration("class", "Parent", 972))
+        try { BoundTypeUnit(owner, type, [constructor], fixture.range(), parentType: parent) }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(4)
+    }
+
+    helperCall(BoundIR_TestFixture fixture, UserClassSemanticType owner, DeclarationIdentity identity,
+        BoundExpression receiver) -> BoundCallExpression {
+        let target = CallableSignature(SymbolIdentity(identity, "instance-method"), "stage",
+            CallableKind("instance-method"), SemanticType[], SemanticTypes.unitType(), owner)
+        return BoundCallExpression(fixture.range(), SemanticTypes.unitType(), target, receiver,
+            BoundExpression[], TypeConversion[])
+    }
+}

@@ -14,6 +14,10 @@ import flat/parser/ParserDiagnostic
  * while artifacts remain owned by the supplied sink.
  */
 data class {
+    /** Clean terminal outcome, independent of whether this invocation emits artifacts. */
+    visible Bool succeeded => !cancelled && cleanupSettled && diagnosticCount == 0 &&
+        packageDiagnostic == null && bindingDiagnostic == null && parserDiagnostic == null
+
     public construct(
         visible Int sourceCount,
         visible Int artifactCount,
@@ -29,8 +33,10 @@ data class {
         visible BindingDiagnostic bindingDiagnostic = null,
         visible ParserDiagnostic parserDiagnostic = null
     ) {
-        if (sourceCount < 0 || artifactCount < 0 || diagnosticCount < 0) {
-            throw Exception("Compilation summary counts cannot be negative")
+        if (sourceCount < 0 || artifactCount < 0 || diagnosticCount < 0 ||
+            peakActiveSources < 0 || peakRetainedSources < 0 ||
+            peakActiveSourceReads < 0 || peakRetainedSourceReads < 0) {
+            throw Exception("Compilation summary counts and peaks cannot be negative")
         }
     }
 }

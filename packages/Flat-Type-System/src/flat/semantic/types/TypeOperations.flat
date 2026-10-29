@@ -6,7 +6,7 @@ import flat/compiler/models
 class {
     /** Strict Bool conditional join; conversions remain explicit in bound consumers. */
     public static conditional(SemanticType conditionType, SemanticType trueType,
-        SemanticType falseType, SourceRange range) -> TypedOperationResult {
+        SemanticType falseType, SourceRange range, TypeHierarchyComponent hierarchy = null) -> TypedOperationResult {
         if (errorType(conditionType) || errorType(trueType) || errorType(falseType)) return recovered()
         if (conditionType.value() != SemanticTypes.boolType().value())
             return invalid("type.conditional-condition", "Conditional requires Bool", range)
@@ -25,6 +25,13 @@ class {
             }
         }
         if (common) return TypedOperationResult(common)
+        // Preserve the established nullable/null rules above. Hierarchy joining
+        // neither unwraps nullable values nor introduces new nullable targets.
+        if (hierarchy && hierarchy.valid && TypeConversions.isReference(trueType) &&
+            TypeConversions.isReference(falseType)) {
+            common = hierarchy.commonReference(trueType, falseType)
+            if (common) return TypedOperationResult(common)
+        }
         return invalid("type.conditional-branches", "Conditional branches have no common type", range)
     }
 
@@ -112,10 +119,10 @@ class {
             return TypedOperationResult(SemanticTypes.boolType())
         }
         if (operator == "==" || operator == "!=") {
-            // A generic value may be compared with null without allowing null to be
-            // assigned to its (possibly non-nullable) instantiated type.
-            if ((leftType.kind() == "generic-parameter" && rightType.kind() == "null") ||
-                (leftType.kind() == "null" && rightType.kind() == "generic-parameter")) {
+            // Absence comparison is not assignment or nullable promotion. The
+            // reference category includes the established generic-value policy.
+            if ((rightType.kind() == "null" && TypeConversions.isReference(leftType)) ||
+                (leftType.kind() == "null" && TypeConversions.isReference(rightType))) {
                 return TypedOperationResult(SemanticTypes.boolType())
             }
             let forward = TypeConversions.classify(leftType, rightType)

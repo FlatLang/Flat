@@ -1,0 +1,156 @@
+package flat/semantic/binding/primitive
+
+import flat/bound
+import flat/compiler/models
+import flat/semantic/types
+
+/** Finite owner-local constructor graph normalization before type publication.
+ * The named owner barrier proves terminal base selection and rejects cycles.
+ * No project state, queues, runtime overload selection or target naming. */
+class {
+    public signature(BoundFunctionUnit function, UserClassSemanticType owner) -> CallableSignature {
+        if (function.constructorPlan) return function.constructorPlan.entry
+        let parameters = function.parameterValues()
+        return CallableSignature(SymbolIdentity(function.identity, "constructor"), function.name,
+            CallableKind("constructor"), parameters.map({ _.semanticType }), owner, owner,
+            parameters.filter({ _.defaultValue != null }).count, parameters.map({ _.name }))
+    }
+
+    public normalize(UserClassSemanticType owner, BoundFunctionUnit[] functions,
+        BoundStatement[] fieldStatements, SourceRange range,
+        CallableSignature[] signatures, BoundFunctionUnit[] setupUnits = BoundFunctionUnit[]) -> BoundFunctionUnit[] {
+        let constructors = functions.filter({ _.constructorFunction })
+        let result = BoundFunctionUnit[]
+        let helpers = BoundFunctionUnit[]
+        let fieldIdentity = BoundConstructorPlan.fieldInitializerIdentity(owner.declarationIdentity)
+        helpers.add(BoundFunctionUnit(fieldIdentity, "constructorFields", SemanticTypes.unitType(),
+            fieldStatements, range))
+        for (constructor in constructors) {
+            let helperIdentity = BoundConstructorPlan.bodyInitializerIdentity(constructor.identity)
+            let rewrite = PrimitiveConstructorSubstitution()
+            let parameters = BoundFunctionParameter[]
+            var Int ordinal
+            for (parameter in constructor.parameterValues()) {
+                let identity = SymbolIdentity(helperIdentity, "parameter", ordinal++)
+                parameters.add(BoundFunctionParameter(parameter.name, identity, parameter.semanticType))
+                rewrite.bind(parameter.identity, BoundReferenceExpression(constructor.range,
+                    parameter.semanticType, parameter.name, identity))
+            }
+            helpers.add(BoundFunctionUnit(helperIdentity, "constructorBody", SemanticTypes.unitType(),
+                rewrite.lowerStatements(constructor.statements()), constructor.range, parameters))
+        }
+        for (entry in constructors) {
+            let preBase = BoundStatement[]
+            let path = DeclarationIdentity[]
+            let stages = BoundCallExpression[]
+            let rewrite = PrimitiveConstructorSubstitution(receiverFree: true)
+            for (candidate in constructors) rewrite.scope(candidate.parameterValues())
+            // Validate entry defaults in declaration order. Their execution belongs
+            // exactly once to the allocation-helper prologue, not the public wrapper.
+            let entryDefaults = PrimitiveConstructorSubstitution(receiverFree: true)
+            entryDefaults.scope(entry.parameterValues())
+            for (parameter in entry.parameterValues()) {
+                if (parameter.defaultValue) entryDefaults.lowerExpression(parameter.defaultValue)
+                entryDefaults.bind(parameter.identity, BoundReferenceExpression(entry.range,
+                    parameter.semanticType, parameter.name, parameter.identity))
+            }
+            var BoundFunctionUnit current = entry
+            var BoundExpression[] arguments = BoundExpression[]
+            for (parameter in entry.parameterValues()) {
+                let reference = BoundReferenceExpression(entry.range, parameter.semanticType, parameter.name, parameter.identity)
+                rewrite.bind(parameter.identity, reference)
+                arguments.add(reference)
+            }
+            var BoundParentConstructorCall baseCall
+            while (current) {
+                if (path.any({ _.value == current.identity.value }))
+                    throw Exception("Cyclic constructor delegation in '#{owner.value()}'")
+                path.add(current.identity)
+                let setup = setupUnits.firstOrNull((unit) => unit.identity.value == current.identity.value)
+                if (setup) preBase.addAll(rewrite.lowerStatements(setup.statements()))
+                let stageIdentity = BoundConstructorPlan.bodyInitializerIdentity(current.identity)
+                let stage = helpers.firstOrNull({ _.identity.value == stageIdentity.value })
+                let receiver = BoundReferenceExpression(entry.range, owner, "this",
+                    SymbolIdentity(owner.declarationIdentity, "receiver"))
+                let target = CallableSignature(SymbolIdentity(stageIdentity, "instance-method"), stage.name,
+                    CallableKind("instance-method"), stage.parameterValues().map({ _.semanticType }),
+                    SemanticTypes.unitType(), owner)
+                let checked = CallTypeChecker.check(target, owner, arguments.map({ _.semanticType }), current.range)
+                if (!checked.valid) throw Exception(checked.diagnostic.message)
+                stages.add(BoundCallExpression(current.range, checked.semanticType, checked.target, receiver,
+                    arguments, checked.argumentConversions()))
+                if (!current.constructorDelegation) {
+                    if (current.parentConstructorCall) {
+                        let call = current.parentConstructorCall
+                        let baseArguments = rewrite.lowerExpressions(call.argumentValues())
+                        baseCall = BoundParentConstructorCall(call.target, baseArguments,
+                            call.argumentConversions(), entry.range)
+                    }
+                    break
+                }
+                let delegation = current.constructorDelegation
+                let next = constructors.firstOrNull((candidate) =>
+                    candidate.identity.value == delegation.target.identity.declaration.value)
+                if (!next) throw Exception("Selected constructor delegation target is not published in owner")
+                if (path.any({ _.value == next.identity.value }))
+                    throw Exception("Cyclic constructor delegation in '#{owner.value()}'")
+                let setupIdentity = DeclarationIdentity(SyntaxIslandIdentity(entry.range.snapshot,
+                    "constructor-setup", entry.identity.syntaxIdentity.ordinal), "constructor-setup", current.identity.value)
+                let values = rewrite.lowerExpressions(delegation.argumentValues())
+                let converted = BoundExpression[]
+                // Evaluate ALL supplied edge operands before target defaults/bindings.
+                var Int index
+                for (value in values) {
+                    let conversion = delegation.argumentConversions()[index]
+                    let identity = SymbolIdentity(DeclarationIdentity(setupIdentity.syntaxIdentity,
+                        "constructor-argument", setupIdentity.name), "local", index)
+                    let local = BoundReferenceExpression(value.range, conversion.toType,
+                        "constructorArgument#{path.count}_#{index}", identity)
+                    preBase.add(BoundLocalDeclarationStatement(value.range, local, value, conversion))
+                    converted.add(local)
+                    index++
+                }
+                arguments = BoundExpression[]
+                index = 0
+                for (parameter in next.parameterValues()) {
+                    var BoundExpression value
+                    if (index < converted.count) value = converted[index]
+                    else {
+                        if (!parameter.defaultValue) throw Exception("Constructor delegation is missing a required argument")
+                        value = rewrite.lowerExpression(parameter.defaultValue)
+                    }
+                    let conversion = TypeConversions.classify(value.semanticType, parameter.semanticType)
+                    if (!conversion.applicable) throw Exception("Constructor delegation default conversion is invalid")
+                    let identity = SymbolIdentity(DeclarationIdentity(setupIdentity.syntaxIdentity,
+                        "constructor-parameter", setupIdentity.name), "local", index)
+                    let local = BoundReferenceExpression(next.range, parameter.semanticType,
+                        "constructorParameter#{path.count}_#{index}", identity)
+                    preBase.add(BoundLocalDeclarationStatement(next.range, local, value, conversion))
+                    rewrite.bind(parameter.identity, local)
+                    arguments.add(local)
+                    index++
+                }
+                current = next
+            }
+            let receiver = BoundReferenceExpression(entry.range, owner, "this",
+                SymbolIdentity(owner.declarationIdentity, "receiver"))
+            let fieldTarget = CallableSignature(SymbolIdentity(fieldIdentity, "instance-method"), "constructorFields",
+                CallableKind("instance-method"), SemanticType[], SemanticTypes.unitType(), owner)
+            let fieldCheck = CallTypeChecker.check(fieldTarget, owner, SemanticType[], entry.range)
+            let initialization = [BoundCallExpression(entry.range, SemanticTypes.unitType(), fieldTarget,
+                receiver, BoundExpression[], fieldCheck.argumentConversions())]
+            initialization.addAll(stages.reverse())
+            let originalSignature = signatures.firstOrNull((candidate) => candidate.callableKind.value == "constructor" &&
+                candidate.ownerType && candidate.ownerType.value() == owner.value() &&
+                candidate.identity.declaration.value == entry.identity.value)
+            if (!originalSignature) throw Exception("Constructor plan requires original selected signature")
+            let plan = BoundConstructorPlan(originalSignature, fieldIdentity, preBase, baseCall,
+                initialization, path, entry.range)
+            result.add(BoundFunctionUnit(entry.identity, entry.name, entry.returnType, BoundStatement[],
+                entry.range, entry.parameterValues(), constructorFunction: true, constructorPlan: plan))
+        }
+        result.addAll(helpers)
+        result.addAll(functions.filter({ !_.constructorFunction }))
+        return result
+    }
+}

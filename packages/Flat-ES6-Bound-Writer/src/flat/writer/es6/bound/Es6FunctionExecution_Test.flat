@@ -4,11 +4,48 @@ import flat/io
 import flat/system
 import flat/time/Time
 import flat/parser/flat
+import flat/lexer/Lexer
 import flat/semantic/binding/primitive
 import flat/compiler/models
 import flat/bound
 
 testable class {
+    async test `standalone contextual callbacks and preceding defaults execute once in call order`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:integrated-function-defaults"), "one")
+        let stream = Lexer().lex("seed() -> Int { return 7; } " +
+            "apply(Int first, Int second = first + 1, next(Int value) -> Int = lambda(Int value) => value + second) -> Int { return next(first); } " +
+            "read(next(Int value) -> Int) -> Int { return next(2); } " +
+            "run() -> Int { return apply(seed()) + read(lambda(Int value) => value * 3); }")
+        stream.emit("start")
+        let syntax = PrimitiveFunctionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let functions = PrimitiveFunctionBinder().bind(syntax, snapshot).functionValues()
+        let fragments = Es6ArtifactFragment[]
+        var Int index
+        for (function in functions) {
+            let emitted = Es6UnitOrchestrator().emitFunction(function, index++)
+            expect(emitted.emitted).toBe(true)
+            fragments.add(emitted.fragment)
+        }
+        let assembled = Es6FragmentAssembler(functions.count).assemble(fragments.reverse())
+        expect(assembled.assembled).toBe(true)
+        let run = functions.firstOrNull((value) => value.name == "run")
+        let seed = functions.firstOrNull((value) => value.name == "seed")
+        let seedName = Es6NameMangler.mangle(seed.identity.value)
+        let runName = Es6NameMangler.mangle(run.identity.value)
+        let code = assembled.code + "let reads=0; const original=" + seedName + "; " +
+            seedName + "=function(){reads++;return original();};\n" +
+            "if(" + runName + "()!==21 || reads!==1) throw new Error('default evaluation order'); console.log('ok');\n"
+        let root = File(".flat-es6-integrated-defaults-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "functions.js")
+            Es6ArtifactCommitter().commit(destination, code)
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("ok\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     async test `parsed functions parameters forward calls and recursion execute under Node`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:function-execute"), "revision:one"

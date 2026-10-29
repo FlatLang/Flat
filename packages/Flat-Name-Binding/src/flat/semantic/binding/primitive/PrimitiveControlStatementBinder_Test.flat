@@ -7,6 +7,198 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    test `nullable Bool call condition captures once at its operand site`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-bool-once"), "one")
+        let range = SourceRange(snapshot, 10, 14, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 5))
+        let nullable = NullableSemanticType(SemanticTypes.boolType())
+        let identity = SymbolIdentity(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 10),
+            "function", "next"), "function")
+        let target = CallableSignature(identity, "next", CallableKind("function"), SemanticType[], nullable)
+        let call = BoundCallExpression(range, nullable, target, BoundExpression[], TypeConversion[])
+        let outerSetup = BoundStatement[]
+        let tested = PrimitiveControlStatementBinder().conditionValue(call, outerSetup)
+        expect(outerSetup.count).toBe(0)
+        expect(tested.expressionKind()).toBe("evaluation")
+        let evaluation = (BoundEvaluationExpression)tested
+        let setup = evaluation.setup()
+        expect(setup.count).toBe(1)
+        let declarationObject = (Object)setup.first
+        let declaration = (BoundLocalDeclarationStatement)declarationObject
+        expect(declaration.initializer).toBe(call)
+        let check = (BoundBinaryExpression)evaluation.value
+        expect(check.operator).toBe("&&")
+        let presence = (BoundBinaryExpression)check.left
+        let reference = (BoundReferenceExpression)presence.left
+        expect(reference.symbolIdentity.value).toBe(declaration.local.symbolIdentity.value)
+        let unwrapped = (BoundConversionExpression)check.right
+        let unwrappedReference = (BoundReferenceExpression)unwrapped.value
+        expect(unwrappedReference.symbolIdentity.value).toBe(reference.symbolIdentity.value)
+        setup.clear()
+        expect(evaluation.setup().count).toBe(1)
+        let repeated = PrimitiveControlStatementBinder().conditionValue(call)
+        expect(repeated.expressionKind()).toBe("evaluation")
+    }
+
+    test `nullable Bool local condition needs no setup`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-bool-local"), "one")
+        let range = SourceRange(snapshot, 0, 1, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let identity = SymbolIdentity(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "local", 0), "local", "ready"), "local")
+        let local = BoundReferenceExpression(range, NullableSemanticType(SemanticTypes.boolType()), "ready", identity)
+        let tested = PrimitiveControlStatementBinder().conditionValue(local)
+        expect(tested.expressionKind()).toBe("binary")
+        expect(tested.semanticType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    test `binds nullable Bool loop and short circuit at evaluation sites`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-bool-loop"), "one")
+        let range = SourceRange(snapshot, 10, 14, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 5))
+        let identity = SymbolIdentity(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 10),
+            "function", "next"), "function")
+        let target = CallableSignature(identity, "next", CallableKind("function"), SemanticType[],
+            NullableSemanticType(SemanticTypes.boolType()))
+        let condition = PrimitiveBinarySyntax(range, "&&",
+            PrimitiveLiteralSyntax(range, Token.Type.BOOL, "false"),
+            PrimitiveCallSyntax(range, "next", PrimitiveExpressionSyntax[]))
+        let syntax = PrimitiveStatementSyntaxResult([
+            PrimitiveWhileSyntax(range, condition, PrimitiveStatementSyntax[])])
+        let result = PrimitiveControlStatementBinder().bind(syntax, snapshot, callables: [target])
+        let statements = result.statements()
+        expect(statements.count).toBe(1)
+        let loopObject = (Object)statements.first
+        let loop = (BoundWhileStatement)loopObject
+        let conjunction = (BoundBinaryExpression)loop.condition
+        expect(conjunction.left.expressionKind()).toBe("literal")
+        expect(conjunction.right.expressionKind()).toBe("evaluation")
+        let evaluation = (BoundEvaluationExpression)conjunction.right
+        expect(evaluation.setup().count).toBe(1)
+    }
+
+    test `nullable Bool conditional call retains capture inside expression`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-bool-ternary"), "one")
+        let range = SourceRange(snapshot, 10, 14, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 5))
+        let identity = SymbolIdentity(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 10),
+            "function", "next"), "function")
+        let target = CallableSignature(identity, "next", CallableKind("function"), SemanticType[],
+            NullableSemanticType(SemanticTypes.boolType()))
+        let conditional = PrimitiveConditionalSyntax(range, PrimitiveCallSyntax(range, "next", PrimitiveExpressionSyntax[]),
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1"),
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "2"))
+        let result = PrimitiveExpressionBinder().bind(conditional, callables: [target])
+        expect(result.succeeded).toBe(true)
+        let expression = (BoundConditionalExpression)result.expression
+        expect(expression.condition.expressionKind()).toBe("evaluation")
+        expect(expression.whenTrue.expressionKind()).toBe("literal")
+        expect(expression.whenFalse.expressionKind()).toBe("literal")
+    }
+
+    async test `binds Long table loop and Array clamp assignments with structured interpolation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:core-shaped-structured-block"), "one")
+        var String source = "let values = [1, 2, 3]; var Int index = 0; var Int limit = 8; " +
+            "limit = limit > values.count ? values.count : limit; " +
+            "limit = limit < 0 ? 0 : limit; " +
+            "while (index < values.count - 1 && index < limit) { index += 1; } return \""
+        source += '#'
+        source += "{index > 0 ? values[index] : 0}:"
+        source += '#'
+        source += "{values.count}\";"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let result = PrimitiveControlStatementBinder().bind(syntax, snapshot)
+        let statements = result.statements()
+        expect(statements.count).toBe(7)
+        let firstAssignmentObject = (Object)statements[3]
+        let firstAssignment = (BoundAssignmentStatement)firstAssignmentObject
+        expect(firstAssignment.value.expressionKind()).toBe("conditional")
+        let secondAssignmentObject = (Object)statements[4]
+        let secondAssignment = (BoundAssignmentStatement)secondAssignmentObject
+        expect(secondAssignment.value.expressionKind()).toBe("conditional")
+        let loopObject = (Object)statements[5]
+        let loop = (BoundWhileStatement)loopObject
+        expect(loop.condition.semanticType.value()).toBe(SemanticTypes.boolType().value())
+        expect(loop.bodyValues().count).toBe(1)
+        let returnedObject = (Object)statements.last
+        let returned = (BoundReturnStatement)returnedObject
+        let interpolation = (BoundInterpolatedStringExpression)returned.value
+        let expressions = interpolation.segmentValues().filter((segment) => !segment.literal())
+        expect(expressions.count).toBe(2)
+        let firstSegmentObject = (Object)expressions.first
+        let firstSegment = (BoundInterpolatedStringSegment)firstSegmentObject
+        expect(firstSegment.expression.expressionKind()).toBe("conditional")
+        let lastSegmentObject = (Object)expressions.last
+        let lastSegment = (BoundInterpolatedStringSegment)lastSegmentObject
+        expect(lastSegment.expression.expressionKind()).toBe("array-length")
+    }
+
+    async test `delegates member access on nested array receiver inside structured branch`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-array-member-control"), "one")
+        let stream = Lexer().lex("let values = [[1], [2, 3]]; var Int count = 0; " +
+            "if (values.count > 0) { count = values[0].count > 0 ? values[1].count : 0; } return count;")
+        stream.emit("start")
+        let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let statements = PrimitiveControlStatementBinder().bind(syntax, snapshot).statements()
+        expect(statements.count).toBe(4)
+        let branchObject = (Object)statements[2]
+        let branch = (BoundIfStatement)branchObject
+        let branchStatements = branch.thenValues()
+        let assignmentObject = (Object)branchStatements.first
+        let assignment = (BoundAssignmentStatement)assignmentObject
+        let conditional = (BoundConditionalExpression)assignment.value
+        expect(conditional.whenTrue.expressionKind()).toBe("array-length")
+        expect(conditional.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `List shaped callback branch retains one postfix argument evaluation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:list-callback-control"), "one")
+        let range = SourceRange(snapshot, 0, 1, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let identity = SymbolIdentity(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "parameter", 0),
+            "parameter", "accept"), "parameter")
+        let callback = LocalBinding("accept", identity,
+            FunctionSemanticType([SemanticTypes.intType(), SemanticTypes.intType()], SemanticTypes.boolType()))
+        let stream = Lexer().lex("let values = [1, 2]; var Int i = 0; " +
+            "for (element in values) { if (accept(element, i++)) return element; } return 0;")
+        stream.emit("start")
+        let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let statements = PrimitiveControlStatementBinder().bind(syntax, snapshot, locals: [callback]).statements()
+        expect(statements.count).toBe(4)
+        let loopObject = (Object)statements[2]
+        let loop = (BoundForEachStatement)loopObject
+        expect(loop.body().count).toBe(2)
+        let branchObject = (Object)loop.body()[1]
+        let branch = (BoundIfStatement)branchObject
+        let invocation = (BoundFunctionInvocationExpression)branch.condition
+        expect(invocation.argumentValues().count).toBe(2)
+        let postfixObject = (Object)invocation.argumentValues()[1]
+        let postfix = (BoundPostfixUpdateExpression)postfixObject
+        expect(postfix.expressionKind()).toBe("postfix-update")
+        let target = (BoundReferenceExpression)postfix.target
+        expect(target.name).toBe("i")
+        expect(branch.thenValues().count).toBe(1)
+        expect(branch.thenValues().first.unitKind()).toBe("return")
+    }
+
+    test `loop declaration condition initializes at every condition evaluation site`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:loop-declaration-condition"), "one")
+        let range = SourceRange(snapshot, 0, 1, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let declaration = PrimitiveDeclarationValueSyntax(range, "ready",
+            PrimitiveLiteralSyntax(range, Token.Type.BOOL, "false"))
+        let syntax = PrimitiveStatementSyntaxResult([
+            PrimitiveWhileSyntax(range, declaration, [PrimitiveReturnSyntax(range, PrimitiveReferenceSyntax(range, "ready"))])])
+        let statements = PrimitiveControlStatementBinder().bind(syntax, snapshot).statements()
+        expect(statements.count).toBe(1)
+        let loopObject = (Object)statements.first
+        let loop = (BoundWhileStatement)loopObject
+        let evaluation = (BoundEvaluationExpression)loop.condition
+        expect(evaluation.setup().count).toBe(1)
+        let evaluationSetup = evaluation.setup()
+        let declarationObject = (Object)evaluationSetup.first
+        let initialized = (BoundLocalDeclarationStatement)declarationObject
+        expect(initialized.local.name).toBe("ready")
+        let tested = (BoundReferenceExpression)evaluation.value
+        expect(tested.symbolIdentity.value).toBe(initialized.local.symbolIdentity.value)
+        expect(loop.bodyValues().count).toBe(1)
+    }
+
     async test `static table reads preserve canonical field ownership without an instance`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-table-control"), "one")
         let sources = ["class Long { static native_array Int[] FILE_SIZES = [1, 2]; " +
@@ -539,12 +731,23 @@ testable class {
         let result = PrimitiveClassBinder().bind(syntax, snapshot)
         let method = result.typeUnit.functionUnits().firstOrNull({ _.name == "plusEqualsReal" })
         let statements = method.statements()
-        let assignmentObject = (Object)statements.first
-        var BoundMemberAssignmentStatement assignment
-        assignment = (BoundMemberAssignmentStatement)assignmentObject
-
-        expect(assignment.conversion.conversionKind).toBe("numeric-cast")
-        expect(assignment.value.semanticType.value()).toBe("primitive:Double")
+        let expressionObject = (Object)statements.first
+        let expressionStatement = (BoundExpressionStatement)expressionObject
+        Object evaluationObject = expressionStatement.expression
+        BoundEvaluationExpression evaluation = (BoundEvaluationExpression)evaluationObject
+        let setup = evaluation.setup()
+        expect(setup.count).toBe(3)
+        Object storedObject = setup[1]
+        BoundLocalDeclarationStatement stored = (BoundLocalDeclarationStatement)storedObject
+        expect(stored.conversion.conversionKind).toBe("numeric-cast")
+        expect(stored.initializer.semanticType.value()).toBe("primitive:Double")
+        expect(stored.local.semanticType.value()).toBe("primitive:Float")
+        Object writeObject = setup.last
+        BoundMemberAssignmentStatement assignment = (BoundMemberAssignmentStatement)writeObject
+        expect(assignment.conversion.conversionKind).toBe("identity")
+        Object valueObject = assignment.value
+        BoundReferenceExpression value = (BoundReferenceExpression)valueObject
+        expect(value.symbolIdentity.value).toBe(stored.local.symbolIdentity.value)
     }
 
     test `rejects non throwable values and catch types`() {

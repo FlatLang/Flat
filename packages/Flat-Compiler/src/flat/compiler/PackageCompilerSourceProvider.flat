@@ -8,6 +8,8 @@ import flat/future
  * Each Future owns one immutable loaded source. Ordering is supplied by the linker.
  * dispose awaits every started read, including after cancellation/failure: cancelling
  * a promise alone is not evidence that an underlying filesystem read has settled.
+ * One sequential consumer owns consumption. Invalid or overlapping loads never
+ * admit work. Concurrent disposal callers share the same cleanup settlement.
  */
 class extends CompilerSourceProvider {
     var PendingRead[] pending = PendingRead[]
@@ -16,6 +18,8 @@ class extends CompilerSourceProvider {
     var Int peakActive
     var Int peakRetained
     var Bool disposed
+    var Bool consuming
+    var Future.CompletableFuture<Bool> disposal
     var Int admittedCount
     var Int settledCount
 
@@ -35,6 +39,8 @@ class extends CompilerSourceProvider {
     class PendingRead {
         visible String identity
         visible var Future<CompilerSource> result
+        visible var CompilerSourceReadObserver.Failure observerFailure
+        visible var Bool failureReported
         public construct(String identity) { this.identity = identity }
     }
 
@@ -46,13 +52,30 @@ class extends CompilerSourceProvider {
 
     override public async load(String identity) -> CompilerSource {
         checkpoint()
+        if (consuming) throw Exception("Package source reads require one sequential consumer")
+        let expected = pending.isEmpty ? (next < ordered.count ? ordered[next] : null) : pending.first.identity
+        if (expected == null || expected != identity) {
+            throw Exception("Package source reads require stable sequential consumption")
+        }
+        consuming = true
+        try {
+            return consume(identity)
+        } finally { consuming = false }
+    }
+
+    private async consume(String identity) -> CompilerSource {
         let admitWindow = !schedule || pending.isEmpty
         while (admitWindow && next < ordered.count && pending.count < capacity) {
             checkpoint()
-            let work = PendingRead(ordered[next++])
+            let work = PendingRead(ordered[next])
+            if (observer) {
+                try { observer.admitted(work.identity, admittedCount + 1, pending.count + 1,
+                    Math.max(peakRetained, pending.count + 1)) }
+                catch (Exception error) { throw CompilerSourceReadObserver.Failure(error.message) }
+            }
             if (pending.count + 1 > peakRetained) peakRetained = pending.count + 1
+            next++
             admittedCount++
-            if (observer) observer.admitted(work.identity, admittedCount, pending.count + 1, peakRetained)
             pending.add(work)
             var Future<Bool> gate
             if (schedule) gate = schedule.admit()$
@@ -60,11 +83,20 @@ class extends CompilerSourceProvider {
                 active++
                 if (active > peakActive) peakActive = active
                 try {
-                    if (observer) observer.started(work.identity, active, peakActive)
+                    if (observer) {
+                        try { observer.started(work.identity, active, peakActive) }
+                        catch (Exception error) { throw readObserverFailure(work, error) }
+                    }
                     checkpoint()
                     let value = source.load(work.identity)
-                    if (value && invocationObserver) invocationObserver.sourceReadCompleted(session, work.identity)
+                    if (value && invocationObserver) {
+                        try { invocationObserver.sourceReadCompleted(session, work.identity) }
+                        catch (Exception error) { throw readObserverFailure(work, error) }
+                    }
                     checkpoint()
+                    if (value && value.identity != work.identity) {
+                        throw Exception("Loaded source identity does not match '#{work.identity}'")
+                    }
                     if (value && value.text.count > maxCharacters) {
                         throw Exception("Flat package source exceeds configured character capacity")
                     }
@@ -76,8 +108,12 @@ class extends CompilerSourceProvider {
                     if (gate) gate.get()
                     active--
                     settledCount++
-                    try { if (observer) observer.settled(work.identity, settledCount, active) }
-                    finally { if (schedule) schedule.settle() }
+                    try {
+                        if (observer) {
+                            try { observer.settled(work.identity, settledCount, active) }
+                            catch (Exception error) { throw readObserverFailure(work, error) }
+                        }
+                    } finally { if (schedule) schedule.settle() }
                 }
             })$
         }
@@ -89,23 +125,56 @@ class extends CompilerSourceProvider {
             throw Exception("Package source reads require stable sequential consumption")
         }
         let work = pending.first
-        let value = work.result.get()
+        var CompilerSource value
+        try { value = work.result.get() }
+        catch (Exception error) {
+            if (work.observerFailure) work.failureReported = true
+            throw error
+        }
+        checkpoint()
         pending.remove(0)
-        if (observer) observer.consumed(identity, pending.count)
+        if (observer) {
+            try { observer.consumed(identity, pending.count) }
+            catch (Exception error) { throw CompilerSourceReadObserver.Failure(error.message) }
+        }
         checkpoint()
         return value
     }
 
+    readObserverFailure(PendingRead work, Exception error) -> CompilerSourceReadObserver.Failure {
+        if (!work.observerFailure) work.observerFailure = CompilerSourceReadObserver.Failure(error.message)
+        return work.observerFailure
+    }
+
     public async dispose() {
-        if (disposed) return
-        disposed = true
-        if (schedule) schedule.seal()
-        // All work has already started; awaiting here does not admit another read.
-        for (work in pending) {
-            try { work.result.get() } catch (Exception error) {}
+        if (disposal) {
+            disposal.get()
+            return
         }
-        pending.clear()
-        session.recordPackageReadPeaks(peakActive, peakRetained)
-        if (observer) observer.drained(admittedCount, settledCount, peakActive, peakRetained)
+        disposal = Future.create<Bool>()
+        disposed = true
+        try {
+            if (schedule) schedule.seal()
+            // No admission is possible after disposed. The bounded pending window
+            // remains owned here until every native read and controlled gate settles.
+            var Exception observerFailure
+            for (work in pending) {
+                try { work.result.get() } catch (Exception error) {}
+                if (!observerFailure && work.observerFailure && !work.failureReported) {
+                    observerFailure = work.observerFailure
+                }
+            }
+            pending.clear()
+            session.recordPackageReadPeaks(peakActive, peakRetained)
+            try { if (observer) observer.drained(admittedCount, settledCount, peakActive, peakRetained) }
+            catch (Exception error) {
+                if (!observerFailure) observerFailure = CompilerSourceReadObserver.Failure(error.message)
+            }
+            if (observerFailure) throw observerFailure
+            disposal.complete(true)
+        } catch (Exception error) {
+            disposal.error(error)
+            throw error
+        }
     }
 }

@@ -36,7 +36,7 @@ class {
         }
 
         let results = currentDirectory
-            .getChildFiles(includeHidden, includeDirectories: true)
+            .getChildFiles(recursive: false, includeHidden: includeHidden, includeDirectories: true)
             .filter({ matchesGlobPattern(_x.isFile ? filePattern : directoryPattern, workingDirectory, _x) })
             .flatMap({
                 let matches = Array<File>()
@@ -107,7 +107,12 @@ class {
         File workingDirectory,
         File target
     ) => false {
-        let location = target.normalizedLocation.substring(workingDirectory.normalizedLocation.count + 1)
+        let base = workingDirectory.normalizedLocation
+        let prefix = base.endsWith("/") ? base : base + "/"
+        let targetLocation = target.normalizedLocation
+        // The base itself and sibling prefixes are not descendants.
+        if (!targetLocation.startsWith(prefix) || targetLocation.count <= prefix.count) return false
+        let location = targetLocation.substring(prefix.count)
         let matches = Regex.getMatches(pattern, location).count > 0
 
         log.trace("Checked \"#{location}\" against pattern #pattern: #matches")
@@ -120,12 +125,14 @@ class {
         File workingDirectory,
         File target
     ) => false {
-        let location = target.normalizedLocation.substring(workingDirectory.normalizedLocation.count + 1)
-        let regexPattern = patternize(pattern, target.isDirectory)
-        let matches = matchesGlobPattern(regexPattern, workingDirectory, target)
+        let regexPattern = patternize(pattern, false)
+        return matchesGlobPattern(regexPattern, workingDirectory, target)
+    }
 
-        log.trace("Checked \"#{location}\" against pattern \"#pattern\": #matches")
-
-        return matches
+    /** True when a descendant directory can contain a match; not an exclusion match. */
+    public static mayContainGlobMatch(String pattern, File workingDirectory, File directory) -> Bool {
+        if (workingDirectory.normalizedLocation == directory.normalizedLocation) return true
+        if (!pattern.contains("/") && !pattern.contains("**")) return false
+        return matchesGlobPattern(patternize(pattern, true), workingDirectory, directory)
     }
 }

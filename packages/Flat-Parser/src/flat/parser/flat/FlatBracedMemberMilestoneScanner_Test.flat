@@ -5,6 +5,56 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `incomplete braced body reports observed range without retaining body tokens`() {
+        let values = lex("public read() { return 1")
+        let subject = scanner(32)
+        var Int cursor
+        var Int opening = -1
+        var Token openingToken
+        for (token in values) {
+            if (token.value == "{") {
+                opening = 6 + cursor * 2
+                openingToken = token
+            }
+            subject.accept(token, 6 + cursor * 2)
+            cursor++
+        }
+        var ParseFailure failure
+        try { subject.end() }
+        catch (ParseFailure error) { failure = error }
+        expect(failure).toNotBe(null)
+        expect(failure.diagnostic.code).toBe("invalid-braced-member")
+        expect(failure.diagnostic.snapshot).toBe(subject.snapshot)
+        expect(failure.diagnostic.range.startTokenIndex).toBe(opening + 1)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(7 + (values.count - 1) * 2)
+        expect(failure.diagnostic.range.start.column).toBe(openingToken.endColumn)
+        expect(failure.diagnostic.range.end.column).toBe(values.last.endColumn)
+        expect(subject.finished).toBe(true)
+        expect(subject.retainedHeaderTokenCount).toBe(0)
+        expect(subject.end().isEmpty).toBe(true)
+    }
+
+    async test `invalid accessor captures retained header before cleanup`() {
+        let values = lex("String value { set(")
+        let subject = scanner(32)
+        var Int cursor
+        var Int accessorStart = -1
+        for (token in values) {
+            if (token.value == "set") accessorStart = cursor
+            subject.accept(token, cursor)
+            cursor++
+        }
+        var ParseFailure failure
+        try { subject.end() }
+        catch (ParseFailure error) { failure = error }
+        expect(failure).toNotBe(null)
+        expect(failure.diagnostic.snapshot).toBe(subject.snapshot)
+        expect(failure.diagnostic.range.startTokenIndex).toBe(accessorStart)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(values.count)
+        expect(subject.retainedHeaderTokenCount).toBe(0)
+        expect(subject.finished).toBe(true)
+    }
+
     async test `publishes nested type braced member`() {
         let result = collectResults("private class Nested {}")
         var BracedMemberHeaderSyntaxIsland header

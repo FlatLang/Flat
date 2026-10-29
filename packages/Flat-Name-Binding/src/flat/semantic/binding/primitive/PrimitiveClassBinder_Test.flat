@@ -7,6 +7,69 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    constructorBody(BoundTypeUnit owner, BoundFunctionUnit constructor) -> BoundStatement[] {
+        let identity = BoundConstructorPlan.bodyInitializerIdentity(constructor.identity)
+        return owner.functionUnits().firstOrNull((function) => function.identity.value == identity.value).statements()
+    }
+
+    async test `declared null guard retains structured equality without nullable storage`() {
+        let stream = Lexer().lex("class StringCharArray { visible Int count; public equals(StringCharArray other) -> Bool { if (other == null) { return false; } if (count != other.count) { return false; } return true; } public present() -> Bool => this != null }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:char-array-null-guard"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let method = unit.functionUnits().firstOrNull((function) => function.name == "equals")
+        let statements = method.statements()
+        Object guardSource = statements.first
+        BoundIfStatement guard = (BoundIfStatement)guardSource
+        Object binarySource = guard.condition
+        BoundBinaryExpression binary = (BoundBinaryExpression)binarySource
+        expect(binary.operator).toBe("==")
+        expect(binary.semanticType.value()).toBe(SemanticTypes.boolType().value())
+        expect(binary.left.semanticType.value()).toBe(unit.semanticType.value())
+        expect(binary.left.expressionKind()).toBe("reference")
+        expect(binary.right.semanticType.kind()).toBe("null")
+        let sourceMethod = syntax.methodValues().firstOrNull((function) => function.name == "equals")
+        let sourceStatements = sourceMethod.statements()
+        Object sourceGuardValue = sourceStatements.first
+        PrimitiveIfSyntax sourceGuard = (PrimitiveIfSyntax)sourceGuardValue
+        expect(binary.range).toBe(sourceGuard.condition.range)
+        expect(TypeConversions.classify(SemanticTypes.nullType(), unit.semanticType).applicable).toBe(false)
+        let invalidStream = Lexer().lex("class StringCharArray { public invalid() { StringCharArray value = null; } }")
+        invalidStream.emit("start")
+        let invalid = PrimitiveClassParser().parse(invalidStream.consumeAll<Token>("data"), snapshot)
+        var Bool rejected
+        try { PrimitiveClassBinder().bind(invalid, snapshot) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    async test `conditional return context cannot authorize numeric narrowing`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-context-narrowing"), "one")
+        let stream = Lexer().lex("class Box { visible Double value; public read(Bool choose) -> Int => choose ? this.value : 1 }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var Bool rejected
+        try { PrimitiveClassBinder().bind(syntax, snapshot) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        let explicitStream = Lexer().lex("class Box { visible Double value; public read(Bool choose) -> Int => choose ? (Int)this.value : 1 }")
+        explicitStream.emit("start")
+        let explicitSyntax = PrimitiveClassParser().parse(explicitStream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassBinder().bind(explicitSyntax, snapshot).typeUnit
+        let method = unit.functionUnits().firstOrNull((function) => function.name == "read")
+        let statements = method.statements()
+        Object returnSource = statements.first
+        BoundReturnStatement returned = (BoundReturnStatement)returnSource
+        Object conditionalSource = returned.value
+        BoundConditionalExpression conditional = (BoundConditionalExpression)conditionalSource
+        Object castSource = conditional.whenTrue
+        BoundConversionExpression cast = (BoundConversionExpression)castSource
+        expect(cast.conversion.conversionKind).toBe("numeric-cast")
+        expect(cast.conversion.implicit).toBe(false)
+        expect(conditional.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
     async test `plain local assignment still rejects numeric narrowing`() {
         let stream = Lexer().lex("class Box { static run() -> Int { var Int value = 7; value = 2.5; return value; } }")
         stream.emit("start")
@@ -36,7 +99,19 @@ testable class {
         let statementObject = method.statements().first
         expect(statementObject.unitKind()).toBe("expression")
         let statement = (BoundExpressionStatement)statementObject
-        expect(statement.expression.expressionKind()).toBe("member-assignment-value")
+        expect(statement.expression.expressionKind()).toBe("evaluation")
+        Object evaluationSource = statement.expression
+        BoundEvaluationExpression evaluation = (BoundEvaluationExpression)evaluationSource
+        let setup = evaluation.setup()
+        expect(setup.count).toBe(3)
+        Object receiverSource = setup.first
+        BoundLocalDeclarationStatement retained = (BoundLocalDeclarationStatement)receiverSource
+        expect(retained.initializer.expressionKind()).toBe("function-invocation")
+        Object writeSource = setup.last
+        BoundMemberAssignmentStatement write = (BoundMemberAssignmentStatement)writeSource
+        Object referenceSource = write.target.receiver
+        BoundReferenceExpression reference = (BoundReferenceExpression)referenceSource
+        expect(reference.symbolIdentity.value).toBe(retained.local.symbolIdentity.value)
     }
     async test `binds explicit local field assignment in static method`() {
         let stream = Lexer().lex("class Box { visible Int count; static run(Box value) -> Int { value.count = 7; return (value.count += 2); } }")
@@ -241,7 +316,7 @@ testable class {
         ).typeUnit
         let constructor = type.functionUnits().firstOrNull({ _.constructorFunction })
 
-        expect(constructor.statements().last.unitKind()).toBe("member-assignment")
+        expect(constructorBody(type, constructor).last.unitKind()).toBe("member-assignment")
     }
 
     async test `binds constructor local receiver field member access`() {
@@ -258,7 +333,7 @@ testable class {
             ), snapshot
         ).typeUnit
         let constructor = type.functionUnits().firstOrNull({ _.constructorFunction })
-        let statements = constructor.statements()
+        let statements = constructorBody(type, constructor)
         let assignmentObject = (Object)statements.first
         let assignment = (BoundMemberAssignmentStatement)assignmentObject
         let selectedObject = (Object)assignment.value
@@ -284,7 +359,7 @@ testable class {
             ), snapshot
         ).typeUnit
         let constructor = type.functionUnits().firstOrNull({ _.constructorFunction })
-        let statements = constructor.statements()
+        let statements = constructorBody(type, constructor)
         let assignmentObject = (Object)statements.first
         let assignment = (BoundMemberAssignmentStatement)assignmentObject
         let projectedObject = (Object)assignment.value
@@ -314,7 +389,7 @@ testable class {
             ), snapshot
         ).typeUnit
         let constructor = type.functionUnits().firstOrNull({ _.constructorFunction })
-        let statements = constructor.statements()
+        let statements = constructorBody(type, constructor)
         let assignmentObject = (Object)statements.first
         let assignment = (BoundMemberAssignmentStatement)assignmentObject
         let callObject = (Object)assignment.value
@@ -443,7 +518,7 @@ testable class {
         let result = bound.typeUnit
         let functions = result.functionUnits()
         let constructor = functions.first
-        let statements = constructor.statements()
+        let statements = constructorBody(result, constructor)
         let assignmentObject = (Object)statements.first
         let assignment = (BoundMemberAssignmentStatement)assignmentObject
 
@@ -483,6 +558,152 @@ testable class {
         expect(field.semanticType.value()).toBe("array:1:primitive:Char")
     }
 
+    async test `overlay only field retains source snapshot despite equal base token positions`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Class.flat"), "one")
+        let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("memory:Class.js.flat"), "one")
+        let baseStream = Lexer().lex("class Class { visible Int baseValue; }")
+        baseStream.emit("start")
+        let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), snapshot)
+        let overlayStream = Lexer().lex("class Class { visible Int jsClass; }")
+        overlayStream.emit("start")
+        let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), overlaySnapshot)
+        let merged = base.mergedWith(overlay)
+        let first = PrimitiveClassBinder().bind(merged, snapshot).typeUnit
+        let second = PrimitiveClassBinder().bind(merged, snapshot).typeUnit
+        let baseField = first.fieldUnits().firstOrNull({ _.name == "baseValue" })
+        let overlayField = first.fieldUnits().firstOrNull({ _.name == "jsClass" })
+        expect(baseField.range.startTokenIndex).toBe(overlayField.range.startTokenIndex)
+        expect(first.identity.syntaxIdentity.snapshot).toBe(snapshot)
+        expect(overlayField.canonicalOwner().value).toBe(first.identity.value)
+        expect(baseField.canonicalOwner().value).toBe(first.identity.value)
+        expect(baseField.range.snapshot).toBe(snapshot)
+        expect(overlayField.range.snapshot).toBe(overlaySnapshot)
+        expect(overlayField.identity.declaration.syntaxIdentity.snapshot).toBe(overlaySnapshot)
+        expect(baseField.identity.value == overlayField.identity.value).toBe(false)
+        expect(second.fieldUnits().firstOrNull({ _.name == "jsClass" }).identity.value).toBe(overlayField.identity.value)
+        expect(overlayField.range.startTokenIndex).toBe(overlay.fieldValues().first.range.startTokenIndex)
+        expect(overlayField.range.endTokenIndex).toBe(overlay.fieldValues().first.range.endTokenIndex)
+        let published = PrimitiveClassPartitionBinder().bind([merged], snapshot).typeUnits().first
+        let field = published.fieldUnits().firstOrNull({ _.name == "jsClass" })
+        expect(field.identity.value).toBe(overlayField.identity.value)
+        expect(field.range.snapshot).toBe(overlaySnapshot)
+    }
+
+    async test `overlay static and instance field access preserve explicit canonical owner`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:FieldOwner.flat"), "one")
+        let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("memory:FieldOwner.js.flat"), "one")
+        let baseStream = Lexer().lex("class Holder {}")
+        baseStream.emit("start")
+        let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), snapshot)
+        let overlayStream = Lexer().lex("class Holder { visible static Int shared; visible Int value; static readShared() -> Int { return shared; } readValue() -> Int { return this.value; } }")
+        overlayStream.emit("start")
+        let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), overlaySnapshot)
+        let merged = base.mergedWith(overlay)
+        let clientStream = Lexer().lex("class Client { read(Holder item) -> Int { return item.value; } static readShared() -> Int { return Holder.shared; } }")
+        clientStream.emit("start")
+        let client = PrimitiveClassParser().parse(clientStream.consumeAll<Token>("data"), snapshot, 100)
+        let units = PrimitiveClassPartitionBinder().bind([merged, client], snapshot).typeUnits()
+        let holder = units.firstOrNull({ _.identity.name == "Holder" })
+        let consumer = units.firstOrNull({ _.identity.name == "Client" })
+        let shared = holder.fieldUnits().firstOrNull({ _.name == "shared" })
+        let field = holder.fieldUnits().firstOrNull({ _.name == "value" })
+        expect(shared.canonicalOwner().value).toBe(holder.identity.value)
+        expect(shared.range.snapshot).toBe(overlaySnapshot)
+        let owners = [holder, consumer]
+        for (owner in owners) {
+            let method = owner.functionUnits().firstOrNull({ _.name == "readShared" })
+            Object returnSource = method.statements().first
+            BoundReturnStatement returned = (BoundReturnStatement)returnSource
+            Object referenceSource = returned.value
+            BoundReferenceExpression reference = (BoundReferenceExpression)referenceSource
+            expect(reference.symbolIdentity.value).toBe(shared.identity.value)
+            expect(reference.staticOwner.value).toBe(holder.identity.value)
+            expect(reference.fieldOwnerIdentity.value).toBe(holder.identity.value)
+        }
+        let method = consumer.functionUnits().firstOrNull({ _.name == "read" })
+        Object returnSource = method.statements().first
+        BoundReturnStatement returned = (BoundReturnStatement)returnSource
+        Object accessSource = returned.value
+        BoundMemberAccessExpression access = (BoundMemberAccessExpression)accessSource
+        expect(access.memberIdentity.value).toBe(field.identity.value)
+        expect(field.identity.declaration.syntaxIdentity.snapshot).toBe(overlaySnapshot)
+    }
+
+    async test `overlay native interpolation separates static owner from member source`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:NativeOwner.flat"), "one")
+        let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("memory:NativeOwner.js.flat"), "one")
+        let baseStream = Lexer().lex("class NativeOwner {}")
+        baseStream.emit("start")
+        let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), snapshot)
+        var String source = "class NativeOwner { visible static Int shared; visible Int value; static emitStatic() { external { consume("
+        source += '#'
+        source += "{shared}, "
+        source += '#'
+        source += "{NativeOwner.shared}); } } emitInstance() { external { consume("
+        source += '#'
+        source += "{this.value}); } } }"
+        let overlayStream = Lexer().lex(source)
+        overlayStream.emit("start")
+        let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), overlaySnapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([base.mergedWith(overlay)], snapshot).typeUnits().first
+        let shared = unit.fieldUnits().firstOrNull({ _.name == "shared" })
+        let value = unit.fieldUnits().firstOrNull({ _.name == "value" })
+        let method = unit.functionUnits().firstOrNull({ _.name == "emitStatic" })
+        Object externalSource = method.statements().first
+        BoundExternalStatement external = (BoundExternalStatement)externalSource
+        let interpolations = external.segmentValues().filter({ _.value != null })
+        expect(interpolations.count).toBe(2)
+        for (segment in interpolations) {
+            Object referenceSource = segment.value
+            BoundReferenceExpression reference = (BoundReferenceExpression)referenceSource
+            expect(reference.symbolIdentity.value).toBe(shared.identity.value)
+            expect(reference.staticOwner.value).toBe(unit.identity.value)
+            expect(reference.fieldOwnerIdentity.value).toBe(unit.identity.value)
+            expect(reference.symbolIdentity.declaration.syntaxIdentity.snapshot).toBe(overlaySnapshot)
+        }
+        let instanceMethod = unit.functionUnits().firstOrNull({ _.name == "emitInstance" })
+        Object instanceSource = instanceMethod.statements().first
+        BoundExternalStatement instanceExternal = (BoundExternalStatement)instanceSource
+        Object accessSource = instanceExternal.segmentValues().firstOrNull({ _.value != null }).value
+        BoundMemberAccessExpression access = (BoundMemberAccessExpression)accessSource
+        expect(access.memberIdentity.value).toBe(value.identity.value)
+        expect(access.memberIdentity.declaration.syntaxIdentity.snapshot).toBe(overlaySnapshot)
+        expect(value.range.snapshot).toBe(overlaySnapshot)
+        expect(value.canonicalOwner().value).toBe(unit.identity.value)
+    }
+
+    async test `overlay constructor backed field keeps member source through inheritance copy`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:ParameterOwner.flat"), "one")
+        let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("memory:ParameterOwner.js.flat"), "one")
+        let baseStream = Lexer().lex("class Parent {}")
+        baseStream.emit("start")
+        let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), snapshot)
+        let overlayStream = Lexer().lex("class Parent { construct(public Int value = 1) {} }")
+        overlayStream.emit("start")
+        let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), overlaySnapshot)
+        let merged = base.mergedWith(overlay)
+        let childStream = Lexer().lex("class Child extends Parent { read() -> Int { return value; } }")
+        childStream.emit("start")
+        let child = PrimitiveClassParser().parse(childStream.consumeAll<Token>("data"), snapshot, 100)
+        let result = PrimitiveInheritanceBinder().bind(merged, child, snapshot)
+        let field = result.parentType.fieldUnits().first
+        expect(field.range.snapshot).toBe(overlaySnapshot)
+        expect(field.identity.declaration.syntaxIdentity.snapshot).toBe(overlaySnapshot)
+        expect(field.canonicalOwner().value).toBe(result.parentType.identity.value)
+        expect(field.range.startTokenIndex).toBe(overlay.constructorValues().first.parameterValues().first.range.startTokenIndex)
+        let original = PrimitiveClassBinder().bind(merged, snapshot).typeUnit.fieldUnits().first
+        expect(field.identity.value).toBe(original.identity.value)
+        let published = PrimitiveClassPartitionBinder().bind([merged], snapshot).typeUnits().first.fieldUnits().first
+        expect(published.identity.value).toBe(field.identity.value)
+        expect(published.canonicalOwner().value).toBe(field.canonicalOwner().value)
+        let method = result.childType.functionUnits().firstOrNull({ _.name == "read" })
+        Object returnSource = method.statements().first
+        BoundReturnStatement returned = (BoundReturnStatement)returnSource
+        Object accessSource = returned.value
+        BoundReferenceExpression access = (BoundReferenceExpression)accessSource
+        expect(access.symbolIdentity.value).toBe(field.identity.value)
+    }
+
     test `binds structured receiver member compound assignment`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:member-compound-bind"), "revision:one"
@@ -504,10 +725,23 @@ testable class {
         let statementObject = (Object)statements.first
         let expressionStatement = (BoundExpressionStatement)statementObject
         let expressionObject = expressionStatement.expression
-        let assignment = (BoundMemberAssignmentValueExpression)expressionObject
-
-        expect(assignment.target.memberName).toBe("value")
-        expect(assignment.operator).toBe("+")
+        let evaluation = (BoundEvaluationExpression)expressionObject
+        let setup = evaluation.setup()
+        expect(setup.count).toBe(3)
+        Object storedSource = setup[1]
+        BoundLocalDeclarationStatement stored = (BoundLocalDeclarationStatement)storedSource
+        Object operationSource = stored.initializer
+        BoundBinaryExpression operation = (BoundBinaryExpression)operationSource
+        expect(operation.operator).toBe("+")
+        Object fieldSource = operation.left
+        BoundMemberAccessExpression field = (BoundMemberAccessExpression)fieldSource
+        expect(field.memberName).toBe("value")
+        Object writeSource = setup.last
+        BoundMemberAssignmentStatement write = (BoundMemberAssignmentStatement)writeSource
+        expect(write.target.memberIdentity.value).toBe(field.memberIdentity.value)
+        Object storedValueSource = write.value
+        BoundReferenceExpression storedValue = (BoundReferenceExpression)storedValueSource
+        expect(storedValue.symbolIdentity.value).toBe(stored.local.symbolIdentity.value)
     }
 
     test `binds non Bool receiver negation through explicit truthiness conversion`() {
@@ -780,7 +1014,7 @@ testable class {
         ], snapshot)
         let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
         let constructor = type.functionUnits().first
-        let statements = constructor.statements()
+        let statements = constructorBody(type, constructor)
         let statementObject = (Object)statements.first
         let assignment = (BoundMemberAssignmentStatement)statementObject
 
@@ -843,7 +1077,7 @@ testable class {
         let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
         let field = type.fieldUnits().first
         let constructor = type.functionUnits().first
-        let statements = constructor.statements()
+        let statements = constructorBody(type, constructor)
         let assignmentObject = (Object)statements.first
         let fieldAssignment = (BoundMemberAssignmentStatement)assignmentObject
 
@@ -883,12 +1117,13 @@ testable class {
         let bound = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
         let field = bound.fieldUnits().first
         let constructor = bound.functionUnits().first
-        let statements = constructor.statements()
+        let statements = constructorBody(bound, constructor)
+        let fieldStage = bound.functionUnits().firstOrNull((function) => function.identity.value == constructor.constructorPlan.fieldInitializer.value)
 
         expect(field.visibleField).toBe(true)
         expect(field.initializer.expressionKind()).toBe("literal")
         expect(constructor.parameterValues().first.defaultValue.expressionKind()).toBe("literal")
-        expect(statements.first.unitKind()).toBe("member-assignment")
+        expect(fieldStage.statements().first.unitKind()).toBe("member-assignment")
         expect(statements.last.unitKind()).toBe("expression")
         let statementObject = (Object)statements.last
         let nativeStatement = (BoundExpressionStatement)statementObject
@@ -903,7 +1138,7 @@ testable class {
         let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
         let field = type.fieldUnits().first
         let constructor = type.functionUnits().first
-        let statements = constructor.statements()
+        let statements = constructorBody(type, constructor)
         let statementObject = (Object)statements.first
         let assignment = (BoundMemberAssignmentStatement)statementObject
         let valueObject = (Object)assignment.value
@@ -914,7 +1149,9 @@ testable class {
         expect(field.visibleField).toBe(true)
         expect(field.initializer).toBe(null)
         expect(assignment.target.memberIdentity).toBe(field.identity)
-        expect(value.symbolIdentity).toBe(constructor.parameterValues().first.identity)
+        let helperIdentity = BoundConstructorPlan.bodyInitializerIdentity(constructor.identity)
+        let helper = type.functionUnits().firstOrNull((function) => function.identity.value == helperIdentity.value)
+        expect(value.symbolIdentity).toBe(helper.parameterValues().first.identity)
         expect(constructor.parameterValues().first.defaultValue.expressionKind()).toBe("literal")
 
         let overloaded = PrimitiveClassParser().parse([
@@ -1031,9 +1268,9 @@ testable class {
         let type = PrimitiveClassBinder().bind(
             PrimitiveClassParser().parse(sourceTokens, snapshot), snapshot
         ).typeUnit
-        expect(type.functionUnits().first.statements().first.unitKind())
-            .toBe("member-assignment")
-        expect(type.functionUnits().first.statements().count).toBe(2)
+        let statements = constructorBody(type, type.functionUnits().first)
+        expect(statements.first.unitKind()).toBe("member-assignment")
+        expect(statements.count).toBe(2)
     }
 
     async test `binds structured declared String local member call`() {

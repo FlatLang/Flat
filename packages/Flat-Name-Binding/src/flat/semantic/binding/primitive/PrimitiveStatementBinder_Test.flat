@@ -3,8 +3,68 @@ package flat/semantic/binding/primitive
 import flat/compiler/models
 import flat/parser/flat
 import flat/bound
+import flat/semantic/types
 
 testable class {
+    test `Float local initializer and assignment retain rounded literal evidence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Float-local-context"), "one")
+        let range = SourceRange(snapshot, 0, 3, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 12))
+        let syntax = PrimitiveStatementSyntaxResult([
+            PrimitiveLocalDeclarationSyntax(range, true, "value", PrimitiveLiteralSyntax(range, Token.Type.FLOAT, "0.00000001"), "Float"),
+            PrimitiveAssignmentSyntax(range, "value", PrimitiveLiteralSyntax(range, Token.Type.FLOAT, "0.1"))])
+        let result = PrimitiveStatementBinder().bind(syntax, snapshot)
+        Object declarationSource = result.statements().first
+        BoundLocalDeclarationStatement declaration = (BoundLocalDeclarationStatement)declarationSource
+        Object literalSource = declaration.initializer
+        BoundLiteralExpression literal = (BoundLiteralExpression)literalSource
+        expect(literal.semanticType.value()).toBe(SemanticTypes.floatType().value())
+        expect(literal.sourceValue).toBe("0.00000001")
+        expect(literal.canonicalValue).toBe(FloatingLiteralTyping.contextualize(literal.sourceValue, SemanticTypes.floatType(), range).canonicalValue)
+        Object assignmentSource = result.statements().last
+        BoundAssignmentStatement assignment = (BoundAssignmentStatement)assignmentSource
+        Object assignedSource = assignment.value
+        BoundLiteralExpression assigned = (BoundLiteralExpression)assignedSource
+        expect(assigned.semanticType.value()).toBe(SemanticTypes.floatType().value())
+        expect(assigned.sourceValue).toBe("0.1")
+        expect(assigned.canonicalValue).toBe(FloatingLiteralTyping.contextualize("0.1", SemanticTypes.floatType(), range).canonicalValue)
+    }
+
+    test `typed initializer and conditional assignment preserve declared Long storage`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:typed-conditional-storage"), "one")
+        let range = SourceRange(snapshot, 0, 8, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 9))
+        let conditional = PrimitiveConditionalSyntax(range,
+            PrimitiveLiteralSyntax(range, Token.Type.BOOL, "true"),
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1"),
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "2"))
+        let syntax = PrimitiveStatementSyntaxResult([
+            PrimitiveLocalDeclarationSyntax(range, true, "value", conditional, "Long"),
+            PrimitiveAssignmentSyntax(range, "value", conditional),
+            PrimitiveReturnSyntax(range, PrimitiveReferenceSyntax(range, "value"))])
+        let result = PrimitiveStatementBinder().bind(syntax, snapshot)
+        expect(result.locals().first.semanticType.value()).toBe(SemanticTypes.longType().value())
+        let statements = result.statements()
+        let declarationObject = (Object)statements[0]
+        let declaration = (BoundLocalDeclarationStatement)declarationObject
+        expect(declaration.local.semanticType.value()).toBe(SemanticTypes.longType().value())
+        expect(declaration.initializer.semanticType.value()).toBe(SemanticTypes.longType().value())
+        let assignmentObject = (Object)statements[1]
+        let assignment = (BoundAssignmentStatement)assignmentObject
+        expect(assignment.target.symbolIdentity.value).toBe(declaration.local.symbolIdentity.value)
+        expect(assignment.value.semanticType.value()).toBe(SemanticTypes.longType().value())
+    }
+
+    test `typed initializer rejects incompatible value instead of inferring a replacement type`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:typed-initializer-mismatch"), "one")
+        let range = SourceRange(snapshot, 0, 1, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let syntax = PrimitiveStatementSyntaxResult([PrimitiveLocalDeclarationSyntax(range, true, "ready",
+            PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1"), "Bool")])
+        var String failure
+        try { PrimitiveStatementBinder().bind(syntax, snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+        expect(failure.contains("cannot convert")).toBe(true)
+    }
+
     test `binds locals assignments references and returns with stable identity`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-statements"), "revision:one"

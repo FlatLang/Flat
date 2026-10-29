@@ -45,7 +45,7 @@ class extends BoundTreeLoweringPass {
         } else if (statement.class.isOfType(BoundLocalDeclarationStatement.class)) {
             let value = (BoundLocalDeclarationStatement)statement
             output.add(BoundLocalDeclarationStatement(value.range, value.local,
-                lowerExpression(value.initializer), value.conversion))
+                lowerExpression(value.initializer), value.conversion, value.evaluationLocal))
         } else if (statement.class.isOfType(BoundForEachStatement.class)) {
             let loop = (BoundForEachStatement)statement
             for (initialization in loop.initialization()) lowerStatement(initialization, output)

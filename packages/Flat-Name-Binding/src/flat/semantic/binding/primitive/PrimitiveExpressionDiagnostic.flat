@@ -3,6 +3,11 @@ package flat/semantic/binding/primitive
 import flat/compiler/models
 
 data class {
+    /** Capture unresolved-reference evidence at lookup, before enclosing work can unwind. */
+    public static unresolvedReference(String name, SourceRange range) -> PrimitiveExpressionDiagnostic {
+        return PrimitiveExpressionDiagnostic("binding.unresolved-reference", "Unknown local '#name'", range)
+    }
+
     public construct(
         visible String code,
         visible String message,

@@ -12,6 +12,33 @@ import flat/semantic/types
 
 /** Executes receiver-owned overload selection through generated ES6. */
 testable class {
+    async test `compound member receiver RHS and storage execute once in left to right order`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:integrated-compound-execute"), "one")
+        let stream = Lexer().lex("class Counter { visible Int value = 3; public construct() {} " +
+            "public static choose(Counter target) -> Counter { external { process.stdout.write('L'); } return target; } " +
+            "public static rhs() -> Int { external { process.stdout.write('R'); } return 4; } " +
+            "public static run(Counter target) -> Int { return (choose(target).value += rhs()); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        let emitted = Es6UnitOrchestrator().emitType(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let run = Es6NameMangler.mangle(unit.functionUnits().firstOrNull((value) => value.name == "run").identity.value)
+        let field = Es6NameMangler.mangle(unit.fieldUnits().first.identity.value)
+        let code = emitted.fragment.code + "const target=new " + owner + "();console.log(" + owner + "." + run +
+            "(target),target." + field + ");\n"
+        let root = File(".flat-es6-integrated-compound-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "index.js")
+            Es6ArtifactCommitter().commit(destination, code)
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("LR7 7\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     async test `numeric family Double projection executes once with virtual overrides and IEEE values`() {
         let fixture = Es6BoundWriter_TestFixture()
         let number = UserClassSemanticType(fixture.declaration("class", "NumericFamily", 70))
@@ -56,9 +83,9 @@ testable class {
         interpolation += '#'
         interpolation += '{'
         let sources = [
-            "class StringCharArray { native String data; public construct(native String text) { data = text; } " +
+            "class StringCharArray { visible native String data; public construct(native String text) { data = text; } " +
                 "public same(StringCharArray other) -> Bool { external { return " + interpolation + "data} === " + interpolation + "other.data}; } } }",
-            "class String { StringCharArray chars; public construct(native String text) { chars = StringCharArray(text); } " +
+            "class String { visible StringCharArray chars; public construct(native String text) { chars = StringCharArray(text); } " +
                 "public equals(String other) -> Bool { return chars.same(other.chars); } }",
             "class Caller { public static read(String value) -> Bool { return value == \"same\"; } " +
                 "public static reverse(String value) -> Bool { return \"same\" == value; } " +
@@ -66,7 +93,13 @@ testable class {
                 "public static reverseDifferent(String value) -> Bool { return \"same\" != value; } " +
                 "public static operand(String value) -> String { external { process.stdout.write('O'); } return value; } " +
                 "public static once(String value) -> Bool { return operand(value) == \"same\"; } " +
-                "public static reverseOnce(String value) -> Bool { return \"same\" != operand(value); } }"
+                "public static reverseOnce(String value) -> Bool { return \"same\" != operand(value); } " +
+                "public static left(String value) -> String { external { process.stdout.write('L'); } return value; } " +
+                "public static right(String value) -> String { external { process.stdout.write('R'); } return value; } " +
+                "public static declaredPair(String first, String second) -> Bool { return left(first) == right(second); } " +
+                "public static declaredNativePair(String first, String second) -> Bool { return left(first) == right(second).chars.data; } " +
+                "public static nativeDeclaredPair(String first, String second) -> Bool { return left(first).chars.data == right(second); } " +
+                "public static nativePair(String first, String second) -> Bool { return left(first).chars.data == right(second).chars.data; } }"
         ]
         let contexts = PrimitiveSourceBindingContext[]
         for (index in 0..sources.count) {
@@ -95,6 +128,11 @@ testable class {
         let reverseOnce = Es6NameMangler.mangle(caller.functionUnits().firstOrNull({ _.name == "reverseOnce" }).identity.value)
         code += "let parameters = 0; const parameter = () => { parameters++; return a; }; console.log(" + owner + "." + once + "(parameter())); " +
             "console.log(" + owner + "." + reverseOnce + "(parameter())); console.log(parameters);\n"
+        String[] pairMethodNames = ["declaredPair", "declaredNativePair", "nativeDeclaredPair", "nativePair"]
+        for (methodName in pairMethodNames) {
+            let method = Es6NameMangler.mangle(caller.functionUnits().firstOrNull((candidate) => candidate.name == methodName).identity.value)
+            code += "console.log(" + owner + "." + method + "(a,b)); console.log(" + owner + "." + method + "(a,c));\n"
+        }
         let root = File(".flat-es6-mixed-equality-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         try {
@@ -102,7 +140,8 @@ testable class {
             Es6ArtifactCommitter().commit(output, code)
             let response = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
             if (response.exitCode != 0) throw Exception(response.stderr.join(""))
-            expect(response.stdout.join("")).toBe("true true false\ntrue false\ntrue false\nfalse true\nfalse true\nOtrue\nOfalse\n2\n")
+            expect(response.stdout.join("")).toBe("true true false\ntrue false\ntrue false\nfalse true\nfalse true\nOtrue\nOfalse\n2\n" +
+                "LRtrue\nLRfalse\nLRtrue\nLRfalse\nLRtrue\nLRfalse\nLRtrue\nLRfalse\n")
         } finally { Es6ArtifactFiles.remove(root) }
     }
     async test `declared static field named defaults and reference absence execute`() {

@@ -6,6 +6,8 @@ import flat/parser/ParserDiagnostic
 import flat/compiler/models
 import flat/io
 import flat/time/Time
+import flat/test/TestResult
+import flat/semantic/binding/BindingDiagnostic
 import flat/writer/es6/bound
 import flat/future
 
@@ -16,6 +18,114 @@ testable class {
         expect(Compiler_TestSuite.infrastructureRequested(["test.js"])).toBe(false)
         expect(Compiler_TestSuite.infrastructureRequested(["test.js", "--infrastructure"])).toBe(true)
         expect(Compiler_TestSuite.infrastructureRequested(["test.js", "infrastructure"])).toBe(false)
+        expect(Compiler_TestSuite.infrastructureRequested(["--infrastructure=false"])).toBe(false)
+        expect(Compiler_TestSuite.infrastructureRequested(["--infrastructure-extra"])).toBe(false)
+    }
+
+    test `runner accounts for empty failed null and interrupted result sets`() {
+        let success = TestResult(true, null, null)
+        let failure = TestResult(false, null, null)
+        expect(Compiler_TestSuite.executionFailed(TestResult[])).toBe(true)
+        expect(Compiler_TestSuite.executionFailed([success])).toBe(false)
+        expect(Compiler_TestSuite.executionFailed([success], true)).toBe(true)
+        expect(Compiler_TestSuite.failureCount([success, failure, null])).toBe(2)
+        expect(Compiler_TestSuite.executionFailed([success, failure])).toBe(true)
+    }
+
+    test `zero diagnostic count cannot hide an untyped package failure`() {
+        let summary = CompilationSummary(1, 0, 0, false, "unaccounted failure")
+        expect(CompilerEvidence.renderDiagnostics(summary, "input").contains("\"complete\":false")).toBe(true)
+        expect(CompilerEvidence.render(summary).contains("\"complete\":false")).toBe(true)
+    }
+
+    test `partial diagnostic evidence preserves exact typed ranges without claiming completeness`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("Broken.flat"), "input")
+        let range = SourceRange(snapshot, 3, 7, Location(2, 4), Location(3, 9))
+        let parser = ParserDiagnostic("syntax-error", "invalid syntax", snapshot, range)
+        let summary = CompilationSummary(1, 0, 2, false, parserDiagnostic: parser)
+        let batch = CompilerEvidence.renderDiagnostics(summary, "input")
+        expect(batch.contains("\"complete\":false")).toBe(true)
+        expect(batch.contains("\"code\":\"syntax-error\"")).toBe(true)
+        expect(batch.contains("\"source\":\"Broken.flat\"")).toBe(true)
+        expect(batch.contains("\"startLine\":2,\"startColumn\":4,\"endLine\":3,\"endColumn\":9")).toBe(true)
+        expect(batch.contains("\"startTokenIndex\":3,\"endTokenIndex\":7")).toBe(true)
+        let terminal = CompilerEvidence.renderDiagnostics(summary, "input", "cleanup failed")
+        expect(terminal.contains("\"code\":\"syntax-error\"")).toBe(true)
+        expect(terminal.contains("\"terminalFailure\":\"cleanup failed\"")).toBe(true)
+    }
+
+    test `both retained typed channels remain observable but cannot claim a complete stream`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("Broken.flat"), "input")
+        let range = SourceRange(snapshot, 1, 2, Location(1, 2), Location(1, 6))
+        let parser = ParserDiagnostic("syntax-error", "invalid syntax", snapshot, range)
+        let binding = BindingDiagnostic("unknown-name", "missing", SyntaxIslandIdentity(snapshot, "method", 0), range)
+        let batch = CompilerEvidence.renderDiagnostics(CompilationSummary(1, 0, 2, false,
+            bindingDiagnostic: binding, parserDiagnostic: parser), "input")
+        expect(batch.contains("\"complete\":false")).toBe(true)
+        expect(batch.contains("\"code\":\"syntax-error\"")).toBe(true)
+        expect(batch.contains("\"code\":\"unknown-name\"")).toBe(true)
+        expect(batch.contains("\"diagnosticCount\":2")).toBe(true)
+    }
+
+    test `product failure observations retain actual ranges and untyped absence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("core/Actual.flat"), "observed")
+        let range = SourceRange(snapshot, 7, 11, Location(lineNumber: 3, column: 4),
+            Location(lineNumber: 3, column: 15))
+        let diagnostic = BindingDiagnostic("binding.no-applicable-overload", "map",
+            SyntaxIslandIdentity(snapshot, "method", 2), range)
+        native var Object observedFrames
+        native var Object originalLog
+        external js {
+            #{observedFrames} = [];
+            #{originalLog} = console.log;
+            console.log = text => { #{observedFrames}.push(globalThis.JSON.parse(text)); };
+        }
+        try {
+            CompilerEvidence.emitProductFailure(CompilationSummary(1, 0, 1, false,
+                "actual owner failure", bindingDiagnostic: diagnostic), "real-production")
+            CompilerEvidence.emitProductFailure(CompilationSummary(1, 0, 1, false,
+                "untyped owner failure"), "real-untyped")
+            CompilerEvidence.emitProductFailure(CompilationSummary(1, 1, 0, false), "success")
+            Bool valid
+            external js {
+                const values = #{observedFrames};
+                const typed = values[1], untyped = values[3];
+                #{valid} = values.length === 4 && values[0].schema === 'flat.compiler.session.v1' &&
+                    values[0].scenario === 'real-production' && typed.complete === true &&
+                    typed.revision === 'unavailable-in-process-source-set' && typed.records.length === 1 &&
+                    untyped.complete === false && untyped.records.length === 0 &&
+                    typed.terminalFailure === 'actual owner failure' && untyped.terminalFailure === 'untyped owner failure';
+            }
+            expect(valid).toBe(true)
+            let text = CompilerEvidence.renderDiagnostics(CompilationSummary(1, 0, 1, false,
+                bindingDiagnostic: diagnostic), "unavailable-in-process-source-set")
+            expect(text.contains("core/Actual.flat")).toBe(true)
+            expect(text.contains("\"startTokenIndex\":7")).toBe(true)
+            expect(text.contains("\"endTokenIndex\":11")).toBe(true)
+        } finally { external js { console.log = #{originalLog}; } }
+    }
+
+    test `diagnostic frame bypasses pending presentation output`() {
+        native var Object originalLog
+        native var Object frames
+        external js {
+            #{originalLog} = console.log;
+            #{frames} = [];
+            console.log = text => { #{frames}.push(text); };
+        }
+        try {
+            Console.out.write("pending diagnostic presentation ")
+            CompilerEvidence.emitDiagnostics(CompilationSummary(1, 1, 0, false), "sha256:input")
+            Bool valid
+            external js {
+                const capturedFrames = #{frames};
+                const batch = capturedFrames.length === 1 ? JSON.parse(capturedFrames[0]) : null;
+                #{valid} = batch && batch.schema === 'flat.compiler.diagnostics.v1' &&
+                    batch.revision === 'sha256:input' && batch.complete === true &&
+                    batch.records.length === 0 && batch.terminalFailure === null;
+            }
+            expect(valid).toBe(true)
+        } finally { external js { console.log = #{originalLog}; } }
     }
 
     test `control characters retain both hexadecimal digits in diagnostic JSON`() {

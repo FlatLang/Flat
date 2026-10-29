@@ -29,23 +29,26 @@ class {
             "lazy-initializer", getter.name)
         let fields = input.fieldUnits()
         // Reserve source-derived ordinals beyond this type's lexical range.
-        let valueIdentity = SymbolIdentity(input.identity, "field",
+        let storageOwner = range.snapshot == input.identity.syntaxIdentity.snapshot ? input.identity :
+            DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "lazy-storage", range.startTokenIndex),
+                "lazy-storage", input.identity.value + ":" + getter.identity.value)
+        let valueIdentity = SymbolIdentity(storageOwner, "field",
             input.range.endTokenIndex + 1 + 2 * range.startTokenIndex)
-        let stateIdentity = SymbolIdentity(input.identity, "field", valueIdentity.ordinal + 1)
+        let stateIdentity = SymbolIdentity(storageOwner, "field", valueIdentity.ordinal + 1)
         if (fields.any((field) => field.identity.value == valueIdentity.value || field.identity.value == stateIdentity.value) ||
             input.functionUnits().any({ _.identity.value == initializerIdentity.value })) {
             throw Exception("Lazy property storage already exists")
         }
         let boolType = SemanticTypes.boolType()
         fields.add(BoundFieldUnit(getter.name + "$value", valueIdentity, getter.returnType, range,
-            staticField: true, mutableField: true))
+            staticField: true, mutableField: true, ownerIdentity: input.identity))
         fields.add(BoundFieldUnit(getter.name + "$initialized", stateIdentity, boolType, range,
             initializer: BoundLiteralExpression(range, boolType, "false"),
-            staticField: true, mutableField: true))
+            staticField: true, mutableField: true, ownerIdentity: input.identity))
         let value = BoundReferenceExpression(range, getter.returnType, getter.name + "$value",
-            valueIdentity, staticOwner: input.identity)
+            valueIdentity, staticOwner: input.identity, fieldOwnerIdentity: input.identity)
         let state = BoundReferenceExpression(range, boolType, getter.name + "$initialized",
-            stateIdentity, staticOwner: input.identity)
+            stateIdentity, staticOwner: input.identity, fieldOwnerIdentity: input.identity)
         let conversion = TypeConversions.classify(getter.returnType, getter.returnType)
         let returned = BoundReturnStatement(range, getter.returnType, value, conversion)
         let signature = CallableSignature(SymbolIdentity(initializerIdentity, "static-method"),

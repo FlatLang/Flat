@@ -9,14 +9,18 @@ data class extends BoundExpression {
         SemanticType semanticType,
         visible String name,
         visible SymbolIdentity symbolIdentity,
-        visible DeclarationIdentity staticOwner = null
+        visible DeclarationIdentity staticOwner = null,
+        visible DeclarationIdentity fieldOwnerIdentity = null
     ) {
         if (!range || !semanticType || !name || !symbolIdentity) {
             throw Exception("Bound reference requires range, type, name, and symbol")
         }
         if (staticOwner && (symbolIdentity.symbolKind != "field" ||
-            symbolIdentity.declaration.value != staticOwner.value)) {
+            (fieldOwnerIdentity ?: symbolIdentity.declaration).value != staticOwner.value)) {
             throw Exception("Static reference requires its declaring field owner")
+        }
+        if (fieldOwnerIdentity && symbolIdentity.symbolKind != "field") {
+            throw Exception("Canonical field owner requires a field reference")
         }
         super(range, semanticType);
     }

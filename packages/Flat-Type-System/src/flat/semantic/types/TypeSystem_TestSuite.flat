@@ -4,7 +4,7 @@ import flat/test/TestResult
 import flat/time/Timer
 import flat/io/FancyOutputStream
 
-[TestSuite [SemanticType_Test, TypeConversion_Test, TypeOperations_Test, CallTypeChecker_Test, OverloadResolver_Test, ErrorCascade_Test, ControlFlowAnalyzer_Test, TypeHierarchyComponent_Test, GenericSemantics_Test]]
+[TestSuite [SemanticType_Test, TypeConversion_Test, TypeOperations_Test, FloatingLiteralTyping_Test, CallTypeChecker_Test, OverloadResolver_Test, ErrorCascade_Test, ControlFlowAnalyzer_Test, TypeHierarchyComponent_Test, GenericSemantics_Test]]
 class {
     public static async main(String[] args) {
         let test = TypeSystem_TestSuite()

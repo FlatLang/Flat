@@ -23,7 +23,8 @@ data class {
         visible Bool asyncFunction = false,
         visible String externalName = null,
         visible Bool abstractFunction = false,
-        visible Bool lazyProperty = false
+        visible Bool lazyProperty = false,
+        visible BoundConstructorPlan constructorPlan = null
     ) {
         if (!identity || !name || !returnType || !statements || statements.any({ !_ }) || !range ||
             !parameterValues || parameterValues.any({ !_ }) ||
@@ -54,6 +55,31 @@ data class {
         if (lazyProperty && (!staticFunction || parameterValues.isNotEmpty ||
             abstractFunction || asyncFunction || externalName || returnType.value() == "unit")) {
             throw Exception("Lazy property requires a synchronous static parameterless value getter")
+        }
+        if (constructorPlan && (!constructorFunction || asyncFunction || lazyProperty || externalName || statements.isNotEmpty || parentConstructorCall ||
+            constructorDelegation || constructorPlan.entry.identity.declaration.value != identity.value ||
+            constructorPlan.entry.parameterTypes().count != parameterValues.count)) {
+            throw Exception("Planned constructor requires empty raw body and exact entry evidence")
+        }
+        if (constructorPlan) {
+            var Int index
+            for (parameter in parameterValues) {
+                if (parameter.identity.declaration.value != identity.value ||
+                    parameter.semanticType.value() != constructorPlan.entry.parameterTypes()[index].value()) {
+                    throw Exception("Constructor plan entry parameter mismatch")
+                }
+                index++
+            }
+            let optionalCount = parameterValues.filter((parameter) => parameter.defaultValue != null).count
+            if (optionalCount != constructorPlan.entry.optionalParameterCount) {
+                throw Exception("Constructor plan optional entry evidence mismatch")
+            }
+            var Int optionalIndex = parameterValues.count - optionalCount
+            while (optionalIndex < parameterValues.count) {
+                if (!parameterValues[optionalIndex].defaultValue) throw Exception("Constructor defaults must be trailing")
+                optionalIndex++
+            }
+            BoundConstructorPlanSafety().validate(constructorPlan, parameterValues)
         }
         body = BoundStatement[]
         body.addAll(statements)

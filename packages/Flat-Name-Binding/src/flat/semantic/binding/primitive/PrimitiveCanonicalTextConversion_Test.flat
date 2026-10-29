@@ -1,0 +1,368 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/semantic/types
+import flat/bound
+import flat/lexer/Lexer
+
+/** Canonical scalar text evidence, independent of shared partition fixtures. */
+testable class {
+    textCall(Object value) -> BoundCallExpression => (BoundCallExpression)value
+    textReturn(Object value) -> BoundReturnStatement => (BoundReturnStatement)value
+
+    async textSource(String namespaceName, String name, String source, String suffix = "") -> PrimitiveSourceBindingContext {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:canonical-text:#namespaceName:#name:#suffix"), "one")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        return PrimitiveSourceBindingContext(namespaceName, snapshot, [syntax],
+            importValues: [PrimitiveBindingImport("flat/operators/PlusOperator", syntax.range)])
+    }
+
+    async textSources(String name) -> PrimitiveSourceBindingContext[] {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:canonical-text:operator"), "one")
+        let stream = Lexer().lex("trait PlusOperator<In, Out> { public plus(In another) -> Out }")
+        stream.emit("start")
+        let syntax = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let sources = [PrimitiveSourceBindingContext("flat/operators", snapshot, PrimitiveClassSyntax[], [syntax])]
+        sources.add(textSource("flat", "String",
+            "class String implements PlusOperator<String, String> { public construct(native String text) {} public plus(String another) -> String { return this; } }"))
+        sources.add(textSource(name == "Bool" ? "flat/primitive" : "flat/primitive/number", name,
+            "class #name { public static toString(#name value) -> String { return \"scalar\"; } }"))
+        return sources
+    }
+
+    plusTarget(UserClassSemanticType text) -> CallableSignature => CallableSignature(
+        SymbolIdentity(text.declarationIdentity, "plus"), "plus", CallableKind("instance-method"), [text], text, text)
+
+    scalarTarget(UserClassSemanticType owner, SemanticType scalar, UserClassSemanticType text) -> CallableSignature =>
+        CallableSignature(SymbolIdentity(owner.declarationIdentity, "toString"), "toString",
+            CallableKind("static-method"), [scalar], text, owner)
+
+    async defaultSource(String namespaceName, String name, String source) -> PrimitiveSourceBindingContext {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:canonical-default:#namespaceName:#name"), "one")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let imports = PrimitiveBindingImport[]
+        if (namespaceName == "flat/exception") imports.add(PrimitiveBindingImport("flat/Array", syntax.range))
+        return PrimitiveSourceBindingContext(namespaceName, snapshot, [syntax], importValues: imports)
+    }
+
+    async test `production require count equality and declared label concatenation stay checked`() {
+        let operatorSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:require-plus-contract"), "one")
+        let operatorStream = Lexer().lex("trait PlusOperator<In, Out> { public plus(In another) -> Out }")
+        operatorStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(operatorStream.consumeAll<Token>("data"), operatorSnapshot)
+        let sources = [
+            PrimitiveSourceBindingContext("flat/operators", operatorSnapshot, PrimitiveClassSyntax[], [contract]),
+            textSource("flat", "String", "class String implements PlusOperator<String, String> { visible Int count; public construct(native String text) {} public plus(String other) -> String { return this; } }"),
+            defaultSource("core/workloads", "ProductionCoreWorkload", "class ProductionCoreWorkload { static require(Bool condition, String label) {} static text(String actual, String expected, String label) { require(actual.count == expected.count, label + \" length\"); } }")
+        ]
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let text = units.firstOrNull({ _.identity.name == "String" })
+        let owner = units.firstOrNull({ _.identity.name == "ProductionCoreWorkload" })
+        let method = owner.functionUnits().firstOrNull({ _.name == "text" })
+        Object statementSource = method.statements().first
+        BoundExpressionStatement statement = (BoundExpressionStatement)statementSource
+        let call = textCall(statement.expression)
+        expect(call.target.name).toBe("require")
+        expect(call.argumentValues().first.semanticType.value()).toBe(SemanticTypes.boolType().value())
+        expect(call.argumentValues().last.semanticType.value()).toBe(text.semanticType.value())
+        let plus = textCall(call.argumentValues().last)
+        expect(plus.target.name).toBe("plus")
+        expect(plus.receiver.semanticType.value()).toBe(text.semanticType.value())
+        let literalConstruction = textCall(plus.argumentValues().first)
+        expect(literalConstruction.target.ownerType.value()).toBe(text.semanticType.value())
+        expect(literalConstruction.argumentValues().first.expressionKind()).toBe("literal")
+    }
+
+    async test `Long conditional source text default constructs canonical declared String`() {
+        let sources = [
+            defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+            defaultSource("flat/primitive/number", "Long", "class Long { public static millisToTime(Bool abbreviate = true, String delimiter = abbreviate ? \" \" : \", \") -> String { return delimiter; } }")
+        ]
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let unit = units.firstOrNull({ _.identity.name == "Long" })
+        let method = unit.functionUnits().firstOrNull({ _.name == "millisToTime" })
+        let parameter = method.parameterValues().last
+        expect(parameter.defaultValue.semanticType.value()).toBe(parameter.semanticType.value())
+        expect(parameter.defaultValue.range.snapshot.source.value.contains("Long")).toBe(true)
+    }
+
+    async test `Null inherited source call retains String owner public signature`() {
+        let sources = [
+            defaultSource("flat", "String", "class String { public construct() {} public construct(native String text) {} public toString() -> String { return this; } }"),
+            defaultSource("flat/primitive", "Null", "class Null extends String { public construct() {} public toJson(Bool format = false, String tab = \"\\t\") -> String { return toString(); } }")
+        ]
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let text = units.firstOrNull({ _.identity.name == "String" })
+        let unit = units.firstOrNull({ _.identity.name == "Null" })
+        let method = unit.functionUnits().firstOrNull({ _.name == "toJson" })
+        let call = textCall(textReturn(method.statements().first).value)
+        expect(call.target.ownerType.value()).toBe(text.semanticType.value())
+        expect(call.target.returnType.value()).toBe(text.semanticType.value())
+        expect(call.receiver.semanticType.value()).toBe(unit.semanticType.value())
+        expect(call.argumentValues().isEmpty).toBe(true)
+    }
+
+    async test `Exception literal defaults construct canonical String beside Array defaults`() {
+        let sources = [
+            defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+            defaultSource("flat", "Array", "class Array<E> { public construct() {} }"),
+            defaultSource("flat/exception", "Exception", "class Exception { public construct(visible String message = \"\") {} public static empty(String message = \"\") -> String { return message; } public call(Object obj, Object[] args = Array()) -> Object { return obj; } }")
+        ]
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let text = units.firstOrNull({ _.identity.name == "String" })
+        let exception = units.firstOrNull({ _.identity.name == "Exception" })
+        let constructor = exception.functionUnits().firstOrNull({ _.constructorFunction })
+        let factory = exception.functionUnits().firstOrNull({ _.name == "empty" })
+        let defaults = [constructor.parameterValues().first.defaultValue, factory.parameterValues().first.defaultValue]
+        for (value in defaults) {
+            let call = textCall(value)
+            expect(call.semanticType.value()).toBe(text.semanticType.value())
+            expect(call.target.ownerType.value()).toBe(text.semanticType.value())
+            expect(call.target.parameterTypes().first.value()).toBe(SemanticTypes.stringType().value())
+            expect(call.argumentValues().first.expressionKind()).toBe("literal")
+            expect(call.argumentValues().first.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        }
+        let method = exception.functionUnits().firstOrNull({ _.name == "call" })
+        expect(method.parameterValues().last.defaultValue.semanticType.value()).toBe(method.parameterValues().last.semanticType.value())
+    }
+
+    async test `native text explicit construction stays checked and declared defaults reject native references`() {
+        let sources = [
+            defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+            defaultSource("flat", "Owner", "class Owner { public static make(native String text) -> String { return String(text); } }")
+        ]
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull({ _.identity.name == "Owner" })
+        let method = owner.functionUnits().firstOrNull({ _.name == "make" })
+        let call = textCall(textReturn(method.statements().first).value)
+        expect(call.argumentValues().first.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        let invalid = [sources.first, defaultSource("flat", "Invalid", "class Invalid { public static bad(native String raw, String value = raw) {} }")]
+        var Bool rejected
+        try { PrimitiveClassPartitionBinder().bindContexts(invalid) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    async test `Core declared concrete scalars publish exact static text calls in both addition positions`() {
+        let names = ["Bool", "Byte", "Short", "Int", "Long", "Float", "Double", "Char"]
+        let types = [SemanticTypes.boolType(), SemanticTypes.byteType(), SemanticTypes.shortType(), SemanticTypes.intType(),
+            SemanticTypes.longType(), SemanticTypes.floatType(), SemanticTypes.doubleType(), SemanticTypes.charType()]
+        var Int index
+        for (name in names) {
+            let sources = textSources(name)
+            let context = PrimitiveResolvedDeclarationContext(sources[1], sources)
+            let text = UserClassSemanticType(context.candidates("flat/String").first)
+            let owner = UserClassSemanticType(context.classIdentity(sources.last.classValues().first))
+            let range = sources.last.classValues().first.range
+            let target = scalarTarget(owner, types[index++], text)
+            let producer = CallableSignature(SymbolIdentity(owner.declarationIdentity, "producer"), "nextValue",
+                CallableKind("function"), SemanticType[], target.parameterTypes().first)
+            let scalar = BoundCallExpression(range, producer.returnType, producer, null, BoundExpression[], TypeConversion[])
+            let delimiter = BoundLiteralExpression(range, text, "delimiter")
+            let plus = plusTarget(text)
+            for (direction in 0..2) {
+                let reverse = direction == 1
+                let callables = CallableSignature[]
+                if (reverse) {
+                    callables.add(target)
+                    callables.add(plus)
+                } else {
+                    callables.add(plus)
+                    callables.add(target)
+                }
+                let added = PrimitiveStringAdapter.plus(reverse ? delimiter : scalar, reverse ? scalar : delimiter,
+                    context, callables, null)
+                let converted = textCall(reverse ? added.argumentValues().first : added.receiver)
+                expect(converted.target.identity.value).toBe(target.identity.value)
+                expect(converted.target.ownerType.value()).toBe(owner.value())
+                expect(converted.target.callableKind.value).toBe("static-method")
+                expect(converted.target.parameterTypes().first.value()).toBe(scalar.semanticType.value())
+                expect(converted.semanticType.value()).toBe(text.value())
+                expect(converted.receiver == null).toBe(true)
+                expect(converted.argumentValues().count).toBe(1)
+                expect(converted.argumentValues().first == scalar).toBe(true)
+                expect(converted.argumentConversions().count).toBe(1)
+                expect(converted.range.startTokenIndex).toBe(scalar.range.startTokenIndex)
+                expect(converted.range.endTokenIndex).toBe(scalar.range.endTokenIndex)
+                expect((reverse ? added.receiver : added.argumentValues().first) == delimiter).toBe(true)
+            }
+        }
+    }
+
+    async test `canonical scalar conversion rejects missing ambiguous and false evidence`() {
+        let rejectedNames = ["Int", "Char", "Bool", "Long", "Double"]
+        for (name in rejectedNames) {
+            let sources = textSources(name)
+            let context = PrimitiveResolvedDeclarationContext(sources[1], sources)
+            let text = UserClassSemanticType(context.candidates("flat/String").first)
+            let owner = UserClassSemanticType(context.classIdentity(sources.last.classValues().first))
+            let range = sources.last.classValues().first.range
+            let scalarType = PrimitiveSemanticType(name)
+            let scalar = BoundLiteralExpression(range, scalarType, "value")
+            let delimiter = BoundLiteralExpression(range, text, "delimiter")
+            let plus = plusTarget(text)
+            let competing = textSource(sources.last.namespaceName, name, "class #name {}", "competing")
+            for (mode in 0..12) {
+                let admitted = PrimitiveSourceBindingContext[]
+                if (mode == 0) {
+                    admitted.add(sources[0])
+                    admitted.add(sources[1])
+                } else if (mode == 1) {
+                    admitted.add(sources[0])
+                    admitted.add(sources[1])
+                    admitted.add(sources.last)
+                    admitted.add(competing)
+                } else admitted.addAll(sources)
+                let scope = PrimitiveResolvedDeclarationContext(sources[1], admitted)
+                let targetOwner = mode == 2 ? text : owner
+                let parameter = mode == 3 ? SemanticTypes.stringType() : scalarType
+                let result = mode == 4 ? SemanticTypes.stringType() : text
+                let kind = mode == 5 ? "instance-method" : "static-method"
+                let generics = GenericParameterSemanticType[]
+                if (mode == 10) generics.add(GenericParameterSemanticType(owner.declarationIdentity, "T", 0))
+                let target = CallableSignature(SymbolIdentity(targetOwner.declarationIdentity, "toString"),
+                    mode == 11 ? "toJson" : "toString", CallableKind(kind), [parameter], result, targetOwner,
+                    optionalParameterCount: mode == 6 ? 1 : 0, genericParameterValues: generics, asyncFunction: mode == 9)
+                let callables = CallableSignature[]
+                callables.add(plus)
+                if (mode != 8) callables.add(target)
+                if (mode == 7) callables.add(target)
+                var Bool rejected
+                try { PrimitiveStringAdapter.plus(scalar, delimiter, scope, callables, null) }
+                catch (Exception error) { rejected = true }
+                if (!rejected) throw Exception("Canonical #name text evidence accepted invalid mode #mode")
+            }
+        }
+    }
+
+    async test `unsigned nullable and unrelated values never borrow Int conversion`() {
+        let sources = textSources("Int")
+        let context = PrimitiveResolvedDeclarationContext(sources[1], sources)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let owner = UserClassSemanticType(context.classIdentity(sources.last.classValues().first))
+        let range = sources.last.classValues().first.range
+        let delimiter = BoundLiteralExpression(range, text, "delimiter")
+        let target = scalarTarget(owner, SemanticTypes.intType(), text)
+        SemanticType[] rejectedTypes = [SemanticTypes.unsignedIntType(), NullableSemanticType(SemanticTypes.intType()), owner,
+            SemanticTypes.objectType(), SemanticTypes.nullType()]
+        for (type in rejectedTypes) {
+            var Bool rejected
+            try { PrimitiveStringAdapter.plus(BoundLiteralExpression(range, type, "value"), delimiter,
+                context, [plusTarget(text), target], null) }
+            catch (Exception error) { rejected = true }
+            if (!rejected) throw Exception("Unsupported text operand accepted: #{type.value()}")
+        }
+    }
+
+    async test `native text still uses checked canonical construction and declared text stays unchanged`() {
+        let sources = textSources("Int")
+        let context = PrimitiveResolvedDeclarationContext(sources[1], sources)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let range = sources[1].classValues().first.range
+        let constructor = CallableSignature(SymbolIdentity(text.declarationIdentity, "constructor"), "String",
+            CallableKind("constructor"), [SemanticTypes.stringType()], text, text)
+        let native = BoundLiteralExpression(range, SemanticTypes.stringType(), "\"native\"")
+        let declared = BoundLiteralExpression(range, text, "declared")
+        let added = PrimitiveStringAdapter.plus(native, declared, context, [plusTarget(text), constructor], null)
+        let wrapped = textCall(added.receiver)
+        expect(wrapped.target.identity.value).toBe(constructor.identity.value)
+        expect(wrapped.argumentValues().count).toBe(1)
+        expect(wrapped.argumentValues().first == native).toBe(true)
+        expect(added.argumentValues().first == declared).toBe(true)
+    }
+
+    async test `generic text keeps canonical Object dispatch and rejects ambiguous or async contracts`() {
+        let sources = textSources("Int")
+        sources.add(textSource("flat", "Object", "class Object { public toString() -> String { return \"object\"; } }"))
+        let context = PrimitiveResolvedDeclarationContext(sources[1], sources)
+        let text = UserClassSemanticType(context.candidates("flat/String").first)
+        let root = UserClassSemanticType(context.candidates("flat/Object").first)
+        let range = sources.last.classValues().first.range
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.seal()
+        let generic = GenericParameterSemanticType(text.declarationIdentity, "E", 0)
+        let operand = BoundLiteralExpression(range, generic, "element")
+        let delimiter = BoundLiteralExpression(range, text, "delimiter")
+        let target = CallableSignature(SymbolIdentity(root.declarationIdentity, "toString"), "toString",
+            CallableKind("instance-method"), SemanticType[], text, root)
+        let added = PrimitiveStringAdapter.plus(delimiter, operand, context, [plusTarget(text), target], hierarchy)
+        let converted = textCall(added.argumentValues().first)
+        expect(converted.target.identity.value).toBe(target.identity.value)
+        expect(converted.receiver == operand).toBe(true)
+        expect(converted.argumentValues().count).toBe(0)
+        expect(converted.semanticType.value()).toBe(text.value())
+        for (mode in 0..4) {
+            let invalid = CallableSignature(SymbolIdentity(root.declarationIdentity, "toString"), "toString",
+                CallableKind("instance-method"), SemanticType[], mode == 2 ? SemanticTypes.stringType() : text,
+                root, asyncFunction: mode == 3)
+            let targets = CallableSignature[]
+            targets.add(plusTarget(text))
+            if (mode == 1) {
+                targets.add(target)
+                targets.add(target)
+            } else if (mode != 0) targets.add(invalid)
+            var Bool rejected
+            try { PrimitiveStringAdapter.plus(operand, delimiter, context, targets, hierarchy) }
+            catch (Exception error) { rejected = true }
+            if (!rejected) throw Exception("Generic text accepted invalid Object evidence mode #mode")
+        }
+    }
+
+    async test `inherited List Int join specializes both text addition positions`() {
+        let sources = textSources("Int")
+        sources.add(textSource("flat", "Object", "class Object { public toString() -> String { return \"object\"; } }"))
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:canonical-text:list"), "one")
+        let stream = Lexer().lex("trait List<E> { public join(E value, String delimiter) -> String { var str = \"\"; str += value + delimiter; str += delimiter + value; return str; } }")
+        stream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        sources.add(PrimitiveSourceBindingContext("flat/datastruct/list", snapshot, PrimitiveClassSyntax[], [contract]))
+        sources.add(textSource("flat/datastruct/list", "IntRange", "class IntRange implements List<Int> {}"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let text = units.firstOrNull((unit) => unit.identity.name == "String").semanticType
+        let owner = units.firstOrNull((unit) => unit.identity.name == "Int").semanticType
+        let method = units.firstOrNull((unit) => unit.identity.name == "IntRange").functionUnits().firstOrNull((unit) => unit.name == "join")
+        for (position in 1..3) {
+            Object assignmentSource = method.statements()[position]
+            BoundAssignmentStatement assignment = (BoundAssignmentStatement)assignmentSource
+            let outer = textCall(assignment.value)
+            let inner = textCall(outer.argumentValues().first)
+            let converted = textCall(position == 1 ? inner.receiver : inner.argumentValues().first)
+            expect(outer.target.name).toBe("plus")
+            expect(inner.target.name).toBe("plus")
+            expect(converted.target.name).toBe("toString")
+            expect(converted.target.ownerType.value()).toBe(owner.value())
+            expect(converted.target.callableKind.value).toBe("static-method")
+            expect(converted.semanticType.value()).toBe(text.value())
+            expect(converted.receiver == null).toBe(true)
+            expect(converted.argumentValues().count).toBe(1)
+            expect(converted.argumentValues().first.semanticType.value()).toBe(SemanticTypes.intType().value())
+        }
+    }
+
+    async test `source binding infers canonical Int text result through Long delegation`() {
+        let sources = textSources("Long")
+        sources.add(textSource("flat/primitive/number", "Int",
+            "class Int { public static toString(Int value) => Long.toString(value) }"))
+        sources.add(textSource("app", "Use",
+            "class Use { public join(Int value, String delimiter) -> String { return value + delimiter; } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "Int")
+        let text = units.firstOrNull((unit) => unit.identity.name == "String").semanticType
+        let method = units.firstOrNull((unit) => unit.identity.name == "Use").functionUnits().firstOrNull((function) => function.name == "join")
+        let added = textCall(textReturn(method.statements().first).value)
+        let converted = textCall(added.receiver)
+        expect(converted.target.ownerType.value()).toBe(owner.semanticType.value())
+        expect(converted.target.name).toBe("toString")
+        expect(converted.target.returnType.value()).toBe(text.value())
+        expect(converted.receiver == null).toBe(true)
+        expect(converted.argumentValues().count).toBe(1)
+        expect(converted.argumentValues().first.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+}

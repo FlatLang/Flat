@@ -1,0 +1,15 @@
+package flat/airship
+
+import flat/test/TestResult
+
+[TestSuite [AirshipToolchain_Test]]
+class {
+    public static async main(String[] args) {
+        let results = TestResult[]
+        AirshipToolchain_TestSuite().runTests({ results.add(_) })
+        let failures = results.filter({ !_.success })
+        failures.forEach({ Console.log("#_") })
+        Console.writeLine("Generated toolchain: #results.count cases, #failures.count failures")
+        if (failures.count > 0) System.exit(1)
+    }
+}

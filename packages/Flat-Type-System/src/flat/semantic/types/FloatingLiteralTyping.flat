@@ -1,0 +1,217 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Exact decimal-to-IEEE literal rounding, independent of host floating parsing.
+ * Decimal integer strings represent magnitudes at a common power-of-ten scale.
+ * All storage is local to one literal; no runtime/target hooks or shared cache. */
+class {
+    public static contextualize(String sourceText, SemanticType expectedType,
+        SourceRange range) -> FloatingLiteralResult {
+        if (!range) throw Exception("Floating literal typing requires a source range")
+        if (!expectedType || expectedType.kind() != "primitive" || !TypeConversions.isFloating(expectedType))
+            return failure("context", "Floating literal requires primitive Float or Double context", range)
+        if (!sourceText || sourceText.count == 0)
+            return failure("syntax", "Expected decimal floating literal", range)
+        var Int cursor
+        var Bool negative
+        if (sourceText.chars[cursor] == '-' || sourceText.chars[cursor] == '+') {
+            negative = sourceText.chars[cursor] == '-'
+            cursor++
+        }
+        var String digits = ""
+        var Bool dot
+        var Int fractionDigits
+        while (cursor < sourceText.count) {
+            let part = sourceText.chars[cursor]
+            if (part == '.' && !dot) {
+                dot = true
+                cursor++
+            } else if (digit(part) >= 0) {
+                digits += "#part"
+                if (dot) fractionDigits++
+                cursor++
+            } else {
+                break
+            }
+        }
+        if (digits.count == 0) return failure("syntax", "Expected decimal digits", range)
+        var Int exponent
+        var Bool exponentNegative
+        // Saturating exponent accumulation bounds expansion by source length,
+        // never by an arbitrarily large decimal exponent's numeric value.
+        let exponentLimit = sourceText.count + 2048
+        if (cursor < sourceText.count && (sourceText.chars[cursor] == 'e' || sourceText.chars[cursor] == 'E')) {
+            cursor++
+            if (cursor < sourceText.count && (sourceText.chars[cursor] == '+' || sourceText.chars[cursor] == '-')) {
+                exponentNegative = sourceText.chars[cursor] == '-'
+                cursor++
+            }
+            let exponentStart = cursor
+            while (cursor < sourceText.count && digit(sourceText.chars[cursor]) >= 0) {
+                let next = digit(sourceText.chars[cursor++])
+                if (exponent < exponentLimit) {
+                    if (exponent > (exponentLimit - next) / 10) exponent = exponentLimit
+                    else {
+                        exponent = exponent * 10 + next
+                    }
+                }
+            }
+            if (cursor == exponentStart) return failure("syntax", "Expected decimal exponent digits", range)
+        }
+        if (cursor != sourceText.count) return failure("syntax", "Unexpected floating literal character", range)
+        digits = trim(digits)
+        if (digits == "0") return success(sourceText, expectedType, range, negative ? "-0" : "0")
+        if (exponentNegative) exponent = -exponent
+        exponent -= fractionDigits
+        let decimalMagnitude = digits.count + exponent
+        let single = expectedType.value() == "primitive:Float"
+        let magnitudeLimit = single ? 60 : 400
+        if (decimalMagnitude > magnitudeLimit) return failure("overflow", "Floating literal overflows finite range", range)
+        if (decimalMagnitude < -magnitudeLimit) return failure("underflow", "Nonzero floating literal rounds to zero", range)
+        let precision = single ? 24 : 53
+        let maximumExponent = single ? 127 : 1023
+        let minimumExponent = single ? -149 : -1074
+        var Int scale = single ? 150 : 1075
+        if (-exponent > scale) scale = -exponent
+        let magnitude = digits + zeros(scale + exponent)
+        let one = "1" + zeros(scale)
+        var String maximumUnit = one
+        var Int count
+        while (count < maximumExponent) {
+            maximumUnit = add(maximumUnit, maximumUnit)
+            count++
+        }
+        var String minimumUnit = one
+        count = 0
+        while (count > minimumExponent) {
+            minimumUnit = half(minimumUnit)
+            count--
+        }
+        // Max finite = sum of precision descending bits from the max exponent.
+        // The halfway-to-infinity tie rounds to infinity (even), so reject >=.
+        var String maximum = "0"
+        var String unit = maximumUnit
+        count = 0
+        while (count < precision) {
+            maximum = add(maximum, unit)
+            if (count + 1 < precision) unit = half(unit)
+            count++
+        }
+        let overflowThreshold = add(maximum, half(unit))
+        if (compare(magnitude, overflowThreshold) >= 0)
+            return failure("overflow", "Floating literal rounds beyond finite range", range)
+        unit = maximumUnit
+        while (compare(unit, magnitude) > 0 && compare(unit, minimumUnit) > 0) unit = half(unit)
+        var String remainder = magnitude
+        var String rounded = "0"
+        var Bool odd
+        count = 0
+        while (true) {
+            odd = compare(remainder, unit) >= 0
+            if (odd) {
+                remainder = subtract(remainder, unit)
+                rounded = add(rounded, unit)
+            }
+            count++
+            if (count == precision || compare(unit, minimumUnit) == 0) break
+            unit = half(unit)
+        }
+        let halfway = compare(add(remainder, remainder), unit)
+        if (halfway > 0 || (halfway == 0 && odd)) rounded = add(rounded, unit)
+        if (rounded == "0") return failure("underflow", "Nonzero floating literal rounds to zero", range)
+        let canonical = decimal(rounded, scale)
+        return success(sourceText, expectedType, range, negative ? "-" + canonical : canonical)
+    }
+
+    static success(String source, SemanticType type, SourceRange range, String canonical) -> FloatingLiteralResult {
+        return FloatingLiteralResult(LiteralType("float", source, type, range), canonical)
+    }
+
+    static failure(String suffix, String message, SourceRange range) -> FloatingLiteralResult {
+        return FloatingLiteralResult(null, null, TypeDiagnostic("type.floating-literal-" + suffix, message, range))
+    }
+
+    static digit(Char value) -> Int {
+        if (value < '0' || value > '9') return -1
+        return value - '0'
+    }
+
+    static zeros(Int count) -> String {
+        var String result = ""
+        var Int index
+        while (index < count) {
+            result += "0"
+            index++
+        }
+        return result
+    }
+
+    static trim(String value) -> String {
+        var Int index
+        while (index + 1 < value.count && value.chars[index] == '0') index++
+        return value.substring(index)
+    }
+
+    static compare(String left, String right) -> Int {
+        if (left.count != right.count) return left.count > right.count ? 1 : -1
+        return left.compareTo(right)
+    }
+
+    static add(String left, String right) -> String {
+        var Int a = left.count - 1
+        var Int b = right.count - 1
+        var Int carry
+        var String result = ""
+        while (a >= 0 || b >= 0 || carry > 0) {
+            var Int sum = carry
+            if (a >= 0) sum += digit(left.chars[a--])
+            if (b >= 0) sum += digit(right.chars[b--])
+            result = "#{sum % 10}" + result
+            carry = (Int)(sum / 10)
+        }
+        return trim(result)
+    }
+
+    // Subtract canonical unsigned decimal integers; left must not be smaller.
+    static subtract(String left, String right) -> String {
+        var Int a = left.count - 1
+        var Int b = right.count - 1
+        var Int borrow
+        var String result = ""
+        while (a >= 0) {
+            var Int value = digit(left.chars[a--]) - borrow
+            if (b >= 0) value -= digit(right.chars[b--])
+            borrow = 0
+            if (value < 0) {
+                value += 10
+                borrow = 1
+            }
+            result = "#value" + result
+        }
+        return trim(result)
+    }
+
+    // IEEE units at the selected scale are exactly divisible by two.
+    static half(String value) -> String {
+        var String result = ""
+        var Int carry
+        var Int index
+        while (index < value.count) {
+            let current = carry * 10 + digit(value.chars[index++])
+            result += "#{(Int)(current / 2)}"
+            carry = current % 2
+        }
+        return trim(result)
+    }
+
+    static decimal(String value, Int scale) -> String {
+        var String padded = value
+        if (padded.count <= scale) padded = zeros(scale + 1 - padded.count) + padded
+        let point = padded.count - scale
+        var Int end = padded.count
+        while (end > point && padded.chars[end - 1] == '0') end--
+        if (end == point) return padded.substring(0, point)
+        return padded.substring(0, point) + "." + padded.substring(point, end)
+    }
+}

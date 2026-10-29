@@ -49,7 +49,9 @@ compiler API, or Java fallback. The bootstrap retains `sources.json`,
 `stageN/manifest.json`, stage workspaces and `acceptance.json`. Its schema-2
 stage receipts identify explicit runtime/compiler selection, runner/compiler
 hashes and generated products. The aggregator checks all three stages, all seven
-install/run suites, retained product hashes, and stage1/stage2 identity equality.
+install/run suites and the three retained products: compiler `index.js`, Airship
+`airship.js`, and compiler `production-driver.js`, including exact stage1/stage2
+product equality.
 A passed bootstrap alone is **not** full production acceptance.
 
 After the verification wave is authorized, provision independently reviewed seed
@@ -116,11 +118,15 @@ the validator cannot independently prove assertions merely because a receipt say
 true. Review must inspect those observations and ensure no trimmed inputs or
 hand-appended entrypoints. No producer receipt or adapter is fabricated here.
 
-`.github/workflows/full-dogfood-acceptance.yml` separates ordinary receipt unit
-checks from the explicitly dispatched full gate on a protected, provisioned
-`flat-dogfood` runner. Missing required receipts/stages fail, never silently skip.
-The workflow does not download mutable release seeds or run PR code on that
-runner. Provisioning approval and production execution are still **unverified**.
+`.github/workflows/full-dogfood-acceptance.yml` separates owning bootstrap/receipt
+regressions from the explicitly dispatched gate on a protected, provisioned
+`flat-dogfood` runner. It now builds **fresh** stage0/1/2 outputs in the dispatched
+run; `bootstrap_output` is a new, nonexistent absolute directory, not a reusable
+completed receipt. Missing prerequisites fail the dispatch result, never silently
+skip to acceptance. PR/push runs explicitly report **production NOT REQUESTED**;
+they do not execute PR code on the protected runner. Provisioning approval,
+workflow syntax, regression execution and production execution are all
+**IMPLEMENTED UNVALIDATED in swarm-1026**; no current-wave pass is claimed.
 
 Validation commands for the later verification wave (not evidence of a pass):
 
@@ -286,7 +292,169 @@ The feature table below distinguishes parser-only scalar-native storage, qualifi
 
 ## Language coverage
 
-Coverage below describes tested slices, not full language-feature or self-hosting completion. Product acceptance requires the separate gates below.
+Coverage below describes source-authored slices, not current-wave executed tests or full language-feature/self-hosting completion. Product acceptance requires the separate gates below. All swarm-1026 additions are **IMPLEMENTED UNVALIDATED** until the coordinator opens and completes the later validation barrier.
+
+### Finish-1028 delivery CI (T7: SOURCE-READY, UNVALIDATED)
+
+The initial seven-lane implementation wave performed no verification. The
+coordinator has now opened the all7 integration barrier. T7 offline workflow
+YAML/shell/embedded-Python checks are recorded in `integrationT7.md`; they do not
+prove compilation, generated runtime, stage execution, scaling or CI acceptance.
+Earlier historical suite counts do not validate current source.
+
+Current source has separate mandatory workloads, not replacements for suites:
+
+| Contract                    | Current CI coverage                                                                                                              | Remaining prerequisite                                                                                                                 |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Seven bootstrap suites      | Airship ordinary `test` plus the other six packages; prerequisites build compiler, production driver, then Airship               | Actual fresh runs and three-product stage equality unobserved                                                                          |
+| Generated Airship toolchain | `sources.toolchain-test` -> `AirshipToolchain_TestSuite` -> `dist/es6/toolchain-test.js`; separate from Airship_TestSuite        | Current `stage_public_workloads` and producer both run guarded `airship-toolchain` in separate fresh workspaces; execution UNVALIDATED |
+| Full Core workload          | `Flat-Core/workloads/ProductionCoreWorkload.flat`, public name `core-lr`, plus independent char_integration test                 | Current stage and producer public workload paths compile/execute this separately; execution UNVALIDATED                                |
+| Scaling                     | Producer measures real ordinary builds with generated driver and pinned timer/plan; hosted CI includes `test_dogfood_scaling.py` | L23 ceilings are proposals only; final source binding, actual timer hash and independent review/hash required                          |
+
+The protected workflow now requires `validate_bootstrap(..., require_public=True)`
+before production using the externally supplied `review_sha256`; both direct
+bootstrap calls and current producer validation pass `REVIEW_SHA256` from the
+independently pinned dispatch manifest. Current `validate_bootstrap_chain`
+reconstructs the reviewed seed bundle, exact three-stage manifest references,
+prerequisite/command order, selected previous-stage tools, subprocess settlement
+sidecars, Java exclusion and product equality. The review digest is never inferred
+from the receipt under validation. Independently pinned scaling validation applies
+to both supplemental and current producer receipts, and a fresh `validate_production_evidence` verdict
+with `status=passed` and `full_acceptance=true`. It never infers a pass from output
+directory presence or a status label alone. The final hosted summary derives
+`delivery_complete` from successful prerequisite jobs and the explicit terminal
+output, not a hardcoded historical gap/pass. No dispatch has been performed here.
+
+`toolchain-test` requires `AIRSHIP_TEST_FLATC_SCRIPT` naming the selected immutable
+generated compiler. Current harness code owns exact fixture admission, source and
+artifact identities and expected-negative exit observations. Do not replace it
+with unguarded shell execution or append it as an ordinary package suite. Current
+stage implementation runs public workloads alongside every stage, retaining
+three stage products and seven ordinary suites unchanged. Producer repeats both
+public workloads with stage2 tools in independent workspaces. Compiler/driver,
+Airship, source snapshots, HOME/FLAT_HOME, logs and subprocess policies remain
+scenario-local; no shared generated output is reused as acceptance authority.
+
+Seed provisioning loads the exact six-entry reviewed bundle using the external
+review digest and retains both reviewed and resolved seed paths plus hashes. Seed
+path resolution follows the owning loader; no PATH substitution or arbitrary
+artifact discovery is performed. Node/Git/Java require executable permission;
+Airship JS and both jars require nonempty reviewed bytes, not executable mode.
+Provisioning also admits the scaling plan via bounded independently pinned JSON
+and checks its canonical nonlinked executable BSD/GNU timer and reviewed hash
+before any expensive stages; final plan/source binding is checked only against
+the new stage snapshot. Seed or timer failure is a retained provisioning error,
+not authority to pick another binary. A review digest authenticates the selected
+review bytes, not the reviewer's honesty; protected approval must establish that
+independent trust. No restored external input is assumed.
+
+#### Operator inputs before production dispatch
+
+1. Freeze/review the exact delivery commit and full package source manifest. Seed
+   review `source_revision` records seed-producer provenance, not approval of this
+   delivery source. Protected environment approval must separately bind current
+   commit and local inputs.
+2. Provision independently reviewed Node/Git/Java executables, bootstrap Airship
+   JS, `flatc.jar` and `flat-es6.jar`, with exact absolute paths/hashes. Supply the
+   seed manifest, review receipt binding its digest and provenance, and independent
+   expected review SHA-256. No latest release or historical pass is trusted here.
+3. Select reviewed existing real Core changed/removable paths. Prove removal is
+   independently valid and preserves suite entrypoints; no removable default is
+   invented. Invalid removal fails.
+4. Review `flat.dogfood.scaling-plan.v1` against final `sources.json` digest with
+   3–8 distinct real package tiers, positive `min_sources`, `min_source_bytes`,
+   `max_rss_bytes`, `max_retained_sources`, `max_retained_source_bytes`, material
+   input growth >=2, explicit RSS growth numerator/denominator, and actual absolute
+   BSD/GNU timer path/kind/hash. L23 Project-Loading/Core/Parser floors and budgets
+   are **unapproved proposals**, not admitted dependency inventories. Read retention
+   measures the source-read window, not semantic heap. Independently pin the plan
+   hash before measurement; do not inflate ceilings from failed measurements.
+5. Supply independent supplemental evidence/references for exact sources/products
+   with independently reviewed expected hash. CI now binds **both** producer and
+   supplemental archived scaling plans to dispatch `scaling_plan_sha256` and the
+   fresh source manifest; self-supplied hashes alone cannot close that gate.
+   Current producer and supplemental CLI validation both receive the independent
+   scaling-plan hash; archived plan hashes alone are not independent review anchors.
+6. Provision offline local Git origin/dependencies, canonical fresh bootstrap
+   parent, disjoint dedicated output/evidence trees, protected ephemeral POSIX
+   runner/environment, disk/artifact quotas and retention policy. GitHub limits
+   workflow_dispatch to ten inputs. This workflow now uses only two:
+   `dispatch_manifest` and independent `dispatch_manifest_sha256`. The manifest
+   carries every original configuration value; no review is synthesized in CI.
+
+The former external `/Users/braden/Flat-dogfood-evidence/swarm-1026` tree was
+reported lost. No seed bundle, independent review, timer digest, scaling plan,
+supplemental evidence/reference tree, or accepted workspace is recovered or trusted
+from that locator. Operators must supply **newly located and independently
+reviewed** exact files/hashes named above plus the independently pinned dispatch
+manifest. No runnable example with dummy trusted hashes is provided. This is a
+missing-external-input prerequisite, not authorization to synthesize approval.
+
+No current-wave production execution or CI dispatch was performed. Post-barrier
+integration performed offline workflow syntax review only. Historical evidence
+remains historical; current source readiness is not completion.
+
+### CI/completion coverage matrix (T7, NOT RUN this wave)
+
+| Gate                            | Source contract / required evidence                                                                                                                                                                                                | Current-wave status                                      |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Owning bootstrap regressions    | `test_stage_bootstrap.py`; Node subprocess guard/lifecycle fixtures; no production acceptance claim                                                                                                                                | Wired, NOT RUN                                           |
+| Receipt/CLI failure propagation | `test_dogfood_acceptance.py` plus workflow-authored mocked producer cases for blocked/unknown/running/failed/unsupported/missing status and exceptions                                                                             | Authored/wired, NOT RUN                                  |
+| Public workload regressions     | `test_public_acceptance_contracts.py`: separate stage workloads, exact source-group/compiler selection and expected-negative fixture evidence                                                                                      | Wired, NOT RUN                                           |
+| Clean bootstrap                 | Reviewed seed manifest + independently pinned review; fresh snapshots, guarded stage0 Java seed, Java-free stage1/2; retained seven-suite commands, public toolchain/Core workloads, source/tool hashes and three-product equality | Wired, NOT RUN                                           |
+| Stage2 production               | Fresh accepted bootstrap and exact dispatched revision; independently pinned source-bound scaling plan/timer; real Core install/run and incremental probes                                                                         | Wired, NOT RUN; unsupported producer contracts must fail |
+| Full completion evidence        | Independently reviewed supplemental evidence and referenced files plus producer success; exact prerequisite outcomes and artifact upload success                                                                                   | NOT ACCEPTED; absent/unknown is not success              |
+
+The protected job keeps fresh bootstrap and production steps on the **same**
+ephemeral runner because seed paths, immutable snapshots and subprocess admissions
+are local identities. Its explicit step order is owning harness job -> pinned
+dispatch admission -> provisioning and seed preflight -> clean guarded bootstrap
+with public workloads -> strict public-stage/source/scaling-timer admission ->
+production -> plan binding + supplemental/current producer validation -> retention. The always-run hosted
+`acceptance-result` job rejects skipped, failed or missing prerequisites on a
+dispatch, including a missing `full_acceptance` output. No package production
+scheduling barrier is introduced.
+
+Dispatch accepts only `dispatch_manifest` (canonical absolute local regular file)
+and independent `dispatch_manifest_sha256`. The exact UTF-8 JSON bytes must be
+independently reviewed and SHA-256 pinned before dispatch; maximum 64 KiB,
+no duplicate/unknown/missing keys, and exact schema `flat.dogfood.dispatch.v1`.
+Required `source_revision` must equal the dispatched commit. The other exact keys
+are `seed_manifest`, `review_receipt`, `review_sha256`, `bootstrap_output`,
+`changed_input`, `removed_input`, `production_evidence`,
+`production_evidence_sha256`, `scaling_plan`, and `scaling_plan_sha256`.
+The original inputs are thus preserved as manifest values rather than direct
+workflow inputs. Canonical absolute existing nonlinked files are required for
+seed/review/evidence/plan; bootstrap output must be new with a canonical existing
+parent. Changed/removed values must be canonical repository-relative existing
+nonlinked `.flat` files under `packages/Flat-Core/src/`. Digest fields are lowercase
+64-hex and review/evidence/plan bytes must match before **any** configuration is
+exported through fixed `GITHUB_ENV` names. Control characters and duplicate JSON
+keys are rejected. The exact admitted manifest and admission/failure log are
+retained. The manifest pin authenticates the reviewed configuration bundle; it
+does not replace seed, evidence or scaling review, and does not assert that a
+chosen Core removal is semantically valid.
+
+The manifest values designate reviewed `seed_manifest`, `review_receipt`, independent
+`review_sha256`, **new nonexistent** `bootstrap_output`, reviewed `changed_input`
+and `removed_input`, existing `production_evidence` and independent
+`production_evidence_sha256`, plus existing `scaling_plan` and independent
+`scaling_plan_sha256`. Provision all paths locally, offline, outside checkout;
+bootstrap, run-output and supplemental trees must be dedicated and disjoint.
+Approval must bind the exact dispatched commit and all supplied hashes/paths.
+The workflow does not invent reviews, derive trusted review hashes from files,
+download latest tools, or silently reuse local dist. The Python orchestrator
+binary/version and workflow/harness/guard hashes are recorded separately from
+reviewed seed executable identities; observed Python identity is not seed trust.
+
+Run receipts, command logs, partial bootstrap workspaces, reviewed inputs,
+supplemental references and final prerequisite outcomes have always-run retention
+steps (14 days). Unsafe/unadmitted paths are not uploaded. Runner loss, hard
+cancellation or unavailable artifact service can still prevent upload; missing
+artifacts remain **UNKNOWN**, not accepted. Retention capacity/quotas and protected
+environment/branch policy require coordinator/operator review before dispatch.
+No build, test, syntax, formatting, lint, diff check or runtime verification was
+performed in the initial implementation wave.
 
 Numeric-unboxing contract tests do not establish production Core `Double.equals(Object)` execution. That gate remains pending fresh production-input compilation and generated-code execution after the Core migration; full dogfooding acceptance remains separate.
 

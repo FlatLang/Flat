@@ -40,9 +40,14 @@ class {
             hierarchy: conversionHierarchy, resolvedContext: parentContext
         ).typeUnit
         let parentConstructor = constructorSignature(parent)
+        let inheritedSignatures = CallableSignature[]:addAll(availableConstructors)
+        for (function in parent.functionUnits().filter({ _.constructorFunction })) {
+            let signature = PrimitiveConstructorPlanner().signature(function, parent.semanticType)
+            if (inheritedSignatures.none({ _.identity.value == signature.identity.value })) inheritedSignatures.add(signature)
+        }
         let child = PrimitiveClassBinder().bind(
             childSyntax, childSnapshot, parentConstructor, parent.fieldUnits(),
-            availableConstructors, availableFields, interfaceSyntaxValues, conversionHierarchy, childContext
+            inheritedSignatures, availableFields, interfaceSyntaxValues, conversionHierarchy, childContext
         ).typeUnit
         let hierarchy = TypeHierarchyComponent()
         hierarchy.add(TypeHierarchyDeclaration(
@@ -86,6 +91,7 @@ class {
     constructorSignature(BoundTypeUnit typeUnit) -> CallableSignature {
         let constructor = typeUnit.functionUnits().firstOrNull({ _.constructorFunction })
         if (!constructor) throw Exception("Reduced parent requires a constructor")
+        if (constructor.constructorPlan) return constructor.constructorPlan.entry
         let parameterTypes = constructor.parameterValues().map({ _.semanticType })
         let optionalCount = constructor.parameterValues().filter({ _.defaultValue != null }).count
         var Int index = constructor.parameterValues().count - optionalCount
@@ -109,6 +115,11 @@ class {
     normalizeParent(BoundFunctionUnit[] functions) -> BoundFunctionUnit[] {
         let result = BoundFunctionUnit[]
         for (function in functions) {
+            if (function.identity.declarationKind == "constructor-fields" ||
+                function.identity.declarationKind == "constructor-body") {
+                result.add(function)
+                continue
+            }
             result.add(copy(function,
                 function.constructorFunction || function.staticFunction
                     ? null : function.dispatchIdentity ?: function.identity.value
@@ -128,7 +139,8 @@ class {
     ) -> BoundFunctionUnit[] {
         let result = BoundFunctionUnit[]
         for (function in functions) {
-            if (function.constructorFunction) {
+            if (function.constructorFunction || function.identity.declarationKind == "constructor-fields" ||
+                function.identity.declarationKind == "constructor-body") {
                 result.add(copy(function, null))
                 continue
             }
@@ -229,6 +241,7 @@ class {
             let visibleParameters = GenericParameterSemanticType[]:addAll(contractParameters)
             let implementation = method.implementation()
             let declaredMethod = childSyntax.methodValues().firstOrNull((candidate) => candidate.name == function.name &&
+                candidate.range.snapshot == function.range.snapshot &&
                 candidate.range.startTokenIndex == function.range.startTokenIndex)
             if (implementation && declaredMethod) {
                 let expectedNames = implementation.genericParameterNames()
@@ -268,7 +281,17 @@ class {
             while (index < parameterNames.count) {
                 let expectedParameter = implementation ?
                     resolver.resolveParameter(implementation.parameterValues()[index]) : resolver.resolve(parameterNames[index])
-                let expected = substitution.apply(expectedParameter)
+                var SemanticType expected = substitution.apply(expectedParameter)
+                // Retained generic defaults acquire their concrete null-forwarding
+                // contract during signature publication. Validate that same contract
+                // after substitution, not the unspecialized interface spelling.
+                // Only the exact retained declaration may borrow this evidence.
+                let retainedDefault = implementation && declaredMethod &&
+                    method.range.snapshot == function.range.snapshot &&
+                    method.range.startTokenIndex == function.range.startTokenIndex
+                if (retainedDefault) expected = PrimitiveStructuralTypeResolver(
+                    interfaces: interfaceSyntaxValues
+                ).specializedParameterType(declaredMethod, index, expected)
                 if (function.parameterValues()[index].semanticType.value() != expected.value() &&
                     !sameSelfCallback(expected, function.parameterValues()[index].semanticType,
                         syntax.name, childType.declarationIdentity.name)) {
@@ -442,7 +465,8 @@ class {
         value.parameterValues(), value.staticFunction, value.mainFunction,
         value.constructorFunction, value.dispatchIdentity, value.parentConstructorCall,
         value.constructorDelegation,
-        value.asyncFunction, value.externalName, value.abstractFunction
+        value.asyncFunction, value.externalName, value.abstractFunction,
+        value.lazyProperty, value.constructorPlan
     )
 
     copy(BoundFunctionUnit value, String dispatchIdentity) -> BoundFunctionUnit =>
@@ -451,6 +475,7 @@ class {
             value.parameterValues(), value.staticFunction, value.mainFunction,
             value.constructorFunction, dispatchIdentity, value.parentConstructorCall,
             value.constructorDelegation,
-            value.asyncFunction, value.externalName, value.abstractFunction
+            value.asyncFunction, value.externalName, value.abstractFunction,
+            value.lazyProperty, value.constructorPlan
         )
 }

@@ -3,8 +3,16 @@ package flat/compiler
 /** Synchronous observations; implementations must not retain an unbounded replay.
  * Callbacks report actual scheduler transitions, never acceptance verdicts.
  * Throwing aborts the owning compilation; observers must not reenter scheduling.
+ * admitted is the admission boundary: a throwing callback prevents that read from
+ * starting and does not increment the provider totals reported by drained.
+ * drained follows all admitted read settlements, including failure/cancellation.
  */
 abstract class CompilerSourceReadObserver {
+    /** Distinguishes callback failure from a cancellation checkpoint during cleanup. */
+    class Failure extends Exception {
+        public construct(String message) => super(message)
+    }
+
     public admitted(String identity, Int admitted, Int retained, Int peakRetained) {}
     public started(String identity, Int active, Int peakActive) {}
     public settled(String identity, Int settled, Int active) {}

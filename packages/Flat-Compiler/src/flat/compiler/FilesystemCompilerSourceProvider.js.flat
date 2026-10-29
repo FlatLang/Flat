@@ -1,0 +1,56 @@
+package flat/compiler
+
+import flat/io
+
+/** ES6 source reads suspend without blocking unrelated source work. */
+class FilesystemCompilerSourceProvider {
+    public async load(String identity) -> CompilerSource {
+        let file = files.firstOrNull((value) => value.normalizedLocation == identity)
+        if (!file) return null
+
+        native_array native var Char[] contents
+        native_array native var Char[] errorMessage
+        external {
+            const Error = globalThis.Error;
+            const Buffer = globalThis.Buffer;
+            const String = globalThis.String;
+            const fs = #{File.FileGlobal.fs};
+            let handle;
+            try {
+                try {
+                    handle = await fs.promises.open(#{file.location.chars.data}, 'r');
+                    const chunks = [];
+                    let total = 0;
+                    let ended = false;
+                    while (total < #{maxSourceBytes} && !ended) {
+                        const chunk = Buffer.alloc(Math.min(65536, #{maxSourceBytes} - total));
+                        let filled = 0;
+                        while (filled < chunk.length) {
+                            const result = await handle.read(chunk, filled, chunk.length - filled, null);
+                            if (result.bytesRead === 0) {
+                                ended = true;
+                                break;
+                            }
+                            filled += result.bytesRead;
+                        }
+                        if (filled > 0) {
+                            chunks.push(chunk.subarray(0, filled));
+                            total += filled;
+                        }
+                    }
+                    if (!ended) {
+                        const sentinel = await handle.read(Buffer.alloc(1), 0, 1, null);
+                        if (sentinel.bytesRead !== 0) throw new Error('File byte limit exceeded');
+                    }
+                    #{contents} = Buffer.concat(chunks, total).toString('utf8');
+                } finally {
+                    if (handle !== undefined) await handle.close();
+                }
+            } catch (error) {
+                #{errorMessage} = String(error.message || error);
+            }
+        }
+        if (errorMessage) throw Exception(String(errorMessage))
+        return CompilerSource(identity, String(contents))
+    }
+}

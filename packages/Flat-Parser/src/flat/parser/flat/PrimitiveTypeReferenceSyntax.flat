@@ -1,0 +1,27 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable named type reference retained from a declaration header.
+ * Syntax only: names and ordered arguments are unresolved source contracts. */
+class {
+    var PrimitiveTypeReferenceSyntax[] arguments
+
+    public construct(
+        visible SourceRange range,
+        visible String name,
+        PrimitiveTypeReferenceSyntax[] typeArguments = PrimitiveTypeReferenceSyntax[],
+        visible Int arrayDimensions = 0,
+        visible Bool nullableType = false
+    ) {
+        if (!range || !name || name.trim().count == 0 || !typeArguments ||
+            typeArguments.any({ !_ }) || arrayDimensions < 0) {
+            throw Exception("Type reference requires range name arguments and nonnegative dimensions")
+        }
+        arguments = PrimitiveTypeReferenceSyntax[]
+        arguments.addAll(typeArguments)
+    }
+
+    public typeArguments() -> PrimitiveTypeReferenceSyntax[] =>
+        PrimitiveTypeReferenceSyntax[]:addAll(arguments)
+}

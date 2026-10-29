@@ -187,9 +187,15 @@ class {
                             recordArtifact()
                         } catch (Exception error) {
                             work.diagnostic = "Failed to compile '#{work.identity}': #{error.message}"
+                            // Cancellation from this callback does not erase its failure.
+                            // The stable retirement loop is closed after cancellation.
+                            if (cancelled) {
+                                recordFailure(work.diagnostic)
+                                work.diagnostic = null
+                            }
                         }
                         work.code = null
-                        if (work.diagnostic == null) {
+                        if (!cancelled && work.diagnostic == null) {
                             engine.publishArtifact(this, artifact)
                             if (!cancelled) engine.publishProgress(this, "Compiled #{work.identity}")
                         }
@@ -250,6 +256,10 @@ class {
                 cancel()
             }
         } finally {
+            // Executor cancellation settles its handle, not necessarily an entered
+            // async callback or native source read. Retain the reservation until
+            // callback-local cleanup acknowledges actual settlement.
+            if (work.entered) work.callbackSettlement.get()
             work.settled = true
             submittedSources--
             completedSources++

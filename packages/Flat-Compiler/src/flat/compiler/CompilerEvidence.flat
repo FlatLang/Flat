@@ -9,6 +9,33 @@ import flat/compiler/models/SourceRange
  * Never infer persistent incremental behavior from these exact in-process counts.
  */
 class CompilerEvidence {
+    /** Session and diagnostics are separate native frames, not buffered presentation. */
+    public static emitSession(CompilationSummary summary, String scenario = null) {
+        let record = render(summary, scenario)
+        external js { console.log(#{record.chars.data}); }
+    }
+
+    /** A failed in-process product test has no persistent revision admission.
+     * Retain actual typed ranges if available; never derive ranges from message text.
+     */
+    public static emitProductFailure(CompilationSummary summary, String scenario) {
+        if (summary.succeeded && summary.artifactCount == 1) return
+        emitSession(summary, scenario)
+        emitDiagnostics(summary, "unavailable-in-process-source-set")
+    }
+
+    /** Emit one native JSON frame without flushing unrelated presentation bytes. */
+    public static emitDiagnostics(CompilationSummary summary, String revision,
+        String terminalFailure = null) {
+        let batch = renderDiagnostics(summary, revision, terminalFailure)
+        emitDiagnosticFrame(batch)
+    }
+
+    /** Emit a previously rendered frame, including validated persistent cache evidence. */
+    public static emitDiagnosticFrame(String batch) {
+        external js { console.log(#{batch.chars.data}); }
+    }
+
     public static renderPersistent(CompilerIncrementalState state) -> String {
         if (!state) throw Exception("Persistent compiler evidence requires admitted state")
         return state.evidence()
@@ -32,34 +59,34 @@ class CompilerEvidence {
 
     static diagnosticsComplete(CompilationSummary summary) -> Bool {
         if (!summary.cleanupSettled || summary.cancelled) return false
-        if (summary.diagnosticCount == 0) return !summary.bindingDiagnostic && !summary.parserDiagnostic
+        if (summary.diagnosticCount == 0) return !summary.packageDiagnostic && !summary.bindingDiagnostic && !summary.parserDiagnostic
         if (summary.diagnosticCount != 1) return false
-        if (summary.bindingDiagnostic && !summary.parserDiagnostic) return true
+        if (summary.bindingDiagnostic && !summary.parserDiagnostic) return summary.bindingDiagnostic.range != null
         return summary.parserDiagnostic != null && summary.parserDiagnostic.range != null && !summary.bindingDiagnostic
     }
 
     static diagnosticRecords(CompilationSummary summary) -> String {
-        if (summary.diagnosticCount != 1) return "[]"
-        var String code
-        var String message
-        var SourceRange range
-        if (summary.parserDiagnostic && !summary.bindingDiagnostic) {
+        // The summary retains at most one record per typed diagnostic channel.
+        // Preserve those observations even when the complete stream is unavailable.
+        var String records = ""
+        if (summary.parserDiagnostic && summary.parserDiagnostic.range) {
             let diagnostic = summary.parserDiagnostic
-            code = diagnostic.code
-            message = diagnostic.message
-            range = diagnostic.range
-        } else if (summary.bindingDiagnostic && !summary.parserDiagnostic) {
+            records = diagnosticRecord(diagnostic.code, diagnostic.message, diagnostic.range)
+        }
+        if (summary.bindingDiagnostic && summary.bindingDiagnostic.range) {
             let diagnostic = summary.bindingDiagnostic
-            code = diagnostic.code
-            message = diagnostic.name
-            range = diagnostic.range
-        } else return "[]"
-        if (!range) return "[]"
-        return "[{\"code\":#{quote(code)},\"message\":#{quote(message)}," +
+            if (records.count > 0) records += ","
+            records += diagnosticRecord(diagnostic.code, diagnostic.name, diagnostic.range)
+        }
+        return "[#{records}]"
+    }
+
+    static diagnosticRecord(String code, String message, SourceRange range) -> String {
+        return "{\"code\":#{quote(code)},\"message\":#{quote(message)}," +
             "\"source\":#{quote(range.snapshot.source.value)},\"range\":{" +
             "\"startLine\":#{range.start.lineNumber},\"startColumn\":#{range.start.column}," +
             "\"endLine\":#{range.end.lineNumber},\"endColumn\":#{range.end.column}," +
-            "\"startTokenIndex\":#{range.startTokenIndex},\"endTokenIndex\":#{range.endTokenIndex}}}]"
+            "\"startTokenIndex\":#{range.startTokenIndex},\"endTokenIndex\":#{range.endTokenIndex}}}"
     }
 
     public static render(CompilationSummary summary, String scenario = null) -> String {

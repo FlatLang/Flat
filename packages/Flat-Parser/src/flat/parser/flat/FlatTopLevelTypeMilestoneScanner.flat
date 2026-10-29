@@ -52,6 +52,15 @@ class {
     }
 
     public accept(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        try {
+            return acceptToken(token, tokenIndex)
+        } catch (Exception error) {
+            cancel()
+            throw error
+        }
+    }
+
+    acceptToken(Token token, Int tokenIndex) -> SyntaxIsland[] {
         if (finished) return SyntaxIsland[]
         if (tokenIndex < 0 || tokenIndex <= lastTokenIndex) {
             reject("Top-level type milestone token indexes must be non-negative and strictly increasing")
@@ -69,14 +78,14 @@ class {
         if (isSymbol(token, "[")) metadataBracketDepth++
         else if (isSymbol(token, "]")) {
             metadataBracketDepth--
-            if (metadataBracketDepth < 0) reject("Top-level type header contains an unmatched closing bracket")
+            if (metadataBracketDepth < 0) rejectSyntax("Top-level type header contains an unmatched closing bracket")
         } else if (typeKeywordOffset < 0 && metadataBracketDepth == 0 && isTypeKeyword(token)) {
             typeKeywordOffset = headerTokens.count - 1
         }
 
         if (isSymbol(token, "{")) {
             if (typeKeywordOffset < 0) {
-                reject("Top-level type header reached a body without class, trait, or interface")
+                rejectSyntax("Top-level type header reached a body without class, trait, or interface")
             }
 
             validateHeader()
@@ -127,7 +136,7 @@ class {
             observedEnd = null
             throw ParseFailure(diagnostic)
         }
-        if (headerTokens.isNotEmpty) reject("Flat source ended inside an incomplete top-level type header")
+        if (headerTokens.isNotEmpty) rejectSyntax("Flat source ended inside an incomplete top-level type header")
 
         finished = true
         observedEnd = null
@@ -163,7 +172,7 @@ class {
         } else if (isSymbol(token, "}")) {
             bodyDepth--
 
-            if (bodyDepth < 0) reject("Top-level type body contains an unmatched closing brace")
+            if (bodyDepth < 0) rejectSyntax("Top-level type body contains an unmatched closing brace")
             if (bodyDepth == 0) {
                 let islands = activeMembers.end()
                 nextOrdinal = activeMembers.nextOrdinal
@@ -224,7 +233,7 @@ class {
         for (token in tokens) engine.consume(token)
 
         if (engine.invalid || engine.end().isEmpty) {
-            reject("Invalid Flat top-level type header")
+            rejectSyntax("Invalid Flat top-level type header")
         }
     }
 
@@ -272,6 +281,21 @@ class {
         activeName = null
         bodyStartTokenIndex = 0
         bodyStart = null
+    }
+
+    rejectSyntax(String message) {
+        var SourceRange range
+        if (headerTokens.isNotEmpty) {
+            range = SourceRange(snapshot, headerTokenIndexes.first,
+                headerTokenIndexes.last + 1, headerTokens.first.location,
+                endLocation(headerTokens.last))
+        }
+        let failure = ParseFailure(ParserDiagnostic("invalid-type-header", message, snapshot, range))
+        finished = true
+        clearHeader()
+        clearBody()
+        observedEnd = null
+        throw failure
     }
 
     reject(String message) {

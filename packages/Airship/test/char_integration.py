@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Real four-file Char library integration through freshly built Airship.
+"""Char inspection and complete production-Core execution through fresh Airship.
 
 Run only after building Airship's main CLI and Flat-Compiler's flatc source.
-This checks package selection, compilation, and unchanged Char method behavior.
+The original four-file Char check remains independent of the full-Core workload.
 A test-only Flat adapter derives invocation names using the compiler's syntax
 identity and name-mangler APIs, then writes a distinct inspection runner.
 """
@@ -110,6 +110,63 @@ class CharAirshipIntegration(unittest.TestCase):
             self.assertEqual(actual, "true\nfalse\naaa\n")
             self.assertEqual(original_artifact, output.read_bytes(), "Probe must not alter the library")
         self.assertEqual(before, [hashlib.sha256(path.read_bytes()).hexdigest() for path in sources])
+
+
+class ProductionCoreAirshipIntegration(unittest.TestCase):
+    """A separate full-closure gate; the four-file Char gate is not Core coverage."""
+
+    def test_complete_production_core_workload(self):
+        core = REPO / "packages/Flat-Core"
+        workload = core / "workloads/ProductionCoreWorkload.flat"
+        for artifact, package in ((AIRSHIP, "Airship"), (COMPILER, "Flat-Compiler")):
+            self.assertTrue(artifact.is_file(), f"Build prerequisite missing: {artifact}")
+            newest_source = max(path.stat().st_mtime_ns for path in
+                                (REPO / "packages" / package / "src").rglob("*.flat"))
+            self.assertGreaterEqual(artifact.stat().st_mtime_ns, newest_source,
+                                    f"Fresh build prerequisite stale: {artifact}")
+        production = sorted((core / "src").rglob("*.flat"))
+        self.assertTrue(production, "Production Core inventory must not be empty")
+        inputs = [core / "flat.json", workload, *production]
+        before = {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in inputs}
+
+        def assert_inputs_unchanged():
+            self.assertEqual(production, sorted((core / "src").rglob("*.flat")),
+                             "Compilation must not remove or add production Core sources")
+            self.assertEqual(before, {str(path): hashlib.sha256(path.read_bytes()).hexdigest()
+                                      for path in inputs}, "Compilation must not rewrite Core inputs")
+
+        self.addCleanup(assert_inputs_unchanged)
+        with tempfile.TemporaryDirectory(prefix="airship-production-core-") as temporary:
+            root = Path(temporary).resolve()
+            packages = root / "packages"
+            packages.mkdir()
+            # Preserve all workspace dependency options and production source bytes.
+            # No four-file selection, declaration replacement, or source rewriting.
+            for package in sorted((REPO / "packages").iterdir()):
+                if package.is_dir() and package.name != "Flat-Core":
+                    (packages / package.name).symlink_to(package, target_is_directory=True)
+            fixture = packages / "Flat-Core"
+            source = fixture / "src"
+            source.mkdir(parents=True)
+            for child in sorted((core / "src").iterdir()):
+                (source / child.name).symlink_to(child, target_is_directory=child.is_dir())
+            owned_workloads = source / "core/workloads"
+            owned_workloads.mkdir(parents=True)
+            (owned_workloads / workload.name).symlink_to(workload)
+            data = json.loads((core / "flat.json").read_text())
+            data["sources"]["main"]["mainClass"] = "core/workloads/ProductionCoreWorkload"
+            data["sources"]["main"]["outFile"] = "production-core-workload.js"
+            (fixture / "flat.json").write_text(json.dumps(data, indent=2) + "\n")
+            run_command(["node", str(AIRSHIP), "--use-links", "--sync", "-f", str(fixture),
+                         "--flatc-runtime", "flat", "install", "-t", "es6"], root / "compile.log")
+            artifact = fixture / "dist/es6/production-core-workload.js"
+            self.assertTrue(artifact.is_file(), "Flat compiler must publish the full-Core workload")
+            self.assertGreater(artifact.stat().st_size, 0)
+            published = hashlib.sha256(artifact.read_bytes()).hexdigest()
+            actual = run_command(["node", str(artifact)], root / "execution.log")
+            self.assertEqual(actual, "production-core-workload:ok\n")
+            self.assertEqual(published, hashlib.sha256(artifact.read_bytes()).hexdigest(),
+                             "Execution must not rewrite the compiler artifact")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,48 @@
+package flat/bound
+
+import flat/semantic/types
+
+/** Canonical floating constants and original lexemes are independent immutable evidence. */
+testable class {
+    test `canonical floating text survives recursive core collection and deferred lowering`() {
+        let fixture = BoundIR_TestFixture()
+        let range = fixture.range(10, 12)
+        let canonical = "0.00000000999999993922529029077850282192230224609375"
+        let literal = BoundLiteralExpression(range, SemanticTypes.floatType(), "0.00000001", canonicalValue: canonical)
+        expect(literal.sourceValue).toBe("0.00000001")
+        expect(literal.canonicalValue).toBe(canonical)
+        expect(literal.emissionValue()).toBe(canonical)
+        let copies = BoundExpression[]
+        copies.add(BoundTreeLoweringPass().lowerExpression(literal))
+        copies.add(CoreLanguageLoweringPass().lowerExpression(literal))
+        copies.add(CollectionControlLoweringPass().lowerExpression(literal))
+        copies.add(DeferredExecutionLoweringPass().lowerExpression(literal))
+        for (copy in copies) {
+            Object selectedSource = copy
+            BoundLiteralExpression selected = (BoundLiteralExpression)selectedSource
+            expect(selected.range).toBe(range)
+            expect(selected.semanticType.value()).toBe(SemanticTypes.floatType().value())
+            expect(selected.sourceValue).toBe("0.00000001")
+            expect(selected.canonicalValue).toBe(canonical)
+            expect(selected.emissionValue()).toBe(canonical)
+        }
+        let negative = BoundLiteralExpression(range, SemanticTypes.doubleType(), "-0.000e5", canonicalValue: "-0")
+        expect(negative.sourceValue).toBe("-0.000e5")
+        expect(negative.emissionValue()).toBe("-0")
+    }
+
+    test `legacy literals stay compatible and canonical evidence cannot erase nonfloating types`() {
+        let fixture = BoundIR_TestFixture()
+        let literal = BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "17")
+        expect(literal.canonicalValue).toBe(null)
+        expect(literal.emissionValue()).toBe("17")
+        let floating = BoundLiteralExpression(fixture.range(), SemanticTypes.doubleType(), "1.25")
+        expect(floating.emissionValue()).toBe("1.25")
+        var Int rejected
+        try { BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "17", canonicalValue: "17") }
+        catch (Exception error) { rejected++ }
+        try { BoundLiteralExpression(fixture.range(), SemanticTypes.floatType(), "1", canonicalValue: "") }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+}

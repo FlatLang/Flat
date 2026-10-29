@@ -4,7 +4,7 @@ import flat/test/TestResult
 import flat/time/Timer
 import flat/io/FancyOutputStream
 
-[TestSuite [BoundIR_Test, LoweringPass_Test]]
+[TestSuite [BoundIR_Test, LoweringPass_Test, BoundConditionalEvidence_Test, BoundParentEvidence_Test, BoundConstructorPlan_Test, BoundFieldAttribution_Test, BoundFieldOwner_Test, BoundFloatingLiteral_Test]]
 class {
     public static async main(String[] args) {
         let test = BoundIR_TestSuite()

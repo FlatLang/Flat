@@ -32,33 +32,67 @@ class {
         return args.contains("--infrastructure")
     }
 
+    public static failureCount(TestResult[] results) -> Int {
+        var Int failures
+        for (result in results) {
+            if (!result || !result.success) failures++
+        }
+        return failures
+    }
+
+    public static executionFailed(TestResult[] results, Bool runnerFailed = false) -> Bool {
+        return runnerFailed || results.count == 0 || failureCount(results) > 0
+    }
+
     public static async main(String[] args) {
+        native var Object completionGuard
+        external js {
+            #{completionGuard} = () => {
+                console.error('Compiler test execution incomplete: no terminal result accounting');
+                process.exitCode = 1;
+            };
+            process.once('beforeExit', #{completionGuard});
+        }
         let test = Compiler_TestSuite()
 
         Timer timer = Timer().start()
 
         let results = TestResult[]
 
-        if (infrastructureRequested(args)) {
-            Console.writeLine("Compiler infrastructure subset; full suite acceptance remains required")
-            runInfrastructure((result) => { results.add(result) })
-        } else {
-            test.runTests((result) => { results.add(result) })
+        var Bool runnerFailed
+        try {
+            if (args.contains("--workload-syntax")) {
+                Console.writeLine("Compiler workload syntax diagnostic; no semantic or product acceptance")
+                CompilerPackage_Test.assertProductionWorkloadSyntax()
+                external js { process.removeListener('beforeExit', #{completionGuard}); }
+                Console.writeLine("Production Core workload syntax: successful")
+                return
+            } else if (infrastructureRequested(args)) {
+                Console.writeLine("Compiler infrastructure subset; full suite acceptance remains required")
+                runInfrastructure((result) => { results.add(result) })
+            } else {
+                test.runTests((result) => { results.add(result) })
+            }
+        } catch (Exception error) {
+            runnerFailed = true
+            Console.writeLine("Compiler test runner failed: #error")
         }
+        if (results.count == 0) Console.writeLine("Compiler test runner produced no results")
 
         let fancy = FancyOutputStream(headerPattern: "/\\")
 
-        let unsuccessful = results.filter({ !_.success })
+        let unsuccessful = results.filter((result) => !result || !result.success)
+        let failed = executionFailed(results, runnerFailed)
 
-        if (unsuccessful.count > 0) {
+        if (failed) {
             fancy.writeHeader(
-                "#unsuccessful.count Failure#{unsuccessful.count == 1 ? "" : "s"} out of #results.count test#{results.count == 1 ? "" : "s"}",
+                "#{failureCount(results)} test failures out of #results.count results; runnerFailed=#runnerFailed",
                 pattern: ":'( ",
                 symmetrical: true
             )
 
-            unsuccessful.forEach({
-                Console.log("#_")
+            unsuccessful.forEach((result) => {
+                Console.log("#result")
             })
         } else {
             fancy.writeHeader(
@@ -72,8 +106,7 @@ class {
 
         Console.writeLine("Took #{timer.duration}ms")
 
-        if (unsuccessful.count > 0) {
-                System.exit(1)
-        }
+        external js { process.removeListener('beforeExit', #{completionGuard}); }
+        if (failed) System.exit(1)
     }
 }

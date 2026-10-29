@@ -37,6 +37,7 @@ class extends CompilerArtifactSink {
     var Long retainedBytes
     var Long nextOrdinal
     var Bool disposed
+    var Bool mutating
 
     public construct(visible File root, visible Int capacity, visible Long maxBytes = 1048576,
         visible String revision = "", visible File destination = null,
@@ -51,6 +52,12 @@ class extends CompilerArtifactSink {
     }
 
     override public write(CompilerArtifact artifact) {
+        if (mutating) throw Exception("Spooled artifact sink does not permit reentrant mutation")
+        mutating = true
+        try { stage(artifact) } finally { mutating = false }
+    }
+
+    stage(CompilerArtifact artifact) {
         if (disposed) throw Exception("Spooled sink is disposed")
         if (!artifact || pending.count >= capacity || pending.any({ _.identity == artifact.identity })) {
             throw Exception("Spooled artifact sink capacity or identity violation")
@@ -62,6 +69,7 @@ class extends CompilerArtifactSink {
         if (bytes > maxBytes - retainedBytes) throw Exception("Spooled artifact sink byte capacity exceeded")
         // concat allocates independent Core String/StringCharArray wrappers.
         let identity = artifact.identity.concat("")
+        let code = artifact.code.concat("")
         let binding = observer ? CompilerArtifactLifecycleBinding(revision, identity,
             File(destination, identity).normalizedLocation) : null
         if (!staging) {
@@ -75,7 +83,7 @@ class extends CompilerArtifactSink {
         let staged = StagedArtifact(identity, file, bytes)
         staged.storage = CompilerArtifactLifecycleStorage(file, binding, observer)
         try {
-            Es6ArtifactFiles.write(file, artifact.code)
+            Es6ArtifactFiles.write(file, code)
         } catch (Exception error) {
             // A partial write may leave bytes. Never publish failed admission;
             // retain bounded cleanup-only metadata if removing it also fails.
@@ -111,6 +119,12 @@ class extends CompilerArtifactSink {
     }
 
     public commitTo(FilesystemCompilerArtifactSink destination) {
+        if (mutating) throw Exception("Spooled artifact sink does not permit reentrant mutation")
+        mutating = true
+        try { promote(destination) } finally { mutating = false }
+    }
+
+    promote(FilesystemCompilerArtifactSink destination) {
         if (disposed) throw Exception("Spooled sink is disposed")
         if (!destination) throw Exception("Spooled sink requires destination")
         if (observer && (destination.root.normalizedLocation != this.destination.normalizedLocation ||
@@ -148,6 +162,12 @@ class extends CompilerArtifactSink {
 
     /** Terminal abort, idempotent and retryable if owned-storage cleanup fails. */
     public dispose() {
+        if (mutating) throw Exception("Spooled artifact sink does not permit reentrant mutation")
+        mutating = true
+        try { disposeOwned() } finally { mutating = false }
+    }
+
+    disposeOwned() {
         disposed = true
         var Exception failure
         // Attempt every bounded entry. Destination receipts remain owned until

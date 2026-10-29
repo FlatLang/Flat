@@ -10,6 +10,7 @@ import flat/parser/flat
 import flat/writer/es6/bound
 import flat/eventstream
 import flat/future
+import flat/project
 import flat/semantic/binding/primitive/PrimitiveDefaultImport
 
 testable class {
@@ -1264,6 +1265,94 @@ testable class {
             expect(response.stdout.join("")).toBe("7\n7\n")
         }
     }
+    async test `source discovery keeps nested production inputs while excluding only matching tests`() {
+        let root = File(".flat-discovery-nested-selection-#{Time.currentTimeMillis}")
+        let nested = File(root, "nested/deeper")
+        Es6ArtifactFiles.ensureDirectory(nested)
+        try {
+            let String[] names = ["Value.flat", "Value.js.flat", "Value.es6.flat",
+                "Value.java.flat", "Value.flat.bak", "Value_Test.flat", "preAmidBend.flat",
+                "preAmidBendXflat", "preAmidBend.flat.bak", "Other.flat"]
+            for (name in names) Es6ArtifactFiles.write(File(nested, name), "class Value {}")
+            Es6ArtifactFiles.write(File(root, "Root.flat"), "class Root {}")
+            Es6ArtifactFiles.write(File(root, "Root_Test.flat"), "class Root_Test {}")
+            let package = ProjectPackage("nested-selection", [SourceRoot(root.normalizedLocation + "/**/*.flat")],
+                exclusions: [SourceExclusion(root.normalizedLocation + "/**/*_Test.flat"),
+                    SourceExclusion(root.normalizedLocation + "/**/pre*mid*end.flat")])
+            let files = CompilerSourceDiscovery(maxSources: 5).discover(package)
+            expect(files.map((file) => file.name)).toBe(["Root.flat", "Other.flat", "Value.flat",
+                "Value.js.flat", "Value.es6.flat"])
+            for (file in files) expect(file.normalizedLocation).toBe(file.getCanonicalFileSync().normalizedLocation)
+            var Bool rejected
+            try { CompilerSourceDiscovery(maxSources: 4).discover(package) }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `source glob prunes impossible directory branches before depth and listing capacity`() {
+        let root = File(".flat-discovery-glob-pruning-#{Time.currentTimeMillis}")
+        let unrelated = File(root, "unrelated/deep")
+        Es6ArtifactFiles.ensureDirectory(unrelated)
+        try {
+            Es6ArtifactFiles.write(File(root, "Main.flat"), "class Main {}")
+            for (index in 0..8) Es6ArtifactFiles.write(File(unrelated, "Other#{index}.flat"), "class Other {}")
+            let package = ProjectPackage("shallow", [SourceRoot(root.normalizedLocation + "/*.flat")])
+            let files = CompilerSourceDiscovery(maxDirectories: 1, maxDepth: 1,
+                maxDirectoryEntries: 2).discover(package)
+            expect(files.count).toBe(1)
+            expect(files.first.name).toBe("Main.flat")
+            let nested = ProjectPackage("nested", [SourceRoot(root.normalizedLocation + "/**/*.flat")])
+            var Bool rejected
+            try { CompilerSourceDiscovery(maxDirectoryEntries: 2).discover(nested) }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `source discovery canonicalizes overlapping roots dependencies and lexical aliases`() {
+        let root = File(".flat-discovery-canonical-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(File(root, "nested"))
+        try {
+            let source = File(root, "Main.flat")
+            Es6ArtifactFiles.write(source, "class Main {}")
+            let package = ProjectPackage("canonical", [SourceRoot(source.normalizedLocation),
+                SourceRoot(root.normalizedLocation + "/nested/../Main.flat"),
+                SourceRoot(root.normalizedLocation + "/**/*.flat")],
+                dependencies: [ProjectDependency("same", root.normalizedLocation)])
+            let files = CompilerSourceDiscovery(maxSources: 1).discover(package)
+            expect(files.count).toBe(1)
+            expect(files.first.normalizedLocation).toBe(source.getCanonicalFileSync().normalizedLocation)
+            expect(CompilerSourceDiscovery.matchesExclusion(root.getCanonicalFileSync().normalizedLocation,
+                source)).toBe(true)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `source discovery cancellation never returns a prefix and permits a fresh request`() {
+        let root = File(".flat-discovery-cancellation-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            Es6ArtifactFiles.write(File(root, "A.flat"), "class A {}")
+            Es6ArtifactFiles.write(File(root, "B.flat"), "class B {}")
+            let package = ProjectPackage("cancelled", [SourceRoot(root.normalizedLocation)])
+            let discovery = CompilerSourceDiscovery()
+            var Int checks
+            var Bool rejected
+            try {
+                discovery.discover(package, {
+                    checks++
+                    return checks > 4
+                })
+            } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            expect(discovery.discover(package).map((file) => file.name)).toBe(["A.flat", "B.flat"])
+            var Bool immediatelyRejected
+            try { discovery.discover(package, { true }) }
+            catch (Exception error) { immediatelyRejected = true }
+            expect(immediatelyRejected).toBe(true)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     async test `compiler CLI matches glob source exclusions`() {
         let root = File(".flat-compiler-glob-exclusion-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
@@ -1750,16 +1839,8 @@ testable class {
         let stackIdentity = "flat/exception/StackTrace.flat"
         let code = FlatEs6PackageLinker().link(realCoreExecutionSources())
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
-        let exceptionType = DeclarationIdentity(
-            SyntaxIslandIdentity(snapshot, "class", 4), "class", "Exception"
-        )
-        let stackType = DeclarationIdentity(
-            SyntaxIslandIdentity(
-                SourceSnapshotIdentity(SourceIdentity(stackIdentity), "compiler-input"),
-                "class", 4
-            ),
-            "class", "StackTrace"
-        )
+        let exceptionType = realCoreTypeIdentity(identity, "Exception")
+        let stackType = realCoreTypeIdentity(stackIdentity, "StackTrace")
         let stackField = SymbolIdentity(exceptionType, "field", 0)
         let messageField = SymbolIdentity(exceptionType, "field", 1)
         let root = File(".flat-compiler-real-exception-test-#{Time.currentTimeMillis}")
@@ -2212,16 +2293,10 @@ testable class {
         let exceptionSnapshot = SourceSnapshotIdentity(
             SourceIdentity(exceptionIdentity), "compiler-input"
         )
-        let exceptionType = DeclarationIdentity(
-            SyntaxIslandIdentity(exceptionSnapshot, "class", 4), "class", "Exception"
-        )
+        let exceptionType = realCoreTypeIdentity(exceptionIdentity, "Exception")
         let messageField = SymbolIdentity(exceptionType, "field", 1)
         let stackField = SymbolIdentity(exceptionType, "field", 0)
-        let stackType = DeclarationIdentity(
-            SyntaxIslandIdentity(
-                SourceSnapshotIdentity(SourceIdentity(stackIdentity), "compiler-input"), "class", 4
-            ), "class", "StackTrace"
-        )
+        let stackType = realCoreTypeIdentity(stackIdentity, "StackTrace")
         let root = File(".flat-compiler-no-such-element-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "program.js")
@@ -2931,8 +3006,10 @@ testable class {
         let stringStream = Lexer().lexInterpolated(source)
         stringStream.emit("start")
         let stringSnapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stringTokens = stringStream.consumeAll<Token>("data").filter((token) =>
+            token.type != Token.Type.WHITESPACE && token.type != Token.Type.COMMENT)
         let stringPartition = FlatSourceTypePartitioner().partition(
-            stringStream.consumeAll<Token>("data"), stringSnapshot, "js"
+            stringTokens, stringSnapshot, "js"
         ).first
         let stringSyntax = PrimitiveClassParser().parse(
             stringPartition.tokenValues(), stringSnapshot, stringPartition.startTokenIndex, "String"
@@ -2945,7 +3022,12 @@ testable class {
         let trimmed = stringSyntax.methodValues().filter({ _.name == "trimStart" })
         expect(trimmed.count).toBe(3)
         expect(trimmed[1].statements().first.statementKind()).toBe("while")
-        expect(trimmed[1].statements().first.range.startTokenIndex).toBe(1080)
+        // Derive the expected loop token from this unchanged source, not a stale ordinal.
+        var Int expectedLoopToken = trimmed[1].range.startTokenIndex
+        while (expectedLoopToken < trimmed[1].range.endTokenIndex &&
+            stringTokens[expectedLoopToken].value != "while") expectedLoopToken++
+        expect(expectedLoopToken < trimmed[1].range.endTokenIndex).toBe(true)
+        expect(trimmed[1].statements().first.range.startTokenIndex).toBe(expectedLoopToken)
         expect(trimmed[1].parameterValues().last.typeName).toBe("Char[]")
         let body = trimmed[1].statements()
         let loopObject = (Object)body.first
@@ -3133,6 +3215,22 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async realCoreTypeIdentity(String identity, String name) -> DeclarationIdentity {
+        let source = Es6ArtifactFiles.read(File("../Flat-Core/src/" + identity))
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot, "js"
+        ).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, name
+        )
+        return DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", name
+        )
+    }
+
     methodName(
         SourceSnapshotIdentity snapshot,
         PrimitiveFunctionSyntax method
@@ -3147,21 +3245,19 @@ testable class {
     ).value)
 
     async test `package linker compiles and executes unchanged real Object overlay`() {
-        let identity = "flat/primitive/Object.js.flat"
+        let identity = "flat/Object.flat"
         let code = FlatEs6PackageLinker().link([
             CompilerSource(
                 identity,
                 Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Object.flat"))
             ),
             CompilerSource(
-                "flat/primitive/Object.js.flat",
+                "flat/Object.js.flat",
                 Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Object.js.flat"))
             )
         ])
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
-        let typeIdentity = DeclarationIdentity(
-            SyntaxIslandIdentity(snapshot, "class", 2), "class", "Object"
-        )
+        let typeIdentity = realCoreTypeIdentity(identity, "Object")
         let className = Es6NameMangler.mangle(typeIdentity.value)
         let root = File(".flat-compiler-object-overlay-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
@@ -3188,9 +3284,7 @@ testable class {
             CompilerSource(identity, Es6ArtifactFiles.read(source))
         ])
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
-        let typeIdentity = DeclarationIdentity(
-            SyntaxIslandIdentity(snapshot, "class", 4), "class", "Primitive"
-        )
+        let typeIdentity = realCoreTypeIdentity(identity, "Primitive")
         let root = File(".flat-compiler-real-core-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "program.js")
@@ -3227,12 +3321,8 @@ testable class {
             SourceIdentity(primitiveIdentity), "compiler-input"
         )
         let stackSnapshot = SourceSnapshotIdentity(SourceIdentity(stackIdentity), "compiler-input")
-        let primitiveType = DeclarationIdentity(
-            SyntaxIslandIdentity(primitiveSnapshot, "class", 4), "class", "Primitive"
-        )
-        let stackType = DeclarationIdentity(
-            SyntaxIslandIdentity(stackSnapshot, "class", 4), "class", "StackTrace"
-        )
+        let primitiveType = realCoreTypeIdentity(primitiveIdentity, "Primitive")
+        let stackType = realCoreTypeIdentity(stackIdentity, "StackTrace")
         let root = File(".flat-compiler-real-core-roots-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "program.js")

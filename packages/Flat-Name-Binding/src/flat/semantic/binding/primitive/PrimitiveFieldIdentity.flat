@@ -1,0 +1,13 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+
+/** Source-owned field symbol; canonical type ownership is published separately. */
+class {
+    public static create(DeclarationIdentity owner, String name, SourceRange range) -> SymbolIdentity {
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(range.snapshot, "field", range.startTokenIndex),
+            "field", owner.value + ":" + name)
+        return SymbolIdentity(declaration, "field")
+    }
+}

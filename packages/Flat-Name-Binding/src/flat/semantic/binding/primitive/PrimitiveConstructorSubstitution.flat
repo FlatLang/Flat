@@ -1,0 +1,111 @@
+package flat/semantic/binding/primitive
+
+import flat/bound
+import flat/compiler/models
+import flat/semantic/types
+import flat/semantic/binding/BindingDiagnostic
+
+/** Owner-local identity substitution, including typed native segments and captures. */
+class extends BoundTreeLoweringPass {
+    var SymbolIdentity[] originals = SymbolIdentity[]
+    var BoundReferenceExpression[] replacements = BoundReferenceExpression[]
+    var SymbolIdentity[] scopedParameters = SymbolIdentity[]
+    visible Bool receiverFree
+
+    public construct(Bool receiverFree = false) { this.receiverFree = receiverFree }
+    override public name() => "constructor-binding-substitution"
+    override public inputInvariant() => "typed constructor expressions"
+    override public outputInvariant() => "identity-substituted typed expressions"
+
+    public scope(BoundFunctionParameter[] parameters) {
+        for (parameter in parameters) scopedParameters.add(parameter.identity)
+    }
+
+    public bind(SymbolIdentity original, BoundReferenceExpression replacement) {
+        if (originals.any({ _.value == original.value })) throw Exception("Duplicate constructor parameter binding")
+        originals.add(original)
+        replacements.add(replacement)
+    }
+
+    substituteReference(BoundReferenceExpression value) -> BoundReferenceExpression {
+        var Int index
+        while (index < originals.count) {
+            if (originals[index].value == value.symbolIdentity.value) {
+                let replacement = replacements[index]
+                return BoundReferenceExpression(value.range, replacement.semanticType, replacement.name,
+                    replacement.symbolIdentity, replacement.staticOwner, fieldOwnerIdentity: replacement.fieldOwnerIdentity)
+            }
+            index++
+        }
+        if (receiverFree && (value.name == "this" || value.name == "super" ||
+            value.symbolIdentity.symbolKind == "receiver" ||
+            (value.symbolIdentity.symbolKind == "field" && !value.staticOwner))) {
+            throw PrimitiveContextBindingException(BindingDiagnostic("binding.constructor-before-base",
+                "Constructor setup cannot use the uninitialized receiver",
+                SyntaxIslandIdentity(value.range.snapshot, "constructor-setup", value.range.startTokenIndex), value.range))
+        }
+        if (receiverFree && scopedParameters.any({ _.value == value.symbolIdentity.value }))
+            throw Exception("Constructor setup references an unbound or later parameter")
+        return value
+    }
+
+    override public lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (!expression) return null
+        if (expression.class.isOfType(BoundReferenceExpression.class)) {
+            Object referenceSource = expression
+            BoundReferenceExpression referenceValue = (BoundReferenceExpression)referenceSource
+            return substituteReference(referenceValue)
+        }
+        if (expression.class.isOfType(BoundLambdaExpression.class)) {
+            Object expressionSource = expression
+            BoundLambdaExpression value = (BoundLambdaExpression)expressionSource
+            let captures = BoundReferenceExpression[]
+            for (capture in value.captureValues()) captures.add(substituteReference(capture))
+            Object typeSource = value.semanticType
+            FunctionSemanticType functionType = (FunctionSemanticType)typeSource
+            return BoundLambdaExpression(value.range, functionType,
+                value.parameterValues(), captures, lowerExpression(value.body), lowerStatements(value.statementValues()),
+                value.declarationContract, value.resultBoxingConstructor)
+        }
+        if (expression.class.isOfType(BoundAssignmentValueExpression.class)) {
+            Object expressionSource = expression
+            BoundAssignmentValueExpression value = (BoundAssignmentValueExpression)expressionSource
+            return BoundAssignmentValueExpression(value.range, value.semanticType, substituteReference(value.target),
+                lowerExpression(value.value), value.storageConversion)
+        }
+        if (expression.class.isOfType(BoundDeclarationValueExpression.class)) {
+            Object expressionSource = expression
+            BoundDeclarationValueExpression value = (BoundDeclarationValueExpression)expressionSource
+            return BoundDeclarationValueExpression(value.range, value.semanticType, substituteReference(value.local),
+                lowerExpression(value.value), value.storageConversion)
+        }
+        return super.lowerExpression(expression)
+    }
+
+    override public lowerStatement(BoundStatement statement, BoundStatement[] output) {
+        if (statement.class.isOfType(BoundExternalStatement.class)) {
+            Object statementSource = statement
+            BoundExternalStatement value = (BoundExternalStatement)statementSource
+            let aliases = BoundExternalNameBinding[]
+            for (alias in value.nameBindingValues()) {
+                let replacement = substituteReference(alias.value)
+                // Raw aliases can bind helper parameters, not pre-base local names.
+                if (replacement.symbolIdentity.symbolKind != "parameter" &&
+                    !(receiverFree && replacement.symbolIdentity.symbolKind == "local" &&
+                        replacement.symbolIdentity.value == alias.value.symbolIdentity.value))
+                    throw Exception("Constructor native alias cannot represent a renamed setup local")
+                aliases.add(BoundExternalNameBinding(alias.sourceName, replacement))
+            }
+            output.add(BoundExternalStatement(value.range, value.target, value.segmentValues().map((segment) =>
+                BoundExternalCodeSegment(segment.range, segment.text, lowerExpression(segment.value), segment.rendering)), aliases))
+            return
+        }
+        if (statement.class.isOfType(BoundAssignmentStatement.class)) {
+            Object statementSource = statement
+            BoundAssignmentStatement value = (BoundAssignmentStatement)statementSource
+            output.add(BoundAssignmentStatement(value.range, substituteReference(value.target), lowerExpression(value.value), value.conversion))
+            return
+        }
+        super.lowerStatement(statement, output)
+    }
+}

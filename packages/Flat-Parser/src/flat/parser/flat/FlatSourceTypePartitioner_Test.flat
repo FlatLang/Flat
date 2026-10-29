@@ -6,6 +6,37 @@ import flat/io/File
 import flat/io/FileReader
 
 testable class {
+    async test `partition scanner syntax failures keep original snapshot through cleanup`() {
+        let sources = ["package flat/", "class Example", "class Example { public broken(",
+            "class Good {} class", "class Example { public read() { return 1"]
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:diagnostic-route-closure"), "original")
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let values = stream.consumeAll<Token>("data")
+            var ParseFailure failure
+            try { FlatSourceTypePartitioner().partition(values, snapshot) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure).toNotBe(null)
+            expect(failure.diagnostic.snapshot).toBe(snapshot)
+            expect(failure.diagnostic.range).toNotBe(null)
+            expect(failure.diagnostic.range.snapshot).toBe(snapshot)
+            expect(failure.diagnostic.range.endTokenIndex > failure.diagnostic.range.startTokenIndex).toBe(true)
+        }
+    }
+
+    async test `partition capacity failure remains distinct from syntax`() {
+        let stream = Lexer().lex("class Example {}")
+        stream.emit("start")
+        let values = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-limit"), "original")
+        var Exception failure
+        try { FlatSourceTypePartitioner(maxTypeTokens: 1).partition(values, snapshot) }
+        catch (Exception error) { failure = error }
+        expect(failure).toNotBe(null)
+        expect(failure.class.isOfType(ParseFailure.class)).toBe(false)
+    }
+
     async test `invalid member suffix preserves typed range and never returns valid prefix partitions`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-member"), "original")
         let prefixes = ["", "class Valid {}\n"]

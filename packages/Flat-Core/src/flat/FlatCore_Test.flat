@@ -1,6 +1,28 @@
 package flat
 
+import flat/exception
+import flat/datastruct/list
+
 testable class {
+    test `empty and null exception messages omit the separator`() {
+        let empty = Exception()
+        expect(empty.toString()).toBe(empty.class.name)
+        let String absent = null
+        let missing = Exception(absent)
+        expect(missing.toString()).toBe(missing.class.name)
+        let populated = InvalidArgumentException("bad input")
+        expect(populated.toString()).toBe(populated.class.name + ": bad input")
+    }
+
+    test `typed character storage equality rejects null without dereferencing it`() {
+        let value = StringCharArray(['a'])
+        let StringCharArray absent = null
+        expect(value.equals(absent)).toBe(false)
+        expect(value.equals(StringCharArray(['a']))).toBe(true)
+        expect(value.equals(StringCharArray(['b']))).toBe(false)
+        expect(StringCharArray(Char[]).equals(StringCharArray(Char[]))).toBe(true)
+    }
+
     test `can create`() {
         let value = "test"
 

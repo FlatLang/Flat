@@ -1,13 +1,29 @@
 package flat/compiler
 
+/** Bounded retained snapshots. Capacities charge four bytes per UTF-16 code unit. */
 class extends CompilerArtifactSink {
     var CompilerArtifact[] values = CompilerArtifact[]
+    var Long retainedBytes
+
+    public construct(visible Int capacity = 64, visible Long maxBytes = 1048576) {
+        if (capacity <= 0 || maxBytes <= 0) throw Exception("Memory artifact sink requires positive capacities")
+    }
+
     override public write(CompilerArtifact artifact) {
-        if (!artifact || values.any({ _.identity == artifact.identity })) {
-            throw Exception("Memory artifact sink requires unique artifact")
+        if (!artifact || values.count >= capacity || values.any({ _.identity == artifact.identity })) {
+            throw Exception("Memory artifact sink capacity or identity violation")
         }
-        values.add(artifact)
+        Long bytes = artifact.identity.count
+        bytes += artifact.code.count
+        bytes *= 4
+        if (bytes > maxBytes - retainedBytes) throw Exception("Memory artifact sink byte capacity exceeded")
+        values.add(CompilerArtifact(artifact.identity.concat(""), artifact.code.concat("")))
+        retainedBytes += bytes
         values = values.sort({ _a.identity.compareTo(_b.identity) })
     }
-    override public artifacts() -> CompilerArtifact[] => CompilerArtifact[]:addAll(values)
+    override public artifacts() -> CompilerArtifact[] {
+        let snapshots = CompilerArtifact[]
+        for (value in values) snapshots.add(CompilerArtifact(value.identity.concat(""), value.code.concat("")))
+        return snapshots
+    }
 }

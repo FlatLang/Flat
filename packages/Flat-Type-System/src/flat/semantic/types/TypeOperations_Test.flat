@@ -1,6 +1,153 @@
 package flat/semantic/types
 
 testable class {
+    test `conditional respects explicit generic bounds before admitting root`() {
+        let fixture = TypeSystem_TestFixture()
+        let root = fixture.userType("Object", 1)
+        let near = fixture.userType("Near", 2)
+        let child = fixture.userType("Child", 3)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.add(fixture.hierarchyDeclaration(root))
+        hierarchy.add(fixture.hierarchyDeclaration(near, parents: [root]))
+        hierarchy.add(fixture.hierarchyDeclaration(child, parents: [near]))
+        hierarchy.seal()
+        let bounded = GenericParameterSemanticType(fixture.functionIdentity(), "E", 0, near)
+        let primitiveBound = GenericParameterSemanticType(fixture.functionIdentity(), "P", 1, SemanticTypes.intType())
+        let nullableBound = GenericParameterSemanticType(fixture.functionIdentity(), "N", 2, NullableSemanticType(near))
+        let missingBound = GenericParameterSemanticType(fixture.functionIdentity(), "M", 3, fixture.userType("Missing", 10))
+        let chainedBound = GenericParameterSemanticType(fixture.functionIdentity(), "C", 4, bounded)
+        let condition = SemanticTypes.boolType()
+        expect(TypeOperations.conditional(condition, bounded, child, fixture.range(), hierarchy).semanticType.value()).toBe(near.value())
+        expect(TypeOperations.conditional(condition, child, bounded, fixture.range(), hierarchy).semanticType.value()).toBe(near.value())
+        expect(TypeConversions.classify(bounded, near, hierarchy: hierarchy).implicit).toBe(true)
+        expect(TypeConversions.classify(bounded, root, hierarchy: hierarchy).applicable).toBe(true)
+        expect(TypeConversions.classify(bounded, child, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(primitiveBound, root, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(nullableBound, root, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeOperations.conditional(condition, primitiveBound, child, fixture.range(), hierarchy).valid).toBe(false)
+        expect(TypeOperations.conditional(condition, nullableBound, child, fixture.range(), hierarchy).valid).toBe(false)
+        expect(TypeOperations.conditional(condition, missingBound, child, fixture.range(), hierarchy).valid).toBe(false)
+        expect(TypeOperations.conditional(condition, child, missingBound, fixture.range(), hierarchy).valid).toBe(false)
+        expect(TypeOperations.conditional(condition, chainedBound, child, fixture.range(), hierarchy).valid).toBe(false)
+        expect(TypeOperations.conditional(condition, child, chainedBound, fixture.range(), hierarchy).valid).toBe(false)
+    }
+
+    test `hierarchy conditional finds unique nearest ancestor independent of order`() {
+        let fixture = TypeSystem_TestFixture()
+        let root = fixture.userType("Object", 1)
+        let near = fixture.userType("Near", 2)
+        let left = fixture.userType("Left", 3)
+        let right = fixture.userType("Right", 4)
+        let first = TypeHierarchyComponent()
+        first.add(fixture.hierarchyDeclaration(root))
+        first.add(fixture.hierarchyDeclaration(near, parents: [root]))
+        first.add(fixture.hierarchyDeclaration(left, parents: [near]))
+        first.add(fixture.hierarchyDeclaration(right, parents: [near]))
+        first.seal()
+        let second = TypeHierarchyComponent()
+        second.add(fixture.hierarchyDeclaration(right, parents: [near]))
+        second.add(fixture.hierarchyDeclaration(left, parents: [near]))
+        second.add(fixture.hierarchyDeclaration(near, parents: [root]))
+        second.add(fixture.hierarchyDeclaration(root))
+        second.seal()
+        let hierarchies = [first, second]
+        for (hierarchy in hierarchies) {
+            let forward = TypeOperations.conditional(SemanticTypes.boolType(), left, right, fixture.range(), hierarchy)
+            let reverse = TypeOperations.conditional(SemanticTypes.boolType(), right, left, fixture.range(), hierarchy)
+            expect(forward.valid).toBe(true)
+            expect(forward.semanticType.value()).toBe(near.value())
+            expect(reverse.semanticType.value()).toBe(near.value())
+            expect(TypeConversions.classify(left, forward.semanticType, hierarchy: hierarchy).conversionKind).toBe("reference-upcast")
+            expect(TypeConversions.classify(right, forward.semanticType, hierarchy: hierarchy).implicit).toBe(true)
+            expect(TypeOperations.conditional(SemanticTypes.boolType(), near, left, fixture.range(), hierarchy).semanticType.value()).toBe(near.value())
+        }
+        expect(TypeOperations.conditional(SemanticTypes.boolType(), left, right, fixture.range()).valid).toBe(false)
+    }
+
+    test `generic and declared String join only through admitted canonical root`() {
+        let fixture = TypeSystem_TestFixture()
+        let root = fixture.userType("Object", 1)
+        let string = fixture.userType("String", 2)
+        let generic = GenericParameterSemanticType(fixture.functionIdentity("map"), "E", 0)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.add(fixture.hierarchyDeclaration(root))
+        hierarchy.add(fixture.hierarchyDeclaration(string, parents: [root]))
+        hierarchy.seal()
+        let forward = TypeOperations.conditional(SemanticTypes.boolType(), string, generic, fixture.range(), hierarchy)
+        let reverse = TypeOperations.conditional(SemanticTypes.boolType(), generic, string, fixture.range(), hierarchy)
+        expect(forward.valid).toBe(true)
+        expect(forward.semanticType.value()).toBe(root.value())
+        expect(reverse.semanticType.value()).toBe(root.value())
+        expect(TypeConversions.classify(generic, root, hierarchy: hierarchy).conversionKind).toBe("reference-upcast")
+        expect(TypeConversions.classify(string, root, hierarchy: hierarchy).conversionKind).toBe("reference-upcast")
+        expect(TypeConversions.classify(generic, string, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeOperations.conditional(SemanticTypes.boolType(), SemanticTypes.intType(), string, fixture.range(), hierarchy).valid).toBe(false)
+        expect(TypeOperations.conditional(SemanticTypes.intType(), string, generic, fixture.range(), hierarchy).valid).toBe(false)
+        let missing = TypeHierarchyComponent()
+        missing.add(fixture.hierarchyDeclaration(root))
+        missing.add(fixture.hierarchyDeclaration(string, parents: [root]))
+        missing.seal()
+        expect(TypeOperations.conditional(SemanticTypes.boolType(), generic, string, fixture.range(), missing).valid).toBe(false)
+    }
+
+    test `hierarchy joins reject incomparable ancestors and preserve nullable policy`() {
+        let fixture = TypeSystem_TestFixture()
+        let a = fixture.userType("A", 1)
+        let b = fixture.userType("B", 2)
+        let left = fixture.userType("Left", 3)
+        let right = fixture.userType("Right", 4)
+        let absent = fixture.userType("Absent", 5)
+        let root = fixture.userType("Object", 6)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.add(fixture.hierarchyDeclaration(root))
+        hierarchy.add(fixture.hierarchyDeclaration(left, parents: [a, b, root]))
+        hierarchy.add(fixture.hierarchyDeclaration(right, parents: [b, a, root]))
+        hierarchy.add(fixture.hierarchyDeclaration(a, kind: "interface"))
+        hierarchy.add(fixture.hierarchyDeclaration(b, kind: "interface"))
+        hierarchy.seal()
+        let condition = SemanticTypes.boolType()
+        expect(TypeOperations.conditional(condition, left, right, fixture.range(), hierarchy).valid).toBe(false)
+        expect(TypeOperations.conditional(condition, right, left, fixture.range(), hierarchy).valid).toBe(false)
+        expect(TypeOperations.conditional(condition, absent, left, fixture.range(), hierarchy).valid).toBe(false)
+        expect(TypeOperations.conditional(condition, NullableSemanticType(a), left, fixture.range(), hierarchy).valid).toBe(false)
+        expect(TypeOperations.conditional(condition, left, SemanticTypes.nullType(), fixture.range(), hierarchy).semanticType.value()).toBe(NullableSemanticType(left).value())
+        expect(TypeOperations.conditional(condition, NullableSemanticType(left), left, fixture.range(), hierarchy).semanticType.value()).toBe(NullableSemanticType(left).value())
+        let invalid = TypeHierarchyComponent()
+        invalid.add(fixture.hierarchyDeclaration(left, parents: [absent]))
+        invalid.seal()
+        expect(TypeOperations.conditional(condition, left, right, fixture.range(), invalid).valid).toBe(false)
+        expect(TypeOperations.conditional(condition, left, right, fixture.range(), TypeHierarchyComponent()).valid).toBe(false)
+    }
+    test `hierarchy conditional does not erase generic ancestors or infer roots`() {
+        let fixture = TypeSystem_TestFixture()
+        let root = fixture.userType("Object", 1)
+        let box = fixture.userType("Box", 2)
+        let parameter = GenericParameterSemanticType(box.declarationIdentity, "T", 0)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(fixture.hierarchyDeclaration(root))
+        hierarchy.add(TypeHierarchyDeclaration(box, "class", [root], genericParameters: [parameter]))
+        hierarchy.seal()
+        let strings = GenericInstanceSemanticType(box, [SemanticTypes.stringType()])
+        let ints = GenericInstanceSemanticType(box, [SemanticTypes.intType()])
+        let joined = TypeOperations.conditional(SemanticTypes.boolType(), strings, ints, fixture.range(), hierarchy)
+        expect(joined.valid).toBe(true)
+        expect(joined.semanticType.value()).toBe(root.value())
+        let disconnected = TypeHierarchyComponent()
+        disconnected.add(TypeHierarchyDeclaration(box, "class", UserClassSemanticType[], genericParameters: [parameter]))
+        disconnected.seal()
+        expect(TypeOperations.conditional(SemanticTypes.boolType(), strings, ints, fixture.range(), disconnected).valid).toBe(false)
+        let generic = GenericParameterSemanticType(fixture.functionIdentity(), "E", 0)
+        expect(TypeOperations.conditional(SemanticTypes.boolType(), generic, strings, fixture.range(), hierarchy).valid).toBe(false)
+        let invalidRoot = TypeHierarchyComponent()
+        invalidRoot.registerRootDeclaration(root)
+        invalidRoot.add(fixture.hierarchyDeclaration(root, kind: "interface"))
+        invalidRoot.seal()
+        expect(TypeOperations.conditional(SemanticTypes.boolType(), generic, root, fixture.range(), invalidRoot).valid).toBe(false)
+    }
+
     test `conditional joins use Bool and implicit nullable conversions`() {
         let range = TypeSystem_TestFixture().range()
         let condition = SemanticTypes.boolType()
@@ -176,7 +323,76 @@ testable class {
         expect(TypeOperations.binary("==", SemanticTypes.intType(), SemanticTypes.nullType(), range).valid).toBe(false)
     }
 
-    test `equality requires a conversion path including explicit nullability`() {
+    test `absence equality accepts references symmetrically without null conversion`() {
+        let fixture = TypeSystem_TestFixture()
+        let range = fixture.range(183, 186)
+        let declared = fixture.userType("StringCharArray")
+        let declaration = fixture.userType("Box", 2)
+        let generic = GenericParameterSemanticType(fixture.functionIdentity(), "E", 0)
+        let references = [declared, fixture.userType("String", 3), SemanticTypes.stringType(),
+            SemanticTypes.objectType(), ArraySemanticType(SemanticTypes.charType()),
+            GenericInstanceSemanticType(declaration, [SemanticTypes.intType()]),
+            FunctionSemanticType(SemanticType[], SemanticTypes.voidType()), generic]
+        let operators = ["==", "!="]
+        for (operator in operators) {
+            for (reference in references) {
+                expect(TypeConversions.isReference(reference)).toBe(true)
+                let forward = TypeOperations.binary(operator, reference, SemanticTypes.nullType(), range)
+                let reverse = TypeOperations.binary(operator, SemanticTypes.nullType(), reference, range)
+                expect(forward.valid).toBe(true)
+                expect(reverse.valid).toBe(true)
+                expect(forward.semanticType.value()).toBe(SemanticTypes.boolType().value())
+                expect(reverse.semanticType.value()).toBe(SemanticTypes.boolType().value())
+                expect(forward.conversion == null).toBe(true)
+                expect(reverse.conversion == null).toBe(true)
+            }
+            let nullable = NullableSemanticType(declared)
+            expect(TypeOperations.binary(operator, nullable, SemanticTypes.nullType(), range).semanticType.value()).toBe(SemanticTypes.boolType().value())
+            expect(TypeOperations.binary(operator, SemanticTypes.nullType(), nullable, range).semanticType.value()).toBe(SemanticTypes.boolType().value())
+            expect(TypeOperations.binary(operator, SemanticTypes.nullType(), SemanticTypes.nullType(), range).semanticType.value()).toBe(SemanticTypes.boolType().value())
+        }
+        let otherOperators = ["<", "<=", ">", ">=", "&&", "||", "-", "*", "/", "%"]
+        for (operator in otherOperators) {
+            expect(TypeOperations.binary(operator, declared, SemanticTypes.nullType(), range).valid).toBe(false)
+            expect(TypeOperations.binary(operator, SemanticTypes.nullType(), declared, range).valid).toBe(false)
+        }
+        expect(TypeOperations.binary("==", declared, fixture.userType("Unrelated", 4), range).valid).toBe(false)
+        expect(TypeOperations.binary("!=", declared, fixture.userType("Unrelated", 4), range).valid).toBe(false)
+        expect(TypeConversions.classify(SemanticTypes.nullType(), declared).applicable).toBe(false)
+        expect(TypeConversions.classify(SemanticTypes.nullType(), SemanticTypes.stringType()).applicable).toBe(false)
+        expect(TypeOperations.assignment(declared, SemanticTypes.nullType(), range).valid).toBe(false)
+        expect(TypeOperations.assignment(SemanticTypes.stringType(), SemanticTypes.nullType(), range).valid).toBe(false)
+        // Existing unconstrained generic null conversion is neither removed nor broadened.
+        expect(TypeConversions.classify(SemanticTypes.nullType(), generic).applicable).toBe(true)
+    }
+
+    test `absence equality rejects primitive void and unknown with exact diagnostic range`() {
+        let fixture = TypeSystem_TestFixture()
+        let range = fixture.range(183, 186)
+        let types = [SemanticTypes.byteType(), SemanticTypes.unsignedByteType(),
+            SemanticTypes.shortType(), SemanticTypes.unsignedShortType(),
+            SemanticTypes.intType(), SemanticTypes.unsignedIntType(),
+            SemanticTypes.longType(), SemanticTypes.unsignedLongType(),
+            SemanticTypes.floatType(), SemanticTypes.doubleType(),
+            SemanticTypes.boolType(), SemanticTypes.charType(),
+            SemanticTypes.voidType(), SemanticTypes.unitType(), SemanticTypes.unknownType()]
+        let operators = ["==", "!="]
+        for (operator in operators) {
+            for (type in types) {
+                expect(TypeConversions.isReference(type)).toBe(false)
+                let forward = TypeOperations.binary(operator, type, SemanticTypes.nullType(), range)
+                let reverse = TypeOperations.binary(operator, SemanticTypes.nullType(), type, range)
+                expect(forward.valid).toBe(false)
+                expect(reverse.valid).toBe(false)
+                expect(forward.diagnostic.code).toBe("type.binary")
+                expect(reverse.diagnostic.code).toBe("type.binary")
+                expect(forward.diagnostic.range == range).toBe(true)
+                expect(reverse.diagnostic.range == range).toBe(true)
+            }
+        }
+    }
+
+    test `equality requires conversion except reference absence checks`() {
         let fixture = TypeSystem_TestFixture()
         let range = fixture.range()
         let userType = fixture.userType("Example")
@@ -187,7 +403,7 @@ testable class {
         ).valid).toBe(true)
         expect(TypeOperations.binary(
             "==", userType, SemanticTypes.nullType(), range
-        ).valid).toBe(false)
+        ).valid).toBe(true)
         expect(TypeOperations.binary(
             "==", SemanticTypes.intType(), SemanticTypes.stringType(), range
         ).valid).toBe(false)

@@ -1,0 +1,90 @@
+package flat/writer/es6/bound
+
+import flat/bound
+import flat/semantic/types
+import flat/io
+import flat/system
+import flat/time/Time
+
+/** Runtime oracles test selected constants, never choose semantics in the writer. */
+testable class {
+    async test `canonical binary32 constants execute exactly including ties subnormals and signed zero`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range(4, 6)
+        String[] sources = ["0.00000001", "1.000000059604644775390625",
+            "1.000000178813934326171875", "-1.000000059604644775390625", "1e-45", "-0.000e5"]
+        var String code = ""
+        for (source in sources) {
+            let checked = FloatingLiteralTyping.contextualize(source, SemanticTypes.floatType(), range)
+            expect(checked.valid).toBe(true)
+            let literal = BoundLiteralExpression(checked.literal.range, checked.literal.semanticType,
+                checked.literal.sourceValue, canonicalValue: checked.canonicalValue)
+            let lowered = CollectionControlLoweringPass().lowerExpression(CoreLanguageLoweringPass().lowerExpression(literal))
+            let emitted = Es6ExpressionOrchestrator().emit(lowered)
+            expect(emitted.emitted).toBe(true)
+            expect(emitted.code).toBe(checked.canonicalValue)
+            expect(emitted.code.contains("Math.fround")).toBe(false)
+            expect(literal.sourceValue).toBe(source)
+            expect(literal.range).toBe(range)
+            code += "{const actual=(" + emitted.code + "); const expected=Math.fround(" + source + ");" +
+                "if(!Object.is(actual,expected))throw new Error('binary32 constant mismatch');}\n"
+        }
+        let tolerance = FloatingLiteralTyping.contextualize("0.00000001", SemanticTypes.floatType(), range)
+        let negative = Es6ExpressionOrchestrator().emit(BoundLiteralExpression(range, SemanticTypes.floatType(),
+            "-0.000e5", canonicalValue: "-0"))
+        code += "if((" + tolerance.canonicalValue + ")===0.00000001)throw new Error('unrounded binary64 source emitted');\n" +
+            "if(1/(" + negative.code + ")!==-Infinity)throw new Error('negative zero sign lost');\n" +
+            "console.log('ok');\n"
+        execute(code)
+    }
+
+    async test `semantic decimal midpoint selection does not double round through a host number`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let source = "1.0000000596046447753906250000000000000001"
+        let checked = FloatingLiteralTyping.contextualize(source, SemanticTypes.floatType(), range)
+        expect(checked.valid).toBe(true)
+        expect(checked.canonicalValue).toBe("1.00000011920928955078125")
+        let emitted = Es6ExpressionOrchestrator().emit(BoundLiteralExpression(range, SemanticTypes.floatType(),
+            source, canonicalValue: checked.canonicalValue))
+        expect(emitted.code).toBe(checked.canonicalValue)
+        execute("const actual=(" + emitted.code + ");" +
+            "if(actual!==1.00000011920928955078125 || actual===Math.fround(" + source + "))" +
+            "throw new Error('decimal literal double rounding');console.log('ok');\n")
+    }
+
+    async test `canonical binary64 and unary signed zero retain selected values and provenance`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        String[] sources = ["0.1", "16777217", "5e-324", "-0"]
+        var String code = ""
+        for (source in sources) {
+            let checked = FloatingLiteralTyping.contextualize(source, SemanticTypes.doubleType(), range)
+            expect(checked.valid).toBe(true)
+            let literal = BoundLiteralExpression(range, SemanticTypes.doubleType(), source, canonicalValue: checked.canonicalValue)
+            let emitted = Es6ExpressionOrchestrator().emit(DeferredExecutionLoweringPass().lowerExpression(literal))
+            expect(emitted.emitted).toBe(true)
+            expect(emitted.code).toBe(checked.canonicalValue)
+            expect(literal.sourceValue).toBe(source)
+            code += "if(!Object.is((" + emitted.code + "),(" + source + ")))throw new Error('binary64 constant mismatch');\n"
+        }
+        let zero = BoundLiteralExpression(range, SemanticTypes.floatType(), "0.000", canonicalValue: "0")
+        let unary = BoundUnaryExpression(range, SemanticTypes.floatType(), "-", zero)
+        let negative = Es6ExpressionOrchestrator().emit(unary)
+        expect(negative.emitted).toBe(true)
+        code += "if(1/(" + negative.code + ")!==-Infinity)throw new Error('unary negative zero lost');console.log('ok');\n"
+        execute(code)
+    }
+
+    async execute(String code) {
+        let root = File(".flat-es6-floating-literal-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "regression.js")
+            Es6ArtifactCommitter().commit(destination, code)
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("ok\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+}

@@ -156,6 +156,68 @@ class {
             declaration.declarationKind == "class" && declaration.directParents().isEmpty
     }
 
+    /** Unique most-specific declared non-generic reference target admitted by
+     * both implicit conversions. No distance tie-break, root spelling inference,
+     * generic erasure, primitive boxing, or nullable lifting is performed.
+     * Materializes only one operand's finite declaration ancestry, not the
+     * supplied component (which may contain unrelated project declarations). */
+    public commonReference(SemanticType left, SemanticType right) -> UserClassSemanticType {
+        requireValid()
+        if (!left || !right || !TypeConversions.isReference(left) ||
+            !TypeConversions.isReference(right)) return null
+        let candidates = UserClassSemanticType[]
+        collectReferenceAncestors(left, candidates)
+        var UserClassSemanticType result
+        for (candidate in candidates) {
+            if (!admitsCommonReference(left, right, find(candidate))) continue
+            var Bool nearest = true
+            for (other in candidates) {
+                if (!admitsCommonReference(left, right, find(other))) continue
+                let conversion = TypeConversions.classify(candidate, other, hierarchy: this)
+                if (!conversion.applicable || !conversion.implicit) {
+                    nearest = false
+                    break
+                }
+            }
+            if (nearest) {
+                if (result) return null
+                result = candidate
+            }
+        }
+        return result
+    }
+
+    collectReferenceAncestors(SemanticType type, UserClassSemanticType[] result) {
+        if (type.kind() == "generic-parameter") {
+            let parameter = (GenericParameterSemanticType)type
+            if (!parameter.constraint) {
+                if (rootDeclaration && !result.any({ _.value() == rootDeclaration.value() }))
+                    result.add(rootDeclaration)
+            } else if (TypeConversions.isReference(parameter.constraint) &&
+                parameter.constraint.kind() != "generic-parameter") {
+                collectReferenceAncestors(parameter.constraint, result)
+            }
+            return
+        }
+        var UserClassSemanticType declarationType
+        if (type.kind() == "user-class") declarationType = (UserClassSemanticType)type
+        else if (type.kind() == "generic-instance") declarationType = ((GenericInstanceSemanticType)type).declarationType
+        if (!declarationType || result.any({ _.value() == declarationType.value() })) return
+        let declaration = find(declarationType)
+        if (!declaration) return
+        result.add(declarationType)
+        for (parent in declaration.directParents()) collectReferenceAncestors(parent, result)
+    }
+
+    admitsCommonReference(SemanticType left, SemanticType right,
+        TypeHierarchyDeclaration declaration) -> Bool {
+        if (!declaration || declaration.genericArity != 0) return false
+        let leftConversion = TypeConversions.classify(left, declaration.semanticType, hierarchy: this)
+        if (!leftConversion.applicable || !leftConversion.implicit) return false
+        let rightConversion = TypeConversions.classify(right, declaration.semanticType, hierarchy: this)
+        return rightConversion.applicable && rightConversion.implicit
+    }
+
     public distance(
         UserClassSemanticType fromType,
         UserClassSemanticType toType
@@ -207,6 +269,23 @@ class {
 
     find(UserClassSemanticType type) -> TypeHierarchyDeclaration {
         if (!type) return null
+        // seal() orders declarations by stable identity. Avoid a component-wide
+        // scan for every ancestry edge after publication; no extra index needed.
+        if (sealed) {
+            var Int low
+            var Int high = declarations.count - 1
+            while (low <= high) {
+                let middle = (Int)((low + high) / 2)
+                let declaration = declarations[middle]
+                let order = declaration.semanticType.value().compareTo(type.value())
+                if (order == 0) return declaration
+                if (order < 0) low = middle + 1
+                else {
+                    high = middle - 1
+                }
+            }
+            return null
+        }
         return declarations.firstOrNull({ _.semanticType.value() == type.value() })
     }
 

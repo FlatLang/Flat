@@ -61,6 +61,27 @@ class PrimitiveOpaqueCodeBinder {
                     candidateIndex--
                 }
                 if (!root) {
+                    let lexicalStatic = path.count == 1 ? fields.firstOrNull((field) =>
+                        field.staticField && field.name == path.first) : null
+                    if (lexicalStatic) {
+                        pieces.add(BoundExternalCodeSegment(piece.range, "", BoundReferenceExpression(
+                            piece.range, lexicalStatic.semanticType, lexicalStatic.name, lexicalStatic.identity,
+                            staticOwner: lexicalStatic.canonicalOwner(),
+                            fieldOwnerIdentity: lexicalStatic.canonicalOwner()), "identity"))
+                        pieceIndex++
+                        continue
+                    }
+                    if (path.count == 2 && path.first != "this" && path.first != "super" &&
+                        fields.none({ _.name == path.first })) {
+                        let access = PrimitiveMemberAccessSyntax(piece.range,
+                            PrimitiveReferenceSyntax(piece.range, path.first), path[1])
+                        let value = PrimitiveClassBinder().bindScopedExpression(access, receiver, fields,
+                            locals, callables, typeResolver: currentTypeResolver,
+                            availableFields: availableFields, hierarchy: currentHierarchy)
+                        pieces.add(BoundExternalCodeSegment(piece.range, "", value, "identity"))
+                        pieceIndex++
+                        continue
+                    }
                     if (path.first == "this" && receiver && path.count >= 2) {
                         let field = ownerField(
                             receiver.semanticType, path[1], fields, availableFields
@@ -162,16 +183,12 @@ class PrimitiveOpaqueCodeBinder {
                             )
                         }
                     } else throw Exception("Unsupported interpolation path")
-                } else if (path.count == 2 && root.semanticType.kind() == "user-class" && receiver &&
-                    root.semanticType.value() == receiver.semanticType.value()) {
-                    let field = ownerField(
-                        root.semanticType, path[1], fields, availableFields
-                    )
-                    if (!field) throw Exception("Unsupported interpolation path")
-                    projected = BoundMemberAccessExpression(
-                        piece.range, field.semanticType, value,
-                        field.name, field.identity
-                    )
+                } else if (path.count == 2 && root.semanticType.kind() == "user-class") {
+                    let access = PrimitiveMemberAccessSyntax(piece.range,
+                        PrimitiveReferenceSyntax(piece.range, root.name), path[1])
+                    projected = PrimitiveClassBinder().bindScopedExpression(access, receiver, fields,
+                        locals, callables, typeResolver: currentTypeResolver,
+                        availableFields: availableFields, hierarchy: currentHierarchy)
                 } else if (path.count == 2 && root.semanticType.kind() == "array") {
                     if (path[1] == "data") {
                         projected = BoundNativeArrayDataExpression(piece.range, value)
@@ -326,13 +343,20 @@ class PrimitiveOpaqueCodeBinder {
             let local = locals.reverse().firstOrNull({ _.name == reference.name })
             if (local && local.identity.symbolKind == "field") {
                 let field = fields.firstOrNull({ _.identity == local.identity })
-                if (!field || !receiver) throw Exception("Invalid external field reference")
+                if (!field) throw Exception("Invalid external field reference")
+                if (field.staticField) return BoundReferenceExpression(reference.range, field.semanticType,
+                    field.name, field.identity, staticOwner: field.canonicalOwner(),
+                    fieldOwnerIdentity: field.canonicalOwner())
+                if (!receiver) throw Exception("Invalid external instance field reference")
                 return BoundMemberAccessExpression(
                     reference.range, field.semanticType, receiver, field.name, field.identity
                 )
             }
             if (!local) {
                 let field = fields.firstOrNull({ _.name == reference.name })
+                if (field && field.staticField) return BoundReferenceExpression(reference.range, field.semanticType,
+                    field.name, field.identity, staticOwner: field.canonicalOwner(),
+                    fieldOwnerIdentity: field.canonicalOwner())
                 if (field && receiver) return BoundMemberAccessExpression(
                     reference.range, field.semanticType, receiver, field.name, field.identity
                 )
@@ -353,12 +377,12 @@ class PrimitiveOpaqueCodeBinder {
         let expectedOwner = ((UserClassSemanticType)ownerType).declarationIdentity.value
         let field = fields.firstOrNull((candidate) =>
             candidate.name == name &&
-            candidate.identity.declaration.value == expectedOwner
+            candidate.canonicalOwner().value == expectedOwner
         )
         if (field) return field
         return availableFields.firstOrNull((candidate) =>
             candidate.name == name &&
-            candidate.identity.declaration.value == expectedOwner
+            candidate.canonicalOwner().value == expectedOwner
         )
     }
 
