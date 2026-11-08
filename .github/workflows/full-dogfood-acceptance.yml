@@ -618,7 +618,7 @@ jobs:
         run: |
           set -euo pipefail
           {
-            echo 'Coverage contract: three stage products, seven suites, guarded public airship-toolchain and core-lr workloads at each stage and in production, incremental invalidations, lifecycle/cleanup, deterministic driver matrix and reviewed scaling.'
+            echo 'Coverage contract: three stage products, eight required suites (including FuCli), guarded public airship-toolchain and core-lr workloads at each stage and in production, incremental invalidations, lifecycle/cleanup, deterministic driver matrix and reviewed scaling.'
             echo 'Source-ready CI wiring is not executed acceptance. Missing, blocked, skipped and unknown evidence cannot produce delivery_complete=true.'
             delivery=false
             if [[ "$EVENT" == workflow_dispatch && "$HARNESS" == success && "$PRODUCTION" == success && "$ACCEPTED" == true ]]; then
@@ -630,7 +630,7 @@ jobs:
             if [[ "$EVENT" != workflow_dispatch ]]; then
               echo 'Production acceptance NOT REQUESTED; harness CI is not completion evidence.'
             else
-              echo 'Required graph: harness -> pinned dispatch -> reviewed provisioning -> fresh stages (seven suites + public workloads each) -> source/timer admission -> production + independent plan binding + supplemental/current producer validation -> retained artifacts.'
+              echo 'Required graph: harness -> pinned dispatch -> reviewed provisioning -> fresh stages (eight required suites + public workloads each) -> source/timer admission -> production + independent plan binding + supplemental/current producer validation -> retained artifacts.'
             fi
           } | tee "$RUNNER_TEMP/acceptance-result.txt" >> "$GITHUB_STEP_SUMMARY"
           [[ "$HARNESS" == success ]]

@@ -46,7 +46,7 @@ class {
                     value.range, semanticType, value.name, identity
                 )
                 locals.add(LocalBinding(value.name, identity, semanticType,
-                    nativeArrayStorage: value.nativeArrayStorage, nativeScalarStorage: value.nativeScalarStorage))
+                    nativeArrayStorage: value.nativeArrayStorage, nativeScalarStorage: value.nativeScalarStorage, mutableStorage: value.mutable))
                 return BoundLocalDeclarationStatement(value.range, reference)
             }
             let requiredType = value.declaredTypeName ? declaredType(value.declaredTypeName) : null
@@ -57,7 +57,7 @@ class {
                 value.range, localType, value.name, identity
             )
             locals.add(LocalBinding(value.name, identity, localType,
-                nativeArrayStorage: value.nativeArrayStorage, nativeScalarStorage: value.nativeScalarStorage))
+                nativeArrayStorage: value.nativeArrayStorage, nativeScalarStorage: value.nativeScalarStorage, mutableStorage: value.mutable))
             return BoundLocalDeclarationStatement(
                 value.range, reference, expression,
                 TypeConversions.classify(expression.semanticType, localType)

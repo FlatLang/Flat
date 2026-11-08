@@ -374,7 +374,8 @@ testable class {
                 TypeConversions.classify(projection.returnType, target, explicit: true))
             let emitted = Es6ExpressionOrchestrator().emit(expression)
             expect(emitted.emitted).toBe(true)
-            let expected = TypeConversions.isIntegral(target) ? "Math.trunc(payload)" : "payload"
+            let expected = target.value() == "primitive:Char" ? "String.fromCharCode(Math.trunc(payload))" :
+                TypeConversions.isIntegral(target) ? "Math.trunc(payload)" : "payload"
             checks += "{ reads = 0; calls = 0; const result = " + emitted.code + ";\n" +
                 "if (!Object.is(result, " + expected + ") || reads !== 1 || calls !== 1) " +
                 "throw new Error('projection conversion " + target.value() + "'); }\n"

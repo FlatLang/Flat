@@ -11,7 +11,9 @@ data class {
         visible Bool nativeArrayStorage = false,
         /** Declared storage retained when a branch-local read proof refines semanticType. */
         visible SemanticType declaredType = null,
-        visible Bool nativeScalarStorage = false
+        visible Bool nativeScalarStorage = false,
+        /** Explicit local declaration mutability; parameter writes retain legacy policy. */
+        visible Bool mutableStorage = true
     ) {
         if (!name || !identity || !semanticType) {
             throw Exception("Local binding requires name identity and type")

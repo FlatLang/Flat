@@ -48,6 +48,31 @@ class {
         return conditionalText(syntax, value, target, context, callables)
     }
 
+    /** A literal may acquire selected declared collection storage; an existing
+     * array expression is never reinterpreted by this operation. */
+    public static materializeArrayLiteral(PrimitiveExpressionSyntax syntax, BoundExpression value,
+        SemanticType required, CallableSignature[] callables, TypeHierarchyComponent hierarchy) -> BoundExpression {
+        if (!syntax || !syntax.class.isOfType(PrimitiveArraySyntax.class) ||
+            !value.class.isOfType(BoundArrayExpression.class) || required.kind() != "generic-instance") return value
+        let instance = (GenericInstanceSemanticType)required
+        let storage = (BoundArrayExpression)value
+        let type = (ArraySemanticType)storage.semanticType
+        if (instance.typeArguments().count != 1 ||
+            instance.typeArguments().first.value() != type.elementType.value()) return value
+        let candidates = callables.filter((candidate) => candidate.callableKind.value == "constructor" &&
+            candidate.ownerType.value() == instance.declarationType.value() && candidate.ownerGenericDeclaration &&
+            candidate.parameterTypes().count == 2 && candidate.parameterTypes().first.kind() == "array"
+        ).map({ _.instantiateConstructor(instance.typeArguments()) })
+        let count = BoundLiteralExpression(value.range, SemanticTypes.intType(), "#{storage.elementValues().count}")
+        let resolution = OverloadResolver.resolve(instance.declarationType.declarationIdentity.name, candidates, null,
+            [value.semanticType, count.semanticType], value.range, hierarchy)
+        if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+        let checked = CallTypeChecker.check(resolution.selected, null,
+            [value.semanticType, count.semanticType], value.range, hierarchy)
+        if (!checked.valid) throw Exception(checked.diagnostic.message)
+        return BoundCallExpression(value.range, checked.semanticType, checked.target, [value, count], checked.argumentConversions())
+    }
+
     public static sourceTextReceiver(PrimitiveExpressionSyntax syntax, BoundExpression value,
         PrimitiveResolvedDeclarationContext context, CallableSignature[] callables) -> BoundExpression {
         let canonical = context ? context.candidates("flat/String") : null
@@ -103,13 +128,23 @@ class {
             ((NullableSemanticType)receiver.semanticType).underlyingType : receiver ? receiver.semanticType : null
         let exact = OverloadResolver.resolve(name, candidates, receiverType,
             arguments.map({ _.semanticType }), range, hierarchy)
-        if (exact.resolved) {
+        var Bool contextualArrays
+        if (sourceArguments) {
+            var Int sourceIndex
+            for (source in sourceArguments) {
+                if (source.class.isOfType(PrimitiveArraySyntax.class) && candidates.any((candidate) =>
+                    sourceIndex < candidate.parameterTypes().count &&
+                    candidate.parameterTypes()[sourceIndex].kind() == "generic-instance")) contextualArrays = true
+                sourceIndex++
+            }
+        }
+        if (exact.resolved && (!contextualArrays || exact.selected.parameterTypes().any({ _.kind() == "array" }))) {
             let checked = CallTypeChecker.check(exact.selected, receiverType,
                 arguments.map({ _.semanticType }), range, hierarchy)
             return resolvedCall(checked, receiver, arguments, safeAccess, range, hierarchy)
         }
         // An existing ambiguity must not be replaced by an adapter-selected call.
-        if (exact.applicableCandidates().isNotEmpty) throw Exception(exact.diagnostic.message)
+        if (!contextualArrays && exact.applicableCandidates().isNotEmpty) throw Exception(exact.diagnostic.message)
         let checks = CallCheckResult[]
         let calls = BoundCallExpression[]
         for (candidate in candidates) {
@@ -120,7 +155,13 @@ class {
             var Bool rejected
             for (argument in arguments) {
                 let required = candidate.parameterTypes()[index]
-                if (TypeConversions.classify(argument.semanticType, required, hierarchy: hierarchy).applicable) {
+                let contextualArray = sourceArguments && index < sourceArguments.count &&
+                    sourceArguments[index].class.isOfType(PrimitiveArraySyntax.class) && required.kind() == "generic-instance"
+                if (contextualArray) {
+                    try {
+                        adapted.add(materializeArrayLiteral(sourceArguments[index], argument, required, callables, hierarchy))
+                    } catch (Exception error) { rejected = true }
+                } else if (TypeConversions.classify(argument.semanticType, required, hierarchy: hierarchy).applicable) {
                     adapted.add(argument)
                 } else {
                     try {

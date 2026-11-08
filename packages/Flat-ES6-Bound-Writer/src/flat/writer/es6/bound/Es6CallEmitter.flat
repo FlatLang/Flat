@@ -49,8 +49,7 @@ class {
         }
         if ((memberName == "toLowerCase" || memberName == "toUpperCase") &&
             argumentText.count == 0) {
-            return "String.fromCharCode(" + receiver + ")." + memberName +
-                "().charCodeAt(0)"
+            return "(" + receiver + ")." + memberName + "().charAt(0)"
         }
         throw Exception("Unsupported ES6 intrinsic member call '#memberName'")
     }

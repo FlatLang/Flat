@@ -4,6 +4,7 @@ import flat/io
 import flat/system
 import flat/time/Time
 import flat/compiler/models
+import flat/project
 import flat/lexer
 import flat/parser/flat
 import flat/writer/es6/bound
@@ -202,6 +203,175 @@ testable class {
         expect(summary.artifactCount).toBe(0)
         expect(summary.packageDiagnostic.contains("es6.assembly-capacity")).toBe(true)
         expect(sink.artifacts().count).toBe(0)
+    }
+
+    async test `full Core character bridges preserve String boxed and native storage`() {
+        assertCoreCharExecution()
+    }
+
+    async test `full Core declared character array preserves count copy append and storage independence`() {
+        assertCoreArrayExecution()
+    }
+
+    public static async assertCoreArrayExecution() {
+        let root = File(".flat-core-array-probe-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let source = File(root, "CharProbe.flat")
+            var String interpolation = ""
+            interpolation += '#'
+            interpolation += '{'
+            Es6ArtifactFiles.write(source, "package probe\nimport flat/datastruct/list/StringCharArray\nclass CharProbe { public static main() {\n" +
+                "let chars = StringCharArray(['a', '\\0', 'ä', 'b']); let copy = chars.toCharArray(); copy.add('c');\n" +
+                "let count = chars.count; let original = chars.toString() == \"a\\0äb\"; let appended = String(copy) == \"a\\0äbc\";\n" +
+                "let copiedCount = copy.count; let independent = chars.toString() == \"a\\0äb\";\n" +
+                "external js { console.log(" + interpolation + "count}, " + interpolation + "original}, " + interpolation +
+                "copiedCount}, " + interpolation + "appended}, " + interpolation + "independent}); } } }")
+            let project = AirshipCompilerArguments().fromArguments([
+                source.normalizedLocation, "-l", "../Flat-Core/src", "-x", "../Flat-Core/src/**/*_Test*.flat",
+                "-target", "es6", "-target-runtime", "node", "-main", "probe/CharProbe", "-o", "char-probe.js"
+            ])
+            let files = CompilerSourceDiscovery().discover(project.packages.first)
+            let sink = MemoryCompilerArtifactSink(1, 33554432)
+            let summary = Compiler().compilePackage(FilesystemCompilerSourceProvider(files), sink,
+                "char-probe.js", mainClass: "probe/CharProbe").completion.get()
+            if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+            expect(summary.succeeded).toBe(true)
+            expect(summary.diagnosticCount).toBe(0)
+            expect(summary.artifactCount).toBe(1)
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("4 true 5 true true\n")
+            expect(response.stderr.join("")).toBe("")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    public static async assertCoreCharExecution() {
+        let root = File(".flat-core-char-probe-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let source = File(root, "CharProbe.flat")
+            var String interpolation = ""
+            interpolation += '#'
+            interpolation += '{'
+            Es6ArtifactFiles.write(source, "package probe\nclass CharProbe { public static main() {\n" +
+                "let text = String('ä'); let boxed = Char('c'); let changed = boxed.minusEquals((Char)1);\n" +
+                "native_array native Char[] data; external js { " + interpolation + "data} = ['a', '\\0', 'ä']; }\n" +
+                "let roundtrip = String(data); var Char local = 'A'; local += (Char)1; let previous = local++;\n" +
+                "let a = text == \"ä\"; let b = changed == 'b'; let c = boxed.toString() == \"b\";\n" +
+                "let d = roundtrip == \"a\\0ä\"; let e = previous == 'B'; let f = local == 'C';\n" +
+                "external js { console.log(" + interpolation + "a}, " + interpolation + "b}, " + interpolation + "c}, " +
+                interpolation + "d}, " + interpolation + "e}, " + interpolation + "f}); } } }")
+            let project = AirshipCompilerArguments().fromArguments([
+                source.normalizedLocation, "-l", "../Flat-Core/src", "-x", "../Flat-Core/src/**/*_Test*.flat",
+                "-target", "es6", "-target-runtime", "node", "-main", "probe/CharProbe", "-o", "char-probe.js"
+            ])
+            let files = CompilerSourceDiscovery().discover(project.packages.first)
+            let sink = MemoryCompilerArtifactSink(1, 33554432)
+            let summary = Compiler().compilePackage(FilesystemCompilerSourceProvider(files), sink,
+                "char-probe.js", mainClass: "probe/CharProbe").completion.get()
+            if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+            expect(summary.succeeded).toBe(true)
+            expect(summary.diagnosticCount).toBe(0)
+            expect(summary.artifactCount).toBe(1)
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("true true true true true true\n")
+            expect(response.stderr.join("")).toBe("")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `external allocation writes independent receiver backing and count storage`() {
+        assertExternalBackingExecution()
+    }
+
+    public static async assertExternalBackingExecution() {
+        var String interpolation = ""
+        interpolation += '#'
+        interpolation += '{'
+        let source = "package app\nclass Storage {\n" +
+            "visible Int count; visible native_array native Int[] data;\n" +
+            "public construct(Int count) { this.count = count;\nexternal js { " + interpolation + "data} = new Array(count).fill(0); }\n}\n" +
+            "public put(Int value) { external js { " + interpolation + "data}[0] = " + interpolation + "value}; } }\n" +
+            "public first() -> Int { external js { return " + interpolation + "data}[0]; } }\n" +
+            "public size() -> Int { external js { return " + interpolation + "data}.length; } }\n}\n" +
+            "class Main { public static main() {\nlet first = Storage(2); let second = Storage(3);\n" +
+            "first.put(7); let untouched = second.first(); second.put(9);\n" +
+            "let a = first.first(); let b = second.first(); let ac = first.count; let bc = second.count;\n" +
+            "let al = first.size(); let bl = second.size();\nexternal js { console.log(" + interpolation +
+            "a}, " + interpolation + "b}, " + interpolation + "untouched}, " + interpolation + "ac}, " + interpolation +
+            "bc}, " + interpolation + "al}, " + interpolation + "bl}); } } }"
+        let sink = MemoryCompilerArtifactSink()
+        let summary = Compiler().compilePackage(MemoryCompilerSourceProvider([CompilerSource("app/Storage.flat", source)]),
+            sink, "backing.js", mainClass: "app/Main").completion.get()
+        if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+        expect(summary.succeeded).toBe(true)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(summary.artifactCount).toBe(1)
+        let root = File(".flat-external-backing-probe-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("7 9 0 2 3 2 3\n")
+            expect(response.stderr.join("")).toBe("")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `normalized wrapper dispatch executes inferred override same owner static and native calls`() {
+        assertNormalizedDispatchExecution()
+    }
+
+    public static async assertNormalizedDispatchExecution() {
+        var String interpolation = ""
+        interpolation += '#'
+        interpolation += '{'
+        let sources = [
+            CompilerSource("app/Root.flat", "package app\nclass Root { public code() -> Int { return 0; } }"),
+            CompilerSource("app/Number.flat", "package app\nclass Number<E> extends Root { public construct() {} }"),
+            CompilerSource("app/Glyph.flat", "package app\nclass Glyph extends Number<Glyph> {\n" +
+                "visible Char value; public construct(Char value) { this.value = value; }\n" +
+                "public code() => code(value)\npublic self() -> Int { return code(); }\n" +
+                "public static code(Char value) -> Int { external js { return " + interpolation + "value}.charCodeAt(0); } } }"),
+            CompilerSource("app/Main.flat", "package app\nclass Main { public static main() {\n" +
+                "let value = Glyph('a'); let direct = value.code(); let same = value.self(); let nativeValue = Glyph.code('b');\n" +
+                "external js { console.log(" + interpolation + "direct}, " + interpolation + "same}, " + interpolation + "nativeValue}); } } }")
+        ]
+        var String reference
+        let Bool[] orders = [false, true]
+        let root = File(".flat-compiler-dispatch-probe-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            for (reverse in orders) {
+                let selected = reverse ? sources.reverse() : sources
+                let sink = MemoryCompilerArtifactSink()
+                let summary = Compiler().compilePackage(MemoryCompilerSourceProvider(selected), sink,
+                    "dispatch.js", mainClass: "app/Main").completion.get()
+                if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+                expect(summary.succeeded).toBe(true)
+                expect(summary.diagnosticCount).toBe(0)
+                expect(summary.artifactCount).toBe(1)
+                let code = sink.artifacts().first.code
+                if (reference == null) reference = code
+                else expect(code).toBe(reference)
+                let output = File(root, "index.js")
+                Es6ArtifactCommitter().commit(output, code)
+                let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+                if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+                expect(response.exitCode).toBe(0)
+                expect(response.stdout.join("")).toBe("97 97 98\n")
+                expect(response.stderr.join("")).toBe("")
+            }
+        } finally { Es6ArtifactFiles.remove(root) }
     }
 
     async test `runtime metadata name evaluates receiver once and reaches canonical String consumer`() {

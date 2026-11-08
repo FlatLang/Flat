@@ -378,7 +378,7 @@ PRODUCTS = ("packages/Flat-Compiler/dist/es6/index.js", "packages/Airship/dist/a
             "packages/Flat-Compiler/dist/es6/production-driver.js")
 # README acceptance set; all are mandatory, never conditional on availability.
 REQUIRED_SUITES = ('Airship', 'Flat-Project-Loading', 'Flat-Parser', 'Flat-Name-Binding',
-                   'Flat-Bound-IR', 'Flat-ES6-Bound-Writer', 'Flat-Compiler')
+                   'Flat-Bound-IR', 'Flat-ES6-Bound-Writer', 'Flat-Compiler', 'FuCli')
 EXCLUDED = {".git", "dist", "target", "node_modules", "__pycache__"}
 MAX_FILES = 100000
 MAX_SNAPSHOT_BYTES = 256 * 1024 * 1024
@@ -933,7 +933,7 @@ def lifecycle_inventory(workspace, runner):
 
 def process_companion_gates(workspace, directory, env, policy, node, execute,
                             budget=None, command_seconds=600):
-    """Extra mandatory gates; never replace any of the seven package suites."""
+    """Extra mandatory gates; never replace any required package suite."""
     dist = workspace / 'packages/Airship/dist'
     if dist.exists() and any(dist.rglob('owned-process-test.js')):
         raise ValueError('Ordinary companion output already exists before build')
@@ -1044,7 +1044,7 @@ def stage_command(node, runner, workspace, number, package, operation, source=No
 
 
 def stage_public_workloads(repo, output, directory, sources, seeds, products, budget, seconds):
-    """Separate fresh public workloads, alongside (never replacing) seven suites."""
+    """Separate fresh public workloads, alongside (never replacing) required suites."""
     import dogfood_acceptance as acceptance
     results = {}
     for name in ('airship-toolchain', 'core-lr'):
@@ -1347,7 +1347,7 @@ def main():
     source_manifest_digest = digest(source_manifest)
     write_json(output / 'source-provenance.json', provenance)
     receipt = {"schema": 2, "status": "running", 'source_revision': revision,
-               'stages': [], 'acceptance_scope': 'isolated generated-tool rebuild and seven production suites',
+               'stages': [], 'acceptance_scope': 'isolated generated-tool rebuild and required production suites',
                'seed_manifest_sha256': digest(args.seeds), 'seed_review_sha256': args.review_sha256,
                'seed_producer_revision': review['source_revision'],
                'seed_producer_provenance': review['provenance'],

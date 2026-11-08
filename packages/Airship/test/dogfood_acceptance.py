@@ -19,7 +19,7 @@ import sys
 import stage_bootstrap as bootstrap
 
 SUITES = ('Airship', 'Flat-Project-Loading', 'Flat-Parser', 'Flat-Name-Binding',
-          'Flat-Bound-IR', 'Flat-ES6-Bound-Writer', 'Flat-Compiler')
+          'Flat-Bound-IR', 'Flat-ES6-Bound-Writer', 'Flat-Compiler', 'FuCli')
 SCENARIOS = ('cold', 'warm', 'changed', 'removed')
 INVALIDATIONS = ('dependency', 'options', 'configuration', 'tool')
 DRIVER_SCENARIOS = ('forward', 'reverse', 'cancel-after-read-forward', 'cancel-after-stage-reverse')
@@ -368,7 +368,7 @@ def production_gates(receipt):
             and semantic_diagnostics(clean.get('commands', []))['complete']
             and semantic_diagnostics(retained['commands'])['records'] == semantic_diagnostics(clean['commands'])['records'])
     suites = receipt.get('stage2_suites', {})
-    gates['seven-production-suites'] = set(suites) == set(SUITES)
+    gates['required-production-suites'] = set(suites) == set(SUITES)
     gates['structured-production-diagnostics'] = bool(suites) and all(
         semantic_diagnostics(run.get('commands', []))['complete'] for run in suites.values())
     records = [record for command in suites.get('Flat-Compiler', {}).get('commands', [])
@@ -446,6 +446,8 @@ def validate_production_selection(root, run, package, tools, node_seed):
     schema-2 aggregate acceptance always requires this stronger production binding.
     """
     require(isinstance(run, dict), 'Missing production selection')
+    require(package != 'FuCli' or run.get('execution_kind') is None,
+            'FuCli execution kind must use the ordinary public suite contract')
     require(run.get('execution_kind') in (None, 'ordinary-stage2-cli'),
             'Unknown production execution kind')
     name = run.get('workspace')
@@ -524,6 +526,8 @@ def validate_incremental_run(root, run, workspace, inventory, compiler_sha):
 def validate_production_run(root, run, compiler_sha):
     """Re-read pinned artifacts and logs; serialized observations are not authority."""
     require(isinstance(run, dict) and run.get('status') == 'passed', 'Incomplete production run')
+    require(run.get('package') != 'FuCli' or run.get('execution_kind') is None,
+            'FuCli execution kind must use the ordinary public suite contract')
     file_reference(root, run['source_receipt'])
     require(PurePosixPath(run['source_receipt']['path']).name == 'observed-sources.json',
             'Production source reference must identify observed inventory')
@@ -979,7 +983,7 @@ def execute_production(context, package, seeds, budget, seconds):
     generated = None
     for operation in ('install', 'run'):
         # Public Airship interface; do not call stage_command with Flat-Core,
-        # because F deliberately limits that helper to its seven bootstrap suites.
+        # because F deliberately limits that helper to its required bootstrap suites.
         argv = [str(seeds['node'][0]), str(context['runner']), '--use-links', '-f',
                 str(workspace / 'packages' / package), '--flatc-runtime', 'flat', operation, 'test', '-t', 'es6']
         if operation == 'install':

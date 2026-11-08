@@ -766,7 +766,7 @@ class {
                     value.range, semanticType, value.name, identity
                 )
                 scopeLocals.add(LocalBinding(value.name, identity, semanticType,
-                    nativeArrayStorage: value.nativeArrayStorage, nativeScalarStorage: value.nativeScalarStorage))
+                    nativeArrayStorage: value.nativeArrayStorage, nativeScalarStorage: value.nativeScalarStorage, mutableStorage: value.mutable))
                 var TypeConversion initializerConversion
                 if (initialized) {
                     if (semanticType.kind() == "nullable") initialized = PrimitiveStringAdapter.storageText(
@@ -997,7 +997,7 @@ class {
             if (target.safeAccess) throw Exception("Safe member assignment is not supported")
             let operand = classExpression(value.value, receiver, fields, locals, callables)
             return PrimitiveClassBinder.bindMemberCompound(value.range, target, value.assignmentOperator,
-                operand, currentTypeResolver.declarationContext, callables, currentHierarchy)
+                operand, currentTypeResolver.declarationContext, callables, currentHierarchy, explicitStorage: true)
         }
         if (syntax.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
             let value = (PrimitiveMemberAccessSyntax)syntax
@@ -1254,7 +1254,9 @@ class {
             let reference = (PrimitiveReferenceSyntax)value.operand
             let local = locals.reverse().firstOrNull({ _.name == reference.name })
             var BoundExpression target
-            if (local) {
+            if (local && local.identity.symbolKind != "field") {
+                if (!local.mutableStorage && local.identity.symbolKind != "field")
+                    throw Exception("Postfix update requires mutable local")
                 target = BoundReferenceExpression(
                     value.range, local.semanticType, local.name, local.identity
                 )
@@ -1276,8 +1278,8 @@ class {
                 value.updateOperator == "++" ? "+" : "-",
                 target.semanticType, one.semanticType, value.range
             )
-            if (!typed.valid ||
-                typed.semanticType.value() != target.semanticType.value()) {
+            if (!typed.valid || !TypeOperations.unary("+", target.semanticType, value.range).valid ||
+                !TypeConversions.classify(typed.semanticType, target.semanticType, explicit: true).applicable) {
                 throw Exception("Postfix update requires a numeric local")
             }
             return BoundPostfixUpdateExpression(
@@ -1447,7 +1449,7 @@ class {
                 SyntaxIslandIdentity(declaration.range.snapshot, "declaration-value", declaration.range.startTokenIndex),
                 "declaration-value", declaration.name), "local")
             let local = BoundReferenceExpression(declaration.range, initialized.semanticType, declaration.name, identity)
-            locals.add(LocalBinding(declaration.name, identity, initialized.semanticType))
+            locals.add(LocalBinding(declaration.name, identity, initialized.semanticType, mutableStorage: false))
             return BoundDeclarationValueExpression(declaration.range, initialized.semanticType, local, initialized,
                 TypeConversions.classify(initialized.semanticType, initialized.semanticType))
         }

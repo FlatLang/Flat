@@ -7,6 +7,83 @@ import flat/semantic/types
 
 /** Focused binding coverage for selected opaque statements and interpolation. */
 testable class PrimitiveOpaqueCodeBinder_Test {
+    test `opaque field lookup retains instance receiver and exact overlay member identity`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-native-field"), "one")
+        let memberSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-native-overlay"), "one")
+        let range = SourceRange(snapshot, 0, 4, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 5))
+        let memberRange = SourceRange(memberSnapshot, 0, 4, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 5))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Array")
+        let memberOwner = DeclarationIdentity(SyntaxIslandIdentity(memberSnapshot, "class", 0), "class", "Array")
+        let identity = SymbolIdentity(memberOwner, "field", 0)
+        let type = ArraySemanticType(SemanticTypes.charType())
+        let field = BoundFieldUnit("data", identity, type, memberRange, visibleField: true,
+            nativeArrayStorage: true, ownerIdentity: owner)
+        let receiver = BoundReferenceExpression(range, UserClassSemanticType(owner), "this", SymbolIdentity(owner, "receiver"))
+        let lexical = LocalBinding("data", identity, type)
+        var String code = ""
+        code += '#'
+        code += "{data} = new Array(2).fill(null);"
+        PrimitiveExternalCodeSegmentSyntax[] syntaxSegments = [
+            PrimitiveExternalCodeSegmentSyntax(range, "", ["data"]),
+            PrimitiveExternalCodeSegmentSyntax(range, " = new Array(2).fill(null);", String[])
+        ]
+        let syntax = PrimitiveExternalStatementSyntax(range, "js", code, syntaxSegments)
+        LocalBinding[] fieldLocals = [lexical]
+        BoundFieldUnit[] published = [field]
+        let bound = PrimitiveOpaqueCodeBinder().bind(syntax, fieldLocals, receiver, published,
+            CallableSignature[], published)
+        let segment = bound.segmentValues().firstOrNull((piece) => piece.value != null)
+        expect(segment.value.expressionKind()).toBe("member-access")
+        Object accessSource = segment.value
+        BoundMemberAccessExpression access = (BoundMemberAccessExpression)accessSource
+        expect(access.memberIdentity.value).toBe(identity.value)
+        expect(access.receiver).toBe(receiver)
+        expect(access.semanticType.value()).toBe(type.value())
+        expect(access.range.snapshot.value).toBe(snapshot.value)
+        expect(field.canonicalOwner().value).toBe(owner.value)
+        expect(bound.nameBindingValues().count).toBe(0)
+        let remapped = BoundReferenceExpression(range, receiver.semanticType, "allocated", SymbolIdentity(owner, "parameter", 0))
+        let substitution = PrimitiveConstructorSubstitution()
+        substitution.bind(receiver.symbolIdentity, remapped)
+        Object substitutedSource = substitution.lowerExpression(access)
+        BoundMemberAccessExpression substituted = (BoundMemberAccessExpression)substitutedSource
+        expect(substituted.memberIdentity.value).toBe(identity.value)
+        expect(((BoundReferenceExpression)substituted.receiver).symbolIdentity.value).toBe(remapped.symbolIdentity.value)
+        var Bool prebaseRejected
+        try { PrimitiveConstructorSubstitution(receiverFree: true).lowerExpression(access) }
+        catch (Exception error) { prebaseRejected = error.message.contains("uninitialized receiver") }
+        expect(prebaseRejected).toBe(true)
+        let childOwner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 8), "class", "ChildArray")
+        let childReceiver = BoundReferenceExpression(range, UserClassSemanticType(childOwner), "this", SymbolIdentity(childOwner, "receiver"))
+        let inherited = PrimitiveOpaqueCodeBinder().bind(syntax, fieldLocals, childReceiver, availableFields: published)
+        Object inheritedSource = inherited.segmentValues().firstOrNull((piece) => piece.value != null).value
+        BoundMemberAccessExpression inheritedAccess = (BoundMemberAccessExpression)inheritedSource
+        expect(inheritedAccess.memberIdentity.value).toBe(identity.value)
+        expect(inheritedAccess.receiver).toBe(childReceiver)
+        var Bool rejected
+        try { PrimitiveOpaqueCodeBinder().bind(syntax, fieldLocals, fields: published, availableFields: published) }
+        catch (Exception error) { rejected = error.message.contains("receiver") }
+        expect(rejected).toBe(true)
+        let parameter = LocalBinding("data", SymbolIdentity(owner, "parameter", 1), type)
+        LocalBinding[] parameterLocals = [lexical, parameter]
+        let shadowed = PrimitiveOpaqueCodeBinder().bind(syntax, parameterLocals, receiver, published)
+        expect(shadowed.segmentValues().firstOrNull((piece) => piece.value != null).value.expressionKind()).toBe("reference")
+        let local = LocalBinding("data", SymbolIdentity(owner, "local", 2), type, nativeArrayStorage: true)
+        LocalBinding[] localLocals = [lexical, local]
+        let localShadow = PrimitiveOpaqueCodeBinder().bind(syntax, localLocals, receiver, published)
+        Object localSource = localShadow.segmentValues().firstOrNull((piece) => piece.value != null).value
+        BoundReferenceExpression localReference = (BoundReferenceExpression)localSource
+        expect(localReference.symbolIdentity.value).toBe(local.identity.value)
+        expect(localShadow.nameBindingValues().count).toBe(1)
+        let staticField = BoundFieldUnit("data", identity, type, memberRange, visibleField: true,
+            staticField: true, nativeArrayStorage: true, ownerIdentity: owner)
+        BoundFieldUnit[] staticFields = [staticField]
+        let staticBound = PrimitiveOpaqueCodeBinder().bind(syntax, fieldLocals, fields: staticFields)
+        Object staticSource = staticBound.segmentValues().firstOrNull((piece) => piece.value != null).value
+        BoundReferenceExpression staticReference = (BoundReferenceExpression)staticSource
+        expect(staticReference.staticOwner.value).toBe(owner.value)
+        expect(staticReference.fieldOwnerIdentity.value).toBe(owner.value)
+    }
     test `constructor storage substitution retains source name for renamed native setup local`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-setup-remap"), "one")
         let range = SourceRange(snapshot, 0, 4, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 5))

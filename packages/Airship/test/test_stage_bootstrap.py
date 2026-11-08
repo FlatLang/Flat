@@ -806,7 +806,7 @@ class BootstrapTests(unittest.TestCase):
             root = Path(directory).resolve()
             repo = root / "repo"
             for name in ('Airship', 'Flat-Project-Loading', 'Flat-Parser', 'Flat-Name-Binding',
-                         'Flat-Bound-IR', 'Flat-ES6-Bound-Writer', 'Flat-Compiler'):
+                         'Flat-Bound-IR', 'Flat-ES6-Bound-Writer', 'Flat-Compiler', 'FuCli'):
                 package = repo / "packages" / name
                 package.mkdir(parents=True)
                 (package / "flat.json").write_text('{}')
@@ -915,15 +915,15 @@ class BootstrapTests(unittest.TestCase):
                         self.assertEqual(expected, bootstrap.digest(output / f'stage{number}' / name))
                     self.assertEqual(set(manifest['tool_sha256']),
                                      set(seeds) if number == 0 else {'node', 'git'})
-                    self.assertEqual(len(manifest['commands']), 17)
+                    self.assertEqual(len(manifest['commands']), 19)
                     installed = [Path(item['argv'][item['argv'].index('-f') + 1]).name
                                  for item in manifest['commands']
                                  if 'install' in item['argv'] and 'test' in item['argv']]
                     self.assertEqual(installed, ['Airship', 'Flat-Project-Loading', 'Flat-Parser',
                                                 'Flat-Name-Binding', 'Flat-Bound-IR',
-                                                'Flat-ES6-Bound-Writer', 'Flat-Compiler'])
+                                                'Flat-ES6-Bound-Writer', 'Flat-Compiler', 'FuCli'])
             self.assertEqual(gates.call_count, 3)
-            self.assertEqual([number for number, _ in calls], [0] * 17 + [1] * 17 + [2] * 17)
+            self.assertEqual([number for number, _ in calls], [0] * 19 + [1] * 19 + [2] * 19)
             for number in (0, 1, 2):
                 stage_calls = [command for stage_number, command in calls if stage_number == number]
                 prerequisites = [(Path(command[command.index('-f') + 1]).name,

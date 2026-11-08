@@ -732,8 +732,8 @@ testable class {
         let method = result.typeUnit.functionUnits().firstOrNull({ _.name == "plusEqualsReal" })
         let statements = method.statements()
         let expressionObject = (Object)statements.first
-        let expressionStatement = (BoundExpressionStatement)expressionObject
-        Object evaluationObject = expressionStatement.expression
+        let returned = (BoundReturnStatement)expressionObject
+        Object evaluationObject = returned.value
         BoundEvaluationExpression evaluation = (BoundEvaluationExpression)evaluationObject
         let setup = evaluation.setup()
         expect(setup.count).toBe(3)

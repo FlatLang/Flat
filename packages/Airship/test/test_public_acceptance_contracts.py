@@ -71,7 +71,8 @@ class PublicAcceptanceContracts(unittest.TestCase):
         self.assertEqual(set(result), {'airship-toolchain', 'core-lr'})
         self.assertEqual([call.args[1] for call in run.call_args_list], ['airship-toolchain', 'core-lr'])
         self.assertEqual(create.call_count, 2)
-        self.assertEqual(len(bootstrap.REQUIRED_SUITES), 7)
+        self.assertEqual(len(bootstrap.REQUIRED_SUITES), 8)
+        self.assertIn('FuCli', bootstrap.REQUIRED_SUITES)
 
     def test_public_producer_builds_fresh_public_groups_and_validator_rejects_forgery(self):
         temporary = tempfile.TemporaryDirectory()

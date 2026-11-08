@@ -179,7 +179,7 @@ diagnostic equivalence. It also replays an actually admitted compiler invocation
 with the documented `-threads 1` and `-threads 2`, comparing generated artifacts;
 this does not prove overlap or a controlled completion schedule.
 
-Producer mode installs/runs all seven suites again with the immutable generated
+Producer mode installs/runs all eight required suites (including FuCli) again with the immutable generated
 stage2 tools (bootstrap stage2 itself used stage1 compiler inputs), retaining each
 workload's commands and artifacts. It includes the real Flat-Compiler suite and
 new controlled lifecycle tests when registered. It extracts bounded standalone

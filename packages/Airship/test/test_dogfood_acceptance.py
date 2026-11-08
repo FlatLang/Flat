@@ -1204,6 +1204,119 @@ class AcceptanceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Malformed'):
             gate.lifecycle_records(log)
 
+    def test_fucli_is_required_in_both_acceptance_inventories(self):
+        expected = ('Airship', 'Flat-Project-Loading', 'Flat-Parser', 'Flat-Name-Binding',
+                    'Flat-Bound-IR', 'Flat-ES6-Bound-Writer', 'Flat-Compiler', 'FuCli')
+        self.assertEqual(gate.SUITES, expected)
+        self.assertEqual(gate.bootstrap.REQUIRED_SUITES, expected)
+        old = {name: {} for name in expected if name != 'FuCli'}
+        verdict = gate.production_gates({'stage2_suites': old})
+        self.assertFalse(verdict['gates']['required-production-suites'])
+        self.assertIn('required-production-suites', verdict['blockers'])
+        self.assertNotIn('seven-production-suites', verdict['gates'])
+        self.assertFalse(verdict['full_acceptance'])
+
+    def test_bootstrap_cannot_omit_fucli_or_accept_install_only(self):
+        path = self.stages / 'stage2/manifest.json'
+        original = gate.read_json(path)
+        for operation in ('install', 'run'):
+            changed = copy.deepcopy(original)
+            for command in changed['commands']:
+                if operation in command['argv'] and '/snapshot/packages/FuCli' in command['argv']:
+                    command['argv'][3] = '/snapshot/packages/Flat-Core'
+            self.write(path, changed)
+            with self.subTest(operation=operation), self.assertRaisesRegex(ValueError, 'Missing bootstrap FuCli'):
+                gate.validate_bootstrap(self.stages)
+        self.write(path, original)
+
+    def test_fucli_stage_commands_require_install_and_run_with_explicit_generated_compiler(self):
+        for number in (1, 2):
+            for operation in ('install', 'run'):
+                command = gate.bootstrap.stage_command('/node', '/stage/airship.js', self.root,
+                    number, 'FuCli', operation, 'test', compiler_seed='/stage/flatc.js')
+                expected = ['/node', '/stage/airship.js', '--use-links', '-f',
+                    str(self.root / 'packages/FuCli'), '--flatc-runtime', 'flat', operation, 'test', '-t', 'es6']
+                if operation == 'install':
+                    expected += ['--flatc-script', '/stage/flatc.js']
+                self.assertEqual(command, expected)
+                with self.assertRaisesRegex(ValueError, 'explicit generated compiler'):
+                    gate.bootstrap.stage_command('/node', '/stage/airship.js', self.root,
+                        number, 'FuCli', operation, 'test', jar='/java/flatc.jar')
+
+    def fucli_receipt_case(self):
+        # Mocked command observations, never production acceptance or seed review.
+        context, run, seen, generated = self.production_fixture_case('FuCli')
+        tools = {gate.bootstrap.PRODUCTS[0]: context['policy']['seedSha256'],
+                 gate.bootstrap.PRODUCTS[1]: context['policy']['airshipSha256']}
+        node = context['directory'] / 'node'
+        seed = {'path': str(node), 'sha256': gate.bootstrap.digest(node)}
+        return context, run, tools, seed, generated
+
+    def test_fucli_receipt_requires_exact_public_pair_and_tool_selection(self):
+        context, run, tools, seed, generated = self.fucli_receipt_case()
+        def validate(value):
+            gate.validate_production_selection(self.root, value, 'FuCli', tools, seed)
+            return gate.validate_production_run(self.root, value, tools[gate.bootstrap.PRODUCTS[0]])
+        self.assertEqual(validate(run), gate.scenario_sources(None, context['workspace']))
+        mutations = {
+            'install-only': lambda value: value['commands'].pop(),
+            'run-replaced-by-install': lambda value: value['commands'].__setitem__(1, value['commands'][0]),
+            'java-runtime': lambda value: value['commands'][0]['argv'].__setitem__(6, 'java'),
+            'java-executable': lambda value: value['commands'][0]['argv'].__setitem__(0, '/java'),
+            'compiler-selector': lambda value: value['commands'][0]['argv'].__setitem__(-1, '/other/flatc.js'),
+            'group-selector': lambda value: value['commands'][0]['argv'].__setitem__(8, 'main'),
+            'workspace': lambda value: value.update(workspace='other/workspace'),
+            'escape': lambda value: value.update(workspace='../workspace'),
+            'package': lambda value: value.update(package='Flat-Core'),
+            'artifact-hash': lambda value: value['artifacts'].update({'test.js': '0' * 64}),
+        }
+        for name, mutate in mutations.items():
+            changed = copy.deepcopy(run)
+            mutate(changed)
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                validate(changed)
+        retained = self.root / run['artifact_references']['test.js']['path']
+        for path in (context['compiler'], context['runner'], retained):
+            original = path.read_bytes()
+            path.write_text('stale/substituted bytes')
+            with self.subTest(path=path.name), self.assertRaises(ValueError):
+                validate(run)
+            path.write_bytes(original)
+
+    def test_fucli_rejects_execution_kind_overrides_in_both_readers(self):
+        context, run, tools, seed, generated = self.fucli_receipt_case()
+        for kind in ('ordinary-stage2-cli', 'java', 'build-only', 'forged'):
+            changed = dict(run, execution_kind=kind)
+            with self.subTest(kind=kind, reader='selection'), self.assertRaisesRegex(ValueError, 'execution kind'):
+                gate.validate_production_selection(self.root, changed, 'FuCli', tools, seed)
+            # No dispatch into Flat-Core's special incremental reader is allowed.
+            with mock.patch.object(gate, 'validate_incremental_run') as incremental:
+                with self.subTest(kind=kind, reader='run'), self.assertRaisesRegex(ValueError, 'execution kind'):
+                    gate.validate_production_run(self.root, changed, tools[gate.bootstrap.PRODUCTS[0]])
+                incremental.assert_not_called()
+
+    def test_fucli_execution_admission_cannot_be_missing_stale_or_java(self):
+        context, run, tools, seed, generated = self.fucli_receipt_case()
+        command = run['commands'][1]
+        path = self.root / command['admission_reference']['path']
+        original = path.read_bytes()
+        for record in ({'decision': 'allow', 'command': seed['path'], 'args': ['/stale/test.js']},
+                       {'decision': 'allow', 'command': seed['path'], 'args': [str(context['compiler']), 'src']},
+                       {'decision': 'allow', 'command': '/java', 'args': ['-jar', '/test.jar']}, None):
+            path.write_bytes(original[:command['admission_offset']] +
+                             (b'' if record is None else (json.dumps(record) + '\n').encode()))
+            # Re-pin both observation and cleanup bindings: content validation,
+            # rather than a stale outer hash, must still reject fake execution.
+            command['admission_reference']['sha256'] = gate.bootstrap.digest(path)
+            cleanup_path = self.root / command['cleanup_reference']['path']
+            cleanup = gate.read_json(cleanup_path)
+            cleanup['admissions_sha256'] = gate.bootstrap.digest(path)
+            self.write(cleanup_path, cleanup)
+            command['cleanup_reference']['sha256'] = gate.bootstrap.digest(cleanup_path)
+            with self.subTest(record=record), self.assertRaisesRegex(ValueError, 'admission|Java|journal'):
+                gate.validate_production_run(self.root, run, tools[gate.bootstrap.PRODUCTS[0]])
+        path.write_bytes(original)
+
     def production_fixture_case(self, package='Airship'):
         self.root = self.root.resolve()
         directory = self.root / 'fixture-production'
@@ -1214,6 +1327,9 @@ class AcceptanceTests(unittest.TestCase):
         repo = Path(__file__).resolve().parents[3]
         source.write_bytes((repo / gate.bootstrap.LIFECYCLE_SOURCE).read_bytes())
         runner, compiler = directory / 'runner.js', directory / 'compiler.js'
+        if package == 'FuCli':
+            (directory / 'seeds').mkdir()
+            runner, compiler = directory / 'seeds/airship.js', directory / 'seeds/flatc.js'
         runner.write_text('pinned Airship')
         compiler.write_text('pinned compiler')
         policy = {'root': str(workspace), 'airshipSha256': gate.bootstrap.digest(runner),

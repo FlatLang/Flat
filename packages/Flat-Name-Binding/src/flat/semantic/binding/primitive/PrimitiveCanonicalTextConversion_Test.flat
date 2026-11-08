@@ -8,6 +8,163 @@ import flat/lexer/Lexer
 
 /** Canonical scalar text evidence, independent of shared partition fixtures. */
 testable class {
+    async test `character literal constructor argument materializes declared Array storage and count`() {
+        let sources = [defaultSource("flat", "Array", "class Array<E> { visible native_array E[] data; public construct(native_array E[] data, Int count) { this.data = data; } }"),
+            defaultSource("flat", "StringCharArray", "class StringCharArray { public construct(Char[] data) {} public construct(native_array native Char[] data, Int count) {} }"),
+            defaultSource("flat", "ArrayArgument", "class ArrayArgument { public static run() { let chars = StringCharArray(['a', '\\0', 'ä', 'b']); } }")]
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let array = units.firstOrNull((unit) => unit.identity.name == "Array")
+        let owner = units.firstOrNull((unit) => unit.identity.name == "ArrayArgument")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        let call = textCall(textLocal(method.statements().first).initializer)
+        expect(call.target.parameterTypes().first.kind()).toBe("generic-instance")
+        let materialized = textCall(call.argumentValues().first)
+        expect(materialized.target.ownerType.value()).toBe(array.semanticType.value())
+        expect(materialized.semanticType.value()).toBe(call.target.parameterTypes().first.value())
+        expect(materialized.target.parameterTypes().first.kind()).toBe("array")
+        Object storageSource = materialized.argumentValues().first
+        BoundArrayExpression storage = (BoundArrayExpression)storageSource
+        expect(storage.elementValues().count).toBe(4)
+        expect(storage.elementValues().first.semanticType.value()).toBe(SemanticTypes.charType().value())
+        expect(materialized.argumentValues().last.expressionKind()).toBe("literal")
+    }
+
+    async test `contextual declared literal constructs while exact native overload wins`() {
+        let sources = [defaultSource("flat", "Array", "class Array<E> { public construct(native_array E[] data, Int count) {} }"),
+            defaultSource("flat", "EmptySink", "class EmptySink { public construct(Char[] data) {} }"),
+            defaultSource("flat", "CompetingSink", "class CompetingSink { public construct(Char[] data) {} }"),
+            defaultSource("flat", "EmptyArgument", "class EmptyArgument { public static run() { let empty = EmptySink(['x']); let nativeValue = CompetingSink(['a']); } }")]
+        let base = sources[2]
+        let overlay = textSource("flat", "CompetingSink", "class CompetingSink { public construct(native_array native Char[] data) {} }", "native")
+        let merged = base.classValues().first.mergedWith(overlay.classValues().first)
+        sources[2] = PrimitiveSourceBindingContext("flat", base.snapshot, [merged])
+        sources.add(PrimitiveSourceBindingContext("flat", overlay.snapshot, PrimitiveClassSyntax[]))
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().firstOrNull((unit) => unit.identity.name == "EmptyArgument")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        let empty = textCall(textLocal(method.statements().first).initializer)
+        expect(empty.argumentValues().first.expressionKind()).toBe("call")
+        let nativeValue = textCall(textLocal(method.statements().last).initializer)
+        expect(nativeValue.target.parameterTypes().first.kind()).toBe("array")
+        expect(nativeValue.argumentValues().first.expressionKind()).toBe("array")
+    }
+
+    async test `native array overload keeps literal storage and existing arrays are not reconstructed`() {
+        let sources = [defaultSource("flat", "Array", "class Array<E> { public construct(native_array E[] data, Int count) {} }"),
+            defaultSource("flat", "NativeSink", "class NativeSink { public construct(native_array native Char[] data) {} }"),
+            defaultSource("flat", "NativeArgument", "class NativeArgument { public static run(native_array native Char[] data) { let first = NativeSink(['a']); let second = NativeSink(data); } }")]
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().firstOrNull((unit) => unit.identity.name == "NativeArgument")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        expect(textCall(textLocal(method.statements().first).initializer).argumentValues().first.expressionKind()).toBe("array")
+        expect(textCall(textLocal(method.statements().last).initializer).argumentValues().first.expressionKind()).toBe("reference")
+    }
+    async test `mutable Char postfix retains old storage type and stable local identity`() {
+        let source = defaultSource("app", "CharPostfix", "class CharPostfix { public static run() { var Char local = 'A'; local += (Char)1; let previous = local++; let next = local--; } }")
+        let unit = PrimitiveClassPartitionBinder().bindContexts([source]).typeUnits().first
+        let method = unit.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        let local = textLocal(method.statements().first)
+        let previous = textLocal(method.statements()[2])
+        Object updateSource = previous.initializer
+        BoundPostfixUpdateExpression update = (BoundPostfixUpdateExpression)updateSource
+        expect(update.semanticType.value()).toBe(SemanticTypes.charType().value())
+        expect(update.updateOperator).toBe("++")
+        Object targetSource = update.target
+        BoundReferenceExpression target = (BoundReferenceExpression)targetSource
+        expect(target.symbolIdentity.value).toBe(local.local.symbolIdentity.value)
+        expect(previous.local.semanticType.value()).toBe(SemanticTypes.charType().value())
+    }
+
+    async test `postfix numeric neighbors and parameter writes retain existing contracts`() {
+        let source = defaultSource("app", "NumericPostfix", "class NumericPostfix { public static run(Int parameter) { var Int integer = 1; let oldInteger = integer++; var Float fraction = (Float)1.0; let oldFraction = fraction--; let oldParameter = parameter++; } }")
+        let owner = PrimitiveClassPartitionBinder().bindContexts([source]).typeUnits().first
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        expect(textLocal(method.statements()[1]).local.semanticType.value()).toBe(SemanticTypes.intType().value())
+        expect(textLocal(method.statements()[3]).local.semanticType.value()).toBe(SemanticTypes.floatType().value())
+        expect(textLocal(method.statements().last).local.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `postfix implicit fields require mutable declared storage`() {
+        let mutableSource = defaultSource("app", "FieldPostfix", "class FieldPostfix { visible var Char value; public previous() -> Char { return value++; } }")
+        let owner = PrimitiveClassPartitionBinder().bindContexts([mutableSource]).typeUnits().first
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "previous")
+        Object updateSource = textReturn(method.statements().first).value
+        BoundPostfixUpdateExpression update = (BoundPostfixUpdateExpression)updateSource
+        expect(update.target.expressionKind()).toBe("member-access")
+        Object fieldSource = update.target
+        BoundMemberAccessExpression field = (BoundMemberAccessExpression)fieldSource
+        expect(field.memberIdentity.value).toBe(owner.fieldUnits().first.identity.value)
+        let readonlySource = defaultSource("app", "ReadonlyPostfix", "class ReadonlyPostfix { visible Char value; public previous() -> Char { return value++; } }")
+        var Bool rejected
+        try { PrimitiveClassPartitionBinder().bindContexts([readonlySource]) }
+        catch (Exception error) { rejected = error.message.contains("mutable field") }
+        expect(rejected).toBe(true)
+    }
+
+    async test `postfix rejects readonly missing nonnumeric nullable and indexed storage`() {
+        String[] bodies = ["let value = 1; let previous = value++;", "let previous = missing++;",
+            "var String value = \"a\"; let previous = value++;", "var Bool value = true; let previous = value++;",
+            "var Int? value = null; let previous = value++;", "var Int[] values = [1]; let previous = values[0]++;"]
+        for (body in bodies) {
+            let source = defaultSource("app", "InvalidPostfix", "class InvalidPostfix { public static run() { " + body + " } }")
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts([source]) }
+            catch (Exception error) { rejected = error.message.contains("Postfix") || error.message.contains("postfix") }
+            expect(rejected).toBe(true)
+        }
+    }
+    async test `Char compound arrow returns own stored primitive in both source orders`() {
+        String[] contracts = ["", "-> Char"]
+        for (contract in contracts) {
+            let sources = [defaultSource("flat", "Number", "class Number<E> { public construct() {} }"),
+                defaultSource("flat", "Char", "class Char extends Number<Char> { visible Char value; public construct(Char value) { this.value = value; } public minusEquals(Char other) " + contract + " => this.value -= other public static neighbor(Char value) -> Char { return value; } }"),
+                defaultSource("flat", "CharConsumer", "class CharConsumer { public static run() { let boxed = Char('c'); let changed = boxed.minusEquals((Char)1); } }")]
+            Bool[] schedules = [false, true]
+            for (reverse in schedules) {
+                let units = PrimitiveClassPartitionBinder().bindContexts(reverse ? sources.reverse() : sources).typeUnits()
+                let chars = units.firstOrNull((unit) => unit.identity.name == "Char")
+                let owner = units.firstOrNull((unit) => unit.identity.name == "CharConsumer")
+                let implementation = chars.functionUnits().firstOrNull((method) => method.name == "minusEquals")
+                expect(implementation.returnType.value()).toBe(SemanticTypes.charType().value())
+                Object evaluationSource = textReturn(implementation.statements().last).value
+                BoundEvaluationExpression evaluation = (BoundEvaluationExpression)evaluationSource
+                expect(evaluation.semanticType.value()).toBe(SemanticTypes.charType().value())
+                let setup = evaluation.setup()
+                expect(setup.count).toBe(3)
+                Object writeSource = setup.last
+                BoundMemberAssignmentStatement write = (BoundMemberAssignmentStatement)writeSource
+                let field = chars.fieldUnits().firstOrNull((candidate) => candidate.name == "value")
+                expect(write.target.memberIdentity.value).toBe(field.identity.value)
+                expect(field.canonicalOwner().value).toBe(chars.identity.value)
+                expect(write.target.receiver.expressionKind()).toBe("reference")
+                expect(implementation.statements().count).toBe(1)
+                let run = owner.functionUnits().firstOrNull((method) => method.name == "run")
+                let boxed = textLocal(run.statements().first)
+                let changed = textLocal(run.statements().last)
+                let call = textCall(changed.initializer)
+                expect(call.target.identity.declaration.value).toBe(implementation.identity.value)
+                expect(call.target.ownerType.value()).toBe(chars.semanticType.value())
+                expect(changed.local.semanticType.value()).toBe(SemanticTypes.charType().value())
+                Object receiverSource = call.receiver
+                BoundReferenceExpression receiver = (BoundReferenceExpression)receiverSource
+                expect(receiver.symbolIdentity.value).toBe(boxed.local.symbolIdentity.value)
+            }
+        }
+    }
+
+    async test `compound arrow rejects invalid operand and static instance access`() {
+        String[] methods = ["public minusEquals(Bool other) => this.value -= other",
+            "public static minusEquals(Char other) => this.value -= other"]
+        for (method in methods) {
+            let source = defaultSource("app", "InvalidCompoundArrow", "class InvalidCompoundArrow { visible Char value; " + method + " }")
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts([source]) }
+            catch (Exception error) {
+                if (!error.message.contains("Bool") && !error.message.contains("this") &&
+                    !error.message.contains("receiver") && !error.message.contains("Operator")) throw error
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
     textCall(Object value) -> BoundCallExpression => (BoundCallExpression)value
     textReturn(Object value) -> BoundReturnStatement => (BoundReturnStatement)value
     textAssignment(Object value) -> BoundAssignmentStatement => (BoundAssignmentStatement)value
@@ -161,12 +318,20 @@ testable class {
         expect(owner.fieldUnits().first.semanticType.kind()).toBe("nullable")
     }
 
+    async test `same owner call return seeding preserves agreeing overloads and typed disagreement`() {
+        let sources = [defaultSource("app", "SeedReturns",
+            "class SeedReturns { public pick(Int value) -> Int { return value; } public pick(Bool value) -> Int { return 2; } public forward() => pick(1) public other(Int value) -> Int { return value; } public other(Bool value) -> Bool { return value; } public checked() => other(1) }")]
+        let unit = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().first
+        expect(unit.functionUnits().firstOrNull((method) => method.name == "forward").returnType.value()).toBe(SemanticTypes.intType().value())
+        expect(unit.functionUnits().firstOrNull((method) => method.name == "checked").returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
     async test `normalized override dispatch is published for typed inferred and same owner calls`() {
-        String[] results = ["-> Int", ""]
+        String[] results = ["-> Int { return 1; }", "=> 1"]
         for (result in results) {
             let sources = [defaultSource("flat", "Object", "class Object { public code() -> Int { return 0; } }"),
                 defaultSource("flat", "Number", "class Number<E> extends Object { public construct() {} }"),
-                defaultSource("flat", "Char", "class Char extends Number<Char> { public construct(Char value) {} public code() " + result + " { return 1; } public self() -> Int { return code(); } public static code(Int value) -> Int { return value; } }"),
+                defaultSource("flat", "Char", "class Char extends Number<Char> { public construct(Char value) {} public code() " + result + " public self() -> Int { return code(); } public static code(Int value) -> Int { return value; } }"),
                 defaultSource("flat", "DispatchReader", "class DispatchReader { public static run() -> Int { return Char('a').code(); } }")]
             Bool[] schedules = [false, true]
             for (reverse in schedules) {

@@ -246,7 +246,8 @@ testable class {
             ["node", destination.normalizedLocation], silent: true, shell: false
         )
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
-        expect(response.stdout.join("")).toBe("0\n")
+        // A Char result is a code-unit string, not the old numeric-intrinsic zero.
+        expect(response.stdout.join("")).toBe("A\n")
         Es6ArtifactFiles.remove(root)
     }
 

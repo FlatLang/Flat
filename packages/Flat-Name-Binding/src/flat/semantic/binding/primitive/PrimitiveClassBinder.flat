@@ -599,7 +599,7 @@ class {
                     Object syntaxSource = prefix[setupOrdinal]
                     PrimitiveLocalDeclarationSyntax localSyntax = (PrimitiveLocalDeclarationSyntax)syntaxSource
                     locals.add(LocalBinding(declaration.local.name, declaration.local.symbolIdentity,
-                        declaration.local.semanticType, localSyntax.nativeArrayStorage, nativeScalarStorage: localSyntax.nativeScalarStorage))
+                        declaration.local.semanticType, localSyntax.nativeArrayStorage, nativeScalarStorage: localSyntax.nativeScalarStorage, mutableStorage: localSyntax.mutable))
                 }
                 setupOrdinal++
             }
@@ -2336,7 +2336,9 @@ class {
             let reference = (PrimitiveReferenceSyntax)value.operand
             let local = locals.reverse().firstOrNull({ _.name == reference.name })
             var BoundExpression target
-            if (local) {
+            if (local && local.identity.symbolKind != "field") {
+                if (!local.mutableStorage && local.identity.symbolKind != "field")
+                    throw Exception("Postfix update requires mutable local")
                 target = BoundReferenceExpression(
                     value.range, local.semanticType, local.name, local.identity
                 )
@@ -2358,8 +2360,8 @@ class {
                 value.updateOperator == "++" ? "+" : "-",
                 target.semanticType, one.semanticType, value.range
             )
-            if (!typed.valid ||
-                typed.semanticType.value() != target.semanticType.value()) {
+            if (!typed.valid || !TypeOperations.unary("+", target.semanticType, value.range).valid ||
+                !TypeConversions.classify(typed.semanticType, target.semanticType, explicit: true).applicable) {
                 throw Exception("Postfix update requires a numeric local")
             }
             return BoundPostfixUpdateExpression(
@@ -2402,7 +2404,7 @@ class {
             let local = BoundReferenceExpression(
                 value.range, localType, value.name, identity
             )
-            locals.add(LocalBinding(value.name, identity, localType))
+            locals.add(LocalBinding(value.name, identity, localType, mutableStorage: false))
             let storage = initialized.semanticType.kind() == "unknown"
                 ? TypeConversion(
                     initialized.semanticType, localType,
@@ -2498,7 +2500,7 @@ class {
             if (target.safeAccess) throw Exception("Safe member assignment is not supported")
             let operand = expression(value.value, receiver, fields, locals)
             return bindMemberCompound(value.range, target, value.assignmentOperator, operand,
-                declarationContext, constructors, typeHierarchy)
+                declarationContext, constructors, typeHierarchy, explicitStorage: true)
         }
         if (syntax.class.isOfType(PrimitiveCastSyntax.class)) {
             let value = (PrimitiveCastSyntax)syntax
@@ -3102,9 +3104,14 @@ class {
             let constructorCall = constructors.any((candidate) =>
                 candidate.callableKind.value == "constructor" && candidate.name == value.name
             )
+            let literalConstructors = constructors.filter((candidate) =>
+                candidate.callableKind.value == "constructor" && candidate.name == value.name &&
+                candidate.parameterTypes().count == value.argumentValues().count)
             var Int suppliedIndex
             for (argument in value.argumentValues()) {
-                let requiredArgumentType = contextualInstanceCandidates.count == 1 &&
+                let requiredArgumentType = argument.class.isOfType(PrimitiveArraySyntax.class) &&
+                    literalConstructors.count == 1 ? literalConstructors.first.parameterTypes()[suppliedIndex] :
+                    contextualInstanceCandidates.count == 1 &&
                     suppliedIndex < contextualInstanceCandidates.first.parameterTypes().count
                     ? contextualInstanceCandidates.first.parameterTypes()[suppliedIndex] :
                     possibleInstanceCandidates.isEmpty && contextualStaticCandidates.count == 1 &&

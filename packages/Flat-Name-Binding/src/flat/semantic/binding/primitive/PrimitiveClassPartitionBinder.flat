@@ -429,7 +429,65 @@ class {
         return PrimitiveClassPartitionBindingResult(units)
     }
 
-    /** Defer only a consumer that selects an unpublished inferred owner member. */
+    seedLocalCallResult(
+        PrimitiveCallSyntax seedCall,
+        PrimitiveClassSyntax syntax,
+        PrimitiveClassSyntax[] syntaxes,
+        SourceSnapshotIdentity snapshot,
+        GenericParameterSemanticType classGeneric
+    ) -> SemanticType {
+        var SemanticType agreed
+        PrimitiveFunctionSyntax[] seedTargets = syntax.methodValues().filter((candidate) => candidate.name == seedCall.name &&
+            candidate.parameterValues().count == seedCall.argumentValues().count)
+        SemanticType[] returnCandidates = SemanticType[]
+        for (target in seedTargets) {
+            // Generic results must be instantiated by typed call selection, not
+            // copied into the caller's declaration scope during signature seeding.
+            if (target.genericParameterNames().isNotEmpty) { continue; }
+            var SemanticType resultType = target.inferredReturnType ? SemanticTypes.unknownType() :
+                signatureType(target.returnTypeName, syntaxes, snapshot, classGeneric, GenericParameterSemanticType[], syntax, target.range,
+                    nativeArrayStorage: target.nativeArrayReturnModifierRange != null,
+                    nativeScalarStorage: target.nativeReturnModifierRange != null && target.nativeArrayReturnModifierRange == null)
+            if (resultType.kind() == "unknown") {
+                var SemanticType literalResult
+                var Bool conflictingLiteral
+                for (statement in target.statements()) {
+                    if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
+                        let returned = (PrimitiveReturnSyntax)statement
+                        if (returned.value && returned.value.class.isOfType(PrimitiveLiteralSyntax.class)) {
+                            let typed = PrimitiveExpressionBinder().bind(returned.value,
+                                declarationContext: signatureContext ? signatureContext.scopeForSnapshot(target.range.snapshot) : null)
+                            if (typed.succeeded) {
+                                if (literalResult && literalResult.value() != typed.expression.semanticType.value()) { conflictingLiteral = true; }
+                                literalResult = typed.expression.semanticType
+                            }
+                        }
+                    }
+                }
+                if (literalResult && !conflictingLiteral) {
+                    resultType = PrimitiveStructuralTypeResolver(
+                        declarationContext: signatureContext ? signatureContext.scopeForSnapshot(target.range.snapshot) : null
+                    ).inferredExpressionResult(literalResult)
+                }
+            }
+            resultType = PrimitiveStructuralTypeResolver(interfaces: interfaces).fallbackResultType(target, resultType)
+            if (resultType.kind() != "unknown") {
+                returnCandidates.add(resultType)
+            }
+        }
+        if (returnCandidates.count == seedTargets.count) {
+            if (returnCandidates.count > 0) {
+                agreed = returnCandidates.first
+                for (candidateResult in returnCandidates) {
+                    if (candidateResult.value() != returnCandidates.first.value()) {
+                        agreed = null
+                    }
+                }
+            }
+        }
+        return agreed
+    }
+
     awaitInferredMember(
         PrimitiveClassSyntax syntax, PrimitiveClassSyntax[] syntaxes,
         CallableSignature[] signatures, BoundFieldUnit[] fields, String[] boundNames
@@ -1183,44 +1241,25 @@ class {
                         }
                     }
                     if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value &&
-                        inferredSyntax.value.class.isOfType(PrimitiveCallSyntax.class)) {
-                        let call = (PrimitiveCallSyntax)inferredSyntax.value
-                        let targets = syntax.methodValues().filter((candidate) => candidate.name == call.name &&
-                            candidate.parameterValues().count == call.argumentValues().count)
-                        let results = SemanticType[]
-                        for (target in targets) {
-                            // Generic results must be instantiated by typed call selection, not
-                            // copied into the caller's declaration scope during signature seeding.
-                            if (target.genericParameterNames().isNotEmpty) continue
-                            var SemanticType resultType = target.inferredReturnType ? SemanticTypes.unknownType() :
-                                signatureType(target.returnTypeName, syntaxes, snapshot, classGeneric, GenericParameterSemanticType[], syntax, target.range,
-                                    nativeArrayStorage: target.nativeArrayReturnModifierRange != null,
-                                    nativeScalarStorage: target.nativeReturnModifierRange != null && target.nativeArrayReturnModifierRange == null)
-                            if (resultType.kind() == "unknown") {
-                                var SemanticType literalResult
-                                var Bool conflictingLiteral
-                                for (statement in target.statements()) {
-                                    if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
-                                        let returned = (PrimitiveReturnSyntax)statement
-                                        if (returned.value && returned.value.class.isOfType(PrimitiveLiteralSyntax.class)) {
-                                            let typed = PrimitiveExpressionBinder().bind(returned.value,
-                                                declarationContext: signatureContext ? signatureContext.scopeForSnapshot(target.range.snapshot) : null)
-                                            if (typed.succeeded) {
-                                                if (literalResult && literalResult.value() != typed.expression.semanticType.value()) conflictingLiteral = true
-                                                literalResult = typed.expression.semanticType
-                                            }
-                                        }
-                                    }
-                                }
-                                if (literalResult && !conflictingLiteral) resultType = PrimitiveStructuralTypeResolver(
-                                    declarationContext: signatureContext ? signatureContext.scopeForSnapshot(target.range.snapshot) : null
-                                ).inferredExpressionResult(literalResult)
-                            }
-                            resultType = PrimitiveStructuralTypeResolver(interfaces: interfaces).fallbackResultType(target, resultType)
-                            if (resultType.kind() != "unknown") results.add(resultType)
+                        inferredSyntax.value.class.isOfType(PrimitiveMemberAssignmentValueSyntax.class)) {
+                        let assignment = (PrimitiveMemberAssignmentValueSyntax)inferredSyntax.value
+                        let access = assignment.target
+                        if (access.receiver.class.isOfType(PrimitiveReferenceSyntax.class) &&
+                            ((PrimitiveReferenceSyntax)access.receiver).name == "this" && !method.staticMethod) {
+                            let field = syntax.fieldValues().firstOrNull((candidate) => candidate.name == access.memberName)
+                            let parameter = syntax.constructorValues().first.parameterValues().firstOrNull((candidate) =>
+                                candidate.name == access.memberName && candidate.visibleParameter)
+                            if (field) inferredMethodReturn = signatureType(field.typeName, syntaxes, snapshot,
+                                classGeneric, methodGenerics, syntax, field.range, field.nativeArrayStorage, field.nativeScalarStorage)
+                            else if (parameter) inferredMethodReturn = signatureType(parameter.typeName, syntaxes, snapshot,
+                                classGeneric, methodGenerics, syntax, parameter.range, parameter.nativeArrayStorage, parameter.nativeScalarStorage)
                         }
-                        if (results.count == targets.count && results.isNotEmpty &&
-                            results.all({ _.value() == results.first.value() })) inferredMethodReturn = results.first
+                    }
+                    if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value &&
+                        inferredSyntax.value.class.isOfType(PrimitiveCallSyntax.class)) {
+                        let seedResult = seedLocalCallResult((PrimitiveCallSyntax)inferredSyntax.value,
+                            syntax, syntaxes, snapshot, classGeneric)
+                        if (seedResult) inferredMethodReturn = seedResult
                     }
                     if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value) {
                         let inferredResolver = PrimitiveStructuralTypeResolver(

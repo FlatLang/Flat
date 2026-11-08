@@ -208,6 +208,64 @@ testable class {
             "if(callback()!==21 || events.join(',')!=='31') throw new Error('live mutation after closure');console.log('ok');\n")
     }
 
+    async test `Char code unit casts arithmetic and updates preserve string storage`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let charType = SemanticTypes.charType()
+        let intType = SemanticTypes.intType()
+        let emitter = Es6ExpressionOrchestrator()
+        Int[] numbers = [-1, 0, 65, 228, 55357, 56832, 65536, 65537]
+        var String code = "const expected=[65535,0,65,228,55357,56832,0,1];const actual=[];\n"
+        for (number in numbers) {
+            let value = BoundLiteralExpression(range, intType, number.toString())
+            let cast = BoundConversionExpression(range, charType, value, TypeConversions.classify(intType, charType, true))
+            let emitted = emitter.emit(cast)
+            expect(emitted.emitted).toBe(true)
+            code += "actual.push((" + emitted.code + ").charCodeAt(0));\n"
+        }
+        let a = BoundLiteralExpression(range, charType, "'A'")
+        let promoted = BoundConversionExpression(range, intType, a, TypeConversions.classify(charType, intType))
+        code += "if(" + emitter.emit(promoted).code + "!==65) throw new Error('promotion');\n"
+        let sumType = TypeOperations.binary("+", charType, intType, range).semanticType
+        let sum = BoundBinaryExpression(range, sumType, "+", a, BoundLiteralExpression(range, intType, "32"))
+        let lower = BoundConversionExpression(range, charType, sum, TypeConversions.classify(sumType, charType, true))
+        code += "if(" + emitter.emit(lower).code + "!=='a') throw new Error('Core lower case');\n"
+        let comparison = BoundBinaryExpression(range, SemanticTypes.boolType(), "==", a, BoundLiteralExpression(range, intType, "65"))
+        code += "if(!" + emitter.emit(comparison).code + ") throw new Error('numeric comparison');\n"
+        let fraction = BoundLiteralExpression(range, SemanticTypes.doubleType(), "65.9")
+        let floating = BoundConversionExpression(range, charType, fraction, TypeConversions.classify(fraction.semanticType, charType, true))
+        code += "if(" + emitter.emit(floating).code + "!=='A') throw new Error('checked fractional cast');\n"
+        let once = BoundNativeCallExpression(range, intType, "nextCode", BoundExpression[])
+        let onceCast = BoundConversionExpression(range, charType, once, TypeConversions.classify(intType, charType, true))
+        code += "let calls=0;globalThis.nextCode=()=>{calls++;return 228;};if(" + emitter.emit(onceCast).code + "!=='ä'||calls!==1) throw new Error('cast once');\n"
+        let intrinsic = Es6CallEmitter().emitIntrinsicMemberCall("'ß'", "toUpperCase", "")
+        code += "if(" + intrinsic + "!=='S') throw new Error('case result code unit');\n"
+        let local = fixture.reference("local", "character", 800, charType)
+        let name = Es6NameMangler.mangle(local.symbolIdentity.value)
+        let update = BoundPostfixUpdateExpression(range, charType, local, "++")
+        let updated = emitter.emit(update)
+        code += "let " + name + "='a';\n" + updated.setup + "if(" + updated.code + "!=='a'||" + name + "!=='b') throw new Error('postfix storage');\n"
+        code += "if(JSON.stringify(actual)!==JSON.stringify(expected)) throw new Error('code units');console.log('ok');\n"
+        executeStorage(code)
+    }
+
+    async test `Char literals native arrays text indexing and checked interpolation retain code units`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let type = SemanticTypes.charType()
+        String[] sources = ["'a'", "'ä'", "'\\0'", "'\\n'", "'\\t'", "'\\r'", "'\\\\'", "'\\''"]
+        Int[] codes = [97, 228, 0, 10, 9, 13, 92, 39]
+        var String code = "const values=[];\n"
+        var Int index
+        for (source in sources) {
+            let emitted = Es6ExpressionOrchestrator().emit(BoundLiteralExpression(fixture.range(), type, source))
+            code += "values.push(" + emitted.code + ");if(values[values.length-1].charCodeAt(0)!==" + codes[index] + ") throw new Error('literal');\n"
+            index++
+        }
+        code += "const text=values.join('');if(text.length!==values.length||text[1]!=='ä'||text[2].charCodeAt(0)!==0) throw new Error('native backing');\n"
+        code += "const supplementary=String.fromCharCode(55357,56832);if(supplementary.length!==2||supplementary[0].charCodeAt(0)!==55357||supplementary[1].charCodeAt(0)!==56832) throw new Error('UTF16 indexing');console.log('ok');\n"
+        executeStorage(code)
+    }
+
     nativeStorage(Es6BoundWriter_TestFixture fixture, String code, BoundReferenceExpression[] references) -> BoundExternalStatement =>
         BoundExternalStatement(fixture.range(), "es6", [BoundExternalCodeSegment(fixture.range(), code)],
             references.map((reference) => BoundExternalNameBinding(reference.name, reference)))

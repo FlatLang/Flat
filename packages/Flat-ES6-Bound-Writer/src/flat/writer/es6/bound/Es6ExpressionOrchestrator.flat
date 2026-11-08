@@ -128,6 +128,17 @@ class {
         }
         if (expression.class.isOfType(BoundPostfixUpdateExpression.class)) {
             let value = (BoundPostfixUpdateExpression)expression
+            if (value.semanticType.value() == "primitive:Char") {
+                let plan = Es6EvaluationPlan(this)
+                let target = plan.target(value.target)
+                if (plan.diagnostic) return Es6CodeResult(diagnostic: plan.diagnostic)
+                let location = emit(target)
+                if (!location.emitted) return location
+                let previous = freshTemporary()
+                let delta = value.updateOperator == "++" ? "+ 1" : "- 1"
+                return Es6CodeResult(code: previous, setup: plan.code + location.setup + "let " + previous + " = " + location.code + ";\n" +
+                    location.code + " = String.fromCharCode(" + previous + ".charCodeAt(0) " + delta + ");\n")
+            }
             return expressions.emitPostfixUpdate(
                 value, emit(value.target)
             )

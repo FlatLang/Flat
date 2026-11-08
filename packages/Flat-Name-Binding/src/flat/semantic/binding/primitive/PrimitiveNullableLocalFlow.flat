@@ -14,19 +14,19 @@ class {
         for (local in evaluated) {
             if (incoming.none({ _.identity.value == local.identity.value })) {
                 incoming.add(local.declaredType ? LocalBinding(local.name, local.identity,
-                    local.declaredType, local.nativeArrayStorage, nativeScalarStorage: local.nativeScalarStorage) : local)
+                    local.declaredType, local.nativeArrayStorage, nativeScalarStorage: local.nativeScalarStorage, mutableStorage: local.mutableStorage) : local)
             }
         }
     }
 
     public static clear(LocalBinding[] locals) -> LocalBinding[] {
         return locals.map((local) => local.declaredType ? LocalBinding(local.name, local.identity,
-            local.declaredType, local.nativeArrayStorage, nativeScalarStorage: local.nativeScalarStorage) : local)
+            local.declaredType, local.nativeArrayStorage, nativeScalarStorage: local.nativeScalarStorage, mutableStorage: local.mutableStorage) : local)
     }
 
     public static forget(LocalBinding[] locals, String name) -> LocalBinding[] {
         return locals.map((local) => local.name == name && local.declaredType ?
-            LocalBinding(local.name, local.identity, local.declaredType, local.nativeArrayStorage, nativeScalarStorage: local.nativeScalarStorage) : local)
+            LocalBinding(local.name, local.identity, local.declaredType, local.nativeArrayStorage, nativeScalarStorage: local.nativeScalarStorage, mutableStorage: local.mutableStorage) : local)
     }
 
     /** Effects and unmodelled syntax conservatively invalidate all retained facts. */
@@ -106,7 +106,7 @@ class {
         let type = (NullableSemanticType)selected.semanticType
         return locals.map((local) => local.identity.value == selected.identity.value ?
             LocalBinding(local.name, local.identity, type.underlyingType, local.nativeArrayStorage,
-                local.declaredType ?: local.semanticType, nativeScalarStorage: local.nativeScalarStorage) : local)
+                local.declaredType ?: local.semanticType, nativeScalarStorage: local.nativeScalarStorage, mutableStorage: local.mutableStorage) : local)
     }
 
     /** Declaration identity availability is independent of nullable read proofs.
@@ -249,7 +249,7 @@ class {
             return cleared.map((local) => local.identity.value == identity.value &&
                 local.semanticType.kind() == "nullable" ? LocalBinding(local.name, local.identity,
                     ((NullableSemanticType)local.semanticType).underlyingType, local.nativeArrayStorage,
-                    declaredType: local.semanticType, nativeScalarStorage: local.nativeScalarStorage) : local)
+                    declaredType: local.semanticType, nativeScalarStorage: local.nativeScalarStorage, mutableStorage: local.mutableStorage) : local)
         }
         if (!checkedStable(checked)) return clear(locals)
         if (stable(syntax)) return branch(syntax, truth, locals, receiver)

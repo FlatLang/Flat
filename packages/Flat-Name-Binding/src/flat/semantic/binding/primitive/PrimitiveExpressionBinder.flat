@@ -770,7 +770,7 @@ class {
             let local = BoundReferenceExpression(
                 value.range, initialized.semanticType, value.name, identity
             )
-            locals.add(LocalBinding(value.name, identity, initialized.semanticType))
+            locals.add(LocalBinding(value.name, identity, initialized.semanticType, mutableStorage: false))
             let storage = initialized.semanticType.kind() == "unknown"
                 ? TypeConversion(
                     initialized.semanticType, initialized.semanticType,
@@ -791,6 +791,8 @@ class {
             let reference = (PrimitiveReferenceSyntax)value.operand
             let local = locals.reverse().firstOrNull({ _.name == reference.name })
             if (!local) throw Exception("Unknown postfix update local '#{reference.name}'")
+            if (!local.mutableStorage || local.identity.symbolKind == "field")
+                throw Exception("Postfix update requires mutable lexical storage")
             let target = BoundReferenceExpression(
                 value.range, local.semanticType, local.name, local.identity
             )
@@ -801,8 +803,8 @@ class {
             let typed = TypeOperations.binary(
                 operator, target.semanticType, one.semanticType, value.range
             )
-            if (!typed.valid ||
-                typed.semanticType.value() != target.semanticType.value()) {
+            if (!typed.valid || !TypeOperations.unary("+", target.semanticType, value.range).valid ||
+                !TypeConversions.classify(typed.semanticType, target.semanticType, explicit: true).applicable) {
                 throw Exception("Postfix update requires a numeric local")
             }
             return BoundPostfixUpdateExpression(
@@ -1201,9 +1203,14 @@ class {
                 value.range, ArraySemanticType(elementType), elements
             )
             if (requiredType && requiredType.kind() == "generic-instance") {
-                if (TypeConversions.classify(storage.semanticType, requiredType,
-                    hierarchy: currentHierarchy).applicable) return storage
                 let instance = (GenericInstanceSemanticType)requiredType
+                // Registered native-array interfaces are projections of existing
+                // storage, not concrete collection allocations.
+                if (instance.declarationType.declarationIdentity.declarationKind == "interface" &&
+                    TypeConversions.classify(storage.semanticType, requiredType, hierarchy: currentHierarchy).applicable)
+                    return storage
+                // A reference-upcast classification is not allocation evidence.
+                // Literal declared storage must invoke its published constructor.
                 let candidates = callables.filter((candidate) =>
                     candidate.callableKind.value == "constructor" && candidate.name == "Array" &&
                     candidate.ownerType.declarationIdentity.value ==

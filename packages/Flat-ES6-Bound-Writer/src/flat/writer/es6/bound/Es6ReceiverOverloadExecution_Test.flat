@@ -1243,7 +1243,7 @@ testable class {
             ["node", destination.normalizedLocation], silent: true, shell: false
         )
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
-        expect(response.stdout.join("")).toBe("65\n98\n")
+        expect(response.stdout.join("")).toBe("A\nb\n")
         Es6ArtifactFiles.remove(root)
     }
 

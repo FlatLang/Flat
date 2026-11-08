@@ -237,8 +237,17 @@ class {
                 operandTokens, snapshot, operandStart + tokenIndexOffset
             )
             let rangeEnd = expressionEnd < 0 ? index : expressionEnd
+            let assignmentRange = range(expressionStart, rangeEnd)
+            if (values[3].value != "=") {
+                // An arrow consumes the stored result, unlike an ordinary member
+                // assignment statement. Reuse existing compound-value syntax;
+                // retain each original receiver/operand node and source range.
+                return PrimitiveReturnSyntax(assignmentRange,
+                    PrimitiveMemberAssignmentValueSyntax(assignmentRange, target, values[3].value, operand),
+                    arrowFallback)
+            }
             return PrimitiveMemberAssignmentSyntax(
-                range(expressionStart, rangeEnd), target, operand, values[3].value
+                assignmentRange, target, operand, values[3].value
             )
         }
         let expression = PrimitiveExpressionParser().parse(

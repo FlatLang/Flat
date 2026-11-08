@@ -70,6 +70,34 @@ class {
         var Bool runnerFailed
         try {
             if ((args.count == 1 || (args.count == 2 &&
+                (args.first == "test.js" || args.first.endsWith("/test.js")))) && args.last == "--core-array") {
+                Console.writeLine("Core array consumer diagnostic; full suite remains required")
+                CompilerPackage_Test.assertCoreArrayExecution()
+                external js { process.removeListener('beforeExit', #{completionGuard}); }
+                Console.writeLine("Core array execution: successful (4 true 5 true true, NUL nonASCII independent copy append)")
+                return
+            } else if ((args.count == 1 || (args.count == 2 &&
+                (args.first == "test.js" || args.first.endsWith("/test.js")))) && args.last == "--core-char") {
+                Console.writeLine("Core Char consumer diagnostic; full suite remains required")
+                CompilerPackage_Test.assertCoreCharExecution()
+                external js { process.removeListener('beforeExit', #{completionGuard}); }
+                Console.writeLine("Core Char execution: successful (six true, String boxed native and compound storage)")
+                return
+            } else if ((args.count == 1 || (args.count == 2 &&
+                (args.first == "test.js" || args.first.endsWith("/test.js")))) && args.last == "--external-backing") {
+                Console.writeLine("External backing consumer diagnostic; full suite remains required")
+                CompilerPackage_Test.assertExternalBackingExecution()
+                external js { process.removeListener('beforeExit', #{completionGuard}); }
+                Console.writeLine("External backing execution: successful (7 9 0 2 3 2 3, independent receivers, empty stderr)")
+                return
+            } else if ((args.count == 1 || (args.count == 2 &&
+                (args.first == "test.js" || args.first.endsWith("/test.js")))) && args.last == "--normalized-dispatch") {
+                Console.writeLine("Normalized dispatch consumer diagnostic; full suite remains required")
+                CompilerPackage_Test.assertNormalizedDispatchExecution()
+                external js { process.removeListener('beforeExit', #{completionGuard}); }
+                Console.writeLine("Normalized dispatch execution: successful (97 97 98, forward/reverse, empty stderr)")
+                return
+            } else if ((args.count == 1 || (args.count == 2 &&
                 (args.first == "test.js" || args.first.endsWith("/test.js")))) && args.last == "--type-sections") {
                 Console.writeLine("Type sections consumer diagnostic; full suite remains required")
                 CompilerPackage_Test().assertDeclarationRuntime()

@@ -146,9 +146,28 @@ class PrimitiveOpaqueCodeBinder {
                     pieceIndex++
                     continue
                 }
-                let value = BoundReferenceExpression(
-                    piece.range, root.semanticType, root.name, root.identity
-                )
+                var BoundExpression value
+                if (root.identity.symbolKind == "field") {
+                    // Field entries participate in lexical lookup, but are not
+                    // lexical storage. Preserve the exact selected declaration
+                    // and make its checked receiver explicit before emission.
+                    let selected = fields.firstOrNull((field) => field.identity.value == root.identity.value) ?:
+                        availableFields.firstOrNull((field) => field.identity.value == root.identity.value)
+                    if (!selected) throw Exception("Opaque field reference lacks its published declaration")
+                    if (selected.staticField) {
+                        value = BoundReferenceExpression(piece.range, selected.semanticType, selected.name,
+                            selected.identity, staticOwner: selected.canonicalOwner(),
+                            fieldOwnerIdentity: selected.canonicalOwner())
+                    } else {
+                        if (!receiver) throw Exception("Opaque instance field requires an instance receiver")
+                        value = BoundMemberAccessExpression(piece.range, selected.semanticType, receiver,
+                            selected.name, selected.identity)
+                    }
+                } else {
+                    value = BoundReferenceExpression(
+                        piece.range, root.semanticType, root.name, root.identity
+                    )
+                }
                 var BoundExpression projected = value
                 var String rendering = "identity"
                 if (path.count == 2 && root.semanticType.kind() == "generic-instance") {
@@ -390,7 +409,7 @@ class PrimitiveOpaqueCodeBinder {
         )
     }
 
-    renderingFor(BoundReferenceExpression value, String[] path) -> String {
+    renderingFor(BoundExpression value, String[] path) -> String {
         var String rendering = "identity"
         if (path.count == 3) {
             if (path[1] == "chars" && path[2] == "data" &&

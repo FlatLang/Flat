@@ -26,8 +26,8 @@ testable class {
         expect(emitter.emitIntrinsicMemberCall("values", "join", ""))
             .toBe("values.join()")
         expect(emitter.emitIntrinsicMemberCall("value", "toUpperCase", ""))
-            .toBe("String.fromCharCode(value).toUpperCase().charCodeAt(0)")
+            .toBe("(value).toUpperCase().charAt(0)")
         expect(emitter.emitIntrinsicMemberCall("value", "toLowerCase", ""))
-            .toBe("String.fromCharCode(value).toLowerCase().charCodeAt(0)")
+            .toBe("(value).toLowerCase().charAt(0)")
     }
 }

@@ -143,7 +143,9 @@ class {
         if (!expression || !operand) throw Exception("ES6 unary emission requires expression and operand")
         if (!operand.emitted) return operand
         // Parenthesize the operand: -(-x) must not become the update token --x.
-        return Es6CodeResult(code: "(" + expression.operator + "(" + operand.code + "))")
+        let numeric = expression.operator != "!" && expression.operand.semanticType.value() == "primitive:Char" ?
+            "(" + operand.code + ").charCodeAt(0)" : operand.code
+        return Es6CodeResult(code: "(" + expression.operator + "(" + numeric + "))")
     }
 
     public emitBinary(
@@ -160,7 +162,14 @@ class {
             return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
                 "es6.unlowered-fallback", "Null fallback requires target-independent lowering"))
         }
-        return Es6CodeResult(code: "(" + left.code + " " + expression.operator + " " + right.code + ")")
+        // Char storage is one UTF-16 code-unit string. Numeric operations use
+        // its code unit; text concatenation and same-Char equality remain text.
+        let numeric = (TypeConversions.isIntegral(expression.left.semanticType) || TypeConversions.isFloating(expression.left.semanticType)) &&
+            (TypeConversions.isIntegral(expression.right.semanticType) || TypeConversions.isFloating(expression.right.semanticType))
+        let a = numeric && expression.left.semanticType.value() == "primitive:Char" ? "(" + left.code + ").charCodeAt(0)" : left.code
+        let b = numeric && expression.right.semanticType.value() == "primitive:Char" ? "(" + right.code + ").charCodeAt(0)" : right.code
+        let result = "(" + a + " " + expression.operator + " " + b + ")"
+        return Es6CodeResult(code: expression.semanticType.value() == "primitive:Char" ? "String.fromCharCode(" + result + ")" : result)
     }
 
     public emitMemberAssignmentValue(
@@ -243,7 +252,7 @@ class {
             return Es6CodeResult(code: "((value) => { if (value === null || value instanceof " + name +
                 ") return value; throw new TypeError('Invalid checked reference cast'); })(" + value.code + ")")
         }
-        if (expression.conversion.conversionKind == "numeric-cast") {
+        if (expression.conversion.conversionKind == "numeric-cast" || expression.conversion.conversionKind == "numeric-widening") {
             return Es6CodeResult(code: numericConversionCode(expression.conversion, value.code))
         }
         if (expression.conversion.conversionKind == "numeric-unboxing") {
@@ -261,9 +270,16 @@ class {
      * Floating/identity conversions retain IEEE values without object coercion.
      */
     numericConversionCode(TypeConversion conversion, String value) -> String {
-        if (conversion.conversionKind == "numeric-cast" && TypeConversions.isIntegral(conversion.toType)) {
-            return "Math.trunc(" + value + ")"
-        }
-        return value
+        var String selected = value
+        if (conversion.fromType.value() == "primitive:Char" && conversion.toType.value() != "primitive:Char")
+            selected = "(" + selected + ").charCodeAt(0)"
+        if (conversion.conversionKind == "numeric-cast" && TypeConversions.isIntegral(conversion.toType))
+            selected = "Math.trunc(" + selected + ")"
+        // A single ToUint16 boundary, including negative/wrapped integral values.
+        // Explicit floating casts are already admitted by TypeConversions and use
+        // the existing truncation above; legacy duplicate/no-op casts are defects.
+        if (conversion.toType.value() == "primitive:Char" && conversion.fromType.value() != "primitive:Char")
+            selected = "String.fromCharCode(" + selected + ")"
+        return selected
     }
 }

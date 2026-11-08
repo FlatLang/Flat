@@ -561,8 +561,83 @@ testable class {
             token("other", Token.Type.IDENTIFIER, 40)
         ], snapshot).functionValues().first
 
-        expect(parsed.statements().map({ _.statementKind() })).toBe(["member-assignment"])
+        expect(parsed.statements().map({ _.statementKind() })).toBe(["return"])
         expect(parsed.inferredReturnType).toBe(true)
+        let returnedStatement = parsed.statements().first
+        let returned = (PrimitiveReturnSyntax)returnedStatement
+        expect(returned.value.expressionKind()).toBe("member-assignment-value")
+    }
+
+    async test `compound arrows retain stored value original ranges and fallback ordering`() {
+        String[] operators = ["+=", "-=", "*=", "/=", "%="]
+        Bool[] typedCases = [false, true]
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:compound-arrow"), "one")
+        for (typed in typedCases) {
+            for (operator in operators) {
+                let prefix = typed == true ? "minusEquals(Char other) -> Char => " : "minusEquals(Char other) => "
+                let source = prefix + "this.value " + operator + " other"
+                let stream = Lexer().lex(source)
+                stream.emit("start")
+                let tokens = stream.consumeAll<Token>("data")
+                let parsed = PrimitiveFunctionParser().parse(tokens, snapshot, 100).functionValues().first
+                expect(parsed.statements().count).toBe(1)
+                expect(parsed.inferredReturnType).toBe(typed == false)
+                let statement = parsed.statements().first
+                expect(statement.statementKind()).toBe("return")
+                let returned = (PrimitiveReturnSyntax)statement
+                expect(returned.arrowFallback).toBe(false)
+                expect(returned.value.expressionKind()).toBe("member-assignment-value")
+                let value = (PrimitiveMemberAssignmentValueSyntax)returned.value
+                expect(value.assignmentOperator).toBe(operator)
+                expect(value.target.memberName).toBe("value")
+                expect(value.target.receiver.expressionKind()).toBe("reference")
+                let receiver = (PrimitiveReferenceSyntax)value.target.receiver
+                let operand = (PrimitiveReferenceSyntax)value.value
+                expect(receiver.name).toBe("this")
+                expect(operand.name).toBe("other")
+                expect(value.range.startTokenIndex).toBe(typed == true ? 108 : 106)
+                // PrimitiveFunctionParser's existing token indexes exclude trivia;
+                // source columns still refer to the untouched original spelling.
+                expect(value.range.endTokenIndex).toBe(typed == true ? 113 : 111)
+                expect(value.range.start.column).toBe(prefix.count + 1)
+                expect(value.range.end.column).toBe(source.count + 1)
+                expect(value.target.range.endTokenIndex).toBe(value.range.startTokenIndex + 3)
+                expect(receiver.range.endTokenIndex).toBe(receiver.range.startTokenIndex + 1)
+                expect(operand.range.startTokenIndex).toBe(value.range.startTokenIndex + 4)
+                expect(returned.range.startTokenIndex).toBe(value.range.startTokenIndex)
+                expect(returned.range.endTokenIndex).toBe(value.range.endTokenIndex)
+            }
+        }
+        let stream = Lexer().lex("minusEquals(Char other) => this.value -= other { return other; }")
+        stream.emit("start")
+        let parsed = PrimitiveFunctionParser().parse(stream.consumeAll<Token>("data"), snapshot).functionValues().first
+        expect(parsed.statements().count).toBe(2)
+        let earlyStatement = parsed.statements().first
+        let fallbackStatement = parsed.statements().last
+        let early = (PrimitiveReturnSyntax)earlyStatement
+        let fallback = (PrimitiveReturnSyntax)fallbackStatement
+        expect(early.arrowFallback).toBe(false)
+        expect(early.value.expressionKind()).toBe("reference")
+        expect(fallback.arrowFallback).toBe(true)
+        expect(fallback.value.expressionKind()).toBe("member-assignment-value")
+    }
+
+    async test `compound arrow invalid operands reject while ordinary member statements remain statements`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:compound-arrow-invalid"), "one")
+        String[] invalid = ["f() => this.value -=", "f() => this. -= value", "f() => this.value -= )"]
+        for (source in invalid) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            var Bool rejected = false
+            try { PrimitiveFunctionParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+            catch (ParserDiagnostic error) { rejected = true }
+            expect(rejected).toBe(true)
+        }
+        let stream = Lexer().lex("f(Char other) { this.value -= other; }")
+        stream.emit("start")
+        let parsed = PrimitiveFunctionParser().parse(stream.consumeAll<Token>("data"), snapshot).functionValues().first
+        expect(parsed.statements().map({ _.statementKind() })).toBe(["member-assignment"])
+        // Simple member-arrow '=' intentionally remains outside this bounded repair.
     }
 
     test `parses canonical generic async parameter defaults`() {
