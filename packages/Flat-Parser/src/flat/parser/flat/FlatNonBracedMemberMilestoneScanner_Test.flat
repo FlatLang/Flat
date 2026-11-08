@@ -5,6 +5,66 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `nullable Core declaration signatures publish separate scanner boundaries`() {
+        // Compiler declaration corpus removes expression bodies/defaults before
+        // scanning. This is the exact member shape reported in wave25 Object.
+        let source = "public equals(Object? another) public toString() -> String " +
+            "public toJson(Bool: format, String: tab) visible Long hashCodeLong"
+        let tokens = significant(lex(source))
+        let subject = scanner(64)
+        let islands = SyntaxIsland[]
+        var Int index
+        for (token in tokens) {
+            islands.addAll(subject.accept(token, 40 + index))
+            index++
+        }
+        islands.addAll(subject.end())
+        expect(islands.count).toBe(4)
+        String[] names = ["equals", "toString", "toJson", "hashCodeLong"]
+        Int[] starts = [0, 7, 13, 24]
+        Int[] ends = [7, 13, 24, 27]
+        for (ordinal in 0..names.count) {
+            let island = islands[ordinal]
+            let header = (NonBracedMemberHeaderSyntaxIsland)island
+            Int start = starts[ordinal]
+            Int end = ends[ordinal]
+            Token first = tokens[start]
+            Token last = tokens[end - 1]
+            expect(header.name).toBe(names[ordinal])
+            expect(header.range.snapshot).toBe(subject.snapshot)
+            expect(header.range.startTokenIndex).toBe(40 + start)
+            expect(header.range.endTokenIndex).toBe(40 + end)
+            expect(header.range.start.column).toBe(first.location.column)
+            expect(header.range.end.column).toBe(last.endColumn)
+            expect(header.identity.ordinal).toBe(20 + ordinal)
+        }
+        expect(subject.retainedTokenCount).toBe(0)
+    }
+
+    async test `nullable signatures reject repeated suffix missing names and incomplete tails`() {
+        String[] sources = ["public equals(Object?? another)", "public equals(Object?)",
+            "public equals(Object? another", "public equals(Object? another) public broken("]
+        for (source in sources) {
+            let tokens = significant(lex(source))
+            let subject = scanner(64)
+            var ParseFailure failure
+            var Int index
+            try {
+                for (token in tokens) {
+                    subject.accept(token, index)
+                    index++
+                }
+                subject.end()
+            } catch (ParseFailure error) { failure = error }
+            expect(failure != null).toBe(true)
+            expect(failure.diagnostic.code).toBe("invalid-non-braced-member")
+            expect(failure.diagnostic.range.snapshot).toBe(subject.snapshot)
+            expect(failure.diagnostic.range.endTokenIndex).toBe(tokens.count)
+            expect(subject.finished).toBe(true)
+            expect(subject.retainedTokenCount).toBe(0)
+        }
+    }
+
     async test `incomplete expression braces retain sparse source range before cleanup`() {
         let values = significant(lex("public read() => value => { 1"))
         let subject = scanner(32)

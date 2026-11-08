@@ -1,0 +1,14 @@
+package flat/writer/es6/bound
+
+/** Exactly one emitted type section value or the original backend diagnostic. */
+data class {
+    public construct(
+        visible Es6TypeSections sections = null,
+        visible Es6BackendDiagnostic diagnostic = null
+    ) {
+        if ((!sections && !diagnostic) || (sections && diagnostic)) {
+            throw Exception("ES6 type emission requires exactly one sections or diagnostic value")
+        }
+    }
+    visible Bool emitted => sections != null
+}

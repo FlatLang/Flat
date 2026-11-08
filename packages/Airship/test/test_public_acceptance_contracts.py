@@ -10,6 +10,46 @@ import dogfood_acceptance as gate
 
 
 class PublicAcceptanceContracts(unittest.TestCase):
+    def test_receipt_numbers_reject_overflow_before_admission(self):
+        # Parser fixtures only: the locally calculated pin checks byte binding,
+        # not independent review or authority to run any tool.
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'receipt.json'
+            for number in ('1e999', '-1e999', 'NaN', 'Infinity', '-Infinity'):
+                path.write_text('{"measurement": [{"rss_bytes": ' + number + '}]}')
+                for reader in (gate.read_json,
+                               lambda item: gate.bootstrap.reviewed_json(
+                                   item, gate.bootstrap.digest(item), 'Review fixture')):
+                    with self.subTest(number=number, reader=reader), \
+                         self.assertRaisesRegex(ValueError, '[Nn]on-finite'):
+                        reader(path)
+            path.write_text('{"elapsed": 1.25e2, "zero": -0.0, "count": 123}')
+            expected = {'elapsed': 125.0, 'zero': -0.0, 'count': 123}
+            self.assertEqual(gate.read_json(path), expected)
+            self.assertEqual(gate.bootstrap.reviewed_json(
+                path, gate.bootstrap.digest(path), 'Review fixture'), expected)
+
+    def test_ordinary_selection_rejects_noncanonical_or_escaped_workspace(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory).resolve()
+            root = base / 'evidence'
+            root.mkdir()
+            node = base / 'node-identity-fixture'
+            node.write_text('not an executable; selection parser fixture only')
+            seed = {'path': str(node), 'sha256': gate.bootstrap.digest(node)}
+            command = {'argv': [str(node)], 'node_sha256': seed['sha256']}
+            run = {'execution_kind': 'ordinary-stage2-cli', 'package': 'Flat-Core',
+                   'workspace': 'run/workspace', 'commands': [command, command]}
+            self.assertEqual(gate.validate_production_selection(
+                root, run, 'Flat-Core', {}, seed), root / 'run/workspace')
+            (root / 'escaped').symlink_to(base, target_is_directory=True)
+            for name in ('.', '', './workspace', 'run//workspace', 'run/../workspace',
+                         '/workspace', 'run\\workspace', 'escaped/workspace'):
+                with self.subTest(workspace=name), self.assertRaisesRegex(
+                        ValueError, '[Ww]orkspace'):
+                    gate.validate_production_selection(
+                        root, {**run, 'workspace': name}, 'Flat-Core', {}, seed)
+
     def test_missing_public_workloads_and_invalidations_fail_closed(self):
         for value in (None, {}, {'core-lr': {}}, {'unknown': {}}):
             with self.subTest(value=value), self.assertRaises(ValueError):
@@ -84,12 +124,12 @@ class PublicAcceptanceContracts(unittest.TestCase):
                         self.assertEqual(context['env']['AIRSHIP_TEST_AIRSHIP_SCRIPT'], str(selected))
                         self.assertEqual(selected.read_bytes(), runner.read_bytes())
                         scope = {'schema': 'flat.stage.process-scope.v1', 'ownership': 'external-command-group',
-                                 'scope_cancelled': False, 'hello_count': 1, 'frame_count': 8,
-                                 'fixtures_started': 8, 'fixtures_finished': 8, 'cleanup': cleanup,
+                                 'scope_cancelled': False, 'hello_count': 1, 'frame_count': 9,
+                                 'fixtures_started': 9, 'fixtures_finished': 9, 'cleanup': cleanup,
                                  'events': [{'kind': 'fixture-end', 'fixture': fixture,
                                              'outcome': {'exit': code, 'signal': None}}
                                             for fixture, code in [('airship-toolchain-fail', 7), ('airship-toolchain-cli-fail', 7)]
-                                            + [('airship-cli-' + label, 1) for label in ('fail', 'invalid', 'unknown', 'missing')]
+                                            + [('airship-cli-' + label, 1) for label in ('fail', 'invalid', 'unknown', 'missing', 'output-alias')]
                                             + [('airship-compile-cli-invalid', 1), ('airship-compile-direct-invalid', 1)]]}
                         log.with_suffix('.log.scope.json').write_text(json.dumps(scope))
                     return {'argv': argv, 'node_sha256': seed['sha256'], 'exit_status': 0,

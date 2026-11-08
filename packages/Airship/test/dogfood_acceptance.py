@@ -9,6 +9,7 @@ Missing production evidence fails, never downgrades to bootstrap-only success.
 import argparse
 import hashlib
 import json
+import math
 import os
 import shutil
 from pathlib import Path, PurePosixPath
@@ -39,7 +40,13 @@ def read_json(path):
         return result
     def invalid_constant(value):
         raise ValueError(f'Non-finite receipt number: {value}')
-    return json.loads(path.read_text(), object_pairs_hook=unique, parse_constant=invalid_constant)
+    def finite_float(value):
+        result = float(value)
+        if not math.isfinite(result):
+            raise ValueError(f'Non-finite receipt number: {value}')
+        return result
+    return json.loads(path.read_text(), object_pairs_hook=unique,
+                      parse_constant=invalid_constant, parse_float=finite_float)
 
 
 def require(condition, message):
@@ -439,6 +446,16 @@ def validate_production_selection(root, run, package, tools, node_seed):
     schema-2 aggregate acceptance always requires this stronger production binding.
     """
     require(isinstance(run, dict), 'Missing production selection')
+    require(run.get('execution_kind') in (None, 'ordinary-stage2-cli'),
+            'Unknown production execution kind')
+    name = run.get('workspace')
+    require(isinstance(name, str) and name and '\\' not in name,
+            'Invalid production workspace identity')
+    relative = PurePosixPath(name)
+    require(relative.parts and not relative.is_absolute() and '..' not in relative.parts
+            and relative.as_posix() == name, 'Invalid production workspace identity')
+    workspace = root / name
+    require(root.resolve() in workspace.resolve().parents, 'Production workspace escapes evidence root')
     if run.get('execution_kind') == 'ordinary-stage2-cli':
         require(run.get('package') == package, 'Production package selection mismatch')
         selected_node = Path(node_seed['path'])
@@ -449,21 +466,9 @@ def validate_production_selection(root, run, package, tools, node_seed):
         for command in commands:
             require(command.get('argv', [None])[0] == node_seed['path']
                     and command.get('node_sha256') == node_seed['sha256'], 'Production Node identity mismatch')
-        require(PurePosixPath(run['workspace']).as_posix() == run['workspace']
-                and not PurePosixPath(run['workspace']).is_absolute()
-                and '..' not in PurePosixPath(run['workspace']).parts, 'Invalid production workspace identity')
-        return root / run['workspace']
-    require(run.get('execution_kind') is None, 'Unknown production execution kind')
+        return workspace
     require(isinstance(run, dict) and run.get('package') == package,
             'Production package selection mismatch')
-    name = run.get('workspace')
-    require(isinstance(name, str) and name and '\\' not in name,
-            'Invalid production workspace identity')
-    relative = PurePosixPath(name)
-    require(not relative.is_absolute() and '..' not in relative.parts and relative.as_posix() == name,
-            'Invalid production workspace identity')
-    workspace = root / name
-    require(root.resolve() in workspace.resolve().parents, 'Production workspace escapes evidence root')
     directory = workspace.parent
     compiler, runner = directory / 'seeds/flatc.js', directory / 'seeds/airship.js'
     for path, expected in ((compiler, tools[bootstrap.PRODUCTS[0]]),
@@ -2747,7 +2752,9 @@ def run_public_workload(context, name, seeds, budget, seconds):
     return result
 
 
-TOOLCHAIN_SOURCE_SHA256 = '6104ffeaa7bfee99ef07b850b0fa3dbb3f1396bc4921ce24a0e7c39439564486'
+# finish-1105 review: one added output-alias public install rejection; no
+# removed probes. Its exact fixture identity is admitted separately below.
+TOOLCHAIN_SOURCE_SHA256 = '8342da5dc9ddf30f0a2fc3a0f26a8bc9fff46c57f2bcc2d4dbd6dba61a221694'
 
 
 def toolchain_cli_inventory(workspace, runner, selected, compiler):
@@ -2765,7 +2772,8 @@ def toolchain_cli_inventory(workspace, runner, selected, compiler):
                 ('fail', ['run', 'fail'], 'present'),
                 ('invalid', ['install', 'main'], 'invalid'),
                 ('unknown', ['install', 'not-a-source'], 'invalid'),
-                ('missing', ['install', 'main'], 'absent-compiler'))]
+                ('missing', ['install', 'main'], 'absent-compiler'),
+                ('output-alias', ['install', 'main'], 'output-alias'))]
 
 
 def toolchain_compile_inventory(workspace, runner, selected, compiler):
@@ -2838,13 +2846,13 @@ def validate_public_workloads(root, values, baseline, tools, node_seed):
             require(scope.get('schema') == 'flat.stage.process-scope.v1'
                     and scope.get('ownership') == 'external-command-group' and scope.get('scope_cancelled') is False
                     and scope.get('hello_count', 0) > 0 and scope.get('frame_count') == len(events)
-                    and scope.get('fixtures_started') == scope.get('fixtures_finished') == 8
+                    and scope.get('fixtures_started') == scope.get('fixtures_finished') == 9
                     and scope.get('cleanup') == execute['process_cleanup']
                     and sorted((event.get('fixture'), event.get('outcome', {}).get('exit'))
                                for event in events if event.get('kind') == 'fixture-end'
                                and event.get('outcome', {}).get('signal') is None)
                         == sorted([('airship-toolchain-cli-fail', 7), ('airship-toolchain-fail', 7)]
-                                  + [('airship-cli-' + name, 1) for name in ('fail', 'invalid', 'unknown', 'missing')]
+                                  + [('airship-cli-' + name, 1) for name in ('fail', 'invalid', 'unknown', 'missing', 'output-alias')]
                                   + [('airship-compile-cli-invalid', 1), ('airship-compile-direct-invalid', 1)]),
                     'Missing actual toolchain fixture outcome')
         else:

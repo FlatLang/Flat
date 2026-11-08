@@ -4,6 +4,91 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    test `explicit nullable local spellings retain type source range and native intent`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-local"), "one")
+        let direct = [token("Thing", Token.Type.IDENTIFIER, 1), token("?", Token.Type.SYMBOL, 6),
+            token("value", Token.Type.IDENTIFIER, 8), token("=", Token.Type.SYMBOL, 14),
+            token("null", Token.Type.IDENTIFIER, 16)]
+        let parsed = PrimitiveStatementParser().parse(direct, snapshot, 30).statements().first
+        let local = (PrimitiveLocalDeclarationSyntax)parsed
+        expect(local.declaredTypeName).toBe("Thing?")
+        expect(local.name).toBe("value")
+        expect(local.range.snapshot).toBe(snapshot)
+        expect(local.range.startTokenIndex).toBe(30)
+        expect(local.range.endTokenIndex).toBe(35)
+        expect(local.range.start.column).toBe(1)
+        expect(local.range.end.column).toBe(20)
+        expect(local.initializer.range.startTokenIndex).toBe(34)
+        let prefixed = [token("native", Token.Type.IDENTIFIER, 1), token("var", Token.Type.IDENTIFIER, 8)]
+        prefixed.addAll([token("Thing", Token.Type.IDENTIFIER, 12), token("?", Token.Type.SYMBOL, 17),
+            token("value", Token.Type.IDENTIFIER, 19), token("=", Token.Type.SYMBOL, 25),
+            token("null", Token.Type.IDENTIFIER, 27)])
+        let prefixedSyntax = PrimitiveStatementParser().parse(prefixed, snapshot, 40).statements().first
+        let nativeLocal = (PrimitiveLocalDeclarationSyntax)prefixedSyntax
+        expect(nativeLocal.declaredTypeName).toBe("Thing?")
+        expect(nativeLocal.mutable).toBe(true)
+        expect(nativeLocal.nativeScalarStorage).toBe(true)
+        expect(nativeLocal.nativeArrayStorage).toBe(false)
+        expect(nativeLocal.range.startTokenIndex).toBe(40)
+        expect(nativeLocal.range.endTokenIndex).toBe(47)
+        let uninitialized = [token("let", Token.Type.IDENTIFIER, 1), token("Thing", Token.Type.IDENTIFIER, 5),
+            token("?", Token.Type.SYMBOL, 10), token("pending", Token.Type.IDENTIFIER, 12)]
+        let pendingSyntax = PrimitiveStatementParser().parse(uninitialized, snapshot, 60).statements().first
+        let pending = (PrimitiveLocalDeclarationSyntax)pendingSyntax
+        expect(pending.declaredTypeName).toBe("Thing?")
+        expect(pending.initializer == null).toBe(true)
+        expect(pending.mutable).toBe(false)
+        expect(pending.range.startTokenIndex).toBe(60)
+        expect(pending.range.endTokenIndex).toBe(64)
+        // Native representation legality belongs to Binder, not this syntax node.
+    }
+
+    test `repeated nullable local suffix reports the second marker with native or ordinary syntax`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:bad-nullable-local"), "one")
+        Bool[] nativeCases = [false, true]
+        for (nativeCase in nativeCases) {
+            let values = Token[]
+            if (nativeCase == true) values.add(token("native", Token.Type.IDENTIFIER, 1))
+            values.addAll([token("var", Token.Type.IDENTIFIER, 8), token("Thing", Token.Type.IDENTIFIER, 12),
+                token("?", Token.Type.SYMBOL, 17), token("?", Token.Type.SYMBOL, 18),
+                token("value", Token.Type.IDENTIFIER, 20), token("=", Token.Type.SYMBOL, 26),
+                token("null", Token.Type.IDENTIFIER, 28)])
+            var ParseFailure failure
+            try { PrimitiveStatementParser().parse(values, snapshot, 50) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure != null).toBe(true)
+            expect(failure.diagnostic.code).toBe("invalid-statement-syntax")
+            expect(failure.diagnostic.range.snapshot).toBe(snapshot)
+            expect(failure.diagnostic.range.startTokenIndex).toBe(nativeCase == true ? 54 : 53)
+            expect(failure.diagnostic.range.endTokenIndex).toBe(nativeCase == true ? 55 : 54)
+            expect(failure.diagnostic.range.start.column).toBe(18)
+            expect(failure.diagnostic.range.end.column).toBe(19)
+        }
+    }
+
+    async test `lexer nullable locals reject repeated suffix before syntax publication`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-local-lexed"), "one")
+        let stream = Lexer().lex("Thing? direct = null; let Thing? fixed = null; var Thing? pending;")
+        stream.emit("start")
+        let statements = PrimitiveStatementParser().parse(stream.consumeAll<Token>("data"), snapshot).statements()
+        expect(statements.count).toBe(3)
+        for (statement in statements) {
+            let local = (PrimitiveLocalDeclarationSyntax)statement
+            expect(local.declaredTypeName).toBe("Thing?")
+        }
+        String[] invalid = ["Thing?? value = null;", "native_array var Thing[]?? value = null;"]
+        for (source in invalid) {
+            let invalidStream = Lexer().lex(source)
+            invalidStream.emit("start")
+            var ParseFailure failure
+            try { PrimitiveStatementParser().parse(invalidStream.consumeAll<Token>("data"), snapshot) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure != null).toBe(true)
+            expect(failure.diagnostic.code).toBe("invalid-statement-syntax")
+            expect(failure.diagnostic.range.snapshot).toBe(snapshot)
+        }
+    }
+
     test `primitive syntax failures retain typed diagnostic snapshot token offset and observed EOF`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:typed-primitive-failure"), "one")
         let values = [token("return", Token.Type.IDENTIFIER, 3),

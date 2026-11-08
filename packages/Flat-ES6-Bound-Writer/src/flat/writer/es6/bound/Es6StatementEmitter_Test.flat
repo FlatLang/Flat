@@ -4,6 +4,28 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    test `static reference stores preserve canonical owner in statement and value positions`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let owner = fixture.declaration("type", "Trace", 20)
+        let field = fixture.symbol("field", "count", 21)
+        let type = SemanticTypes.intType()
+        // Member source declaration deliberately differs from canonical owner.
+        let target = BoundReferenceExpression(fixture.range(), type, "count", field,
+            staticOwner: owner, fieldOwnerIdentity: owner)
+        let operand = BoundLiteralExpression(fixture.range(), type, "4")
+        let sum = BoundBinaryExpression(fixture.range(), type, "+", target, operand)
+        let conversion = TypeConversions.classify(type, type)
+        let location = Es6NameMangler.mangle(owner.value) + "." + Es6NameMangler.mangle(field.value)
+        let statement = Es6StatementOrchestrator().emit(
+            BoundAssignmentStatement(fixture.range(), target, sum, conversion))
+        let expression = Es6ExpressionOrchestrator().emit(
+            BoundAssignmentValueExpression(fixture.range(), type, target, sum, conversion))
+        expect(statement.emitted).toBe(true)
+        expect(expression.emitted).toBe(true)
+        expect(statement.code).toBe(location + " = (" + location + " + 4);\n")
+        expect(expression.code).toBe("(" + location + " = (" + location + " + 4))")
+    }
+
     test `emits structured continue`() {
         let fixture = Es6BoundWriter_TestFixture()
         let statement = BoundContinueStatement(fixture.range())
@@ -55,10 +77,13 @@ testable class {
                 BoundExternalCodeSegment(fixture.range(), "return Math.sqrt(number);")
             ], [BoundExternalNameBinding("number", nativeParameter)]
         )
-        expect(emitter.emitExternal(namedExternal).code).toBe(
-            "let number = " + Es6NameMangler.mangle(nativeParameter.symbolIdentity.value) +
-                ";\nreturn Math.sqrt(number);\n"
-        )
+        expect(emitter.emitExternal(namedExternal).diagnostic.code).toBe("es6.native-storage-plan")
+        let nativeOwner = BoundFunctionUnit(fixture.declaration("function", "nativeOwner", 8), "nativeOwner",
+            SemanticTypes.doubleType(), [namedExternal], fixture.range(),
+            [BoundFunctionParameter("number", nativeParameter.symbolIdentity, SemanticTypes.doubleType())])
+        let nativeExpressions = Es6ExpressionOrchestrator()
+        expect(nativeExpressions.prepareOwner(nativeOwner) == null).toBe(true)
+        expect(emitter.emitExternal(namedExternal, nativeExpressions).code).toBe("return Math.sqrt(number);\n")
 
         let boolType = SemanticTypes.boolType()
         let condition = BoundLiteralExpression(fixture.range(), boolType, "true")

@@ -1,0 +1,38 @@
+package flat/semantic/binding/primitive
+
+import flat/bound
+import flat/semantic/types
+
+/** Reconcile selected dispatch evidence within one already-settled type.
+ * Declaration/owner/generic contracts remain selected; only the normalized
+ * virtual slot is refreshed. No cross-type barrier or mutable global index. */
+class extends BoundTreeLoweringPass {
+    var BoundFunctionUnit[] functions
+
+    public construct(BoundFunctionUnit[] functions) { this.functions = BoundFunctionUnit[]:addAll(functions) }
+    override public name() => "settled-callable-dispatch"
+    override public inputInvariant() => "checked calls and settled implementation slots"
+    override public outputInvariant() => "selected calls agree with implementation dispatch"
+
+    public target(CallableSignature selected) -> CallableSignature {
+        let implementation = functions.firstOrNull((function) =>
+            function.identity.value == selected.identity.declaration.value)
+        if (!implementation || selected.callableKind.value != "instance-method" ||
+            selected.dispatchIdentity == implementation.dispatchIdentity) return selected
+        return CallableSignature(selected.identity, selected.name, selected.callableKind,
+            selected.parameterTypes(), selected.returnType, selected.ownerType,
+            selected.optionalParameterCount, selected.parameterNames(), selected.genericParameters(),
+            selected.ownerGenericDeclaration, selected.ownerInstance, selected.asyncFunction,
+            selected.externalName, implementation.dispatchIdentity)
+    }
+
+    override public lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (expression && expression.class.isOfType(BoundCallExpression.class)) {
+            let call = (BoundCallExpression)expression
+            return BoundCallExpression(call.range, call.semanticType, target(call.target),
+                lowerExpression(call.receiver), call.argumentValues().map({ lowerExpression(_) }),
+                call.argumentConversions(), call.safeAccess, call.receiverConversion, call.suppressAwait)
+        }
+        return super.lowerExpression(expression)
+    }
+}

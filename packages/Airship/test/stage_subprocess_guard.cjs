@@ -148,7 +148,8 @@ function toolchainCliMatch(entry, args, options) {
   if (typeof root !== 'string' || path.dirname(root) !== owner ||
       !/^\.airship-toolchain-test-[0-9]{1,16}$/.test(path.basename(root)) ||
       fs.realpathSync(root) !== root || fs.realpathSync(options.cwd || process.cwd()) !== owner) return false;
-  const compiler = entry.sourceState === 'absent-compiler' ? path.join(root, 'absent-compiler.js') : entry.compiler;
+  const compiler = entry.sourceState === 'absent-compiler' ? path.join(root, 'absent-compiler.js') :
+    entry.sourceState === 'output-alias' ? path.join(root, 'selected-output.js') : entry.compiler;
   const expected = [entry.selected, '--use-links', '-f', root, '--flatc-runtime', 'flat',
     '--flatc-script', compiler, '-t', 'es6', '-r', 'node', ...entry.operation];
   if (JSON.stringify(args) !== JSON.stringify(expected)) return false;
@@ -156,9 +157,16 @@ function toolchainCliMatch(entry, args, options) {
   verify(entry.compiler, entry.compilerSha256);
   if (fs.realpathSync(entry.selected) !== entry.selected ||
       !entry.selected.startsWith(owner + path.sep)) throw Error('Public CLI tool identity changed');
-  if (!['present', 'invalid', 'absent-compiler'].includes(entry.sourceState) ||
+  if (!['present', 'invalid', 'absent-compiler', 'output-alias'].includes(entry.sourceState) ||
       JSON.stringify(entry.outcome) !== JSON.stringify({exit: 1, signal: null})) throw Error('Invalid public CLI outcome');
-  if (entry.sourceState !== 'present' &&
+  if (entry.sourceState === 'output-alias') {
+    const output = path.join(root, 'dist/es6/index.js');
+    if (JSON.stringify(entry.operation) !== JSON.stringify(['install', 'main']) ||
+        !fs.lstatSync(compiler).isSymbolicLink() || !fs.statSync(output).isFile() ||
+        fs.realpathSync(output) !== output || fs.realpathSync(compiler) !== output ||
+        fs.existsSync(path.join(root, 'main-executed.txt'))) throw Error('Invalid output alias fixture');
+  }
+  if (['invalid', 'absent-compiler'].includes(entry.sourceState) &&
       fs.readFileSync(path.join(root, 'src/Main.flat'), 'utf8') !== 'not valid Flat syntax') {
     throw Error('Public CLI mutation state changed');
   }
@@ -291,6 +299,15 @@ function admit(command, args = [], options = {}) {
       } else {
       if (!args.length || args[0].startsWith('-')) throw Error('Node requires a script, not flags/eval');
       let script = path.resolve(options.cwd || process.cwd(), args[0]);
+      // The reviewed output-alias probe may select this path only as an
+      // Airship CLI argument. Executing it as Node input would greenwash the
+      // application as a compiler, even though generic workspace JS is allowed.
+      if (fixtures.some(entry => entry.toolchainCli && entry.sourceState === 'output-alias') &&
+          path.basename(script) === 'selected-output.js' &&
+          path.dirname(path.dirname(script)) === path.join(policy.root, 'packages/Airship') &&
+          /^\.airship-toolchain-test-[0-9]{1,16}$/.test(path.basename(path.dirname(script)))) {
+        throw Error('Output alias fixture is not an admitted compiler input');
+      }
       const lookup = path.join(fs.realpathSync(path.dirname(script)), path.basename(script));
       if (policy.stage > 0 && policy.compilerOutput &&
           (script === policy.compilerOutput || fs.realpathSync(script) === policy.compilerOutput)) {

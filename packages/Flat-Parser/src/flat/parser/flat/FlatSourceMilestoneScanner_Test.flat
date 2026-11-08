@@ -5,6 +5,49 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `Core Object nullable expression members retain source ordered frontend milestones`() {
+        let source = "package flat\n\nclass {\n" +
+            "    public equals(Object? another) => referenceEquals(this, another)\n" +
+            "    public toString() -> String => \"name\"\n" +
+            "    public toJson(Bool: format = false, String: tab = \"\\t\") => \"{}\"\n" +
+            "    visible Long hashCodeLong => 0\n}"
+        let tokens = lex(source)
+        let subject = FlatSourceMilestoneScanner(
+            SourceSnapshotIdentity(SourceIdentity("memory:Core-Object"), "nullable"),
+            maxFrontMatterTokens: 8, maxTypeHeaderTokens: 128)
+        let islands = SyntaxIsland[]
+        var Int index
+        for (token in tokens) {
+            islands.addAll(subject.accept(token, index))
+            index++
+        }
+        islands.addAll(subject.end())
+        expect(islands.count).toBe(11)
+        String[] names = ["equals", "toString", "toJson", "hashCodeLong"]
+        var Int ordinal
+        for (name in names) {
+            Int headerIndex = 2 + ordinal * 2
+            let headerIsland = islands[headerIndex]
+            let bodyIsland = islands[headerIndex + 1]
+            let header = (NonBracedMemberHeaderSyntaxIsland)headerIsland
+            let body = (ExpressionMemberBodySyntaxIsland)bodyIsland
+            expect(header.name).toBe(name)
+            expect(body.headerIdentity).toBe(header.identity)
+            expect(header.range.start.lineNumber).toBe(4 + ordinal)
+            expect(header.range.start.column).toBe(5)
+            expect(header.range.endTokenIndex < body.range.startTokenIndex).toBe(true)
+            if (ordinal + 1 < names.count) {
+                expect(body.range.endTokenIndex <= islands[headerIndex + 2].range.startTokenIndex).toBe(true)
+            } else {
+                // The final milestone is the enclosing type body, whose start
+                // precedes all members; compare containment at its end instead.
+                expect(islands[headerIndex + 2].class).toBe(TopLevelTypeBodySyntaxIsland.class)
+                expect(body.range.endTokenIndex < islands[headerIndex + 2].range.endTokenIndex).toBe(true)
+            }
+            ordinal++
+        }
+    }
+
     async test `coordinates stable source ordered milestones`() {
         let source = "|
             package flat/test

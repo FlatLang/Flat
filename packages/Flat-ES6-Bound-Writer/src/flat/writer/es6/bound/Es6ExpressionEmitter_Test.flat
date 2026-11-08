@@ -5,6 +5,34 @@ import flat/bound
 import flat/compiler/models
 
 testable class {
+    test `quoted source lexemes encode physical controls without reescaping source escapes`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let emitter = Es6ExpressionEmitter()
+        // Build controls at runtime: do not let the Java bootstrap normalize a
+        // physical multiline test-authoring literal before the tested emitter.
+        let slash = "\\"
+        String[] contents = ["a\nb", "a\rb", "a\r\nb", "a\tb", "a" + (Char)8232 + "b",
+            "a" + (Char)8233 + "b", slash + "n", slash + slash + "n",
+            slash + "\"", slash + slash, slash + slash + "\r", slash + slash + "\t",
+            "quote ' and " + slash + "\"", slash + slash + slash + "n"]
+        String[] expected = ["a\\nb", "a\\rb", "a\\r\\nb", "a\\tb", "a\\u2028b", "a\\u2029b",
+            slash + "n", slash + slash + "n", slash + "\"", slash + slash,
+            slash + slash + "\\r", slash + slash + "\\t", "quote ' and " + slash + "\"",
+            slash + slash + slash + "n"]
+        var Int index
+        while (index < contents.count) {
+            let lexeme = "\"" + contents[index] + "\""
+            let expression = BoundLiteralExpression(fixture.range(), SemanticTypes.stringType(), lexeme)
+            expect(emitter.emitLiteral(expression).code).toBe("\"" + expected[index] + "\"")
+            // Source provenance must not be rewritten in immutable IR.
+            expect(expression.sourceValue).toBe(lexeme)
+            index++
+        }
+        expect(emitter.emitLiteral(BoundLiteralExpression(fixture.range(),
+            SemanticTypes.stringType(), "temporaryString")).code).toBe("temporaryString")
+        expect(emitter.emitLiteral(BoundLiteralExpression(fixture.range(),
+            SemanticTypes.stringType(), "'a\rb'")).code).toBe("'a\\rb'")
+    }
     test `numeric family unbox dispatch preserves resolved Double projection`() {
         expect(Es6TargetCapabilities.supportsExpression("numeric-unbox")).toBe(true)
         expect(Es6TargetCapabilities.diagnoseExpression("numeric-unbox")).toBe(null)

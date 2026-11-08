@@ -70,7 +70,8 @@ retain their evidence. Validate the complete evidence without rebuilding tools:
 python3 -B packages/Airship/test/dogfood_acceptance.py \
   --repo "$PWD" --output "$NEW_OUTPUT" --bootstrap-output "$STAGES" \
   --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256" \
-  --evidence "$PRODUCTION_EVIDENCE" --evidence-sha256 "$EVIDENCE_SHA256"
+  --evidence "$PRODUCTION_EVIDENCE" --evidence-sha256 "$EVIDENCE_SHA256" \
+  --scaling-plan "$SCALING_PLAN" --scaling-plan-sha256 "$SCALING_PLAN_SHA256"
 ```
 
 Outputs must be new directories outside the checkout. Omitting
@@ -158,8 +159,14 @@ After verification is authorized:
 python3 -B packages/Airship/test/dogfood_acceptance.py --produce \
   --repo "$PWD" --output "$NEW_PRODUCTION_OUTPUT" --bootstrap-output "$STAGES" \
   --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256" \
-  --changed-input "$REVIEWED_CORE_SOURCE" --removed-input "$REVIEWED_REMOVABLE_CORE_SOURCE"
+  --changed-input "$REVIEWED_CORE_SOURCE" --removed-input "$REVIEWED_REMOVABLE_CORE_SOURCE" \
+  --scaling-plan "$SCALING_PLAN" --scaling-plan-sha256 "$SCALING_PLAN_SHA256"
 ```
+
+For both production commands above, provision `SCALING_PLAN` and its independently
+reviewed `SCALING_PLAN_SHA256` before execution. The plan must bind the exact
+bootstrap `sources.json` digest and the actual BSD/GNU timer path, kind and hash;
+its archived digest alone is not an independent review anchor.
 
 `--changed-input` and `--removed-input` are existing `packages/Flat-Core/src/`
 files, not suite entrypoints. Review must select a valid independently removable

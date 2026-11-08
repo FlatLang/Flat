@@ -16,7 +16,8 @@ data class extends BoundStatement {
         if (!range || !target || target.trim().count == 0 || !segmentValues ||
             segmentValues.isEmpty || segmentValues.any({ !_ }) || !nameBindings ||
             nameBindings.any({ !_ }) || nameBindings.any((binding, index) =>
-                nameBindings.take(index).any({ _.sourceName == binding.sourceName })
+                nameBindings.take(index).any((existing) => existing.sourceName == binding.sourceName ||
+                    existing.storageReference().symbolIdentity.value == binding.storageReference().symbolIdentity.value)
             )) {
             throw Exception("Bound external statement requires range target segments and unique names")
         }

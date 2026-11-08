@@ -459,7 +459,8 @@ class {
             var PrimitiveExpressionSyntax expression
             if (!hasInterpolationMarker(token.value)) {
                 expression = PrimitiveLiteralSyntax(
-                    range(tokenIndex, tokenIndex + 1), token.type, token.value
+                    range(tokenIndex, tokenIndex + 1), token.type,
+                    PrimitiveInterpolatedStringParser().literalSource(token.value)
                 )
             } else expression = PrimitiveInterpolatedStringParser().parse(
                 token, snapshot, tokenIndex + tokenIndexOffset

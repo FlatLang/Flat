@@ -393,6 +393,30 @@ testable class {
         expect(linker.calls).toBe(2)
     }
 
+    async test `artifact character capacity invalidates warm package reuse before publication`() {
+        assertDeclarationReuseCapacity()
+    }
+
+    public async assertDeclarationReuseCapacity() {
+        let reuse = CompilerPackageReuse()
+        let values = sources()
+        let warmSink = MemoryCompilerArtifactSink()
+        let engine = CompilerEngine(packageReuse: reuse)
+        let cold = engine.compilePackageSnapshots(values, warmSink, "cold.js").completion.get()
+        expect(cold.succeeded).toBe(true)
+        let warm = engine.compilePackageSnapshots(values, MemoryCompilerArtifactSink(), "warm.js").completion.get()
+        expect(warm.reuse.reused).toBe(true)
+        let sink = MemoryCompilerArtifactSink()
+        let limited = CompilerEngine(packageReuse: reuse, packageLinker: FlatEs6PackageLinker(
+            maxArtifactCharacters: warmSink.artifacts().first.code.count - 1))
+        let rejected = limited.compilePackageSnapshots(values, sink, "limited.js").completion.get()
+        expect(rejected.reuse.reused).toBe(false)
+        expect(rejected.reuse.reason).toBe("configuration-changed")
+        expect(rejected.succeeded).toBe(false)
+        expect(rejected.artifactCount).toBe(0)
+        expect(sink.artifacts().count).toBe(0)
+    }
+
     class CountingLinker extends FlatEs6PackageLinker {
         visible var Int calls
         visible var Bool fail
@@ -409,7 +433,7 @@ testable class {
             if (fail) throw Exception("controlled link failure")
             let delegate = FlatEs6PackageLinker(maxSources: maxSources,
                 maxSourceCharacters: maxSourceCharacters, maxTokensPerSource: maxTokensPerSource,
-                maxTypes: maxTypes, maxFragments: maxFragments)
+                maxTypes: maxTypes, maxFragments: maxFragments, maxArtifactCharacters: maxArtifactCharacters)
             return delegate.linkSources(provider, identities, arrayDeclaration, mainClass, defaultImports)
         }
     }

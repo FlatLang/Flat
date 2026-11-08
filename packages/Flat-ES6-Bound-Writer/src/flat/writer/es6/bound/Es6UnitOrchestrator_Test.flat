@@ -5,6 +5,35 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    test `type section emission preserves legacy combined bytes and canonical owner`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let owner = fixture.declaration("class", "Sectioned", 950)
+        let field = BoundFieldUnit("value", fixture.symbol("field", "value", 951), SemanticTypes.intType(),
+            fixture.range(), initializer: BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "17"),
+            staticField: true, ownerIdentity: owner)
+        let type = BoundTypeUnit(owner, UserClassSemanticType(owner), BoundFunctionUnit[], fixture.range(),
+            fieldValues: [field])
+        let sectioned = Es6UnitOrchestrator().emitTypeSections(type, 0)
+        let legacy = Es6UnitOrchestrator().emitType(type, 0)
+        expect(sectioned.emitted).toBe(true)
+        let sections = sectioned.sections
+        expect(sections.identity).toBe(owner.value)
+        expect(sections.ordinal).toBe(0)
+        expect(sections.parentIdentity).toBe(null)
+        expect(sections.declarations.contains("class ")).toBe(true)
+        expect(sections.metadata.contains("__flatType")).toBe(true)
+        expect(sections.eagerInitializers.contains(" = 17;")).toBe(true)
+        expect(legacy.fragment.code).toBe(sections.declarations + sections.metadata + sections.eagerInitializers)
+        let diagnostic = Es6BackendDiagnostic("test.original", "original diagnostic", fixture.range())
+        let failed = Es6TypeSectionsResult(diagnostic: diagnostic)
+        expect(failed.emitted).toBe(false)
+        expect(failed.diagnostic).toBe(diagnostic)
+        expect(failed.sections).toBe(null)
+        var Bool rejected
+        try { Es6TypeSectionsResult() }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
     test `overlay static field emission keeps source slot and explicit canonical owner`() {
         let fixture = Es6BoundWriter_TestFixture()
         let owner = fixture.declaration("class", "OverlayOwner", 1450)

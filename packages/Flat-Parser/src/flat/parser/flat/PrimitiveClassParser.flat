@@ -646,6 +646,10 @@ class {
                 typeName += "[]"
                 index += 2
             }
+            if (index < tokens.count && tokens[index].value == "?") {
+                typeName += "?"
+                index++
+            }
             let name = identifier("Expected parameter name")
             if (result.any({ _.name == name })) syntax("Duplicate parameter '#name'", start)
             var PrimitiveExpressionSyntax defaultValue
@@ -996,6 +1000,12 @@ class {
         }
         while (cursor + 1 < tokens.count && tokens[cursor].value == "[" &&
             tokens[cursor + 1].value == "]") cursor += 2
+        if (cursor < tokens.count && tokens[cursor].value == "?") {
+            cursor++
+            if (cursor < tokens.count && tokens[cursor].value == "?") {
+                syntax("Repeated nullable type suffix", cursor)
+            }
+        }
         return cursor
     }
 

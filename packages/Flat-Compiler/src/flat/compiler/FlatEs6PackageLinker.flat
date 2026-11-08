@@ -17,10 +17,11 @@ class {
         visible Int maxSourceCharacters = 1048576,
         visible Int maxTokensPerSource = 131072,
         visible Int maxTypes = 4096,
-        visible Int maxFragments = 4096
+        visible Int maxFragments = 4096,
+        visible Int maxArtifactCharacters = 33554432
     ) {
         if (maxSources <= 0 || maxSourceCharacters <= 0 || maxTokensPerSource <= 0 ||
-            maxTypes <= 0 || maxFragments <= 0) {
+            maxTypes <= 0 || maxFragments <= 0 || maxArtifactCharacters <= 0) {
             throw Exception("Flat ES6 package linker capacities must be positive")
         }
     }
@@ -237,22 +238,26 @@ class {
         if (types.count > maxFragments) {
             throw Exception("Flat ES6 package exceeds configured fragment capacity")
         }
-        let fragments = Es6ArtifactFragment[]
+        // runtime-declarations-ready is the existing finite artifact partition:
+        // retain at most maxFragments typed sections so all declarations/metadata
+        // precede eager effects. No extra source/project readiness gate is added.
+        let sections = Es6TypeSections[]
+        var Int retainedCharacters
         var Int index
         while (index < types.count) {
             provider.checkpoint()
-            let emitted = Es6UnitOrchestrator().emitType(TypeFeatureLowering.lowerLazyProperties(types[index]), index)
+            let emitted = Es6UnitOrchestrator().emitTypeSections(TypeFeatureLowering.lowerLazyProperties(types[index]), index)
             if (!emitted.emitted) {
                 throw Exception("#{emitted.diagnostic.code}: #{emitted.diagnostic.message}")
             }
-            fragments.add(emitted.fragment)
+            let section = emitted.sections
+            retainedCharacters = chargeCharacters(retainedCharacters, section.declarations.count)
+            retainedCharacters = chargeCharacters(retainedCharacters, section.metadata.count)
+            retainedCharacters = chargeCharacters(retainedCharacters, section.eagerInitializers.count)
+            sections.add(section)
             index++
         }
         provider.checkpoint()
-        let assembly = Es6FragmentAssembler(maxFragments).assemble(fragments)
-        if (!assembly.assembled) {
-            throw Exception("#{assembly.diagnostic.code}: #{assembly.diagnostic.message}")
-        }
         var String entrypointCode = ""
         if (mainClass) {
             // Resolve a qualified declaration through the same immutable source
@@ -299,6 +304,19 @@ class {
             }
             entrypointCode = entrypoint.code
         }
-        return assembly.code + entrypointCode
+        chargeCharacters(retainedCharacters, entrypointCode.count)
+        provider.checkpoint()
+        let assembly = Es6FragmentAssembler(maxFragments, maxArtifactCharacters).assembleTypeSections(sections, entryCode: entrypointCode, checkpoint: { provider.checkpoint() })
+        provider.checkpoint()
+        if (!assembly.assembled) throw Exception("#{assembly.diagnostic.code}: #{assembly.diagnostic.message}")
+        return assembly.code
+    }
+
+    chargeCharacters(Int retained, Int additional) -> Int {
+        // Subtraction avoids overflow at an Int-sized configured ceiling.
+        if (additional > maxArtifactCharacters - retained) {
+            throw Exception("es6.assembly-capacity: ES6 artifact exceeds configured character capacity")
+        }
+        return retained + additional
     }
 }

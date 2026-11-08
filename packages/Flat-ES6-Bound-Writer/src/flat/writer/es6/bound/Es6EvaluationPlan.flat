@@ -22,14 +22,10 @@ class extends BoundTreeLoweringPass {
         for (value in values) {
             let emitted = Es6StatementOrchestrator(expressions: expressions).emit(value)
             if (!emitted.emitted) { diagnostic = emitted.diagnostic; return }
-            var String selected = emitted.code
-            if (value.class.isOfType(BoundLocalDeclarationStatement.class)) {
-                BoundLocalDeclarationStatement local = (BoundLocalDeclarationStatement)value
-                let name = Es6NameMangler.mangle(local.local.symbolIdentity.value)
-                // Semantic identities, not a synthetic branch block, own setup locals.
-                if (!local.evaluationLocal) selected = selected.replace("let " + name, "var " + name)
-            }
-            code += selected
+            // Actual declarations are reserved with let at their semantic lexical
+            // owner. Only assignment stays on the selected evaluation path; no
+            // var flattening, replay, or synthetic function/control boundary.
+            code += emitted.code
         }
     }
 
@@ -151,11 +147,11 @@ class extends BoundTreeLoweringPass {
             BoundConditionalExpression value = (BoundConditionalExpression)expression
             let condition = lowerExpression(value.condition)
             let name = fresh()
-            code += "let " + name + ";\nif (" + Es6ExpressionOrchestrator().emit(condition).code + ") {\n"
+            code += "let " + name + ";\nif (" + expressions.emit(condition).code + ") {\n"
             let yes = lowerExpression(value.whenTrue)
-            code += name + " = " + Es6ExpressionOrchestrator().emit(yes).code + ";\n} else {\n"
+            code += name + " = " + expressions.emit(yes).code + ";\n} else {\n"
             let no = lowerExpression(value.whenFalse)
-            code += name + " = " + Es6ExpressionOrchestrator().emit(no).code + ";\n}\n"
+            code += name + " = " + expressions.emit(no).code + ";\n}\n"
             return BoundLiteralExpression(value.range, value.semanticType, name)
         }
         if (expression.class.isOfType(BoundBinaryExpression.class)) {
@@ -163,10 +159,10 @@ class extends BoundTreeLoweringPass {
             if (value.operator == "&&" || value.operator == "||") {
                 let left = lowerExpression(value.left)
                 let name = fresh()
-                code += "let " + name + " = " + Es6ExpressionOrchestrator().emit(left).code + ";\nif (" +
+                code += "let " + name + " = " + expressions.emit(left).code + ";\nif (" +
                     (value.operator == "||" ? "!" : "") + name + ") {\n"
                 let right = lowerExpression(value.right)
-                code += name + " = " + Es6ExpressionOrchestrator().emit(right).code + ";\n}\n"
+                code += name + " = " + expressions.emit(right).code + ";\n}\n"
                 return BoundLiteralExpression(value.range, value.semanticType, name)
             }
         }
@@ -175,7 +171,8 @@ class extends BoundTreeLoweringPass {
             let name = fresh()
             code += "let " + name + " = '';\n"
             for (segment in value.segmentValues()) {
-                if (segment.literal()) code += name + " += " + segment.literalSourceValue + ";\n"
+                if (segment.literal()) code += name + " += " + expressions.emit(
+                    BoundLiteralExpression(segment.range, SemanticTypes.stringType(), segment.literalSourceValue)).code + ";\n"
                 else {
                     let operand = lowerExpression(segment.expression)
                     if (diagnostic) return expression
@@ -197,10 +194,10 @@ class extends BoundTreeLoweringPass {
             let operand = lowerExpression(value.value)
             let operation = BoundBinaryExpression(value.range, value.semanticType, value.operator, previous, operand)
             let converted = BoundConversionExpression(value.range, selected.semanticType, operation, value.storageConversion)
-            let emitted = Es6ExpressionOrchestrator().emit(converted)
+            let emitted = expressions.emit(converted)
             if (!emitted.emitted) { diagnostic = emitted.diagnostic; return expression }
             return capture(BoundLiteralExpression(value.range, value.semanticType,
-                "(" + Es6ExpressionOrchestrator().emit(selected).code + " = " + emitted.code + ")"))
+                "(" + expressions.emit(selected).code + " = " + emitted.code + ")"))
         }
         return capture(super.lowerExpression(expression))
     }

@@ -4,23 +4,76 @@ import flat/exception
 import flat/datastruct/list
 
 testable class {
+    test `captured character backing preserves absence count and content equality`() {
+        let value = StringCharArray(['a'])
+        let StringCharArray? absent = null
+        expect(value.equals(absent)).toBe(false)
+        expect(value.equals(StringCharArray(['a', 'b']))).toBe(false)
+        expect(value.equals(StringCharArray(['a']))).toBe(true)
+        expect(value.equals(StringCharArray(['b']))).toBe(false)
+        let missing = StringCharArray(['a'])
+        let alsoMissing = StringCharArray(['a'])
+        // JS backing absence is distinct from an absent StringCharArray receiver.
+        external js {
+            #{missing.data} = null;
+            #{alsoMissing.data} = null;
+        }
+        expect(missing.equals(alsoMissing)).toBe(true)
+        expect(missing.equals(value)).toBe(false)
+        expect(value.equals(missing)).toBe(false)
+    }
+
+    test `nullable equality inputs retain absence and nonnull behavior`() {
+        let Object? absent = null
+        let value = Object()
+        expect(value.equals(absent)).toBe(false)
+        expect(value.equals(value)).toBe(true)
+        expect(Object.referenceEquals(absent, absent)).toBe(true)
+        expect(Object.referenceEquals(value, absent)).toBe(false)
+        expect(Object.referenceEquals(absent, value)).toBe(false)
+        let String? missingText = null
+        let text = "present"
+        expect(text.equals(missingText)).toBe(false)
+        expect(text.equals("present")).toBe(true)
+    }
+
     test `empty and null exception messages omit the separator`() {
         let empty = Exception()
         expect(empty.toString()).toBe(empty.class.name)
-        let String absent = null
+        let String? absent = null
         let missing = Exception(absent)
         expect(missing.toString()).toBe(missing.class.name)
         let populated = InvalidArgumentException("bad input")
         expect(populated.toString()).toBe(populated.class.name + ": bad input")
+        let whitespace = Exception(" ")
+        expect(whitespace.toString()).toBe(whitespace.class.name + ":  ")
+        let nul = Exception("\0")
+        expect(nul.toString()).toBe(nul.class.name + ": \0")
     }
 
     test `typed character storage equality rejects null without dereferencing it`() {
         let value = StringCharArray(['a'])
-        let StringCharArray absent = null
+        let StringCharArray? absent = null
         expect(value.equals(absent)).toBe(false)
         expect(value.equals(StringCharArray(['a']))).toBe(true)
         expect(value.equals(StringCharArray(['b']))).toBe(false)
         expect(StringCharArray(Char[]).equals(StringCharArray(Char[]))).toBe(true)
+    }
+
+    test `nullable character storage equality preserves nonnull comparisons`() {
+        let value = StringCharArray(['a'])
+        let StringCharArray? equal = StringCharArray(['a'])
+        let StringCharArray? unequal = StringCharArray(['b'])
+        let StringCharArray? longer = StringCharArray(['a', 'b'])
+        let StringCharArray? absent = null
+        expect(value.equals(absent)).toBe(false)
+        expect(value.equals(equal)).toBe(true)
+        expect(value.equals(unequal)).toBe(false)
+        expect(value.equals(longer)).toBe(false)
+        let empty = StringCharArray(Char[])
+        let StringCharArray? emptyOther = StringCharArray(Char[])
+        expect(empty.equals(emptyOther)).toBe(true)
+        expect(empty.equals(absent)).toBe(false)
     }
 
     test `can create`() {

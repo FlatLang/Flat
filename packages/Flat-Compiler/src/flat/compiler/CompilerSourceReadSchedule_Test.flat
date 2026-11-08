@@ -400,6 +400,176 @@ testable class {
         } finally { Es6ArtifactFiles.remove(root) }
     }
 
+    async test `declaration readiness preserves executable bytes across bounded read schedules`() {
+        assertDeclarationSchedules()
+    }
+
+    public async assertDeclarationSchedules() {
+        let root = File(".flat-ready-read-schedule-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let files = File[]
+            for (source in CompilerPackage_Test.declarationReadySources()) {
+                let name = source.identity.substring(source.identity.lastIndexOf("/") + 1)
+                let file = File(root, name)
+                Es6ArtifactFiles.write(file, source.text)
+                files.add(file)
+            }
+            var String reference
+            let Int[] capacities = [1, 3]
+            let Bool[] orders = [false, true]
+            for (capacity in capacities) {
+                for (reverse in orders) {
+                    let observer = Observation()
+                    let schedule = reverse ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
+                    let sink = MemoryCompilerArtifactSink()
+                    let engine = CompilerEngine(maxActiveSources: capacity, sourceReadSchedule: schedule,
+                        sourceReadObserver: observer, invocationObserver: observer)
+                    let summary = engine.compilePackage(FilesystemCompilerSourceProvider(files), sink,
+                        "ready.js", mainClass: "app/Main").completion.get()
+                    if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+                    expect(summary.succeeded).toBe(true)
+                    expect(summary.artifactCount).toBe(1)
+                    expect(summary.diagnosticCount).toBe(0)
+                    expect(observer.settledCount).toBe(files.count)
+                    expect(observer.drainedReads).toBe(true)
+                    expect(observer.peakRetained <= capacity).toBe(true)
+                    expect(observer.peakActive <= capacity).toBe(true)
+                    let code = sink.artifacts().first.code
+                    if (reference == null) reference = code
+                    else expect(code).toBe(reference)
+                    let output = File(root, "ready.js")
+                    Es6ArtifactCommitter().commit(output, code)
+                    let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+                    expect(response.exitCode).toBe(0)
+                    expect(response.stdout.join("")).toBe("B true\nA\nC\n")
+                    expect(response.stderr.join("")).toBe("")
+                }
+            }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    class CheckpointFailureSource extends CompilerSourceProvider {
+        private CompilerSource[] values
+        visible var Int checkpoints
+        visible var Int loads
+        visible Exception failure = Exception("controlled artifact checkpoint cancellation")
+        public construct(visible Int failAt = 0) {
+            values = CompilerPackage_Test.declarationReadySources()
+        }
+        override public identities() -> String[] => values.map({ _.identity })
+        override public checkpoint() {
+            checkpoints++
+            if (failAt > 0 && checkpoints == failAt) throw failure
+        }
+        override public async load(String identity) -> CompilerSource {
+            loads++
+            return values.firstOrNull({ _.identity == identity })
+        }
+    }
+
+    async test `artifact checkpoint exceptions escape linker unchanged without partial code`() {
+        assertDeclarationCheckpointIdentity()
+    }
+
+    public async assertDeclarationCheckpointIdentity() {
+        let baseline = CheckpointFailureSource()
+        let linker = FlatEs6PackageLinker()
+        let code = linker.linkSources(baseline, baseline.identities(), mainClass: "app/Main")
+        expect(code.count > 0).toBe(true)
+        // Sweep operation-scoped boundaries after all source loads, including
+        // assembly's admission/order/append checkpoints once callback is wired.
+        var Int point = 1
+        var Int artifactFailures
+        while (point <= baseline.checkpoints) {
+            let provider = CheckpointFailureSource(point)
+            var String partial
+            var Exception observed
+            try { partial = linker.linkSources(provider, provider.identities(), mainClass: "app/Main") }
+            catch (Exception error) { observed = error }
+            expect(observed == provider.failure).toBe(true)
+            expect(partial).toBe(null)
+            if (provider.loads == provider.identities().count) artifactFailures++
+            point++
+        }
+        expect(artifactFailures > 0).toBe(true)
+    }
+
+    async test `checkpoint failure after reads drains package without artifact or staging`() {
+        assertDeclarationCheckpointCleanup()
+    }
+
+    public async assertDeclarationCheckpointCleanup() {
+        let Int[] capacities = [1, 3]
+        let Bool[] orders = [false, true]
+        for (capacity in capacities) {
+            for (reverse in orders) {
+                let baseline = CheckpointFailureSource()
+                let schedule = reverse ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
+                let good = CompilerEngine(maxActiveSources: capacity, sourceReadSchedule: schedule)
+                    .compilePackage(baseline, MemoryCompilerArtifactSink(), "ready.js", mainClass: "app/Main").completion.get()
+                expect(good.succeeded).toBe(true)
+                let provider = CheckpointFailureSource(baseline.checkpoints)
+                let observer = Observation()
+                let failingSchedule = reverse ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
+                let sink = MemoryCompilerArtifactSink()
+                let summary = CompilerEngine(maxActiveSources: capacity, sourceReadSchedule: failingSchedule,
+                    sourceReadObserver: observer, invocationObserver: observer)
+                    .compilePackage(provider, sink, "cancelled.js", mainClass: "app/Main").completion.get()
+                expect(summary.succeeded).toBe(false)
+                expect(summary.artifactCount).toBe(0)
+                expect(summary.packageDiagnostic.contains("controlled artifact checkpoint cancellation")).toBe(true)
+                expect(sink.artifacts().count).toBe(0)
+                expect(provider.loads).toBe(provider.identities().count)
+                expect(observer.drainedReads).toBe(true)
+                expect(observer.admittedCount).toBe(observer.settledCount)
+                expect(observer.lifecycle.createdCount).toBe(0)
+                expect(observer.lifecycle.publicationCount).toBe(0)
+            }
+        }
+    }
+
+    async test `declaration section overflow drains bounded reads without publication or staged files`() {
+        assertDeclarationOverflowCleanup()
+    }
+
+    public async assertDeclarationOverflowCleanup() {
+        let root = File(".flat-ready-capacity-schedule-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let files = File[]
+            for (source in CompilerPackage_Test.declarationReadySources()) {
+                let name = source.identity.substring(source.identity.lastIndexOf("/") + 1)
+                let file = File(root, name)
+                Es6ArtifactFiles.write(file, source.text)
+                files.add(file)
+            }
+            let Int[] capacities = [1, 3]
+            let Bool[] orders = [false, true]
+            for (capacity in capacities) {
+                for (reverse in orders) {
+                    let observer = Observation()
+                    let schedule = reverse ? CompilerSourceReadSchedule.reverse(capacity) : CompilerSourceReadSchedule.forward(capacity)
+                    let sink = MemoryCompilerArtifactSink()
+                    let engine = CompilerEngine(maxActiveSources: capacity, sourceReadSchedule: schedule,
+                        sourceReadObserver: observer, invocationObserver: observer,
+                        packageLinker: FlatEs6PackageLinker(maxArtifactCharacters: 1))
+                    let summary = engine.compilePackage(FilesystemCompilerSourceProvider(files), sink,
+                        "overflow.js", mainClass: "app/Main").completion.get()
+                    expect(summary.succeeded).toBe(false)
+                    expect(summary.artifactCount).toBe(0)
+                    expect(summary.packageDiagnostic.contains("es6.assembly-capacity")).toBe(true)
+                    expect(sink.artifacts().count).toBe(0)
+                    expect(observer.settledCount).toBe(files.count)
+                    expect(observer.drainedReads).toBe(true)
+                    expect(observer.lifecycle.createdCount).toBe(0)
+                    expect(observer.lifecycle.publicationCount).toBe(0)
+                    expect(File(root, "overflow.js").exists).toBe(false)
+                }
+            }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     async test `real filesystem reads settle forward and reverse within bounded windows`() {
         let root = File(".flat-read-schedule-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
@@ -475,6 +645,43 @@ testable class {
     }
 
     async test `complete production Core workload executes under every bounded read order`() {
+        assertProductionWorkloadExecution()
+    }
+
+    // Test-only bounded observation; never a canonical diagnostic or acceptance record.
+    static previewText(String value) -> String {
+        if (value == null) return "null"
+        let length = value.count
+        let prefix = value.substring(0, Math.min(length, 512))
+        return "{\"originalLength\":#{length},\"truncated\":#{length > 512},\"prefix\":#{CompilerEvidence.quote(prefix)}}"
+    }
+
+    public static renderFailurePreview(CompilationSummary summary) -> String {
+        var String typed = "null"
+        if (summary.parserDiagnostic && summary.parserDiagnostic.range) {
+            let diagnostic = summary.parserDiagnostic
+            let range = diagnostic.range
+            typed = "{\"channel\":\"parser\",\"code\":#{previewText(diagnostic.code)}," +
+                "\"text\":#{previewText(diagnostic.message)},\"source\":#{previewText(range.snapshot.source.value)}," +
+                "\"startLine\":#{range.start.lineNumber},\"startColumn\":#{range.start.column}," +
+                "\"endLine\":#{range.end.lineNumber},\"endColumn\":#{range.end.column}," +
+                "\"startTokenIndex\":#{range.startTokenIndex},\"endTokenIndex\":#{range.endTokenIndex}}"
+        } else if (summary.bindingDiagnostic && summary.bindingDiagnostic.range) {
+            let diagnostic = summary.bindingDiagnostic
+            let range = diagnostic.range
+            typed = "{\"channel\":\"binding\",\"code\":#{previewText(diagnostic.code)}," +
+                "\"text\":#{previewText(diagnostic.name)},\"source\":#{previewText(range.snapshot.source.value)}," +
+                "\"startLine\":#{range.start.lineNumber},\"startColumn\":#{range.start.column}," +
+                "\"endLine\":#{range.end.lineNumber},\"endColumn\":#{range.end.column}," +
+                "\"startTokenIndex\":#{range.startTokenIndex},\"endTokenIndex\":#{range.endTokenIndex}}"
+        }
+        return "{\"testOnly\":true,\"canonical\":false,\"complete\":false," +
+            "\"kind\":\"bounded-workload-failure-preview\",\"firstRetainedTyped\":#{typed}," +
+            "\"terminal\":#{previewText(summary.packageDiagnostic)}}"
+    }
+
+    // Shared unchanged workload assertions for the full suite and focused frontier probe.
+    public static async assertProductionWorkloadExecution() {
         let project = AirshipCompilerArguments().fromArguments([
             "../Flat-Core/workloads/ProductionCoreWorkload.flat", "-l", "../Flat-Core/src",
             "-x", "../Flat-Core/src/**/*_Test*.flat", "-target", "es6", "-target-runtime", "node",
@@ -500,6 +707,10 @@ testable class {
                     let session = engine.compilePackage(FilesystemCompilerSourceProvider(files), sink,
                         "production-core-workload.js", "core/workloads/ProductionCoreWorkload")
                     let summary = session.completion.get()
+                    if (!summary.succeeded) {
+                        let preview = renderFailurePreview(summary)
+                        external js { console.log(#{preview.chars.data}); }
+                    }
                     CompilerEvidence.emitProductFailure(summary,
                         "complete-Core-main-#{capacity}-#{reverse ? "reverse" : "forward"}")
                     expect(summary.sourceCount).toBe(files.count)
@@ -518,7 +729,41 @@ testable class {
                     else expect(code).toBe(reference)
                     let output = File(root, "workload-#{capacity}-#{reverse}.js")
                     Es6ArtifactFiles.write(output, code)
+                    let runtimePath = output.normalizedLocation
+                    external js {
+                        const fs = require('fs');
+                        const path = require('path');
+                        const file = #{runtimePath.chars.data};
+                        const bytes = fs.readFileSync(file);
+                        const limit = 33554432;
+                        const directory = process.env.FLAT_COMPILER_TEST_EVIDENCE_DIRECTORY;
+                        let retained = null;
+                        if (directory && bytes.length <= limit) {
+                            retained = path.join(directory, path.basename(file));
+                            fs.writeFileSync(retained, bytes, { flag: 'wx' });
+                        }
+                        console.log(JSON.stringify({testOnly: true, canonical: false,
+                            kind: 'workload-runtime-artifact', complete: bytes.length <= limit,
+                            argv: ['node', file], cwd: process.cwd(), byteLength: bytes.length,
+                            sha256: require('crypto').createHash('sha256').update(bytes).digest('hex'),
+                            retainedArtifact: retained, retentionIncomplete: bytes.length > limit}));
+                    }
                     let response = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+                    let runtimeStdout = response.stdout.join("")
+                    let runtimeStderr = response.stderr.join("")
+                    let runtimeExit = response.exitCode
+                    external js {
+                        const bounded = (text) => {
+                            const limit = 16384;
+                            return {originalLength: text.length, incomplete: text.length > limit,
+                                text: text.slice(0, limit)};
+                        };
+                        const stdout = bounded(#{runtimeStdout.chars.data});
+                        const stderr = bounded(#{runtimeStderr.chars.data});
+                        console.log(JSON.stringify({testOnly: true, canonical: false,
+                            kind: 'workload-runtime-result', exitCode: #{runtimeExit},
+                            complete: !stdout.incomplete && !stderr.incomplete, stdout, stderr}));
+                    }
                     expect(response.exitCode).toBe(0)
                     expect(response.stdout.join("")).toBe("production-core-workload:ok\n")
                     expect(response.stderr.join("")).toBe("")

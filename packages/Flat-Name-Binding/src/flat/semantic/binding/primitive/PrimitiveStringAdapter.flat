@@ -35,6 +35,37 @@ class {
         }
     }
 
+    /** Source text can construct canonical storage before an explicit nullable
+     * lift. Native variables remain native; the ordinary checker proves the lift. */
+    public static storageText(PrimitiveExpressionSyntax syntax, BoundExpression value,
+        SemanticType required, PrimitiveResolvedDeclarationContext context,
+        CallableSignature[] callables) -> BoundExpression {
+        let target = required.kind() == "nullable" ?
+            ((NullableSemanticType)required).underlyingType : required
+        let canonical = context ? context.candidates("flat/String") : null
+        if (!canonical || canonical.count != 1 ||
+            target.value() != UserClassSemanticType(canonical.first).value()) return value
+        return conditionalText(syntax, value, target, context, callables)
+    }
+
+    public static sourceTextReceiver(PrimitiveExpressionSyntax syntax, BoundExpression value,
+        PrimitiveResolvedDeclarationContext context, CallableSignature[] callables) -> BoundExpression {
+        let canonical = context ? context.candidates("flat/String") : null
+        if (!canonical || canonical.count != 1) return value
+        return conditionalText(syntax, value, UserClassSemanticType(canonical.first), context, callables)
+    }
+
+    /** Runtime metadata keeps its intrinsic native representation; only this
+     * producer boundary constructs declared text, never an arbitrary reference. */
+    public static runtimeClassName(SourceRange range, BoundExpression receiver,
+        PrimitiveResolvedDeclarationContext context, CallableSignature[] callables) -> BoundExpression {
+        let intrinsic = BoundClassNameExpression(range, receiver)
+        let canonical = context ? context.candidates("flat/String") : null
+        if (!canonical || canonical.isEmpty) return intrinsic
+        if (canonical.count != 1) throw Exception("Runtime class name requires one canonical String declaration")
+        return wrap(intrinsic, UserClassSemanticType(canonical.first), context, callables)
+    }
+
     public static wrap(BoundExpression value, SemanticType required,
         PrimitiveResolvedDeclarationContext context, CallableSignature[] callables) -> BoundExpression {
         if (value.semanticType.value() == required.value()) return value
@@ -64,7 +95,9 @@ class {
     public static call(String name, CallableSignature[] candidates, BoundExpression receiver,
         BoundExpression[] arguments, PrimitiveResolvedDeclarationContext context,
         CallableSignature[] callables, TypeHierarchyComponent hierarchy,
-        Bool safeAccess = false, SourceRange callRange = null) -> BoundCallExpression {
+        Bool safeAccess = false, SourceRange callRange = null,
+        PrimitiveExpressionSyntax[] sourceArguments = null,
+        Bool sourceTextOnly = false) -> BoundCallExpression {
         let range = callRange ?: receiver.range
         let receiverType = safeAccess && receiver && receiver.semanticType.kind() == "nullable" ?
             ((NullableSemanticType)receiver.semanticType).underlyingType : receiver ? receiver.semanticType : null
@@ -91,7 +124,12 @@ class {
                     adapted.add(argument)
                 } else {
                     try {
-                        adapted.add(wrap(argument, required, context, callables))
+                        // Source text constructs canonical storage before the
+                        // ordinary nullable lift; native references stay native.
+                        adapted.add((sourceTextOnly || required.kind() == "nullable") &&
+                            sourceArguments && index < sourceArguments.count ?
+                            storageText(sourceArguments[index], argument, required, context, callables) :
+                            sourceTextOnly ? argument : wrap(argument, required, context, callables))
                     } catch (Exception error) {
                         rejected = true
                     }

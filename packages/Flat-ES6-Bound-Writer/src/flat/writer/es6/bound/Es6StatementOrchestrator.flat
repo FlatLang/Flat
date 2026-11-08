@@ -12,6 +12,16 @@ class {
     }
 
     public emit(BoundStatement statement) -> Es6CodeResult {
+        let outer = expressions.lexicalScope
+        if (expressions.namePlan && statement && statement.class.isOfType(BoundForEachStatement.class)) {
+            let loop = (BoundForEachStatement)statement
+            expressions.lexicalScope = expressions.namePlan.scopeFor(loop.initialization()) ?: outer
+        }
+        try { return emitStatement(statement) }
+        finally { expressions.lexicalScope = outer }
+    }
+
+    emitStatement(BoundStatement statement) -> Es6CodeResult {
         if (!statement) throw Exception("ES6 statement orchestration requires statement")
         let capability = Es6TargetCapabilities.diagnoseStatement(statement.unitKind())
         if (capability) return Es6CodeResult(diagnostic: capability)
@@ -60,7 +70,7 @@ class {
         }
         if (statement.class.isOfType(BoundForEachStatement.class)) {
             let value = (BoundForEachStatement)statement
-            let initialization = emitAll(value.initialization())
+            let initialization = emitAll(value.initialization(), closeScopes: false)
             if (!initialization.emitted) return initialization
             let outer = expressions.continueTarget
             let outerBreak = expressions.breakTarget
@@ -74,8 +84,10 @@ class {
             expressions.setContinueTarget(outer)
             expressions.setBreakTarget(outerBreak)
             if (!body.emitted) return body
-            return statements.emitForEach(value, initialization, condition,
+            let emitted = statements.emitForEach(value, initialization, condition,
                 Es6CodeResult(code: latch + ": {\n" + body.code + "}\n"), advance)
+            if (!emitted.emitted || !expressions.namePlan || !expressions.namePlan.hasNativeStorage()) return emitted
+            return Es6CodeResult(code: "{\n" + emitted.code + scopeClosures(value.initialization()) + "}\n")
         }
         if (statement.class.isOfType(BoundWhileStatement.class)) {
             let value = (BoundWhileStatement)statement
@@ -95,7 +107,7 @@ class {
             for (caught in value.catchValues()) {
                 let body = emitAll(caught.statements())
                 if (!body.emitted) return body
-                catches.add(statements.emitCatch(caught, body).code)
+                catches.add(statements.emitCatch(caught, body, expressions).code)
             }
             let tryBody = emitAll(value.tryValues())
             if (!tryBody.emitted) return tryBody
@@ -113,9 +125,9 @@ class {
         }
         if (statement.class.isOfType(BoundLocalDeclarationStatement.class)) {
             let value = (BoundLocalDeclarationStatement)statement
-            if (!value.initializer) return statements.emitUninitializedLocal(value)
+            if (!value.initializer) return statements.emitUninitializedLocal(value, expressions)
             return statements.emitInitializedLocal(value, expressions.emit(BoundConversionExpression(
-                value.range, value.local.semanticType, value.initializer, value.conversion)))
+                value.range, value.local.semanticType, value.initializer, value.conversion)), expressions)
         }
         if (statement.class.isOfType(BoundNativeArrayClearStatement.class)) {
             let value = (BoundNativeArrayClearStatement)statement
@@ -129,7 +141,7 @@ class {
         if (statement.class.isOfType(BoundAssignmentStatement.class)) {
             let value = (BoundAssignmentStatement)statement
             return statements.emitAssignment(value, expressions.emit(BoundConversionExpression(
-                value.range, value.target.semanticType, value.value, value.conversion)))
+                value.range, value.target.semanticType, value.value, value.conversion)), expressions)
         }
         if (statement.class.isOfType(BoundMemberAssignmentStatement.class)) {
             let value = (BoundMemberAssignmentStatement)statement
@@ -184,7 +196,8 @@ class {
             }
             let body = emitAll(caseValue.statementValues())
             if (!body.emitted) return body
-            cases += "case " + ordinal + ":\n" + body.code + (caseValue.fallsThrough ? "" : "break;\n")
+            let scoped = expressions.namePlan && expressions.namePlan.hasNativeStorage()
+            cases += "case " + ordinal + ":\n" + (scoped ? "{\n" : "") + body.code + (caseValue.fallsThrough ? "" : "break;\n") + (scoped ? "}\n" : "")
             ordinal++
         }
         code += "if (" + index + " === -1) " + index + " = " + defaultIndex + ";\n"
@@ -205,14 +218,51 @@ class {
         return Es6CodeResult(code: plan.code + result.code)
     }
 
-    public emitAll(BoundStatement[] values) -> Es6CodeResult {
-        if (!values) throw Exception("ES6 statement list is required")
+    scopeClosures(BoundStatement[] values) -> String {
         var String code = ""
+        if (!expressions.namePlan) return code
         for (value in values) {
+            if (!value.class.isOfType(BoundLocalDeclarationStatement.class)) continue
+            let local = (BoundLocalDeclarationStatement)value
+            if (expressions.namePlan.opensScope(local.local.symbolIdentity.value)) code += "}\n"
+        }
+        return code
+    }
+
+    public emitAll(BoundStatement[] values, Bool includePrelude = true, Bool closeScopes = true) -> Es6CodeResult {
+        let outer = expressions.lexicalScope
+        if (expressions.namePlan) expressions.lexicalScope = expressions.namePlan.scopeFor(values) ?: outer
+        try { return emitAllBody(values, includePrelude, closeScopes) }
+        finally { expressions.lexicalScope = outer }
+    }
+
+    emitAllBody(BoundStatement[] values, Bool includePrelude, Bool closeScopes) -> Es6CodeResult {
+        if (!values) throw Exception("ES6 statement list is required")
+        var String code = includePrelude ? expressions.scopePrelude(values) : ""
+        for (value in values) {
+            if (expressions.namePlan && value.class.isOfType(BoundLocalDeclarationStatement.class)) {
+                let local = (BoundLocalDeclarationStatement)value
+                if (expressions.namePlan.opensScope(local.local.symbolIdentity.value)) {
+                    // The initializer still sees the previous lexical binding. Open
+                    // the shadow's lifetime only after its initializer completes.
+                    var String initializer = ""
+                    if (local.initializer) {
+                        let selected = expressions.emit(BoundConversionExpression(local.range, local.local.semanticType,
+                            local.initializer, local.conversion))
+                        if (!selected.emitted) return selected
+                        let temporary = expressions.freshTemporary()
+                        code += selected.setup + "let " + temporary + " = " + selected.code + ";\n"
+                        initializer = " = " + temporary
+                    }
+                    code += "{\nlet " + expressions.storageName(local.local.symbolIdentity.value) + initializer + ";\n" +
+                        expressions.namePlan.accessorDeclaration(local.local.symbolIdentity.value)
+                    continue
+                }
+            }
             let emitted = emit(value)
             if (!emitted.emitted) return emitted
             code += emitted.code
         }
-        return Es6CodeResult(code: code)
+        return Es6CodeResult(code: code + (closeScopes ? scopeClosures(values) : ""))
     }
 }

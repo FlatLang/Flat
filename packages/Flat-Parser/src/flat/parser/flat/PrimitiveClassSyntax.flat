@@ -90,8 +90,8 @@ data class {
                 let candidate = overlay.methodValues()[candidateIndex]
                 if (candidate.name == method.name &&
                     candidate.staticMethod == method.staticMethod &&
-                    candidate.parameterValues().map({ _.typeName }) ==
-                        method.parameterValues().map({ _.typeName })) duplicate = method
+                    sameParameterSignature(candidate.parameterValues(),
+                        method.parameterValues())) duplicate = method
                 candidateIndex++
             }
             overlayIndex++
@@ -105,8 +105,8 @@ data class {
                 let existing = methods[methodIndex]
                 if (existing.name == method.name &&
                     existing.staticMethod == method.staticMethod &&
-                    existing.parameterValues().map({ _.typeName }) ==
-                        method.parameterValues().map({ _.typeName })) existingIndex = methodIndex
+                    sameParameterSignature(existing.parameterValues(),
+                        method.parameterValues())) existingIndex = methodIndex
                 methodIndex++
             }
             if (existingIndex >= 0) methods[existingIndex] = method
@@ -118,8 +118,8 @@ data class {
             var Int constructorIndex
             while (constructorIndex < mergedConstructors.count &&
                 existingConstructorIndex < 0) {
-                if (mergedConstructors[constructorIndex].parameterValues().map({ _.typeName }) ==
-                    overlayConstructor.parameterValues().map({ _.typeName })) {
+                if (sameParameterSignature(mergedConstructors[constructorIndex].parameterValues(),
+                    overlayConstructor.parameterValues())) {
                     existingConstructorIndex = constructorIndex
                 }
                 constructorIndex++
@@ -135,6 +135,26 @@ data class {
                 overlay.arrayOverrideValues() : arrayOverrideValues(),
             mergedConstructors, parentType
         )
+    }
+
+    /** Exact syntax signature, not argument compatibility. Nullable/generic/array
+     * shape remains in typeName; storage representation is independent evidence.
+     * Parameter names, defaults and promotion visibility do not select overloads. */
+    sameParameterSignature(
+        PrimitiveFunctionParameterSyntax[] left,
+        PrimitiveFunctionParameterSyntax[] right
+    ) -> Bool {
+        if (left.count != right.count) return false
+        var Int index
+        while (index < left.count) {
+            let first = left[index]
+            let second = right[index]
+            if (first.typeName != second.typeName ||
+                first.nativeArrayStorage != second.nativeArrayStorage ||
+                first.nativeScalarStorage != second.nativeScalarStorage) return false
+            index++
+        }
+        return true
     }
 
     public fieldValues() -> PrimitiveFieldSyntax[] => PrimitiveFieldSyntax[]:addAll(fields)

@@ -8,10 +8,18 @@ data class {
         visible String name,
         visible SymbolIdentity identity,
         visible SemanticType semanticType,
-        visible Bool nativeArrayStorage = false
+        visible Bool nativeArrayStorage = false,
+        /** Declared storage retained when a branch-local read proof refines semanticType. */
+        visible SemanticType declaredType = null,
+        visible Bool nativeScalarStorage = false
     ) {
         if (!name || !identity || !semanticType) {
             throw Exception("Local binding requires name identity and type")
+        }
+        if (declaredType && (declaredType.kind() != "nullable" ||
+            ((NullableSemanticType)declaredType).underlyingType.value() != semanticType.value() ||
+            identity.symbolKind == "field")) {
+            throw Exception("Local read refinement requires exact nullable storage and a lexical symbol")
         }
     }
 }

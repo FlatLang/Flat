@@ -3815,19 +3815,32 @@ public class ClassDeclaration extends InstanceDeclaration {
             getPropertyMethodList()
         };
 
-        for (MethodList thisList : methodLists) {
+        MethodList[] otherMethodLists = new MethodList[] {
+            otherClass.getConstructorList(),
+            otherClass.getMethodList(),
+            otherClass.getPropertyMethodList()
+        };
+        for (int listIndex = 0; listIndex < methodLists.length; listIndex++) {
+            MethodList thisList = methodLists[listIndex];
+            // Snapshot only this class/list's original declarations: an overlay
+            // member must never replace an earlier member from the same file.
+            // Otherwise genuine target-file duplicates would silently disappear.
+            java.util.List<FlatMethodDeclaration> replacements =
+                new ArrayList<>(Arrays.asList(otherMethodLists[listIndex].getMethods()));
             for (FlatMethodDeclaration method : thisList.getMethods()) {
                 if (method.isUserMade()) {
                     method.setOriginalFile(fileDeclaration);
 
-                    MethodList.SearchFilter filter = new MethodList.SearchFilter();
-                    filter.checkAncestor = false;
-                    filter.checkInterfaces = false;
-                    MethodDeclaration otherMethod =
-                        otherClass.getMethod(new GenericCompatible[] {null}, method.getName(),
-                            filter, method.getParameterList().getTypes());
+                    FlatMethodDeclaration otherMethod = null;
+                    for (FlatMethodDeclaration candidate : replacements) {
+                        if (DeclaredMethodSignature.matches(method, candidate)) {
+                            otherMethod = candidate;
+                            break;
+                        }
+                    }
 
                     if (otherMethod != null) {
+                        replacements.remove(otherMethod);
                         otherMethod.replaceWith(method);
                     } else {
                         otherClass.addChild(method);

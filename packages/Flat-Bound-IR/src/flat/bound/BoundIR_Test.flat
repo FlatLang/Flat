@@ -4,6 +4,24 @@ import flat/compiler/models
 import flat/semantic/types
 
 testable class {
+    test `external storage binding accepts canonical local and rejects computed values`() {
+        let fixture = BoundIR_TestFixture()
+        let local = BoundReferenceExpression(fixture.range(), ArraySemanticType(SemanticTypes.charType()),
+            "chars", fixture.symbol("local", "chars", 501))
+        let binding = BoundExternalNameBinding("chars", local)
+        expect(binding.storageReference().symbolIdentity.value).toBe(local.symbolIdentity.value)
+        let nativeStatement = BoundExternalStatement(fixture.range(), "es6", [BoundExternalCodeSegment(fixture.range(), "chars = [];")], [binding])
+        let pass = BoundTreeLoweringPass()
+        let copied = BoundStatement[]
+        pass.lowerStatement(nativeStatement, copied)
+        Object copiedSource = copied.first
+        BoundExternalStatement lowered = (BoundExternalStatement)copiedSource
+        expect(lowered.nameBindingValues().first.storageReference().symbolIdentity.value).toBe(local.symbolIdentity.value)
+        var Bool rejected
+        try { BoundExternalNameBinding("chars", BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1")) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
     test `evaluation local lifetime evidence survives both immutable lowering paths`() {
         let fixture = BoundIR_TestFixture()
         let type = SemanticTypes.intType()

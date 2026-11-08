@@ -7,6 +7,48 @@ import flat/semantic/types
 
 /** Focused binding coverage for selected opaque statements and interpolation. */
 testable class PrimitiveOpaqueCodeBinder_Test {
+    test `constructor storage substitution retains source name for renamed native setup local`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-setup-remap"), "one")
+        let range = SourceRange(snapshot, 0, 4, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 5))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "constructor", 0), "constructor", "Text")
+        let original = BoundReferenceExpression(range, ArraySemanticType(SemanticTypes.charType()), "chars", SymbolIdentity(owner, "local", 0))
+        let replacement = BoundReferenceExpression(range, original.semanticType, "setupChars", SymbolIdentity(owner, "local", 1))
+        let statement = BoundExternalStatement(range, "es6", [BoundExternalCodeSegment(range, "chars = [];")],
+            [BoundExternalNameBinding("chars", original)])
+        let substitution = PrimitiveConstructorSubstitution(receiverFree: true)
+        substitution.bind(original.symbolIdentity, replacement)
+        let output = BoundStatement[]
+        substitution.lowerStatement(statement, output)
+        Object resultSource = output.first
+        BoundExternalStatement result = (BoundExternalStatement)resultSource
+        expect(result.nameBindingValues().first.sourceName).toBe("chars")
+        expect(result.nameBindingValues().first.storageReference().symbolIdentity.value).toBe(replacement.symbolIdentity.value)
+        expect(result.segmentValues().first.text).toBe("chars = [];")
+    }
+
+    test `native storage publication uses nearest lexical identity and declared nullable storage`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-lexical-storage"), "one")
+        let range = SourceRange(snapshot, 0, 4, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 5))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "run")
+        let parameter = SymbolIdentity(owner, "parameter", 0)
+        let local = SymbolIdentity(owner, "local", 1)
+        let optional = NullableSemanticType(SemanticTypes.stringType())
+        let locals = [LocalBinding("chars", parameter, SemanticTypes.charType()),
+            LocalBinding("chars", local, SemanticTypes.stringType(), declaredType: optional, nativeScalarStorage: true)]
+        let syntax = PrimitiveExternalStatementSyntax(range, "js", "chars = null;", [PrimitiveExternalCodeSegmentSyntax(range, "chars = null;", String[])])
+        let statement = PrimitiveOpaqueCodeBinder().bind(syntax, locals)
+        expect(statement.nameBindingValues().count).toBe(1)
+        let storage = statement.nameBindingValues().first.storageReference()
+        expect(storage.symbolIdentity.value).toBe(local.value)
+        expect(storage.semanticType.value()).toBe(optional.value())
+        expect(PrimitiveNullableLocalFlow.clear(locals).last.nativeScalarStorage).toBe(true)
+        let again = PrimitiveOpaqueCodeBinder().bind(syntax, PrimitiveNullableLocalFlow.clear(locals))
+        expect(again.nameBindingValues().first.storageReference().symbolIdentity.value).toBe(local.value)
+        let hidden = LocalBinding("chars", SymbolIdentity(owner, "local", 2), SemanticTypes.intType())
+        let shadowed = LocalBinding[]:addAll(locals)
+        shadowed.add(hidden)
+        expect(PrimitiveOpaqueCodeBinder().bind(syntax, shadowed).nameBindingValues().count).toBe(0)
+    }
     test `binds source-owned field and null interpolation in constructor`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:external-constructor-owner"), "one"
@@ -148,7 +190,7 @@ testable class PrimitiveOpaqueCodeBinder_Test {
         let binding = bindings.first
 
         expect(binding.sourceName).toBe("number")
-        expect(binding.value.symbolIdentity).toBe(parameter.identity)
+        expect(binding.storageReference().symbolIdentity).toBe(parameter.identity)
     }
 
     test `binds string data interpolation to typed reference evidence`() {

@@ -394,14 +394,28 @@ class {
                         let signature = signatures[signatureIndex]
                         let function = justBound.functionUnits().firstOrNull({ _.identity.value == signature.identity.declaration.value })
                         if (function && signature.ownerType.value() == justBound.semanticType.value() &&
-                            signature.returnType.kind() == "unknown" && function.returnType.kind() != "unknown") {
+                            (signature.returnType.kind() == "unknown" && function.returnType.kind() != "unknown" ||
+                                signature.dispatchIdentity != function.dispatchIdentity)) {
                             signatures[signatureIndex] = CallableSignature(signature.identity, signature.name,
-                                signature.callableKind, signature.parameterTypes(), function.returnType, signature.ownerType,
+                                signature.callableKind, signature.parameterTypes(),
+                                signature.returnType.kind() == "unknown" ? function.returnType : signature.returnType, signature.ownerType,
                                 signature.optionalParameterCount, signature.parameterNames(), signature.genericParameters(),
                                 signature.ownerGenericDeclaration, signature.ownerInstance,
-                                signature.asyncFunction, signature.externalName, signature.dispatchIdentity)
+                                signature.asyncFunction, signature.externalName, function.dispatchIdentity)
                         }
                         signatureIndex++
+                    }
+                    // Refresh retained immutable units that selected this owner's
+                    // provisional signature before it settled. This is scoped to
+                    // one existing owner settlement, not a new readiness barrier.
+                    let dispatch = PrimitiveSettledDispatch(justBound.functionUnits())
+                    var Int unitIndex
+                    while (unitIndex < units.count) {
+                        let retained = units[unitIndex]
+                        units[unitIndex] = BoundTypeUnit(retained.identity, retained.semanticType,
+                            retained.functionUnits().map({ dispatch.lower(_) }), retained.range,
+                            retained.metadata(), retained.fieldUnits(), retained.parentType)
+                        unitIndex++
                     }
                     completed.add(identity.value)
                     progressed = true
@@ -499,6 +513,26 @@ class {
             for (argument in call.argumentValues()) {
                 if (awaitInExpression(argument, syntax, method, syntaxes,
                     signatures, fields, boundNames)) return true
+            }
+            if (call.receiver.class.isOfType(PrimitiveCallSyntax.class) && signatureContext) {
+                let construction = (PrimitiveCallSyntax)call.receiver
+                // Parsed constructor-call expressions retain ordinary call syntax.
+                // Resolve their declaration in the caller scope; never match an
+                // unrelated same-spelled type or turn a function call into a type.
+                let visible = signatureContext.visibleCandidates(construction.name)
+                if (visible.count == 1 && !method.parameterValues().any({ _.name == construction.name })) {
+                    let owner = visible.first
+                    if (syntaxes.any((candidate) => signatureContext.classIdentity(candidate).value == owner.value) &&
+                        signatures.any((candidate) => candidate.ownerType &&
+                            candidate.ownerType.declarationIdentity.value == owner.value &&
+                            candidate.callableKind.value == "constructor") &&
+                        owner.value != signatureContext.classIdentity(syntax).value &&
+                        !boundNames.contains(owner.value) && signatures.any((candidate) =>
+                            candidate.ownerType && candidate.ownerType.declarationIdentity.value == owner.value &&
+                            candidate.callableKind.value == "instance-method" && candidate.name == call.memberName &&
+                            candidate.returnType.kind() == "unknown" &&
+                            callbackArgumentShapeForReadiness(candidate, call.argumentValues()))) return true
+                }
             }
             if (call.receiver.class.isOfType(PrimitiveConstructionSyntax.class)) {
                 let construction = (PrimitiveConstructionSyntax)call.receiver
@@ -1081,6 +1115,7 @@ class {
                 )
                 var Int provenanceIndex
                 for (parameter in method.parameterValues()) {
+                    PrimitiveClassBinder.requireNullableDefault(parameter, parameterTypes[provenanceIndex])
                     parameterTypes[provenanceIndex] = PrimitiveStructuralTypeResolver(interfaces: interfaces).specializedParameterType(method, provenanceIndex, parameterTypes[provenanceIndex])
                     provenanceIndex++
                 }
@@ -1273,13 +1308,8 @@ class {
                         implementationOwner: syntax, implementationRange: parameter.range,
                         nativeArrayStorage: parameter.nativeArrayStorage, nativeScalarStorage: parameter.nativeScalarStorage
                     )
-                    parameterTypes.add(parameter.defaultValue &&
-                        parameter.defaultValue.class.isOfType(PrimitiveLiteralSyntax.class) &&
-                        ((PrimitiveLiteralSyntax)parameter.defaultValue).sourceValue == "null" &&
-                        (parameterType.kind() == "array" || parameterType.kind() == "user-class" ||
-                        parameterType.kind() == "generic-instance" || parameterType.kind() == "string" ||
-                        parameterType.kind() == "object" || parameterType.kind() == "function")
-                        ? NullableSemanticType(parameterType) : parameterType)
+                    PrimitiveClassBinder.requireNullableDefault(parameter, parameterType)
+                    parameterTypes.add(parameterType)
                     if (parameter.defaultValue) {
                         optionalStarted = true
                         optionalCount++
@@ -1485,16 +1515,10 @@ class {
                 let parameterType = signatureType(parameter.typeName, syntaxes, snapshot,
                     classGeneric, implementationOwner: syntax, implementationRange: parameter.range,
                     nativeArrayStorage: parameter.nativeArrayStorage, nativeScalarStorage: parameter.nativeScalarStorage)
-                let nullableDefault = parameter.defaultValue &&
-                    parameter.defaultValue.class.isOfType(PrimitiveLiteralSyntax.class) &&
-                    ((PrimitiveLiteralSyntax)parameter.defaultValue).sourceValue == "null"
+                PrimitiveClassBinder.requireNullableDefault(parameter, parameterType)
                 result.add(BoundFieldUnit(
                     parameter.name, PrimitiveFieldIdentity.create(ownerIdentity, parameter.name, parameter.range),
-                    nullableDefault && (parameterType.kind() == "array" ||
-                        parameterType.kind() == "user-class" || parameterType.kind() == "generic-instance" ||
-                        parameterType.kind() == "string" || parameterType.kind() == "object" ||
-                        parameterType.kind() == "function")
-                        ? NullableSemanticType(parameterType) : parameterType, parameterRange,
+                    parameterType, parameterRange,
                     parameter.visibleParameter, nativeArrayStorage: parameter.nativeArrayStorage, ownerIdentity: ownerIdentity))
                 ordinal++
             }
@@ -1513,7 +1537,6 @@ class {
         Bool nativeArrayStorage = false,
         Bool nativeScalarStorage = false
     ) -> SemanticType {
-        if (nativeScalarStorage && name == "String") return SemanticTypes.stringType()
         var String normalized = name
         while (normalized.startsWith("native")) {
             normalized = normalized.substring("native".count)
@@ -1530,6 +1553,6 @@ class {
                 signatureContext.scopeForSnapshot(implementationRange.snapshot) : signatureContext,
             lookupRange: implementationRange ?: signatureLookupRange
         )
-        return nativeArrayStorage ? resolver.resolveNativeArrayStorage(normalized) : resolver.resolve(normalized)
+        return resolver.resolveStorage(normalized, nativeArrayStorage, nativeScalarStorage)
     }
 }

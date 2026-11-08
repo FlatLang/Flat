@@ -59,6 +59,14 @@ testable class {
             expect(File(root, "dist").exists).toBe(false)
             expect(runSelectedAirship(executable, compiler, root, ["install", "main"])).toBe(0)
             expect(File(root, "dist/es6/index.js").isFile).toBe(true)
+            // Selecting an alias of the output as the compiler must fail before
+            // Node can execute the application and mistake it for a compiler.
+            let compilerAlias = File(root, "selected-output.js")
+            compilerAlias.symbolicLinkTo(File(File(root, "dist/es6/index.js").getCanonicalPath()))
+            expect(runSelectedAirship(executable, compilerAlias.normalizedLocation, root, ["install", "main"])).toBe(1)
+            expect(File(root, "main-executed.txt").exists).toBe(false)
+            expect(File(root, "dist/es6/index.js").isFile).toBe(true)
+            compilerAlias.delete()
             expect(runSelectedAirship(executable, compiler, root, ["run", "main"])).toBe(0)
             expect(File(root, "main-executed.txt").isFile).toBe(true)
             expect(runSelectedAirship(executable, compiler, root, ["install", "test"])).toBe(0)

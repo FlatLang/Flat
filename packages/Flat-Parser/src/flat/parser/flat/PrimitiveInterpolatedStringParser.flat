@@ -94,9 +94,65 @@ class {
     ) -> PrimitiveInterpolatedStringSegmentSyntax {
         return PrimitiveInterpolatedStringSegmentSyntax(
             range(token, snapshot, tokenIndex, start, end),
-            "\"" + token.value.substring(start, end) + "\"",
+            literalPayload(token.value, start, end),
             null
         )
+    }
+
+    /** Normalizes lexical multiline spelling, retaining the caller's original range. */
+    public literalSource(String source) -> String => literalPayload(source, 1, source.count - 1)
+
+    literalPayload(String source, Int start, Int end) -> String {
+        // Match the established Java oracle, including its CRLF, empty-margin
+        // and backslash-adjacency quirks. This is lexical compatibility, not
+        // target escaping or a reinterpretation of existing escape sequences.
+        if (!source.contains("\n")) return "\"" + source.substring(start, end) + "\""
+        var Int contentStart = 1
+        var Int contentEnd = source.count - 1
+        var Int indentation
+        if (source.substring(source.count - 2, source.count - 1) == "|") {
+            var Int newline = source.count - 3
+            while (newline >= 0 && source.substring(newline, newline + 1) != "\n") newline--
+            indentation = source.count - 3 - newline
+            contentEnd = newline
+        }
+        if (source.startsWith("\"|")) {
+            var Int opening = 2
+            while (opening < contentEnd && (source.substring(opening, opening + 1) == " " ||
+                source.substring(opening, opening + 1) == "\t" ||
+                source.substring(opening, opening + 1) == "\r")) opening++
+            if (opening < contentEnd && source.substring(opening, opening + 1) == "\n") {
+                contentStart = opening + 1
+                var Int removed
+                while (contentStart < contentEnd && removed < indentation &&
+                    (source.substring(contentStart, contentStart + 1) == " " ||
+                     source.substring(contentStart, contentStart + 1) == "\t")) {
+                    contentStart++
+                    removed++
+                }
+            }
+        }
+        var String result = "\""
+        var Int cursor = start > contentStart ? start : contentStart
+        let stop = end < contentEnd ? end : contentEnd
+        while (cursor < stop) {
+            let character = source.substring(cursor, cursor + 1)
+            if (character == "\n" || character == "\r") {
+                result += "\\n"
+                cursor++
+                var Int removed
+                while (cursor < stop && removed < indentation &&
+                    (source.substring(cursor, cursor + 1) == " " ||
+                     source.substring(cursor, cursor + 1) == "\t")) {
+                    cursor++
+                    removed++
+                }
+            } else {
+                result += character
+                cursor++
+            }
+        }
+        return result + "\""
     }
 
     public expressionSyntax(

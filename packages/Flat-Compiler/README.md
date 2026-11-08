@@ -178,6 +178,164 @@ registered suite unchanged. The subset is labelled diagnostic and never replaces
 full-suite or stage acceptance. Incremental process tests still require the fresh
 ordinary `dist/es6/index.js` compiler prerequisite; no test is skipped.
 
+## Original-workload frontier (finish-1105 wave1, SOURCE-READY / NOT RUN)
+
+Historical round17 (`validationT5round17.md`) reported a successful unchanged Core
+library comparison at capacity 1/3 × forward/reverse, then failed while compiling
+`ProductionCoreWorkload.leftDeclared`: `trace += "L"` was rejected as requiring an
+instance receiver. It did **not** reach workload execution/stdout or the full
+suite. That is an old observed frontier, not current acceptance. Static-field
+binding belongs to Name-Binding; no semantic workaround belongs in Compiler.
+Keep the original workload's declared String, LR checks and complete Core closure.
+The root language coverage matrix remains source-backed/unvalidated; these
+selectors implement no language feature and promote no matrix entry.
+
+Two focused diagnostics now reuse existing tests without replacing acceptance:
+
+- `--evidence` runs all `CompilerEvidence_Test` tests with normal result accounting,
+  nonempty-result enforcement, interruption guard and failure exit status.
+- `--workload-execution` calls
+  `CompilerSourceReadSchedule_Test.assertProductionWorkloadExecution()`, the same
+  assertion body called by the registered workload test. It retains complete Core,
+  capacity 1/3 × forward/reverse, exact generated-code equality, source-read drain
+  and capacity checks, the 32 MiB artifact ceiling, Node exit zero, exact stdout
+  `production-core-workload:ok\n` and empty stderr. It fails on the first actual
+  assertion/compilation failure; it does not print success on that path.
+
+Use one selector per invocation. No arguments still run every registered test;
+`--infrastructure` still includes the unchanged four-schedule Core library and
+workload cases. Neither focused selector is a receipt or full-suite acceptance.
+The workload helper retains the existing one-package materialization and artifact
+comparison boundary; no new production barrier, queue or dependency is added.
+
+### Coordinator-only validation sequence after writer release
+
+Do **not** execute the historical `validateT5round17.py`: its output root and
+expected tool hashes are historical. Read it as a recipe for fresh bounded process
+receipts, source/tool closure checks and cleanup accounting. The sequence below
+has **NOT RUN** in wave1. All commands run from repository root, offline, through
+`/usr/bin/sandbox-exec -p '(version 1)(allow default)(deny network*)'` followed by
+`/Users/braden/.flat/bin/airship`; arguments below follow that common prefix.
+Use the coordinator's bounded runner for timeout, disk-log bounds, natural exit,
+reaping and process-group absence. Stop on the first failure/unknown cleanup.
+
+1. Before building, `git diff --check -- packages/Flat-Compiler`. Retain fresh
+   source hashes for production/test Flat sources, manifests, test helpers,
+   root/package guidance and relevant workflows/docs across the local dependency
+   closure (including resolved workspace links). Record the public Airship
+   launcher and installed JS, bootstrap compiler JAR, ES6 backend JAR and bounded
+   runner identities. Verify source/tool stability before and after every command.
+2. `--use-links -f packages/Flat-Compiler --flatc-runtime java install flatc -t es6`
+   (1200 s cap), then the same command with `install test -t es6` (1200 s cap).
+   Require fresh build-start mtimes, changed prior mtimes, sizes and hashes for
+   `dist/es6/index.js` and `dist/es6/test.js`. Missing local dependencies fail;
+   do not download replacements. The full package test also requires the fresh
+   ordinary `packages/Airship/dist/airship.js` prerequisite; coordinator must admit
+   its identity or build it separately once before the frozen validation run.
+3. `--use-links -f packages/Flat-Compiler run test -- --evidence` (60 s cap), then
+   `--use-links -f packages/Flat-Compiler run test -- --workload-syntax` (30 s cap).
+   Run the owning Binder/backend static-field regressions first under their lane
+   handoffs; this Compiler diagnostic is not a semantic repair or substitute.
+4. `--use-links -f packages/Flat-Compiler run test -- --workload-execution`
+   (1200 s cap). This reaches the original static-field/workload frontier without
+   first recompiling Core as a library four times. Retain actual diagnostic
+   records, terminal failure and cleanup completeness; do not invent source ranges
+   when only method/token text is observed.
+5. Only after the focused probe passes,
+   `--use-links -f packages/Flat-Compiler run test -- --infrastructure` (600 s cap),
+   then `--use-links -f packages/Flat-Compiler run test` (1200 s cap). These still
+   execute the unchanged Core-library assertions and all original tests. A timeout
+   is failure/unknown, not permission to omit a schedule or reduce the workload.
+
+This avoids unnecessary full-Core cycles while chasing early blockers: build
+once per settled source/tool closure, run narrow owning regressions, then probe
+only the original executable workload. Reuse those fresh artifacts while hashes
+remain unchanged; do not rebuild between diagnostic selectors. Do not cache or
+skip Core assertions inside infrastructure/full acceptance, reuse old test
+results as current evidence, or continue after source drift. This remains an
+ordinary explicit local Java-bootstrap diagnostic sequence, not reviewed
+stage0/1/2, seed promotion, guarded production or self-host acceptance.
+
+Test-first handoff: the two selector regressions in `CompilerEvidence_Test` were
+written before the selector helpers existed; source inspection confirmed helper
+references only in those new tests at that point. No compiler/test execution was
+authorized, so an executed red-to-green claim is unavailable. The unchanged
+workload test remains the original semantic fail-first experiment from round17;
+re-run it against the settled Binder/backend changes, retaining the new result
+rather than treating historical failure or success as acceptance.
+
+## Explicit nullable Core boundary slice (SOURCE-READY, UNVALIDATED)
+
+The user explicitly chose strict nonnullable assignment and authorized correcting
+nullable intent in the original workload. Future evidence must identify this
+source revision: the workload is no longer byte-identical to the round17/wave11
+input. The workload differs only by nullable local/parameter annotations; all original runtime
+assertions, LR checks, complete Core input, schedules and output ceilings remain.
+There is no implicit nullable inference/lifting policy change or implicit
+nullable-to-nonnullable conversion permission in this slice.
+
+| Contract                            | Source-authored coverage / required owning support                                                                                                                                                                                                                                                                                   |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Explicit `T?` locals and parameters | Workload `String?`, `StringCharArray?`, `Object?` null locals; corresponding Core tests. Parser/Binder must retain explicit type and source ranges; nonnullable null assignment must still reject.                                                                                                                                   |
+| Guarded nullable String input       | `nonemptyString(String?)` keeps `value != null && value.count > 0`; null, empty, whitespace and NUL assertions unchanged. Requires short-circuit local/parameter narrowing, not unchecked member access.                                                                                                                             |
+| Nullable exception message          | `Exception(visible String? message = "")` captures the message once and normalizes the local with `capturedMessage ?: ""` before native Error creation and presentation. `toString` reads class name first and retains the null short-circuit before `count`; the field itself remains nullable. No field narrowing fact is assumed. |
+| Nullable equality inputs            | `Object.equals(Object?)` and all Core Object overrides retain their original guards/identity semantics; nullable inputs must preserve virtual dispatch. `String.equals(String?)`, base/JS/Java `StringCharArray.equals(StringCharArray?)`, and `Null.equals(Null?)` keep their original absence behavior.                            |
+| Reference identity                  | JS/Java `Object.referenceEquals(Object?, Object?)` compares either absent operand without dereferencing. Core tests cover both absent, either absent and identity.                                                                                                                                                                   |
+| Strict rejection                    | Binder owns negative tests for null-to-nonnullable initialization/arguments and unguarded nullable dereference. Core annotations do not authorize a conversion or guard relaxation.                                                                                                                                                  |
+
+Exact annotated API families: `Object.equals`; `Object.referenceEquals` JS/Java;
+`String.equals(Object?)` / `String.equals(String?)`; Object equality overrides in
+`List`, `StringCharArray`, `Class`, `Bool`, `Null`, `Byte`, `Char`, `Int`, `Long`,
+`Float`, `Double`, `Short`; `StringCharArray.equals(StringCharArray?)` base/JS/Java;
+`Null.equals(Null?)`; `Exception` message constructor parameter/visible field;
+workload-only `nonemptyString`. The Object overrides must agree with the widened
+base input contract, not introduce unrelated nullable APIs. Primitive numeric
+value overloads, Class-to-Class equality and exception subclass message inputs
+remain nonnullable.
+
+Required flow proofs include presence guards, `(other || !this)` under a nonnull
+receiver, `other != null && ...`, `if (!another) return false`, the JS storage
+`if (other == null) return false`, and exception fallback/formatting guards.
+No suppression or forced cast to bypass nullability was added. The Java typed
+StringCharArray overlay now matches the nullable contract and returns false for
+null before reading `other.count`; the remaining equality algorithm is unchanged.
+Core coverage includes nullable null/equal/unequal/different-length/empty operands;
+Java execution is still unvalidated.
+
+Exception normalization/presentation captures nullable `message` into a stable
+local at the existing boundary; the constructor retains native Error creation
+once and `toString` reads class name before message. Formatting still skips the
+count call for an absent message, and preserves empty/whitespace/NUL behavior.
+Repeated mutable-field reads are not treated as local flow facts.
+
+### Local-flow subset and unresolved longer guards
+
+`CompilerPackage_Test` adds generated execution for explicit `Item?` null/present
+locals, nullable parameter dispatch, guarded field read and captured `?:` fallback,
+checking exact `0 7 true true\\n`, empty stderr and exit zero. Negative compilation
+cases retain zero-artifact requirements for reassignment after a guard, unguarded
+nullable dereference and nullable-to-nonnullable argument use. These tests were
+authored before Exception repair; executed fail-first/green is NOT RUN.
+
+The Binder subset deliberately forgets facts at member/property reads and calls,
+and never assumes mutable-field stability. Remaining Core shapes are therefore
+not claimed closed: `(other || !this) && other.class.isOfType(...) && ...other...`
+in String, Class, StringCharArray and numeric Object equality; String typed equality
+`...count == other.count && compareTo(other)`; Bool equality's metadata read/cast;
+List's metadata calls after early presence return; and storage equality after
+`count`/array-conversion calls. These need resolved receiver/member effect and
+stability evidence (or a separately reviewed minimal source repair), not blanket
+fact retention. Presence guards alone do not prove those entire chains safe.
+
+`FlatCore_Test` adds nullable identity/String equality checks and retains existing
+exception/storage checks; `Double_Test` null locals now explicitly use `Object?`.
+All original workload assertions remain present. Tests/builds are NOT RUN while
+slice writers are active. After their settlement, validate owning Parser,
+Type-System and Binder changes first, then Core, BoundWriter and the Compiler
+focused workload, infrastructure and full suite. Java-bootstrap compatibility of
+new `T?` source is also unvalidated. Selector success is not full acceptance;
+reviewed seed provisioning is still absent.
+
 ## Guarded bootstrap and production CI (L24, IMPLEMENTED UNVALIDATED)
 
 The repository [full dogfood workflow](../../.github/workflows/full-dogfood-acceptance.yml)

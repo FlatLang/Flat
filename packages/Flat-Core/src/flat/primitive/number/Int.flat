@@ -46,7 +46,7 @@ class extends Number<Int> implements Integer {
     public multiplyEqualsReal(Double other) => this.value *= other
     public multiplyEqualsInteger(Long other) => this.value *= other
 
-    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Int)other == value
+    public equals(Object? other) => (other || !this) && other.class.isOfType(Number.class) && (Int)other == value
     public equals(Int other) => this.value == other
     public equalsReal(Double other) => this.value == other
     public equalsInteger(Long other) => this.value == other

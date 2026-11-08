@@ -17,7 +17,7 @@ class ProductionCoreWorkload {
         require(actual.count == expected.count, label + " length")
     }
 
-    static nonemptyString(String value) -> Bool => value != null && value.count > 0
+    static nonemptyString(String? value) -> Bool => value != null && value.count > 0
 
     static leftDeclared(native String value) -> String {
         trace += "L"
@@ -70,7 +70,7 @@ class ProductionCoreWorkload {
     }
 
     static stringsAndCharacters() {
-        let String absent = null
+        let String? absent = null
         require(!nonemptyString(absent), "null is not nonempty")
         require(!nonemptyString(""), "empty is not nonempty")
         require(nonemptyString(" "), "whitespace is nonempty")
@@ -107,7 +107,7 @@ class ProductionCoreWorkload {
         require(copy.count == 5, "copy append count")
         text(String(copy), "a\0äbc", "copy append contents")
         text(chars.toString(), "a\0äb", "copy storage independence")
-        let StringCharArray missing = null
+        let StringCharArray? missing = null
         require(!chars.equals(missing), "typed character storage null equality")
         require(chars.equals(StringCharArray(['a', '\0', 'ä', 'b'])), "character storage equality")
     }
@@ -149,7 +149,7 @@ class ProductionCoreWorkload {
         let Object fraction = Double(-1.25)
         let Object same = Double(-1.25)
         let Object different = Double(-1.5)
-        let Object absent = null
+        let Object? absent = null
         require(zero.equals(integerZero), "Double equals Object zero")
         require(fraction.equals(same), "Double equals Object fraction")
         require(!fraction.equals(different), "Double equals Object unequal fraction")
@@ -161,7 +161,7 @@ class ProductionCoreWorkload {
     static exceptions() {
         let empty = Exception()
         text(empty.toString(), empty.class.name, "empty exception message")
-        let String absent = null
+        let String? absent = null
         let missing = Exception(absent)
         text(missing.toString(), missing.class.name, "null exception message")
         let explicit = InvalidArgumentException("bad input")
@@ -175,7 +175,11 @@ class ProductionCoreWorkload {
             throw explicit
         } catch (InvalidArgumentException error) {
             caught = true
-            text(error.message, "bad input", "caught exception message")
+            if (let message = error.message) {
+                text(message, "bad input", "caught exception message")
+            } else {
+                require(false, "caught exception message is present")
+            }
         }
         require(caught, "typed catch executes")
         caught = false

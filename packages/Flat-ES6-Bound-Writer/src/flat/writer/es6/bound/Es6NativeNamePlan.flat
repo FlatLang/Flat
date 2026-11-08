@@ -1,0 +1,309 @@
+package flat/writer/es6/bound
+
+import flat/bound
+import flat/compiler/models
+
+/** Final-function lexical reservation pass, not source name resolution. All names
+ * come from checked storage evidence. The finite function/helper is the ownership
+ * boundary: scopes, bindings and reservations are bounded by its reduced nodes;
+ * nothing is retained in an artifact/global index. No opaque text is inspected.
+ */
+class extends BoundTreeLoweringPass {
+    var Es6NativeScope[] scopes = Es6NativeScope[]
+    var Es6NativeSlot[] slots = Es6NativeSlot[]
+    var String[] generated = String[]
+    var Es6NativeUse[] uses = Es6NativeUse[]
+    var Es6NativeScope current
+    var Bool evaluationSetup = false
+    visible var Es6BackendDiagnostic diagnostic = null
+    override public name() => "es6-native-lexical-storage"
+    override public inputInvariant() => "canonical-declared-lexical-storage"
+    override public outputInvariant() => "es6-same-lexical-storage"
+
+    public construct(BoundFunctionUnit functionUnit) {
+        let values = functionUnit.constructorPlan ? functionUnit.constructorPlan.preBaseStatements() : functionUnit.statements()
+        current = Es6NativeScope(values)
+        scopes.add(current)
+        parameters(functionUnit.parameterValues())
+        scan(values)
+        if (functionUnit.constructorPlan) {
+            let plan = functionUnit.constructorPlan
+            if (plan.parentCall) lowerExpressions(plan.parentCall.argumentValues())
+            for (call in plan.initializationCalls()) lowerExpressions(call.argumentValues())
+        } else {
+            if (functionUnit.parentConstructorCall) lowerExpressions(functionUnit.parentConstructorCall.argumentValues())
+            if (functionUnit.constructorDelegation) lowerExpressions(functionUnit.constructorDelegation.argumentValues())
+        }
+        validate()
+        planAccessors()
+    }
+
+    parameters(BoundFunctionParameter[] values) {
+        for (value in values) declare(value.identity.value, false)
+        for (value in values) lowerExpression(value.defaultValue)
+    }
+
+    declare(String identity, Bool hoisted) {
+        let previous = slots.firstOrNull({ _.identity == identity })
+        if (previous) { if (hoisted) previous.hoisted = true; return }
+        slots.add(Es6NativeSlot(identity, current, hoisted))
+    }
+
+    scan(BoundStatement[] values) {
+        let ignored = BoundStatement[]
+        for (value in values) lowerStatement(value, ignored)
+    }
+
+    override public lowerStatements(BoundStatement[] values) -> BoundStatement[] {
+        let outer = current
+        let outerSetup = evaluationSetup
+        evaluationSetup = false
+        current = Es6NativeScope(values, parent: outer)
+        scopes.add(current)
+        scan(values)
+        current = outer
+        evaluationSetup = outerSetup
+        return values
+    }
+
+    override public lowerStatement(BoundStatement statement, BoundStatement[] output) {
+        if (statement.class.isOfType(BoundLocalDeclarationStatement.class)) {
+            let value = (BoundLocalDeclarationStatement)statement
+            declare(value.local.symbolIdentity.value, evaluationSetup && !value.evaluationLocal)
+            lowerExpression(value.initializer)
+        } else if (statement.class.isOfType(BoundAssignmentStatement.class)) {
+            let value = (BoundAssignmentStatement)statement
+            lowerExpression(value.target)
+            lowerExpression(value.value)
+        } else if (statement.class.isOfType(BoundExternalStatement.class)) {
+            let value = (BoundExternalStatement)statement
+            for (binding in value.nameBindingValues()) {
+                let identity = binding.storageReference().symbolIdentity.value
+                let slot = slots.firstOrNull({ _.identity == identity })
+                if (!slot) {
+                    diagnostic = Es6BackendDiagnostic("es6.native-storage-owner", "Native storage requires its declared lexical owner", value.range)
+                    continue
+                }
+                if (slot.sourceName && slot.sourceName != binding.sourceName) {
+                    diagnostic = Es6BackendDiagnostic("es6.native-storage-collision", "One storage identity cannot reserve different native names", value.range)
+                }
+                slot.sourceName = binding.sourceName
+            }
+            for (segment in value.segmentValues()) lowerExpression(segment.value)
+        } else if (statement.class.isOfType(BoundForEachStatement.class)) {
+            let value = (BoundForEachStatement)statement
+            let outer = current
+            current = Es6NativeScope(value.initialization(), parent: outer)
+            scopes.add(current)
+            scan(value.initialization())
+            lowerExpression(value.condition)
+            lowerStatements(value.body())
+            scan(value.advance())
+            current = outer
+        } else if (statement.class.isOfType(BoundTryStatement.class)) {
+            let value = (BoundTryStatement)statement
+            lowerStatements(value.tryValues())
+            for (caught in value.catchValues()) {
+                let outer = current
+                current = Es6NativeScope(caught.statements(), parent: outer)
+                scopes.add(current)
+                declare(caught.local.symbolIdentity.value, false)
+                scan(caught.statements())
+                current = outer
+            }
+            lowerStatements(value.finallyValues())
+        } else super.lowerStatement(statement, output)
+    }
+
+    override public lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (!expression) return null
+        if (expression.class.isOfType(BoundReferenceExpression.class)) {
+            let value = (BoundReferenceExpression)expression
+            uses.add(Es6NativeUse(value.symbolIdentity.value, current))
+            return expression
+        }
+        if (expression.class.isOfType(BoundAssignmentValueExpression.class)) {
+            let value = (BoundAssignmentValueExpression)expression
+            lowerExpression(value.target)
+            lowerExpression(value.value)
+            return expression
+        }
+        if (expression.class.isOfType(BoundDeclarationValueExpression.class)) {
+            let value = (BoundDeclarationValueExpression)expression
+            lowerExpression(value.local)
+            lowerExpression(value.value)
+            return expression
+        }
+        if (expression.class.isOfType(BoundEvaluationExpression.class)) {
+            let value = (BoundEvaluationExpression)expression
+            let outer = evaluationSetup
+            evaluationSetup = true
+            scan(value.setup())
+            evaluationSetup = outer
+            lowerExpression(value.value)
+            return expression
+        }
+        if (expression.class.isOfType(BoundLambdaExpression.class)) {
+            let value = (BoundLambdaExpression)expression
+            let outer = current
+            let outerSetup = evaluationSetup
+            evaluationSetup = false
+            current = Es6NativeScope(value.statementValues(), value, outer)
+            scopes.add(current)
+            parameters(value.parameterValues())
+            if (value.statementValues().isEmpty) lowerExpression(value.body)
+            else scan(value.statementValues())
+            current = outer
+            evaluationSetup = outerSetup
+            return expression
+        }
+        return super.lowerExpression(expression)
+    }
+
+    validate() {
+        for (slot in slots) {
+            if (!slot.sourceName) continue
+            for (other in slots) {
+                if (other.identity != slot.identity && other.scope == slot.scope && other.sourceName == slot.sourceName) {
+                    diagnostic = Es6BackendDiagnostic("es6.native-storage-collision", "Distinct native storage identities collide in one emitted lexical scope")
+                    return
+                }
+            }
+        }
+    }
+
+    hidden(Es6NativeSlot slot, Es6NativeScope scope) -> Bool {
+        if (!slot || !slot.sourceName) return false
+        var Es6NativeScope cursor = scope
+        while (cursor && cursor != slot.scope) {
+            if (slots.any((candidate) => candidate.scope == cursor && candidate.identity != slot.identity && candidate.sourceName == slot.sourceName)) return true
+            cursor = cursor.parent
+        }
+        return false
+    }
+
+    /** Only checked uses hidden by a mandatory native reservation get a bridge.
+     * The accessor closes over storage, not its current value. Property assignment
+     * and postfix/compound operations therefore use ordinary ES6 get/set ordering.
+     * Creating the bridge performs no read and changes no initialization effect.
+     */
+    planAccessors() {
+        for (use in uses) {
+            let slot = slots.firstOrNull({ _.identity == use.identity })
+            if (!slot || slot.accessor || !hidden(slot, use.scope)) continue
+            slot.accessor = generatedName(Es6NameMangler.mangle(slot.identity) + "__storage")
+            slot.setterParameter = generatedName(slot.accessor + "__value")
+        }
+    }
+
+    public scopeFor(BoundStatement[] values, BoundLambdaExpression lambda = null) -> Es6NativeScope =>
+        scopes.firstOrNull((candidate) => candidate.matches(values, lambda))
+
+    public referenceName(String identity, Es6NativeScope scope) -> String {
+        let slot = slots.firstOrNull({ _.identity == identity })
+        return slot && slot.accessor && hidden(slot, scope) ? slot.accessor + ".value" : storageName(identity)
+    }
+
+    public accessorDeclaration(String identity) -> String {
+        let slot = slots.firstOrNull({ _.identity == identity })
+        if (!slot || !slot.accessor) return ""
+        let name = storageName(identity)
+        return "const " + slot.accessor + " = {get value() {return " + name + ";}, set value(" + slot.setterParameter +
+            ") {" + name + " = " + slot.setterParameter + ";}};\n"
+    }
+
+    public storageName(String identity) -> String {
+        let slot = slots.firstOrNull({ _.identity == identity })
+        if (!slot) return Es6NameMangler.mangle(identity)
+        if (slot.sourceName) return slot.sourceName
+        var String name = Es6NameMangler.mangle(identity)
+        while (slots.any({ _.sourceName == name })) name += "_"
+        return name
+    }
+
+    public generatedName(String preferred) -> String {
+        if (!hasNativeStorage()) return preferred
+        var String name = preferred
+        while (generated.any({ _ == name }) || slots.any((candidate) => candidate.sourceName == name || storageName(candidate.identity) == name)) name += "_"
+        generated.add(name)
+        return name
+    }
+
+    public opensScope(String identity) -> Bool {
+        let slot = slots.firstOrNull({ _.identity == identity })
+        if (!slot || !slot.sourceName || slot.hoisted) return false
+        var Es6NativeScope parent = slot.scope.parent
+        while (parent) {
+            if (slots.any((candidate) => candidate.scope == parent && candidate.sourceName == slot.sourceName)) return true
+            parent = parent.parent
+        }
+        return false
+    }
+
+    public hoisted(String identity) -> Bool {
+        let slot = slots.firstOrNull({ _.identity == identity })
+        return slot && slot.hoisted
+    }
+
+    public hasNativeStorage() -> Bool => slots.any({ _.sourceName != null })
+
+    declaredIn(BoundStatement[] values, String identity) -> Bool {
+        for (statement in values) {
+            if (!statement.class.isOfType(BoundLocalDeclarationStatement.class)) continue
+            let local = (BoundLocalDeclarationStatement)statement
+            if (local.local.symbolIdentity.value == identity) return true
+        }
+        return false
+    }
+
+    public prelude(BoundStatement[] values, BoundLambdaExpression lambda = null) -> String {
+        let scope = scopeFor(values, lambda)
+        if (!scope) return ""
+        var String code = ""
+        for (slot in slots) {
+            if (slot.scope != scope) continue
+            if (slot.hoisted) code += "let " + storageName(slot.identity) + ";\n"
+            if (slot.hoisted || !declaredIn(values, slot.identity))
+                code += accessorDeclaration(slot.identity)
+        }
+        return code
+    }
+}
+
+/** Private implementation records: no caller-owned mutable naming state. */
+class Es6NativeScope {
+    var BoundStatement[] values
+    var BoundLambdaExpression lambda
+    visible Es6NativeScope parent
+    public construct(BoundStatement[] values, BoundLambdaExpression lambda = null, Es6NativeScope parent = null) {
+        this.parent = parent
+        this.values = BoundStatement[]:addAll(values)
+        this.lambda = lambda
+    }
+    public matches(BoundStatement[] other, BoundLambdaExpression lambda) -> Bool {
+        if (this.lambda != lambda || values.count != other.count) return false
+        // Immutable nodes survive defensive list copies; identity is not a source-range guess.
+        var Int index
+        while (index < values.count) {
+            if (values[index] != other[index]) return false
+            index++
+        }
+        return true
+    }
+}
+class Es6NativeUse {
+    public construct(visible String identity, visible Es6NativeScope scope) {}
+}
+class Es6NativeSlot {
+    visible String identity
+    visible Es6NativeScope scope
+    visible var Bool hoisted
+    visible var String sourceName = null
+    visible var String accessor = null
+    visible var String setterParameter = null
+    public construct(String identity, Es6NativeScope scope, Bool hoisted) {
+        this.identity = identity
+        this.scope = scope
+        this.hoisted = hoisted
+    }
+}

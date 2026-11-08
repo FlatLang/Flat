@@ -41,7 +41,7 @@ class extends Number<Byte> implements Integer {
     public multiplyEqualsReal(Double other) => this.value *= other
     public multiplyEqualsInteger(Long other) => this.value *= other
 
-    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Byte)other == value
+    public equals(Object? other) => (other || !this) && other.class.isOfType(Number.class) && (Byte)other == value
     public equals(Byte other) => this.value == other
     public equalsReal(Double other) => this.value == other
     public equalsInteger(Long other) => this.value == other

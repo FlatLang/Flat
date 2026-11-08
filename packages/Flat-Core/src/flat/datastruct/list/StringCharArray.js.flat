@@ -57,14 +57,16 @@ class {
         }
     }
 
-    public equals(StringCharArray other) -> Bool {
+    public equals(StringCharArray? other) -> Bool {
         if (other == null) return false
         if (count != other.count) return false
 
-        external {
-            if (#{data} == null) return #{other.data} == null;
+        native_array native Char[] otherData = other.data
 
-            return #{data} === #{other.data};
+        external {
+            if (#{data} == null) return #{otherData} == null;
+
+            return #{data} === #{otherData};
         }
     }
 }

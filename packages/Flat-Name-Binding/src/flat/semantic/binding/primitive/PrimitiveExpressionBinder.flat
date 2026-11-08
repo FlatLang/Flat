@@ -160,6 +160,16 @@ class {
     /** Reference truth follows the language null-check contract, never unknown or numeric coercion. */
     public static bindReferenceNegation(SourceRange range, BoundExpression operand) -> BoundExpression {
         let kind = operand.semanticType.kind()
+        if (kind == "nullable") {
+            let underlying = ((NullableSemanticType)operand.semanticType).underlyingType.kind()
+            if (underlying != "user-class" && underlying != "generic-instance" &&
+                underlying != "generic-parameter" && underlying != "object" && underlying != "string" &&
+                underlying != "array" && underlying != "function") return null
+            // Nullable reference negation is absence, never overloaded truthiness.
+            // Keep the operand once and compare its existing storage directly.
+            return BoundBinaryExpression(range, SemanticTypes.boolType(), "==", operand,
+                BoundLiteralExpression(range, SemanticTypes.nullType(), "null"))
+        }
         if (kind != "user-class" && kind != "generic-instance" && kind != "generic-parameter" &&
             kind != "object" && kind != "string" && kind != "array" && kind != "function") return null
         var BoundExpression compared = operand
@@ -185,9 +195,22 @@ class {
             SyntaxIslandIdentity(range.snapshot, "array-element", range.startTokenIndex), range))
 
     /** Each element remains one expression, in source order, with a truthful storage type. */
-    adaptArrayElement(BoundExpression value, SemanticType required,
-        CallableSignature[] callables) -> BoundExpression {
+    adaptArrayElement(PrimitiveExpressionSyntax syntax, BoundExpression value, SemanticType required,
+        CallableSignature[] callables, Bool contextualElement) -> BoundExpression {
         var BoundExpression adapted = value
+        // An explicitly contextual root-reference element may retain source text
+        // as a canonical String object. Never adapt native references or infer
+        // a wider element type; the existing hierarchy must prove the upcast.
+        if (contextualElement && required.kind() == "user-class" && currentHierarchy &&
+            currentHierarchy.isRootClass((UserClassSemanticType)required) &&
+            value.semanticType.kind() == "string") {
+            let canonical = currentDeclarationContext ? currentDeclarationContext.candidates("flat/String") : null
+            if (canonical && canonical.count == 1 && TypeConversions.classify(
+                UserClassSemanticType(canonical.first), required, hierarchy: currentHierarchy).applicable) {
+                adapted = PrimitiveStringAdapter.conditionalText(syntax, value, required,
+                    currentDeclarationContext, callables)
+            }
+        }
         if (required.kind() == "user-class" &&
             ((UserClassSemanticType)required).declarationIdentity.name == "String" &&
             value.semanticType.kind() == "string") {
@@ -865,7 +888,7 @@ class {
         if (syntax.class.isOfType(PrimitiveClassNameSyntax.class)) {
             let value = (PrimitiveClassNameSyntax)syntax
             let receiver = bindSyntax(value.receiver, locals, callables)
-            return BoundClassNameExpression(value.range, receiver)
+            return PrimitiveStringAdapter.runtimeClassName(value.range, receiver, currentDeclarationContext, callables)
         }
         if (syntax.class.isOfType(PrimitiveEmptyArrayConstructionSyntax.class)) {
             let value = (PrimitiveEmptyArrayConstructionSyntax)syntax
@@ -1165,11 +1188,12 @@ class {
                 if (instance.declarationType.declarationIdentity.name == "Array" &&
                     instance.typeArguments().count == 1) elementType = instance.typeArguments().first
             }
+            let contextualElement = elementType != null
             let elements = BoundExpression[]
             for (element in value.elementValues()) {
                 let bound = bindSyntax(element, locals, callables, elementType)
                 if (!elementType) elementType = bound.semanticType
-                elements.add(adaptArrayElement(bound, elementType, callables))
+                elements.add(adaptArrayElement(element, bound, elementType, callables, contextualElement))
             }
             if (!elementType) throw arrayDiagnostic(
                 "type.array-element-context", "Empty array literal requires an element type", value.range)
@@ -1365,6 +1389,9 @@ class {
                 if (right.semanticType.kind() == "null") left = specializedNullOperand(left)
                 if (left.semanticType.kind() == "null") right = specializedNullOperand(right)
             }
+            let referenceEquality = PrimitiveClassBinder.bindReferenceEquality(
+                value.operator, left, right, value.range, currentHierarchy)
+            if (referenceEquality) return referenceEquality
             let typed = TypeOperations.binary(
                 value.operator, left.semanticType, right.semanticType, value.range
             )

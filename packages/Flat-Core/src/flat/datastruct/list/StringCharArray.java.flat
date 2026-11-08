@@ -80,7 +80,8 @@ class {
         return array
     }
 
-    public equals(StringCharArray other) -> Bool {
+    public equals(StringCharArray? other) -> Bool {
+        if (other == null) return false
         if (count != other.count) return false
 
         external {

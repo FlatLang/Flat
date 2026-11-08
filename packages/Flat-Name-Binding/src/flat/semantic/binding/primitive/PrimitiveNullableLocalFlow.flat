@@ -1,0 +1,297 @@
+package flat/semantic/binding/primitive
+
+import flat/parser/flat
+import flat/semantic/types
+import flat/bound
+import flat/compiler/models
+
+/** Immutable lexical read proofs. No field facts, shared map, replay or global state. */
+class {
+    /** Lexical declaration availability is separate from refined read facts.
+     * Preserve only newly introduced identities, at their declared storage type.
+     * Existing bindings in the caller snapshot are never replaced or refined. */
+    public static retainDeclarations(LocalBinding[] incoming, LocalBinding[] evaluated) {
+        for (local in evaluated) {
+            if (incoming.none({ _.identity.value == local.identity.value })) {
+                incoming.add(local.declaredType ? LocalBinding(local.name, local.identity,
+                    local.declaredType, local.nativeArrayStorage, nativeScalarStorage: local.nativeScalarStorage) : local)
+            }
+        }
+    }
+
+    public static clear(LocalBinding[] locals) -> LocalBinding[] {
+        return locals.map((local) => local.declaredType ? LocalBinding(local.name, local.identity,
+            local.declaredType, local.nativeArrayStorage, nativeScalarStorage: local.nativeScalarStorage) : local)
+    }
+
+    public static forget(LocalBinding[] locals, String name) -> LocalBinding[] {
+        return locals.map((local) => local.name == name && local.declaredType ?
+            LocalBinding(local.name, local.identity, local.declaredType, local.nativeArrayStorage, nativeScalarStorage: local.nativeScalarStorage) : local)
+    }
+
+    /** Effects and unmodelled syntax conservatively invalidate all retained facts. */
+    public static stable(PrimitiveExpressionSyntax syntax) -> Bool {
+        if (!syntax) return true
+        if (syntax.class.isOfType(PrimitiveReferenceSyntax.class) ||
+            syntax.class.isOfType(PrimitiveLiteralSyntax.class)) return true
+        // Member reads can be properties; they may execute user code.
+        if (syntax.class.isOfType(PrimitiveMemberAccessSyntax.class)) return false
+        if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) {
+            let value = (PrimitiveUnarySyntax)syntax
+            return value.operator == "!" && stable(value.operand)
+        }
+        if (syntax.class.isOfType(PrimitiveBinarySyntax.class)) {
+            let value = (PrimitiveBinarySyntax)syntax
+            return (value.operator == "&&" || value.operator == "||" ||
+                ((value.operator == "==" || value.operator == "!=") && (isNull(value.left) || isNull(value.right)))) &&
+                stable(value.left) && stable(value.right)
+        }
+        if (syntax.class.isOfType(PrimitiveConditionalSyntax.class)) {
+            let value = (PrimitiveConditionalSyntax)syntax
+            return stable(value.condition) && stable(value.whenTrue) && stable(value.whenFalse)
+        }
+        return false
+    }
+
+    /** Evaluate a call's effect-free receiver/arguments under current facts;
+     * the enclosing sequence discards facts after the call has executed. */
+    public static expressionLocals(PrimitiveExpressionSyntax syntax, LocalBinding[] locals) -> LocalBinding[] {
+        if (syntax.class.isOfType(PrimitiveLambdaSyntax.class)) return clear(locals)
+        if (syntax.class.isOfType(PrimitiveInterpolatedStringSyntax.class)) {
+            let value = (PrimitiveInterpolatedStringSyntax)syntax
+            // Both expression binders visit segments in source order. They do
+            // not return updated local facts between segments, so an effectful
+            // interpolation must not inherit any incoming refinement.
+            return value.segmentValues().all((segment) => segment.literal() || stable(segment.expression)) ?
+                locals : clear(locals)
+        }
+        if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
+            let value = (PrimitiveCallSyntax)syntax
+            return value.argumentValues().all((argument) => stable(argument)) &&
+                value.namedArgumentValues().isEmpty ? locals : clear(locals)
+        }
+        if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
+            let value = (PrimitiveMemberCallSyntax)syntax
+            return stable(value.receiver) && value.argumentValues().all((argument) => stable(argument)) &&
+                value.namedArgumentValues().isEmpty ? locals : clear(locals)
+        }
+        if (syntax.class.isOfType(PrimitiveAssignmentValueSyntax.class))
+            return forget(locals, ((PrimitiveAssignmentValueSyntax)syntax).name)
+        return locals
+    }
+
+    public static statementLocals(PrimitiveStatementSyntax statement, LocalBinding[] locals) -> LocalBinding[] {
+        if (statement.class.isOfType(PrimitiveAssignmentSyntax.class)) {
+            let assignment = (PrimitiveAssignmentSyntax)statement
+            return stable(assignment.value) ? forget(locals, assignment.name) : clear(locals)
+        }
+        if (statement.class.isOfType(PrimitiveLocalDeclarationSyntax.class))
+            return stable(((PrimitiveLocalDeclarationSyntax)statement).initializer) ? locals : clear(locals)
+        if (statement.class.isOfType(PrimitiveReturnSyntax.class))
+            return stable(((PrimitiveReturnSyntax)statement).value) ? locals : clear(locals)
+        if (statement.class.isOfType(PrimitiveExpressionStatementSyntax.class))
+            return stable(((PrimitiveExpressionStatementSyntax)statement).expression) ? locals : clear(locals)
+        if (statement.class.isOfType(PrimitiveIfSyntax.class))
+            return stable(((PrimitiveIfSyntax)statement).condition) ? locals : clear(locals)
+        return clear(locals)
+    }
+
+    /** Only a direct local/parameter identity can carry presence evidence. */
+    static present(PrimitiveExpressionSyntax syntax, LocalBinding[] locals) -> LocalBinding[] {
+        if (!syntax.class.isOfType(PrimitiveReferenceSyntax.class)) return locals
+        let name = ((PrimitiveReferenceSyntax)syntax).name
+        let selected = locals.reverse().firstOrNull({ _.name == name })
+        if (!selected || selected.identity.symbolKind == "field" ||
+            selected.semanticType.kind() != "nullable") return locals
+        let type = (NullableSemanticType)selected.semanticType
+        return locals.map((local) => local.identity.value == selected.identity.value ?
+            LocalBinding(local.name, local.identity, type.underlyingType, local.nativeArrayStorage,
+                local.declaredType ?: local.semanticType, nativeScalarStorage: local.nativeScalarStorage) : local)
+    }
+
+    /** Declaration identity availability is independent of nullable read proofs.
+     * outcome: 0=either result, 1=true, 2=false. Only intersected paths
+     * may expose a declaration after a possibly skipped operand. */
+    static declares(PrimitiveExpressionSyntax syntax, SymbolIdentity identity) -> Bool {
+        if (!syntax) return false
+        if (syntax.class.isOfType(PrimitiveDeclarationValueSyntax.class)) {
+            let value = (PrimitiveDeclarationValueSyntax)syntax
+            return (identity.declaration.syntaxIdentity.snapshot.value == value.range.snapshot.value &&
+                identity.declaration.syntaxIdentity.ordinal == value.range.startTokenIndex &&
+                identity.declaration.name == value.name) || declares(value.value, identity)
+        }
+        if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) return declares(((PrimitiveUnarySyntax)syntax).operand, identity)
+        if (syntax.class.isOfType(PrimitiveBinarySyntax.class)) {
+            let value = (PrimitiveBinarySyntax)syntax
+            return declares(value.left, identity) || declares(value.right, identity)
+        }
+        if (syntax.class.isOfType(PrimitiveConditionalSyntax.class)) {
+            let value = (PrimitiveConditionalSyntax)syntax
+            return declares(value.condition, identity) || declares(value.whenTrue, identity) || declares(value.whenFalse, identity)
+        }
+        return false
+    }
+
+    static evaluated(PrimitiveExpressionSyntax syntax, SymbolIdentity identity, Int outcome) -> Bool {
+        if (!syntax) return false
+        if (syntax.class.isOfType(PrimitiveDeclarationValueSyntax.class)) return declares(syntax, identity)
+        if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) {
+            let value = (PrimitiveUnarySyntax)syntax
+            return evaluated(value.operand, identity, value.operator == "!" && outcome != 0 ? 3 - outcome : 0)
+        }
+        if (syntax.class.isOfType(PrimitiveBinarySyntax.class)) {
+            let value = (PrimitiveBinarySyntax)syntax
+            if (value.operator == "&&") {
+                if (outcome == 1) return evaluated(value.left, identity, 1) || evaluated(value.right, identity, 1)
+                if (outcome == 2) return evaluated(value.left, identity, 2) &&
+                    (evaluated(value.left, identity, 1) || evaluated(value.right, identity, 2))
+                return evaluated(syntax, identity, 1) && evaluated(syntax, identity, 2)
+            }
+            if (value.operator == "||") {
+                if (outcome == 2) return evaluated(value.left, identity, 2) || evaluated(value.right, identity, 2)
+                if (outcome == 1) return evaluated(value.left, identity, 1) &&
+                    (evaluated(value.left, identity, 2) || evaluated(value.right, identity, 1))
+                return evaluated(syntax, identity, 1) && evaluated(syntax, identity, 2)
+            }
+            return evaluated(value.left, identity, 0) || evaluated(value.right, identity, 0)
+        }
+        if (syntax.class.isOfType(PrimitiveConditionalSyntax.class)) {
+            let value = (PrimitiveConditionalSyntax)syntax
+            return (evaluated(value.condition, identity, 1) || evaluated(value.whenTrue, identity, outcome)) &&
+                (evaluated(value.condition, identity, 2) || evaluated(value.whenFalse, identity, outcome))
+        }
+        return false
+    }
+
+    public static available(PrimitiveExpressionSyntax syntax, LocalBinding[] locals, Int outcome = 0) -> LocalBinding[] {
+        let result = LocalBinding[]
+        for (binding in locals) {
+            let introduced = declares(syntax, binding.identity)
+            if (!introduced || evaluated(syntax, binding.identity, outcome)) result.add(binding)
+        }
+        return result
+    }
+
+    public static branch(PrimitiveExpressionSyntax syntax, Bool truth, LocalBinding[] incomingLocals,
+        BoundReferenceExpression receiver = null) -> LocalBinding[] {
+        let locals = available(syntax, incomingLocals, truth ? 1 : 2)
+        if (!syntax || !stable(syntax)) return clear(locals)
+        if (syntax.class.isOfType(PrimitiveReferenceSyntax.class)) return truth ? present(syntax, locals) : locals
+        if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) {
+            let value = (PrimitiveUnarySyntax)syntax
+            return value.operator == "!" ? branch(value.operand, !truth, locals, receiver) : locals
+        }
+        if (syntax.class.isOfType(PrimitiveBinarySyntax.class)) {
+            let value = (PrimitiveBinarySyntax)syntax
+            if (value.operator == "==" || value.operator == "!=") {
+                let operand = isNull(value.left) ? value.right : isNull(value.right) ? value.left : null
+                return operand && truth == (value.operator == "!=") ? present(operand, locals) : locals
+            }
+            if (value.operator == "&&" && truth)
+                return branch(value.right, true, branch(value.left, true, locals, receiver), receiver)
+            if (value.operator == "||" && !truth)
+                return branch(value.right, false, branch(value.left, false, locals, receiver), receiver)
+            // No general OR inference. A known false disjunct can be eliminated.
+            if (value.operator == "||" && truth) {
+                if (known(value.left, false, locals, receiver)) return branch(value.right, true, locals, receiver)
+                if (known(value.right, false, locals, receiver)) return branch(value.left, true, locals, receiver)
+            }
+        }
+        return locals
+    }
+
+    /** Evidence from already checked nodes: stored field reads do not execute
+     * property getters. Calls, writes, closures and unknown nodes remain effects.
+     * This preserves lexical proofs only; it never creates a field-read proof. */
+    public static checkedStable(BoundExpression value) -> Bool {
+        if (!value) return false
+        if (value.class.isOfType(BoundReferenceExpression.class) ||
+            value.class.isOfType(BoundLiteralExpression.class)) return true
+        if (value.class.isOfType(BoundMemberAccessExpression.class))
+            return checkedStable(((BoundMemberAccessExpression)value).receiver)
+        if (value.class.isOfType(BoundConversionExpression.class))
+            return checkedStable(((BoundConversionExpression)value).value)
+        if (value.class.isOfType(BoundUnaryExpression.class)) {
+            let unary = (BoundUnaryExpression)value
+            return unary.operator == "!" && checkedStable(unary.operand)
+        }
+        if (value.class.isOfType(BoundBinaryExpression.class)) {
+            let binary = (BoundBinaryExpression)value
+            let scalarOperands = binary.left.semanticType.kind() == "primitive" &&
+                binary.right.semanticType.kind() == "primitive"
+            let nullComparison = (binary.operator == "==" || binary.operator == "!=") &&
+                (binary.left.semanticType.kind() == "null" || binary.right.semanticType.kind() == "null")
+            return (binary.operator == "&&" || binary.operator == "||" || scalarOperands || nullComparison) &&
+                checkedStable(binary.left) && checkedStable(binary.right)
+        }
+        return false
+    }
+
+    public static checkedBranch(PrimitiveExpressionSyntax syntax, BoundExpression checked,
+        Bool truth, LocalBinding[] incomingLocals, BoundReferenceExpression receiver = null) -> LocalBinding[] {
+        let locals = available(syntax, incomingLocals, truth ? 1 : 2)
+        if (syntax.class.isOfType(PrimitiveDeclarationValueSyntax.class)) {
+            // This test observes fresh local storage, never a stable field fact.
+            // Initialization may have effects: discard all older proofs first.
+            let cleared = clear(locals)
+            var BoundExpression observed = checked
+            if (observed.class.isOfType(BoundBinaryExpression.class)) {
+                let comparison = (BoundBinaryExpression)observed
+                if (comparison.operator != "!=" || comparison.right.semanticType.kind() != "null") return cleared
+                observed = comparison.left
+            }
+            if (observed.class.isOfType(BoundConversionExpression.class)) observed = ((BoundConversionExpression)observed).value
+            let identity = observed.class.isOfType(BoundDeclarationValueExpression.class) ?
+                ((BoundDeclarationValueExpression)observed).local.symbolIdentity :
+                observed.class.isOfType(BoundReferenceExpression.class) ?
+                ((BoundReferenceExpression)observed).symbolIdentity : null
+            if (!identity || !truth || !declares(syntax, identity)) return cleared
+            return cleared.map((local) => local.identity.value == identity.value &&
+                local.semanticType.kind() == "nullable" ? LocalBinding(local.name, local.identity,
+                    ((NullableSemanticType)local.semanticType).underlyingType, local.nativeArrayStorage,
+                    declaredType: local.semanticType, nativeScalarStorage: local.nativeScalarStorage) : local)
+        }
+        if (!checkedStable(checked)) return clear(locals)
+        if (stable(syntax)) return branch(syntax, truth, locals, receiver)
+        if (syntax.class.isOfType(PrimitiveBinarySyntax.class) && checked.class.isOfType(BoundBinaryExpression.class)) {
+            let source = (PrimitiveBinarySyntax)syntax
+            let bound = (BoundBinaryExpression)checked
+            if (source.operator == "&&" && truth)
+                return checkedBranch(source.right, bound.right, true,
+                    checkedBranch(source.left, bound.left, true, locals, receiver), receiver)
+            if (source.operator == "||" && !truth)
+                return checkedBranch(source.right, bound.right, false,
+                    checkedBranch(source.left, bound.left, false, locals, receiver), receiver)
+        }
+        return locals
+    }
+
+    static isNull(PrimitiveExpressionSyntax syntax) -> Bool =>
+        syntax.class.isOfType(PrimitiveLiteralSyntax.class) && ((PrimitiveLiteralSyntax)syntax).sourceValue == "null"
+
+    static known(PrimitiveExpressionSyntax syntax, Bool truth, LocalBinding[] locals,
+        BoundReferenceExpression receiver) -> Bool {
+        if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) {
+            let value = (PrimitiveUnarySyntax)syntax
+            return value.operator == "!" && known(value.operand, !truth, locals, receiver)
+        }
+        if (!syntax.class.isOfType(PrimitiveReferenceSyntax.class)) return false
+        let name = ((PrimitiveReferenceSyntax)syntax).name
+        let local = locals.reverse().firstOrNull({ _.name == name })
+        // Do not presume all reference-like expressions are present. Only the
+        // existing checked instance receiver has this invariant.
+        return truth && name == "this" && receiver && receiver.semanticType.kind() != "nullable" &&
+            (!local || local.identity.value == receiver.symbolIdentity.value)
+    }
+
+    public static exits(PrimitiveStatementSyntax[] statements) -> Bool {
+        if (statements.isEmpty) return false
+        let last = statements.last
+        if (last.class.isOfType(PrimitiveReturnSyntax.class)) return true
+        if (last.class.isOfType(PrimitiveIfSyntax.class)) {
+            let value = (PrimitiveIfSyntax)last
+            return exits(value.thenValues()) && exits(value.elseValues())
+        }
+        return false
+    }
+}

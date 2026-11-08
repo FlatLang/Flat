@@ -206,12 +206,16 @@ class PrimitiveOpaqueCodeBinder {
         selectedTarget += "es"
         selectedTarget += "6"
         let nameBindings = BoundExternalNameBinding[]
-        for (local in locals) {
-            if (local.identity.symbolKind == "parameter") {
+        let visibleNames = String[]
+        for (local in locals.reverse()) {
+            if (visibleNames.contains(local.name)) continue
+            visibleNames.add(local.name)
+            if (local.identity.symbolKind == "parameter" ||
+                (local.identity.symbolKind == "local" && (local.nativeArrayStorage || local.nativeScalarStorage))) {
                 nameBindings.add(BoundExternalNameBinding(
                     local.name,
                     BoundReferenceExpression(
-                        syntax.range, local.semanticType, local.name, local.identity
+                        syntax.range, local.declaredType ?: local.semanticType, local.name, local.identity
                     )
                 ))
             }

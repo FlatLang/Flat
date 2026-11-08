@@ -349,6 +349,7 @@ public class FlatMethodDeclaration extends MethodDeclaration
         ArrayList<FlatMethodDeclaration> list = new ArrayList<>();
 
         int max = -1;
+        boolean hasDistinctOverload = false;
 
         for (MethodDeclaration m : methods) {
             if (m == this) {
@@ -358,21 +359,21 @@ public class FlatMethodDeclaration extends MethodDeclaration
             if (!m.isExternal()) {
                 FlatMethodDeclaration method = (FlatMethodDeclaration) m;
 
-                if (SyntaxUtils.areSameTypes(getParameterList().getTypes(),
-                    method.getParameterList().getTypes())) {
+                if (DeclaredMethodSignature.matches(this, method)) {
                     if (method.getParentClass() == getParentClass()) {
-                        if (SyntaxUtils.isSameType(getParameterList().getObjectReference(),
-                            method.getParameterList().getObjectReference())) {
-                            SyntaxUtils.areSameTypes(getParameterList().getTypes(),
-                                method.getParameterList().getTypes());
-                            SyntaxUtils.isSameType(getParameterList().getObjectReference(),
-                                method.getParameterList().getObjectReference());
-                            method.getParentClass();
-                            getParentClass();
-                            SyntaxMessage.error("Duplicate method '" + getName() + "'", this);
-                        }
+                        SyntaxMessage.error("Duplicate method '" + getName() + "'", this);
                     }
 
+                    continue;
+                }
+
+                hasDistinctOverload = true;
+
+                // An inherited/trait override already owns its ancestor's dispatch
+                // slot. Numbering this class's distinct overloads must not rename
+                // that method (notably List.equals versus Object.equals).
+                if (method.doesOverride()) {
+                    max = Math.max(max, method.getOverloadID());
                     continue;
                 }
 
@@ -386,7 +387,7 @@ public class FlatMethodDeclaration extends MethodDeclaration
 
         if (overridenMethod != null) {
             overloadID = getOverriddenMethod().overloadID;
-        } else if (list.size() > 0) {
+        } else if (hasDistinctOverload) {
             overloadID = ++max;
 
         }

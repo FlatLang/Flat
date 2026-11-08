@@ -4,6 +4,235 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `overlay signature storage type spelling and source evidence stay distinct`() {
+        String[] spellings = ["Char[]", "native_array native Char[]", "String",
+            "native String", "Char[]?"]
+        for (left in spellings) {
+            for (right in spellings) {
+                let baseSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:overlay-base"), "one")
+                let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("memory:overlay-target"), "two")
+                let baseStream = Lexer().lex("class Buffer { construct(" + left +
+                    " input) {} adapt(" + left + " input) {} }")
+                baseStream.emit("start")
+                let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), baseSnapshot)
+                let overlayStream = Lexer().lex("class Buffer { construct(" + right +
+                    " replacement) {} adapt(" + right + " replacement) {} }")
+                overlayStream.emit("start")
+                let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), overlaySnapshot)
+                let merged = base.mergedWith(overlay)
+                let equivalent = left == right
+                expect(merged.constructorValues().count).toBe(equivalent ? 1 : 2)
+                expect(merged.methodValues().count).toBe(equivalent ? 1 : 2)
+                expect(merged.constructorValues().last.range).toBe(overlay.constructorValues().first.range)
+                expect(merged.methodValues().last.range).toBe(overlay.methodValues().first.range)
+                expect(merged.constructorValues().last.parameterValues().first.range)
+                    .toBe(overlay.constructorValues().first.parameterValues().first.range)
+                expect(merged.methodValues().last.parameterValues().first.range)
+                    .toBe(overlay.methodValues().first.parameterValues().first.range)
+                if (!equivalent) {
+                    expect(merged.constructorValues().first.range).toBe(base.constructorValues().first.range)
+                    expect(merged.methodValues().first.range).toBe(base.methodValues().first.range)
+                    expect(merged.constructorValues().first.parameterValues().first.nativeArrayStorage)
+                        .toBe(base.constructorValues().first.parameterValues().first.nativeArrayStorage)
+                    expect(merged.constructorValues().last.parameterValues().first.nativeScalarStorage)
+                        .toBe(overlay.constructorValues().first.parameterValues().first.nativeScalarStorage)
+                }
+                expect(base.constructorValues().count).toBe(1)
+                expect(base.methodValues().count).toBe(1)
+                expect(overlay.constructorValues().count).toBe(1)
+                expect(overlay.methodValues().count).toBe(1)
+            }
+        }
+    }
+
+    async test `overlay generic parameter type spellings remain exact`() {
+        String[] spellings = ["Array<Char>", "Array<Int>", "Array<Char>?"]
+        for (left in spellings) {
+            for (right in spellings) {
+                let baseSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-overlay-base"), "one")
+                let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-overlay-js"), "one")
+                let baseStream = Lexer().lex("class Buffer { construct() {} adapt(" + left + " input) {} }")
+                baseStream.emit("start")
+                let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), baseSnapshot)
+                let overlayStream = Lexer().lex("class Buffer { construct() {} adapt(" + right + " renamed) {} }")
+                overlayStream.emit("start")
+                let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), overlaySnapshot)
+                let merged = base.mergedWith(overlay)
+                expect(merged.methodValues().count).toBe(left == right ? 1 : 2)
+                expect(merged.methodValues().last.parameterValues().first.typeName).toBe(right)
+                expect(merged.methodValues().last.range).toBe(overlay.methodValues().first.range)
+                if (left != right) expect(merged.methodValues().first.range).toBe(base.methodValues().first.range)
+            }
+        }
+    }
+
+    async test `overlay permits storage distinct methods but rejects exact duplicate signatures`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:overlay-method-distinct"), "one")
+        let baseStream = Lexer().lex("class Buffer { construct() {} }")
+        baseStream.emit("start")
+        let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), snapshot)
+        let overlayStream = Lexer().lex("class Buffer { construct() {} adapt(Char[] input) {} " +
+            "adapt(native_array native Char[] input) {} adapt(native String input) {} }")
+        overlayStream.emit("start")
+        let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), snapshot)
+        let merged = base.mergedWith(overlay)
+        expect(merged.methodValues().count).toBe(3)
+        expect(merged.methodValues().map({ _.range })).toBe(overlay.methodValues().map({ _.range }))
+        let duplicateStream = Lexer().lex("class Buffer { construct() {} " +
+            "adapt(native_array native Char[] input) {} adapt(native_array native Char[] renamed) {} }")
+        duplicateStream.emit("start")
+        let duplicate = PrimitiveClassParser().parse(duplicateStream.consumeAll<Token>("data"), snapshot)
+        var Bool rejected
+        try { base.mergedWith(duplicate) }
+        catch (Exception e) { rejected = e.message.contains("duplicates method") }
+        expect(rejected).toBe(true)
+    }
+    async test `nullable fields retain type initializer modifiers and exact source ranges`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-fields"), "one")
+        String[] sources = [
+            "class Box { String? value = null; }",
+            "class Box { visible var String? value = null; }",
+            "class Box { visible String[]? value = null; }"
+        ]
+        Int[] expectedStarts = [3, 3, 3]
+        Int[] expectedEnds = [9, 11, 12]
+        Int[] expectedInitializers = [7, 9, 10]
+        var Int caseIndex
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data").filter((item) =>
+                item.type != Token.Type.WS && item.type != Token.Type.COMMENT)
+            let parsed = PrimitiveClassParser().parse(tokens, snapshot, 60)
+            expect(parsed.fieldValues().count).toBe(1)
+            let field = parsed.fieldValues().first
+            expect(field.typeName).toBe(caseIndex == 2 ? "String[]?" : "String?")
+            expect(field.name).toBe("value")
+            expect(field.visibleField).toBe(caseIndex != 0)
+            expect(field.mutableField).toBe(caseIndex == 1)
+            expect(field.staticField).toBe(false)
+            expect(field.range.snapshot).toBe(snapshot)
+            Int expectedStart = expectedStarts[caseIndex]
+            Int expectedEnd = expectedEnds[caseIndex]
+            Int expectedInitializer = expectedInitializers[caseIndex]
+            Token firstToken = tokens[expectedStart]
+            Token lastToken = tokens[expectedEnd - 1]
+            expect(field.range.startTokenIndex).toBe(60 + expectedStart)
+            expect(field.range.endTokenIndex).toBe(60 + expectedEnd)
+            expect(field.range.start.column).toBe(firstToken.location.column)
+            expect(field.range.end.column).toBe(lastToken.endColumn)
+            expect(field.initializer.range.startTokenIndex).toBe(60 + expectedInitializer)
+            expect(field.initializer.range.endTokenIndex).toBe(61 + expectedInitializer)
+            let literal = (PrimitiveLiteralSyntax)field.initializer
+            expect(literal.sourceValue).toBe("null")
+            caseIndex++
+        }
+    }
+
+    async test `repeated nullable field suffix diagnoses the second marker before publication`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:bad-nullable-fields"), "one")
+        String[] sources = ["class Box { String?? value = null; }",
+            "class Box { visible var String[]?? value = null; }"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data").filter((item) =>
+                item.type != Token.Type.WS && item.type != Token.Type.COMMENT)
+            var Int expectedIndex = -1
+            var Int index
+            var Bool seenNullable
+            for (item in tokens) {
+                if (item.value == "?" && seenNullable) expectedIndex = index
+                if (item.value == "?") seenNullable = true
+                index++
+            }
+            var ParseFailure failure
+            try { PrimitiveClassParser().parse(tokens, snapshot, 70) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure != null).toBe(true)
+            expect(failure.diagnostic.code).toBe("invalid-class-syntax")
+            expect(failure.diagnostic.range.snapshot).toBe(snapshot)
+            expect(failure.diagnostic.range.startTokenIndex).toBe(70 + expectedIndex)
+            expect(failure.diagnostic.range.endTokenIndex).toBe(71 + expectedIndex)
+            expect(failure.diagnostic.range.start.column).toBe(tokens[expectedIndex].location.column)
+            expect(failure.diagnostic.range.end.column).toBe(tokens[expectedIndex].endColumn)
+        }
+    }
+
+    async test `nullable constructor parameters retain visible native default and source evidence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-constructor"), "one")
+        String[] sources = [
+            "class Error { public construct(visible String? message = \"\") {} }",
+            "class Error { public construct(visible native String? message = null) {} }",
+            "class Error { public construct(visible native_array String[]? message = null) {} }"
+        ]
+        Int[] expectedEnds = [12, 13, 15]
+        var Int caseIndex
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data").filter((item) =>
+                item.type != Token.Type.WS && item.type != Token.Type.COMMENT)
+            let parsed = PrimitiveClassParser().parse(tokens, snapshot, 40)
+            let parameter = parsed.constructorValues().first.parameterValues().first
+            expect(parameter.typeName).toBe(caseIndex == 2 ? "String[]?" : "String?")
+            expect(parameter.name).toBe("message")
+            expect(parameter.visibleParameter).toBe(true)
+            expect(parameter.privateParameter).toBe(false)
+            expect(parameter.nativeScalarStorage).toBe(caseIndex == 1)
+            expect(parameter.nativeArrayStorage).toBe(caseIndex == 2)
+            let start = parameter.range.startTokenIndex - 40
+            let end = parameter.range.endTokenIndex - 40
+            expect(start).toBe(6)
+            expect(end).toBe(expectedEnds[caseIndex])
+            expect(tokens[start].value).toBe("visible")
+            expect(tokens[end].value).toBe(")")
+            expect(parameter.range.snapshot).toBe(snapshot)
+            expect(parameter.range.start.column).toBe(tokens[start].location.column)
+            expect(parameter.range.end.column).toBe(tokens[end - 1].endColumn)
+            expect(parameter.defaultValue.range.startTokenIndex).toBe(parameter.range.endTokenIndex - 1)
+            expect(parameter.defaultValue.range.endTokenIndex).toBe(parameter.range.endTokenIndex)
+            let literal = (PrimitiveLiteralSyntax)parameter.defaultValue
+            expect(literal.sourceValue).toBe(caseIndex == 0 ? "\"\"" : "null")
+            caseIndex++
+        }
+    }
+
+    async test `nullable constructor malformed suffix and missing name retain exact diagnostics`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:bad-nullable-constructor"), "one")
+        String[] sources = [
+            "class Error { public construct(visible String?? message) {} }",
+            "class Error { public construct(visible native String?? message) {} }",
+            "class Error { public construct(visible native_array String[]?? message) {} }",
+            "class Error { public construct(visible String?) {} }"
+        ]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data").filter((item) =>
+                item.type != Token.Type.WS && item.type != Token.Type.COMMENT)
+            var Int expectedIndex = -1
+            var Int index
+            var Bool seenNullable
+            for (item in tokens) {
+                if (item.value == "?" && seenNullable) expectedIndex = index
+                if (item.value == "?") seenNullable = true
+                if (item.value == ")" && expectedIndex < 0) expectedIndex = index
+                index++
+            }
+            var ParseFailure failure
+            try { PrimitiveClassParser().parse(tokens, snapshot, 50) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure != null).toBe(true)
+            expect(failure.diagnostic.code).toBe("invalid-class-syntax")
+            expect(failure.diagnostic.range.snapshot).toBe(snapshot)
+            expect(failure.diagnostic.range.startTokenIndex).toBe(50 + expectedIndex)
+            expect(failure.diagnostic.range.endTokenIndex).toBe(51 + expectedIndex)
+            expect(failure.diagnostic.range.start.column).toBe(tokens[expectedIndex].location.column)
+            expect(failure.diagnostic.range.end.column).toBe(tokens[expectedIndex].endColumn)
+        }
+    }
+
     async test `parent reference retains nested ordered arguments with original ranges`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:parent-retention"), "one")
         let stream = Lexer().lex("class Short extends Number<Short> {}")
@@ -434,10 +663,14 @@ testable class {
         let merged = base.mergedWith(overlay)
         expect(base.constructorValues().first.parameterValues().first.nativeScalarStorage).toBe(false)
         expect(base.methodValues().first.parameterValues().first.nativeScalarStorage).toBe(false)
-        expect(merged.constructorValues().first.parameterValues().first.nativeScalarStorage).toBe(true)
-        expect(merged.constructorValues().first.parameterValues().first.privateParameter).toBe(true)
-        expect(merged.methodValues().first.parameterValues().first.nativeScalarStorage).toBe(true)
-        expect(merged.methodValues().first.parameterValues().first.range)
+        expect(merged.constructorValues().count).toBe(2)
+        expect(merged.methodValues().count).toBe(2)
+        expect(merged.constructorValues().first.parameterValues().first.nativeScalarStorage).toBe(false)
+        expect(merged.methodValues().first.parameterValues().first.nativeScalarStorage).toBe(false)
+        expect(merged.constructorValues().last.parameterValues().first.nativeScalarStorage).toBe(true)
+        expect(merged.constructorValues().last.parameterValues().first.privateParameter).toBe(true)
+        expect(merged.methodValues().last.parameterValues().first.nativeScalarStorage).toBe(true)
+        expect(merged.methodValues().last.parameterValues().first.range)
             .toBe(overlay.methodValues().first.parameterValues().first.range)
     }
 

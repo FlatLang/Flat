@@ -160,6 +160,48 @@ testable class {
             "throw new Error('omission or stage argument replay');console.log('ok');\n")
     }
 
+    async test `native Char shaped setup writes reach delegated storage and helper names remain hygienic`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let ownerIdentity = fixture.declaration("class", "NativeString", 1200)
+        let owner = UserClassSemanticType(ownerIdentity)
+        let identity = DeclarationIdentity(SyntaxIslandIdentity(fixture.snapshot, "constructor-overload", 1201), "constructor", "NativeString")
+        let type = SemanticTypes.charType()
+        let arrayType = ArraySemanticType(type)
+        let signature = CallableSignature(SymbolIdentity(identity, "constructor"), "NativeString", CallableKind("constructor"), [type], owner, owner)
+        let c = BoundReferenceExpression(range, type, "c", SymbolIdentity(identity, "parameter", 0))
+        let chars = fixture.reference("local", "chars", 1202, arrayType)
+        let collision = fixture.reference("local", "__flatConstructed", 1203, SemanticTypes.intType())
+        let receiver = BoundReferenceExpression(range, owner, "this", SymbolIdentity(ownerIdentity, "receiver"))
+        let fieldIdentity = BoundConstructorPlan.fieldInitializerIdentity(ownerIdentity)
+        let bodyIdentity = BoundConstructorPlan.bodyInitializerIdentity(identity)
+        let target = CallableSignature(SymbolIdentity(bodyIdentity, "instance-method"), "body", CallableKind("instance-method"), [arrayType], SemanticTypes.unitType(), owner)
+        let call = BoundCallExpression(range, SemanticTypes.unitType(), target, receiver, [chars], [TypeConversions.classify(arrayType, arrayType)])
+        let setup = [
+            BoundLocalDeclarationStatement(range, chars),
+            BoundLocalDeclarationStatement(range, collision, BoundLiteralExpression(range, SemanticTypes.intType(), "1"), TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType())),
+            BoundExternalStatement(range, "es6", [BoundExternalCodeSegment(range, "chars=[c];__flatConstructed+=1;events.push(__flatConstructed);")],
+                [BoundExternalNameBinding("c", c), BoundExternalNameBinding("chars", chars), BoundExternalNameBinding("__flatConstructed", collision)])
+        ]
+        let plan = BoundConstructorPlan(signature, fieldIdentity, setup, null,
+            [stage(fixture, owner, fieldIdentity, receiver), call], [identity], range)
+        let constructor = BoundFunctionUnit(identity, "NativeString", SemanticTypes.unitType(), BoundStatement[], range,
+            [BoundFunctionParameter("c", c.symbolIdentity, type)], constructorFunction: true, constructorPlan: plan)
+        let stored = BoundReferenceExpression(range, arrayType, "values", SymbolIdentity(bodyIdentity, "parameter", 0))
+        let body = BoundFunctionUnit(bodyIdentity, "body", SemanticTypes.unitType(), [
+            BoundExternalStatement(range, "es6", [BoundExternalCodeSegment(range, "this.payload=values[0];")], [BoundExternalNameBinding("values", stored)])
+        ], range, [BoundFunctionParameter("values", stored.symbolIdentity, arrayType)])
+        let fields = BoundFunctionUnit(fieldIdentity, "fields", SemanticTypes.unitType(), BoundStatement[], range)
+        let unit = BoundTypeUnit(ownerIdentity, owner, [constructor, body, fields], range)
+        let emitted = Es6UnitOrchestrator().emitType(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        let ownerName = Es6NameMangler.mangle(ownerIdentity.value)
+        let entryName = Es6NameMangler.mangle(identity.value)
+        execute("const events=[];\n" + emitted.fragment.code + "for(const c of ['a',String.fromCharCode(0),'ä']){" +
+            "const value=" + ownerName + "." + entryName + "(c);if(value.payload!==c) throw new Error('native constructor storage');}" +
+            "if(events.join(',')!=='2,2,2') throw new Error('native helper order');console.log('ok');\n")
+    }
+
     entry(Es6BoundWriter_TestFixture fixture, UserClassSemanticType owner, String kind, Int ordinal,
         Bool optional = false) -> CallableSignature {
         let identity = DeclarationIdentity(SyntaxIslandIdentity(fixture.snapshot, kind, ordinal), "constructor", owner.declarationIdentity.name)

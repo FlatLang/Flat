@@ -1,6 +1,114 @@
 package flat/writer/es6/bound
 
+import flat/compiler/models
+import flat/io
+import flat/system
+import flat/time/Time
+
 testable class {
+    test `type sections order declarations before metadata and preserve eager ordinals`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let parent = fixture.declaration("class", "Parent", 910)
+        let child = Es6TypeSections("child", 0, parent, "C", "c", "0")
+        let base = Es6TypeSections(parent.value, 1, null, "P", "p", "1")
+        let other = Es6TypeSections("other", 2, null, "O", "o", "2")
+        let assembler = Es6FragmentAssembler(3)
+        let forward = assembler.assembleTypeSections([child, base, other], "E")
+        let reversed = assembler.assembleTypeSections([other, base, child], "E")
+        expect(forward.assembled).toBe(true)
+        expect(forward.code).toBe("PCOcpo012E")
+        expect(reversed.code).toBe(forward.code)
+        expect(Es6FragmentAssembler(1).assembleTypeSections([
+            Es6TypeSections("single", 0, null, "D", "M", "I")], "E").code).toBe("DMIE")
+    }
+
+    test `type sections reject identity ordinal missing parent cycle and capacity failures`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let first = fixture.declaration("class", "First", 920)
+        let second = fixture.declaration("class", "Second", 921)
+        let zero = Es6TypeSections(first.value, 0, null, "D", "M", "I")
+        let missing = Es6TypeSections(second.value, 1, first, "", "", "")
+        expect(Es6FragmentAssembler(1).assembleTypeSections([zero, missing]).diagnostic.code)
+            .toBe("es6.assembly-capacity")
+        expect(Es6FragmentAssembler(2).assembleTypeSections([zero,
+            Es6TypeSections(first.value, 1, null, "", "", "")]).diagnostic.code).toBe("es6.type-identity")
+        expect(Es6FragmentAssembler(2).assembleTypeSections([zero,
+            Es6TypeSections(second.value, 0, null, "", "", "")]).diagnostic.code).toBe("es6.fragment-order")
+        expect(Es6FragmentAssembler(2).assembleTypeSections([missing]).diagnostic.code).toBe("es6.fragment-order")
+        let orphan = Es6TypeSections(second.value, 0, first, "", "", "")
+        expect(Es6FragmentAssembler(1).assembleTypeSections([orphan]).diagnostic.code).toBe("es6.type-parent-missing")
+        let a = Es6TypeSections(first.value, 0, second, "", "", "")
+        let b = Es6TypeSections(second.value, 1, first, "", "", "")
+        let cycle = Es6FragmentAssembler(2).assembleTypeSections([b, a])
+        expect(cycle.diagnostic.code).toBe("es6.type-declaration-cycle")
+        expect(cycle.code).toBe(null)
+        expect(Es6FragmentAssembler(1, maxArtifactCharacters: 4).assembleTypeSections([zero], "E").code).toBe("DMIE")
+        let oversized = Es6FragmentAssembler(1, maxArtifactCharacters: 3).assembleTypeSections([zero], "E")
+        expect(oversized.diagnostic.code).toBe("es6.artifact-character-capacity")
+        expect(oversized.code).toBe(null)
+        expect(Es6FragmentAssembler(1, maxArtifactCharacters: 1).assembleTypeSections(
+            Es6TypeSections[], "EE").diagnostic.code).toBe("es6.artifact-character-capacity")
+        let declarationOverflow = Es6FragmentAssembler(1, maxArtifactCharacters: 1).assembleTypeSections([
+            Es6TypeSections("declarations", 0, null, "DD", "", "")])
+        let metadataOverflow = Es6FragmentAssembler(1, maxArtifactCharacters: 1).assembleTypeSections([
+            Es6TypeSections("metadata", 0, null, "D", "M", "")])
+        let eagerOverflow = Es6FragmentAssembler(1, maxArtifactCharacters: 1).assembleTypeSections([
+            Es6TypeSections("eager", 0, null, "", "M", "I")])
+        expect(declarationOverflow.diagnostic.code).toBe("es6.artifact-character-capacity")
+        expect(metadataOverflow.diagnostic.code).toBe("es6.artifact-character-capacity")
+        expect(eagerOverflow.diagnostic.code).toBe("es6.artifact-character-capacity")
+        expect(declarationOverflow.code).toBe(null)
+        expect(metadataOverflow.code).toBe(null)
+        expect(eagerOverflow.code).toBe(null)
+    }
+
+    test `type section checkpoints propagate exact cancellation without a partial result`() {
+        let section = Es6TypeSections("one", 0, null, "D", "M", "I")
+        var Int checkpoints
+        Es6FragmentAssembler(1).assembleTypeSections([section], "E", checkpoint: { checkpoints++ })
+        var Int stop = 1
+        while (stop <= checkpoints) {
+            var Int visited
+            let cancelled = Exception("controlled cancellation")
+            var Exception caught
+            var Es6AssemblyResult result
+            try {
+                result = Es6FragmentAssembler(1).assembleTypeSections([section], "E", checkpoint: {
+                    visited++
+                    if (visited == stop) throw cancelled
+                })
+            } catch (Exception error) { caught = error }
+            expect(caught).toBe(cancelled)
+            expect(result).toBe(null)
+            stop++
+        }
+        expect(checkpoints > 4).toBe(true)
+    }
+
+    async test `sectioned artifact executes forward construction metadata and eager effects`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let parent = fixture.declaration("class", "Base", 930)
+        let child = Es6TypeSections("child", 0, parent,
+            "class Child extends Base {}\n", "Child.meta='child';\n",
+            "events.push('child'); Child.value=new Later();\n")
+        let base = Es6TypeSections(parent.value, 1, null,
+            "const events=[]; class Base {}\n", "Base.meta='base';\n", "events.push('base');\n")
+        let later = Es6TypeSections("later", 2, null,
+            "class Later { constructor(){if(Later.meta!=='later'||Child.meta!=='child') throw Error('metadata');} }\n",
+            "Later.meta='later';\n", "events.push('later');\n")
+        let entry = "if(!(Child.value instanceof Later)||events.join(',')!=='child,base,later') throw Error('order'); console.log('ok');\n"
+        let assembled = Es6FragmentAssembler(3).assembleTypeSections([later, child, base], entry)
+        expect(assembled.assembled).toBe(true)
+        let root = File(".flat-es6-section-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "sections.js")
+            Es6ArtifactCommitter().commit(destination, assembled.code)
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("ok\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
     test `assembles reversed fragments into identical canonical output`() {
         let first = Es6ArtifactFragment("first", 0, "first\n")
         let second = Es6ArtifactFragment("second", 1, "second\n")

@@ -12,7 +12,7 @@ class {
     }
 
     parameterNames(BoundFunctionUnit functionUnit) -> String[] {
-        return functionUnit.parameterValues().map((parameter) => Es6NameMangler.mangle(parameter.identity.value))
+        return functionUnit.parameterValues().map((parameter) => statements.expressions.storageName(parameter.identity.value))
     }
 
     parameterDefaults(BoundFunctionUnit functionUnit) -> Es6CodeResult {
@@ -21,7 +21,7 @@ class {
             if (!parameter.defaultValue) continue
             let value = statements.expressions.emit(parameter.defaultValue)
             if (!value.emitted) return value
-            let name = Es6NameMangler.mangle(parameter.identity.value)
+            let name = statements.expressions.storageName(parameter.identity.value)
             code += "if (" + name + " === undefined) {\n" + value.setup + name + " = " + value.code + ";\n}\n"
         }
         return Es6CodeResult(code: code)
@@ -30,12 +30,17 @@ class {
     emitBody(BoundFunctionUnit functionUnit) -> Es6CodeResult {
         let defaults = parameterDefaults(functionUnit)
         if (!defaults.emitted) return defaults
-        let body = statements.emitAll(functionUnit.statements())
+        let body = statements.emitAll(functionUnit.statements(), includePrelude: false)
         if (!body.emitted) return body
-        return Es6CodeResult(code: defaults.code + body.code)
+        return Es6CodeResult(code: statements.expressions.scopePrelude(functionUnit.statements()) + defaults.code + body.code)
     }
 
     public emitFunction(BoundFunctionUnit functionUnit, Int ordinal) -> Es6EmissionResult {
+        try { return emitFunctionBody(functionUnit, ordinal) }
+        finally { statements.expressions.resetOwner() }
+    }
+
+    emitFunctionBody(BoundFunctionUnit functionUnit, Int ordinal) -> Es6EmissionResult {
         if (!functionUnit) throw Exception("ES6 function unit is required")
         if (functionUnit.constructorPlan) return Es6EmissionResult(diagnostic: Es6BackendDiagnostic(
             "es6.constructor-plan-owner-required", "Normalized constructor allocation requires its published type"))
@@ -49,6 +54,8 @@ class {
                 "es6.unlowered-lazy-property", "Lazy properties require type lowering before emission"))
         }
         let loweredFunction = CollectionControlLoweringPass().lower(functionUnit)
+        let naming = statements.expressions.prepareOwner(loweredFunction)
+        if (naming) return Es6EmissionResult(diagnostic: naming)
         let body = emitBody(loweredFunction)
         if (!body.emitted) return Es6EmissionResult(diagnostic: body.diagnostic)
         let parameters = parameterNames(loweredFunction)
@@ -76,10 +83,17 @@ class {
     }
 
     public emitMethod(BoundFunctionUnit functionUnit) -> Es6CodeResult {
+        try { return emitMethodBody(functionUnit) }
+        finally { statements.expressions.resetOwner() }
+    }
+
+    emitMethodBody(BoundFunctionUnit functionUnit) -> Es6CodeResult {
         if (!functionUnit) throw Exception("ES6 method unit is required")
         if (functionUnit.constructorPlan) return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
             "es6.constructor-plan-owner-required", "Normalized constructor allocation requires its published type"))
         statements.expressions.resetOwner()
+        let naming = statements.expressions.prepareOwner(functionUnit)
+        if (naming) return Es6CodeResult(diagnostic: naming)
         if (functionUnit.abstractFunction) {
             return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
                 "es6.abstract-function-body", "Abstract declarations have no executable method body"))
@@ -88,7 +102,7 @@ class {
             return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
                 "es6.unlowered-lazy-property", "Lazy properties require type lowering before emission"))
         }
-        var Es6CodeResult body = statements.emitAll(functionUnit.statements())
+        var Es6CodeResult body = statements.emitAll(functionUnit.statements(), includePrelude: false)
         if (!body.emitted) return body
         let defaults = parameterDefaults(functionUnit)
         if (!defaults.emitted) return defaults
@@ -97,14 +111,14 @@ class {
         let parameters = parameterNames(functionUnit)
         if (functionUnit.constructorFunction) {
             return Es6CodeResult(code: units.emitConstructor(
-                parameters, defaults.code + delegation.code + body.code
+                parameters, statements.expressions.scopePrelude(functionUnit.statements()) + defaults.code + delegation.code + body.code
             ))
         }
         let name = functionUnit.dispatchIdentity ?: functionUnit.identity.value
         return Es6CodeResult(code: units.emitMethod(
             name,
             parameters,
-            defaults.code + body.code,
+            statements.expressions.scopePrelude(functionUnit.statements()) + defaults.code + body.code,
             functionUnit.staticFunction,
             functionUnit.asyncFunction,
             functionUnit.externalName
@@ -115,8 +129,18 @@ class {
         BoundFunctionUnit functionUnit,
         BoundTypeUnit typeUnit
     ) -> Es6CodeResult {
+        try { return emitTypeConstructorOverloadBody(functionUnit, typeUnit) }
+        finally { statements.expressions.resetOwner() }
+    }
+
+    emitTypeConstructorOverloadBody(
+        BoundFunctionUnit functionUnit,
+        BoundTypeUnit typeUnit
+    ) -> Es6CodeResult {
         statements.expressions.resetOwner()
-        let body = statements.emitAll(functionUnit.statements())
+        let naming = statements.expressions.prepareOwner(functionUnit)
+        if (naming) return Es6CodeResult(diagnostic: naming)
+        let body = statements.emitAll(functionUnit.statements(), includePrelude: false)
         if (!body.emitted) return body
         let defaults = parameterDefaults(functionUnit)
         if (!defaults.emitted) return defaults
@@ -124,8 +148,9 @@ class {
         if (!delegation.emitted) return delegation
         let parameters = parameterNames(functionUnit)
         let name = functionUnit.identity.value
+        let prelude = statements.expressions.scopePrelude(functionUnit.statements())
         let initializer = units.emitConstructorInitializer(
-            name, parameters, defaults.code + delegation.code + body.code
+            name, parameters, prelude + defaults.code + delegation.code + body.code
         )
         var String parentArguments = ""
         var String parentSetup = ""
@@ -140,7 +165,8 @@ class {
         let factory = units.emitConstructorFactory(
             name, typeUnit.identity.value,
             typeUnit.parentType ? typeUnit.parentType.declarationIdentity.value : null,
-            parameters, parentArguments, defaults.code + parentSetup
+            parameters, parentArguments, prelude + defaults.code + parentSetup,
+            statements.expressions.generatedName("value")
         )
         return Es6CodeResult(code: initializer + factory)
     }
@@ -149,11 +175,21 @@ class {
         BoundFunctionUnit functionUnit,
         BoundTypeUnit typeUnit
     ) -> Es6CodeResult {
+        try { return emitTypeMethodBody(functionUnit, typeUnit) }
+        finally { statements.expressions.resetOwner() }
+    }
+
+    emitTypeMethodBody(
+        BoundFunctionUnit functionUnit,
+        BoundTypeUnit typeUnit
+    ) -> Es6CodeResult {
         if (!functionUnit.constructorFunction || !typeUnit.parentType) return emitMethod(functionUnit)
         statements.expressions.resetOwner()
+        let naming = statements.expressions.prepareOwner(functionUnit)
+        if (naming) return Es6CodeResult(diagnostic: naming)
         let defaults = parameterDefaults(functionUnit)
         if (!defaults.emitted) return defaults
-        let body = statements.emitAll(functionUnit.statements())
+        let body = statements.emitAll(functionUnit.statements(), includePrelude: false)
         if (!body.emitted) return body
         let delegation = emitConstructorDelegation(functionUnit)
         if (!delegation.emitted) return delegation
@@ -163,7 +199,7 @@ class {
         if (!parentArguments.emitted) return parentArguments
         let parameters = parameterNames(functionUnit)
         return Es6CodeResult(code: units.emitConstructor(
-            parameters, defaults.code + parentArguments.setup + "super(" + parentArguments.code + ");\n" +
+            parameters, statements.expressions.scopePrelude(functionUnit.statements()) + defaults.code + parentArguments.setup + "super(" + parentArguments.code + ");\n" +
                 delegation.code + body.code
         ))
     }
@@ -193,10 +229,19 @@ class {
         return result + owner + ".__flatReified = [" + values.join(", ") + "];\n"
     }
 
+    /** Compatibility adapter: emit once, retain legacy combined output. */
     public emitType(BoundTypeUnit typeUnit, Int ordinal) -> Es6EmissionResult {
+        let emitted = emitTypeSections(typeUnit, ordinal)
+        if (!emitted.emitted) return Es6EmissionResult(diagnostic: emitted.diagnostic)
+        let sections = emitted.sections
+        return Es6EmissionResult(fragment: Es6ArtifactFragment(sections.identity, sections.ordinal,
+            sections.declarations + sections.metadata + sections.eagerInitializers))
+    }
+
+    public emitTypeSections(BoundTypeUnit typeUnit, Int ordinal) -> Es6TypeSectionsResult {
         if (!typeUnit) throw Exception("ES6 type unit is required")
         if (typeUnit.functionUnits().any({ _.lazyProperty })) {
-            return Es6EmissionResult(diagnostic: Es6BackendDiagnostic(
+            return Es6TypeSectionsResult(diagnostic: Es6BackendDiagnostic(
                 "es6.unlowered-lazy-property", "Lazy properties require type lowering before emission"))
         }
         let loweredFunctions = BoundFunctionUnit[]
@@ -217,7 +262,7 @@ class {
                 functionUnit.identity.syntaxIdentity.kind == "constructor-overload"
                 ? emitTypeConstructorOverload(functionUnit, typeUnit)
                 : emitTypeMethod(functionUnit, typeUnit)
-            if (!method.emitted) return Es6EmissionResult(diagnostic: method.diagnostic)
+            if (!method.emitted) return Es6TypeSectionsResult(diagnostic: method.diagnostic)
             methods.add(method.code)
         }
         let classCode = units.emitClass(
@@ -233,18 +278,16 @@ class {
             if (!field.initializer) continue
             let initializer = statements.expressions.emit(field.initializer)
             if (!initializer.emitted) {
-                return Es6EmissionResult(diagnostic: initializer.diagnostic)
+                return Es6TypeSectionsResult(diagnostic: initializer.diagnostic)
             }
             let fieldOwner = Es6NameMangler.mangle(field.canonicalOwner().value)
             staticFields += initializer.setup + fieldOwner + "." + Es6NameMangler.mangle(field.identity.value) +
                 " = " + initializer.code + ";\n"
         }
-        return Es6EmissionResult(fragment: Es6ArtifactFragment(
-            loweredType.identity.value,
-            ordinal,
-            // Metadata must exist before a static initializer calls a method that reads it.
-            // Field initialization itself retains the published source order.
-            classCode + emitMetadata(loweredType) + staticFields
+        return Es6TypeSectionsResult(sections: Es6TypeSections(
+            loweredType.identity.value, ordinal,
+            loweredType.parentType ? loweredType.parentType.declarationIdentity : null,
+            classCode, emitMetadata(loweredType), staticFields
         ))
     }
 }

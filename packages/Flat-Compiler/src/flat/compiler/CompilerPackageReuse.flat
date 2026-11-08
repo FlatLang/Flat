@@ -58,7 +58,7 @@ class {
         }
         let options = "#{toolFingerprint.count}:#toolFingerprint:#{encodedDefaults.count}:#encodedDefaults:" +
             "es6:default-array:#{linker.maxSources}:#{linker.maxSourceCharacters}:" +
-            "#{linker.maxTokensPerSource}:#{linker.maxTypes}:#{linker.maxFragments}"
+            "#{linker.maxTokensPerSource}:#{linker.maxTypes}:#{linker.maxFragments}:#{linker.maxArtifactCharacters}"
         var Long bytes = options.count
         bytes *= 4
         Long ownedToolBytes = toolFingerprint.count

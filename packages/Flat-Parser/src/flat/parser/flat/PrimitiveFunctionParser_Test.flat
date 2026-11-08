@@ -5,6 +5,68 @@ import flat/parser/ParserDiagnostic
 import flat/lexer/Lexer
 
 testable class {
+    test `explicit nullable parameters retain spelling ranges and native modifier intent`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-parameter"), "one")
+        Bool[] nativeCases = [false, true]
+        for (nativeCase in nativeCases) {
+            let values = [token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5)]
+            if (nativeCase == true) values.add(token("native", Token.Type.IDENTIFIER, 6))
+            values.addAll([token("Thing", Token.Type.IDENTIFIER, 13), token("?", Token.Type.SYMBOL, 18),
+                token("value", Token.Type.IDENTIFIER, 20), token(")", Token.Type.SYMBOL, 25)])
+            let parsed = PrimitiveFunctionParser().parse(values, snapshot, 70,
+                allowBodylessDeclaration: true).functionValues().first
+            let parameter = parsed.parameterValues().first
+            expect(parameter.typeName).toBe("Thing?")
+            expect(parameter.name).toBe("value")
+            expect(parameter.nativeScalarStorage).toBe(nativeCase == true)
+            expect(parameter.nativeArrayStorage).toBe(false)
+            expect(parameter.range.snapshot).toBe(snapshot)
+            expect(parameter.range.startTokenIndex).toBe(72)
+            expect(parameter.range.endTokenIndex).toBe(nativeCase == true ? 76 : 75)
+            expect(parameter.range.start.column).toBe(nativeCase == true ? 6 : 13)
+            expect(parameter.range.end.column).toBe(25)
+        }
+    }
+
+    test `repeated nullable parameter suffix retains diagnostic range with native modifiers`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:bad-nullable-parameter"), "one")
+        Bool[] nativeCases = [false, true]
+        for (nativeCase in nativeCases) {
+            let values = [token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5)]
+            if (nativeCase == true) values.add(token("native", Token.Type.IDENTIFIER, 6))
+            values.addAll([token("Thing", Token.Type.IDENTIFIER, 13), token("?", Token.Type.SYMBOL, 18),
+                token("?", Token.Type.SYMBOL, 19), token("value", Token.Type.IDENTIFIER, 21),
+                token(")", Token.Type.SYMBOL, 26)])
+            var ParseFailure failure
+            try { PrimitiveFunctionParser().parse(values, snapshot, 70) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure != null).toBe(true)
+            expect(failure.diagnostic.code).toBe("invalid-function-syntax")
+            expect(failure.diagnostic.range.snapshot).toBe(snapshot)
+            expect(failure.diagnostic.range.startTokenIndex).toBe(nativeCase == true ? 75 : 74)
+            expect(failure.diagnostic.range.endTokenIndex).toBe(nativeCase == true ? 76 : 75)
+            expect(failure.diagnostic.range.start.column).toBe(19)
+            expect(failure.diagnostic.range.end.column).toBe(20)
+        }
+    }
+
+    async test `native nullable parameter shape failures remain typed parser diagnostics`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-nullable-parameter-shape"), "one")
+        String[] sources = ["read(native Thing?? value)", "read(native_array Thing[]?? value)",
+            "read(native Thing?)", "read(native_array Thing[]?)"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            var ParseFailure failure
+            try { PrimitiveFunctionParser().parse(stream.consumeAll<Token>("data"), snapshot,
+                allowBodylessDeclaration: true) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure != null).toBe(true)
+            expect(failure.diagnostic.code).toBe("invalid-function-syntax")
+            expect(failure.diagnostic.range.snapshot).toBe(snapshot)
+        }
+    }
+
     test `diagnostic index remapping preserves sparse spans and observed EOF boundaries`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:diagnostic-remap"), "original")
         let location = Location(lineNumber: 3, column: 7)

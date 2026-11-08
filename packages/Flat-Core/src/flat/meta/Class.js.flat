@@ -8,8 +8,8 @@ class<Type> {
         visible Bool isInterface,
         visible Class extension,
         visible Class[] interfaces,
-        visible Field[] fields = null,
-        visible Function[] functions = null,
-        visible native Object jsClass = null
+        visible Field[]? fields = null,
+        visible Function[]? functions = null,
+        visible native Object? jsClass = null
     ) {}
 }

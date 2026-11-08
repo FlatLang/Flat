@@ -112,11 +112,21 @@ class {
         }
     }
 
+    /** Existing compiler/output symlink aliases must be compared by canonical path.
+     * A new output need not exist, so retain the lexical check and canonicalize
+     * only when both paths exist. No source discovery or output mutation occurs.
+     */
+    compilerPathsMatch(File compiler, File output) -> Bool {
+        if (compiler.normalizedLocation == output.normalizedLocation) return true
+        if (!compiler.exists || !output.exists) return false
+        return compiler.getCanonicalPathSync() == output.getCanonicalPathSync()
+    }
+
     public validateCompilerOutput(PackageSource source) {
         if (let script = cliArgs.flatcScriptValueArg.value) {
             if (source.outFile) {
                 let output = File("#{getOutputDirectory(source).normalizedLocation}/#{source.outFile}")
-                if (File(script).normalizedLocation == output.normalizedLocation) {
+                if (compilerPathsMatch(File(script), output)) {
                     throw ExecutionFailureException("Explicit Flat compiler input cannot be the output being built; select an independent --flatc-script")
                 }
             }
@@ -130,7 +140,7 @@ class {
         let command = getFlatcExecutableCommand(dependencies)
         if (cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() == "flat" && source.outFile) {
             let output = File("#{getOutputDirectory(source).normalizedLocation}/#{source.outFile}")
-            if (File(command[1]).normalizedLocation == output.normalizedLocation) {
+            if (compilerPathsMatch(File(command[1]), output)) {
                 throw ExecutionFailureException("Selected Flat compiler input cannot be the output being built; select an independent --flatc-script")
             }
         }

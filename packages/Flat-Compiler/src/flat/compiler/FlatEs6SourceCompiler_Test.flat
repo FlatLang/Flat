@@ -8,6 +8,34 @@ import flat/time/Time
 import flat/writer/es6/bound
 
 testable class {
+    async test `source eager constructor waits for later declaration and metadata`() {
+        assertSourceDeclarationRuntime()
+    }
+
+    public async assertSourceDeclarationRuntime() {
+        let source = "class Earlier { public static Later value = Later(); }\n" +
+            "class Later { public construct() {\n" +
+            "external js { console.log('ready', this.constructor.__flatType.name === 'Later'); }\n} }"
+        let code = FlatEs6SourceCompiler().compile(CompilerSource("ready.flat", source))
+        let root = File(".flat-source-declarations-ready-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("ready true\n")
+            expect(response.stderr.join("")).toBe("")
+        } finally { Es6ArtifactFiles.remove(root) }
+        let exact = FlatEs6SourceCompiler(maxArtifactCharacters: code.count)
+        expect(exact.compile(CompilerSource("ready.flat", source))).toBe(code)
+        var Bool rejected
+        try {
+            FlatEs6SourceCompiler(maxArtifactCharacters: code.count - 1).compile(CompilerSource("ready.flat", source))
+        } catch (Exception error) { rejected = error.message.contains("es6.assembly-capacity") }
+        expect(rejected).toBe(true)
+    }
+
     async test `unqualified source type preserves parsed identity and js target selection`() {
         let identity = "memory:source-trivia-target-selection"
         let source = "/" + "* leading trivia *" + "/\n\nclass Selected { " +

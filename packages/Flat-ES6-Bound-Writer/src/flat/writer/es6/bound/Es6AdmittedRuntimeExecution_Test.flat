@@ -9,6 +9,39 @@ import flat/time/Time
 
 /** Generated execution regressions for admitted call and storage contracts. */
 testable class {
+    async test `direct and setup interpolation encode controls and preserve ordered once effects`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let type = SemanticTypes.stringType()
+        let control = "\"a\r\t" + (Char)8232 + (Char)8233 + "\""
+        let first = BoundLiteralExpression(range, type, "read('A')")
+        let second = BoundLiteralExpression(range, type, "read('B')")
+        let direct = BoundInterpolatedStringExpression(range, [
+            BoundInterpolatedStringSegment(range, control, null),
+            BoundInterpolatedStringSegment(range, null, first),
+            BoundInterpolatedStringSegment(range, null, second)])
+        let setupValue = BoundEvaluationExpression(range, type,
+            [BoundExpressionStatement(range, BoundLiteralExpression(range, SemanticTypes.intType(), "setup()"))],
+            first)
+        let sequenced = BoundInterpolatedStringExpression(range, [
+            BoundInterpolatedStringSegment(range, control, null),
+            BoundInterpolatedStringSegment(range, null, setupValue),
+            BoundInterpolatedStringSegment(range, null, second)])
+        let ordinary = Es6ExpressionOrchestrator().emit(BoundLiteralExpression(range, type, control))
+        let immediate = Es6ExpressionOrchestrator().emit(direct)
+        let planned = Es6ExpressionOrchestrator().emit(sequenced)
+        expect(ordinary.emitted).toBe(true)
+        expect(immediate.emitted).toBe(true)
+        expect(planned.emitted).toBe(true)
+        expect(immediate.code.contains("\\r\\t\\u2028\\u2029")).toBe(true)
+        expect(planned.setup.contains("\\r\\t\\u2028\\u2029")).toBe(true)
+        execute("let events=[]; function read(v){events.push(v);return v;} function setup(){events.push('setup');}\n" +
+            "const prefix=String.fromCharCode(97,13,9,8232,8233);\n" +
+            "const ordinary=" + ordinary.code + "; if(ordinary!==prefix) throw Error('ordinary controls');\n" +
+            "const direct=" + immediate.code + "; if(direct!==prefix+'AB'||events.join(',')!=='A,B') throw Error('direct');\n" +
+            "events=[];\n" + planned.setup + "const planned=" + planned.code + ";\n" +
+            "if(planned!==prefix+'AB'||events.join(',')!=='setup,A,B') throw Error('planned'); console.log('ok');\n")
+    }
     async test `evaluation local default captures are fresh on every loop occurrence`() {
         let fixture = Es6BoundWriter_TestFixture()
         let range = fixture.range()

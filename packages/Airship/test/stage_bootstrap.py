@@ -46,6 +46,7 @@ import argparse
 import shlex
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import shutil
@@ -435,7 +436,13 @@ def reviewed_json(path, expected_sha256, label):
         return value
     def finite_constant(value):
         raise ValueError(f'{label} contains non-finite number: {value}')
-    return json.loads(raw, object_pairs_hook=unique_object, parse_constant=finite_constant)
+    def finite_float(value):
+        result = float(value)
+        if not math.isfinite(result):
+            raise ValueError(f'{label} contains non-finite number: {value}')
+        return result
+    return json.loads(raw, object_pairs_hook=unique_object,
+                      parse_constant=finite_constant, parse_float=finite_float)
 
 
 def reviewed_seeds(seeds, review, expected_sha256):
@@ -889,7 +896,9 @@ def verify_resolution(log, expected, runtime='flat'):
 LIFECYCLE_SOURCE = 'packages/Airship/src/flat/airship/Airship_Test.flat'
 # Frozen consumer source reviewed for these three literal compiler probes. A
 # source change requires an explicit inventory review, never automatic discovery.
-LIFECYCLE_SOURCE_SHA256 = '9b6a6cbb16a5fcf3f1a8e43e5a42a8828103481b79d56d7bdc9c078221d983bc'
+# finish-1105 review: added in-process symlink-alias validation only; all
+# three literal lifecycle probes, argv, cardinality and outcomes are unchanged.
+LIFECYCLE_SOURCE_SHA256 = 'a82b96e7b965280c2f8a45026db6effc53dff8397d94065b2e8bdf934600437a'
 LIFECYCLE_SCRIPTS = (
     'process.exit(0);',
     "const fs=require('fs'); if(fs.readFileSync(process.argv[2],'utf8')!=='committed') process.exit(9); process.exit(7);",

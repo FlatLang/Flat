@@ -4,6 +4,90 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    test `multiline literal payload preserves exact legacy oracle compatibility`() {
+        // Compatibility with Literal.formatMultilitestring, not endorsement of
+        // its CRLF doubling, backslash adjacency or empty-margin quirks.
+        String[] inputs = ["\"a\nb\"", "\"|\n  a\n  b\n  |\"",
+            "\"|\r\n  a\r\n  b\r\n  |\"", "\"a\r\nb\"", "\"a\rb\"",
+            "\"|\n\ta\n\tb\n\t|\"", "\"a\\\nb\"", "\"a\\\\\nb\"",
+            "\"a\\\r\nb\"", "\"a\\nb\"", "\"a\\\"\t\\\\b\"", "\"|\n  |\"", "\"\"",
+            "\"no escape\"", "\"literal \\\\n\""]
+        String[] expected = ["\"a\\nb\"", "\"a\\nb\"", "\"a\\n\\nb\\n\"",
+            "\"a\\n\\nb\"", "\"a\rb\"", "\"a\\nb\"", "\"a\\\\nb\"",
+            "\"a\\\\\\nb\"", "\"a\\\\n\\nb\"", "\"a\\nb\"",
+            "\"a\\\"\t\\\\b\"", "\"|\"", "\"\"", "\"no escape\"", "\"literal \\\\n\""]
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:multiline-oracle"), "one")
+        var Int index
+        while (index < inputs.count) {
+            let source = inputs[index]
+            let syntax = PrimitiveExpressionParser().parse([
+                token(source, Token.Type.STRING, 7)
+            ], snapshot, 42)
+            let parsed = (PrimitiveLiteralSyntax)syntax
+            expect(parsed.sourceValue).toBe(expected[index])
+            expect(parsed.range.snapshot).toBe(snapshot)
+            expect(parsed.range.startTokenIndex).toBe(42)
+            expect(parsed.range.endTokenIndex).toBe(43)
+            expect(parsed.range.start.column).toBe(7)
+            index++
+        }
+    }
+
+    test `List multiline margin interpolation keeps original expression offsets`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:List-multiline"), "one")
+        var String source = "\"|\n                [\n                "
+        source += '#'
+        source += "{values.join(\",\\n\").indent(tab: tab)}\n                ]\n                |\""
+        let syntax = PrimitiveExpressionParser().parse([
+            token(source, Token.Type.STRING, 5)
+        ], snapshot, 172)
+        let parsed = (PrimitiveInterpolatedStringSyntax)syntax
+        let segments = parsed.segmentValues()
+        expect(segments.count).toBe(3)
+        expect(segments.first.literalSourceValue).toBe("\"[\\n\"")
+        expect(segments.last.literalSourceValue).toBe("\"\\n]\"")
+        let call = (PrimitiveMemberCallSyntax)segments[1].expression
+        expect(call.memberName).toBe("indent")
+        expect(call.range.start.lineNumber).toBe(3)
+        expect(call.range.start.column).toBe(19)
+        expect(call.range.startTokenIndex).toBe(172)
+        expect(call.range.endTokenIndex).toBe(173)
+        expect(segments[1].range.start.lineNumber).toBe(3)
+        expect(segments[1].range.start.column).toBe(17)
+        expect(segments.first.range.start.lineNumber).toBe(1)
+        expect(segments.first.range.start.column).toBe(6)
+        expect(parsed.range.end.lineNumber).toBe(5)
+        expect(parsed.range.end.column).toBe(19)
+        expect(parsed.range.snapshot).toBe(snapshot)
+    }
+
+    test `multiline interpolation preserves ordered references and literal controls`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:multiline-order"), "one")
+        var String source = "\"|\n\t"
+        source += '#'
+        source += "{first}\r\n\t"
+        source += '#'
+        source += "{second}\n\t|\""
+        let syntax = PrimitiveExpressionParser().parse([
+            token(source, Token.Type.STRING, 1)
+        ], snapshot, 90)
+        let parsed = (PrimitiveInterpolatedStringSyntax)syntax
+        let segments = parsed.segmentValues()
+        expect(segments.count).toBe(5)
+        expect(segments[0].literalSourceValue).toBe("\"\"")
+        let firstExpression = segments[1].expression
+        let firstReference = (PrimitiveInterpolationPathSyntax)firstExpression
+        let secondExpression = segments[3].expression
+        let secondReference = (PrimitiveInterpolationPathSyntax)secondExpression
+        expect(firstReference.pathValues()).toBe(["first"])
+        expect(segments[2].literalSourceValue).toBe("\"\\n\\n\"")
+        expect(secondReference.pathValues()).toBe(["second"])
+        expect(segments[4].literalSourceValue).toBe("\"\"")
+        expect(segments[1].expression.range.start.lineNumber).toBe(2)
+        expect(segments[1].expression.range.start.column).toBe(4)
+        expect(segments[3].expression.range.start.lineNumber).toBe(3)
+        expect(segments[3].expression.range.start.column).toBe(4)
+    }
     test `interpolation binary operands retain local locations within one source token`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:binary-interpolation"), "one")
         var String source = "\"prefix "

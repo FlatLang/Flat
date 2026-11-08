@@ -780,7 +780,7 @@ class BootstrapTests(unittest.TestCase):
         root = HERE.parents[2]
         source = root / bootstrap.LIFECYCLE_SOURCE
         self.assertEqual(bootstrap.digest(source),
-                         '9b6a6cbb16a5fcf3f1a8e43e5a42a8828103481b79d56d7bdc9c078221d983bc')
+                         'a82b96e7b965280c2f8a45026db6effc53dff8397d94065b2e8bdf934600437a')
         scripts = (
             'process.exit(0);',
             "const fs=require('fs'); if(fs.readFileSync(process.argv[2],'utf8')!=='committed') process.exit(9); process.exit(7);",

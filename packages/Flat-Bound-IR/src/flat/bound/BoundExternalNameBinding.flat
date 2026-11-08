@@ -1,14 +1,24 @@
 package flat/bound
 
-/** Explicit source-name alias for a typed value referenced by opaque external code. */
+/** Breaking semantic migration: a source identifier and canonical reference denote
+ * the SAME lexical storage, not a copied alias value. Consumers must reserve the
+ * source name for every declaration/read/write of this identity in its scope.
+ * No entry aliases, exit writebacks, or opaque-text rewriting are permitted.
+ * The producer supplies declared storage type, never branch-refined read type.
+ * Closures capture this storage with its ordinary lexical lifetime. */
 data class {
     public construct(
         visible String sourceName,
-        visible BoundReferenceExpression value
+        visible BoundExpression value
     ) {
         if (!sourceName || sourceName.trim().isEmpty || !value ||
-            value.symbolIdentity.symbolKind != "parameter") {
-            throw Exception("Bound external name binding requires a parameter reference")
+            !value.class.isOfType(BoundReferenceExpression.class)) {
+            throw Exception("Bound external name binding requires lexical storage reference")
         }
+        let reference = (BoundReferenceExpression)value
+        if (reference.symbolIdentity.symbolKind != "parameter" && reference.symbolIdentity.symbolKind != "local")
+            throw Exception("Bound external name binding requires parameter or local storage")
     }
+
+    public storageReference() -> BoundReferenceExpression => (BoundReferenceExpression)value
 }

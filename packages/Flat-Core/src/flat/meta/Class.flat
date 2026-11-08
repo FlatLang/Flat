@@ -18,8 +18,8 @@ class<Type> {
         visible Bool isInterface,
         visible Class extension,
         visible Class[] interfaces,
-        visible Field[] fields = null,
-        visible Function[] functions = null
+        visible Field[]? fields = null,
+        visible Function[]? functions = null
     ) {}
 
     public getField(String name, Bool checkAncestors = false) -> Field => null {
@@ -73,7 +73,7 @@ class<Type> {
 
     public getClassesOfType(Class baseType) => ALL.filter({ _.isOfType(baseType) })
 
-    override public equals(Object other) => (other || !this) && other.class.isOfType(Class.class) && equals((Class)other)
+    override public equals(Object? other) => (other || !this) && other.class.isOfType(Class.class) && equals((Class)other)
     public equals(Class another) => this.location.chars == another.location.chars
 
     public toString() => "Class \"#location\""

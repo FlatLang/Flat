@@ -32,7 +32,11 @@ class extends BoundTreeLoweringPass {
         while (index < originals.count) {
             if (originals[index].value == value.symbolIdentity.value) {
                 let replacement = replacements[index]
-                return BoundReferenceExpression(value.range, replacement.semanticType, replacement.name,
+                // Keep a checked branch-local read proof while renaming nullable
+                // parameter storage. All other substitutions retain their target type.
+                let refinedRead = replacement.semanticType.kind() == "nullable" &&
+                    ((NullableSemanticType)replacement.semanticType).underlyingType.value() == value.semanticType.value()
+                return BoundReferenceExpression(value.range, refinedRead ? value.semanticType : replacement.semanticType, replacement.name,
                     replacement.symbolIdentity, replacement.staticOwner, fieldOwnerIdentity: replacement.fieldOwnerIdentity)
             }
             index++
@@ -88,12 +92,7 @@ class extends BoundTreeLoweringPass {
             BoundExternalStatement value = (BoundExternalStatement)statementSource
             let aliases = BoundExternalNameBinding[]
             for (alias in value.nameBindingValues()) {
-                let replacement = substituteReference(alias.value)
-                // Raw aliases can bind helper parameters, not pre-base local names.
-                if (replacement.symbolIdentity.symbolKind != "parameter" &&
-                    !(receiverFree && replacement.symbolIdentity.symbolKind == "local" &&
-                        replacement.symbolIdentity.value == alias.value.symbolIdentity.value))
-                    throw Exception("Constructor native alias cannot represent a renamed setup local")
+                let replacement = substituteReference(alias.storageReference())
                 aliases.add(BoundExternalNameBinding(alias.sourceName, replacement))
             }
             output.add(BoundExternalStatement(value.range, value.target, value.segmentValues().map((segment) =>

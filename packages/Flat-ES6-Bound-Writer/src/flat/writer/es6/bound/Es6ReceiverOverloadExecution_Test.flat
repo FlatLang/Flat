@@ -12,6 +12,92 @@ import flat/semantic/types
 
 /** Executes receiver-owned overload selection through generated ES6. */
 testable class {
+    async test `List shaped multiline margin executes exact payload and once ordered interpolation`() {
+        var String source = "class Margin { run(String value) -> String { return \"|\n                [\n                "
+        source += '#'
+        source += "{value}\n                ]\n                |\"; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:List-shaped-margin"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot).typeUnit
+        let emitted = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let methodName = Es6NameMangler.mangle(type.functionUnits().firstOrNull({ _.name == "run" }).identity.value)
+        let root = File(".flat-es6-margin-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "margin.js")
+            Es6ArtifactCommitter().commit(destination, emitted + "\nconst value=new " + className + "();\n" +
+                "const result=value." + methodName + "('VALUE');\n" +
+                "if(result !== '[\\nVALUE\\n]') throw Error(JSON.stringify(result)); console.log(JSON.stringify(result));\n")
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("\n").trim()).toBe("\"[\\nVALUE\\n]\"")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+    async test `declared String static trace compound stores retain left to right order`() {
+        // Focused regression for validationT5round17, not a substitute for the
+        // unchanged production Core workload. String remains a declared type;
+        // only its native storage concatenation is a fixture implementation.
+        var String interpolation = ""
+        interpolation += '#'
+        interpolation += '{'
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-string-trace"), "one")
+        let sources = [
+            "class String implements PlusOperator<String, String> { visible native String data; " +
+                "public construct(native String text) { data = text; } " +
+                "override public plus(String another) -> String { let result = String(\"\"); " +
+                "external { " + interpolation + "result.data} = " + interpolation + "this.data} + " + interpolation + "another.data}; } return result; } }",
+            "class Trace { visible static String trace = \"\"; " +
+                "public static leftDeclared(native String value) -> String { trace += \"L\"; return String(value); } " +
+                "public static rightDeclared(native String value) -> String { trace += \"R\"; return String(value); } " +
+                "public static run() -> String { trace = \"\"; return leftDeclared(\"a\") + rightDeclared(\"b\"); } }"
+        ]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 200
+        }
+        let operatorSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-string-plus"), "one")
+        let operatorStream = Lexer().lex("trait PlusOperator<In, Out> { public plus(In another) -> Out }")
+        operatorStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(operatorStream.consumeAll<Token>("data"), operatorSnapshot)
+        let units = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, syntaxes,
+                importValues: [PrimitiveBindingImport("flat/operators", syntaxes.first.range)]),
+            PrimitiveSourceBindingContext("flat/operators", operatorSnapshot, PrimitiveClassSyntax[], [contract])
+        ]).typeUnits()
+        var String code = ""
+        for (unit in units) {
+            let emitted = Es6UnitOrchestrator().emitType(unit, 0)
+            expect(emitted.emitted).toBe(true)
+            code += emitted.fragment.code
+        }
+        let traceType = units.firstOrNull({ _.identity.name == "Trace" })
+        let stringType = units.firstOrNull({ _.identity.name == "String" })
+        let owner = Es6NameMangler.mangle(traceType.identity.value)
+        let run = Es6NameMangler.mangle(traceType.functionUnits().firstOrNull({ _.name == "run" }).identity.value)
+        let trace = Es6NameMangler.mangle(traceType.fieldUnits().firstOrNull({ _.name == "trace" }).identity.value)
+        let data = Es6NameMangler.mangle(stringType.fieldUnits().firstOrNull({ _.name == "data" }).identity.value)
+        // Run twice: reset must replace the same owner-qualified storage, not a
+        // local or an instance field. Both operands and both stores run once.
+        code += "for (let i=0;i<2;i++) { const value=" + owner + "." + run + "();console.log(value." + data +
+            "," + owner + "." + trace + "." + data + "); }\n"
+        let root = File(".flat-es6-static-string-trace-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "trace.js")
+            Es6ArtifactCommitter().commit(destination, code)
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("ab LR\nab LR\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     async test `compound member receiver RHS and storage execute once in left to right order`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:integrated-compound-execute"), "one")
         let stream = Lexer().lex("class Counter { visible Int value = 3; public construct() {} " +

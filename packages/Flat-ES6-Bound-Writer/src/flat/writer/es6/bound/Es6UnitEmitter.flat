@@ -48,7 +48,8 @@ class {
         String parentIdentity,
         String[] parameterNames,
         String parentArguments,
-        String setup = ""
+        String setup = "",
+        String allocationLocal = "value"
     ) -> String {
         let name = Es6NameMangler.mangle(stableIdentity)
         let owner = Es6NameMangler.mangle(ownerIdentity)
@@ -58,9 +59,9 @@ class {
             : "Object.create(this.prototype)"
         let arguments = parameterNames.join(", ")
         return "static " + name + "(" + arguments + ") {\n" +
-            setup + "  let value = " + allocation + ";\n" +
-            "  value." + name + "(" + arguments + ");\n" +
-            "  return value;\n" +
+            setup + "  let " + allocationLocal + " = " + allocation + ";\n" +
+            "  " + allocationLocal + "." + name + "(" + arguments + ");\n" +
+            "  return " + allocationLocal + ";\n" +
             "}\n"
     }
 

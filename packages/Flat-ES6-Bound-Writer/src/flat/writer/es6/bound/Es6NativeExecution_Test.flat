@@ -43,6 +43,187 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `native storage writes parameters locals nested scopes and captures without aliases`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let type = SemanticTypes.intType()
+        let parameter = fixture.reference("parameter", "number", 20, type)
+        let outer = fixture.reference("local", "slot", 21, type)
+        let inner = fixture.reference("local", "slot", 22, type)
+        let truth = BoundLiteralExpression(range, SemanticTypes.boolType(), "true")
+        let functionType = FunctionSemanticType(SemanticType[], type)
+        let closure = BoundLambdaExpression(range, functionType, BoundFunctionParameter[], [outer], outer)
+        let closureLocal = fixture.reference("local", "saved", 23, functionType)
+        let values = [
+            BoundLocalDeclarationStatement(range, outer, BoundLiteralExpression(range, type, "1"), TypeConversions.classify(type, type)),
+            nativeStorage(fixture, "number += 2; slot += number;", [parameter, outer]),
+            BoundLocalDeclarationStatement(range, closureLocal, closure, TypeConversions.classify(functionType, functionType)),
+            BoundIfStatement(range, truth, [
+                nativeStorage(fixture, "events.push(slot);", [outer]),
+                BoundLocalDeclarationStatement(range, inner, BoundBinaryExpression(range, type, "+", outer,
+                    BoundLiteralExpression(range, type, "34")), TypeConversions.classify(type, type)),
+                nativeStorage(fixture, "slot += 2; events.push(slot);", [inner]),
+                nativeStorage(fixture, "slot += 1;", [inner])
+            ]),
+            nativeStorage(fixture, "events.push(slot, number); slot += 1;", [outer, parameter]),
+            BoundReturnStatement(range, type, BoundFunctionInvocationExpression(range, closureLocal, functionType,
+                BoundExpression[]), TypeConversions.classify(type, type))
+        ]
+        let identity = fixture.declaration("function", "nativeStorage", 24)
+        let unit = BoundFunctionUnit(identity, "nativeStorage", type, values, range,
+            [BoundFunctionParameter("number", parameter.symbolIdentity, type)])
+        let emitted = Es6UnitOrchestrator().emitFunction(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        expect(emitted.fragment.code.contains("let number =")).toBe(false)
+        expect(emitted.fragment.code.contains("var slot")).toBe(false)
+        executeStorage(emitted.fragment.code + "const events=[];const result=" +
+            Es6NameMangler.mangle(identity.value) + "(3);\n" +
+            "if(result!==7 || events.join(',')!=='6,42,6,5') throw new Error('same lexical storage');\nconsole.log('ok');\n")
+    }
+
+    async test `native storage is shared across abrupt completion and finally`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let type = SemanticTypes.intType()
+        let value = fixture.reference("parameter", "value", 30, type)
+        let identity = fixture.declaration("function", "nativeFinally", 31)
+        let returned = BoundReturnStatement(fixture.range(), type, value, TypeConversions.classify(type, type))
+        let unit = BoundFunctionUnit(identity, "nativeFinally", type, [
+            BoundTryStatement(fixture.range(), [nativeStorage(fixture,
+                "value += 1; if(value===0) throw new Error('stop');", [value]), returned],
+                BoundCatchClause[], [nativeStorage(fixture, "events.push(value);value += 10;", [value])])
+        ], fixture.range(), [BoundFunctionParameter("value", value.symbolIdentity, type)])
+        let emitted = Es6UnitOrchestrator().emitFunction(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        let name = Es6NameMangler.mangle(identity.value)
+        executeStorage(emitted.fragment.code + "const events=[];if(" + name + "(1)!==2) throw new Error('return');" +
+            "let caught=false;try{" + name + "(-1);}catch(error){caught=error.message==='stop';}" +
+            "if(!caught || events.join(',')!=='2,0') throw new Error('finally');console.log('ok');\n")
+    }
+
+    test `native storage diagnoses real flattened collisions before returning code`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let type = SemanticTypes.intType()
+        let first = fixture.reference("local", "slot", 40, type)
+        let second = fixture.reference("local", "slot", 41, type)
+        let unit = BoundFunctionUnit(fixture.declaration("function", "collision", 42), "collision", SemanticTypes.unitType(), [
+            BoundLocalDeclarationStatement(fixture.range(), first),
+            nativeStorage(fixture, "slot=1;", [first]),
+            BoundLocalDeclarationStatement(fixture.range(), second),
+            nativeStorage(fixture, "slot=2;", [second])
+        ], fixture.range())
+        let result = Es6UnitOrchestrator().emitFunction(unit, 0)
+        expect(result.emitted).toBe(false)
+        expect(result.fragment == null).toBe(true)
+        expect(result.diagnostic.code).toBe("es6.native-storage-collision")
+    }
+
+    async test `conditional evaluation declarations retain enclosing lexical storage and evaluation once`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let type = SemanticTypes.intType()
+        let boolType = SemanticTypes.boolType()
+        let local = fixture.reference("local", "value", 50, type)
+        let parameter = fixture.reference("parameter", "enabled", 51, boolType)
+        let setup = BoundEvaluationExpression(fixture.range(), boolType, [
+            BoundLocalDeclarationStatement(fixture.range(), local, BoundLiteralExpression(fixture.range(), type, "9"),
+                TypeConversions.classify(type, type)),
+            nativeStorage(fixture, "events.push(value);", [local])
+        ], BoundLiteralExpression(fixture.range(), boolType, "true"))
+        let condition = BoundBinaryExpression(fixture.range(), boolType, "&&", parameter, setup)
+        let identity = fixture.declaration("function", "condition", 52)
+        let unit = BoundFunctionUnit(identity, "condition", type, [
+            BoundIfStatement(fixture.range(), condition, [BoundReturnStatement(fixture.range(), type, local,
+                TypeConversions.classify(type, type))]),
+            BoundReturnStatement(fixture.range(), type, BoundLiteralExpression(fixture.range(), type, "0"), TypeConversions.classify(type, type))
+        ], fixture.range(), [BoundFunctionParameter("enabled", parameter.symbolIdentity, boolType)])
+        let emitted = Es6UnitOrchestrator().emitFunction(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        expect(emitted.fragment.code.contains("var value")).toBe(false)
+        let name = Es6NameMangler.mangle(identity.value)
+        executeStorage(emitted.fragment.code + "const events=[];if(" + name + "(false)!==0 || " + name +
+            "(true)!==9 || events.join(',')!=='9') throw new Error('conditional storage');console.log('ok');\n")
+    }
+
+    test `native reservations keep temporaries and allocation helper names collision free and owner local`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let type = SemanticTypes.intType()
+        let local = fixture.reference("local", "__flatEvaluation0", 60, type)
+        let allocated = fixture.reference("local", "__flatConstructed", 61, type)
+        let derived = fixture.reference("local", "__flatMostDerived", 62, type)
+        let unit = BoundFunctionUnit(fixture.declaration("function", "reservations", 63), "reservations", SemanticTypes.unitType(), [
+            BoundLocalDeclarationStatement(fixture.range(), local),
+            BoundLocalDeclarationStatement(fixture.range(), allocated),
+            BoundLocalDeclarationStatement(fixture.range(), derived),
+            nativeStorage(fixture, "__flatEvaluation0=1;__flatConstructed=2;__flatMostDerived=3;", [local, allocated, derived])
+        ], fixture.range())
+        let expressions = Es6ExpressionOrchestrator()
+        expect(expressions.prepareOwner(unit) == null).toBe(true)
+        expect(expressions.scopePrelude(unit.statements()).contains("__storage")).toBe(false)
+        expect(expressions.freshTemporary()).toBe("__flatEvaluation0_")
+        expect(expressions.generatedName("__flatConstructed")).toBe("__flatConstructed_")
+        expect(expressions.generatedName("__flatMostDerived")).toBe("__flatMostDerived_")
+        expressions.resetOwner()
+        expect(expressions.namePlan == null).toBe(true)
+        expect(expressions.freshTemporary()).toBe("__flatEvaluation0")
+    }
+
+    async test `native parameter defaults and lambda writes share original storage`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let type = SemanticTypes.intType()
+        let outer = fixture.reference("parameter", "value", 70, type)
+        let inner = fixture.reference("parameter", "value", 71, type)
+        let functionType = FunctionSemanticType([type], type)
+        let returned = BoundReturnStatement(fixture.range(), type, inner, TypeConversions.classify(type, type))
+        let increment = BoundBinaryExpression(fixture.range(), type, "+", outer, BoundLiteralExpression(fixture.range(), type, "10"))
+        let lambda = BoundLambdaExpression(fixture.range(), functionType,
+            [BoundFunctionParameter("value", inner.symbolIdentity, type, outer)], [outer], inner,
+            [nativeStorage(fixture, "value+=1;", [inner]),
+                BoundAssignmentStatement(fixture.range(), outer, increment, TypeConversions.classify(type, type)),
+                BoundExpressionStatement(fixture.range(), BoundPostfixUpdateExpression(fixture.range(), type, outer, "++")),
+                BoundExternalStatement(fixture.range(), "es6", [BoundExternalCodeSegment(fixture.range(), "events.push("),
+                    BoundExternalCodeSegment(fixture.range(), "", outer, "identity"), BoundExternalCodeSegment(fixture.range(), ");")]), returned])
+        let local = fixture.reference("local", "callback", 72, functionType)
+        let identity = fixture.declaration("function", "defaults", 73)
+        let unit = BoundFunctionUnit(identity, "defaults", functionType, [
+            nativeStorage(fixture, "value+=1;", [outer]),
+            BoundLocalDeclarationStatement(fixture.range(), local, lambda, TypeConversions.classify(functionType, functionType)),
+            BoundReturnStatement(fixture.range(), functionType, local, TypeConversions.classify(functionType, functionType))
+        ], fixture.range(), [BoundFunctionParameter("value", outer.symbolIdentity, type, BoundLiteralExpression(fixture.range(), type, "4"))])
+        let emitted = Es6UnitOrchestrator().emitFunction(unit, 0)
+        expect(emitted.emitted).toBe(true)
+        expect(emitted.fragment.code.contains("get value()")).toBe(true)
+        expect(emitted.fragment.code.contains("set value(")).toBe(true)
+        let changed = BoundFunctionUnit(identity, "defaults", functionType, [
+            nativeStorage(fixture, "value+=1;", [outer]),
+            BoundLocalDeclarationStatement(fixture.range(), local, lambda, TypeConversions.classify(functionType, functionType)),
+            nativeStorage(fixture, "value=20;", [outer]),
+            BoundReturnStatement(fixture.range(), functionType, local, TypeConversions.classify(functionType, functionType))
+        ], fixture.range(), unit.parameterValues())
+        let changedEmission = Es6UnitOrchestrator().emitFunction(changed, 0)
+        expect(changedEmission.emitted).toBe(true)
+        let name = Es6NameMangler.mangle(identity.value)
+        executeStorage(emitted.fragment.code + "const events=[];const callback=" + name + "();" +
+            "if(callback()!==6 || callback()!==17 || callback(100)!==101 || events.join(',')!=='16,27,38') " +
+            "throw new Error('live defaults hidden outer writes and explicit argument');console.log('ok');\n")
+        executeStorage(changedEmission.fragment.code + "const events=[];const callback=" + name + "();" +
+            "if(callback()!==21 || events.join(',')!=='31') throw new Error('live mutation after closure');console.log('ok');\n")
+    }
+
+    nativeStorage(Es6BoundWriter_TestFixture fixture, String code, BoundReferenceExpression[] references) -> BoundExternalStatement =>
+        BoundExternalStatement(fixture.range(), "es6", [BoundExternalCodeSegment(fixture.range(), code)],
+            references.map((reference) => BoundExternalNameBinding(reference.name, reference)))
+
+    async executeStorage(String code) {
+        let root = File(".flat-es6-native-storage-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "storage.js")
+            Es6ArtifactCommitter().commit(destination, "'use strict';\n" + code)
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("ok\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     token(String value, Int type, Int column) -> Token => Token(
         value: value, type: type, location: Location(lineNumber: 1, column: column)
     )

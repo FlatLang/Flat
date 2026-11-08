@@ -214,8 +214,16 @@ class {
     }
 
     public resolveParameter(PrimitiveFunctionParameterSyntax parameter) -> SemanticType {
-        if (parameter.nativeScalarStorage && parameter.typeName == "String") return SemanticTypes.stringType()
-        return parameter.nativeArrayStorage ? resolveNativeArrayStorage(parameter.typeName) : resolve(parameter.typeName)
+        return resolveStorage(parameter.typeName, parameter.nativeArrayStorage, parameter.nativeScalarStorage)
+    }
+
+    public resolveStorage(String name, Bool nativeArrayStorage = false, Bool nativeScalarStorage = false) -> SemanticType {
+        if (name.endsWith("?") && (nativeArrayStorage || nativeScalarStorage)) {
+            return NullableSemanticType(resolveStorage(name.substring(0, name.count - 1),
+                nativeArrayStorage, nativeScalarStorage))
+        }
+        if (nativeScalarStorage && name == "String") return SemanticTypes.stringType()
+        return nativeArrayStorage ? resolveNativeArrayStorage(name) : resolve(name)
     }
 
     public resolveNativeArrayStorage(String name) -> SemanticType {
@@ -267,6 +275,11 @@ class {
                 name.substring(close + 1, close + 3) == "->") {
                 return functionType(name, open)
             }
+        }
+        // Parse function returns before the outer suffix: func()->T? is a
+        // function returning optional T, not an optional function value.
+        if (name.endsWith("?")) {
+            return NullableSemanticType(resolve(name.substring(0, name.count - 1)))
         }
         if (name.endsWith("[]")) {
             let element = resolveTypeArgument(name.substring(0, name.count - 2))

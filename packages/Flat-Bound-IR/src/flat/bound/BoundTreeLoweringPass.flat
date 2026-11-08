@@ -122,7 +122,8 @@ abstract class extends BoundFunctionLoweringPass {
             BoundExternalStatement value = (BoundExternalStatement)castSource9
             output.add(BoundExternalStatement(value.range, value.target, value.segmentValues().map((segment) =>
                 BoundExternalCodeSegment(segment.range, segment.text, lowerExpression(segment.value), segment.rendering)
-            ), value.nameBindingValues()))
+            ), value.nameBindingValues().map((binding) =>
+                BoundExternalNameBinding(binding.sourceName, lowerExpression(binding.value)))))
         } else if (statement.class.isOfType(BoundExpressionStatement.class)) {
             Object castSource10 = statement
             BoundExpressionStatement value = (BoundExpressionStatement)castSource10

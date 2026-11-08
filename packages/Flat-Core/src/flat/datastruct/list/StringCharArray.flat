@@ -32,7 +32,7 @@ class {
 
     public toString() => String(this)
 
-    override public equals(Object other) => (other || !this) && other.class.isOfType(StringCharArray.class) && equals((StringCharArray)other)
+    override public equals(Object? other) => (other || !this) && other.class.isOfType(StringCharArray.class) && equals((StringCharArray)other)
 
-    public equals(StringCharArray other) => other != null && count == other.count && toCharArray() == other.toCharArray()
+    public equals(StringCharArray? other) => other != null && count == other.count && toCharArray() == other.toCharArray()
 }

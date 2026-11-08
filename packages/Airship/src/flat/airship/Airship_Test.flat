@@ -796,6 +796,45 @@ testable class {
             .toNotThrow(ExecutionFailureException.class)
     }
 
+    test async `compiler input alias through a symlink is rejected without modifying the compiler`() {
+        let directory = File(".airship-compiler-alias-#{Time.currentTimeMillis}")
+        let target = File(directory, "target")
+        let link = File(directory, "link")
+        target.mkdirs()
+        try {
+            let script = File(target, "compiler.js")
+            FileWriter(script):write("// independently selected compiler"):close()
+            link.symbolicLinkTo(File(target.getCanonicalPath()))
+            let airship = Airship(["--use-links", "-t", "es6", "--flatc-runtime", "flat",
+                "--flatc-script", script.normalizedLocation])
+            let source = airship.getSourceForPackage("main").copy(
+                outDirectory: link.location, outFile: "compiler.js"
+            )
+            expect({ airship.installService.validateCompilerOutput(source) })
+                .toThrowWithMessage(ExecutionFailureException.class,
+                    "Explicit Flat compiler input cannot be the output being built; select an independent --flatc-script")
+            assertAsyncThrows(async {
+                airship.installService.getInstallCommand("main", source, Array<Dependency>())
+            }, ExecutionFailureException.class,
+                "Explicit Flat compiler input cannot be the output being built; select an independent --flatc-script")
+            expect(script.isFile).toBe(true)
+            // A missing sibling output under the same linked parent is valid.
+            expect({ airship.installService.validateCompilerOutput(source.copy(outFile: "new-output.js")) })
+                .toNotThrow(ExecutionFailureException.class)
+
+            let alias = Airship(["--use-links", "-t", "es6", "--flatc-runtime", "flat",
+                "--flatc-script", File(link, "compiler.js").normalizedLocation])
+            let directOutput = source.copy(outDirectory: target.location)
+            expect({ alias.installService.validateCompilerOutput(directOutput) })
+                .toThrowWithMessage(ExecutionFailureException.class,
+                    "Explicit Flat compiler input cannot be the output being built; select an independent --flatc-script")
+            expect(script.isFile).toBe(true)
+            expect(FileReader(script).readAllContents()).toBe("// independently selected compiler")
+        } finally {
+            directory.delete(recursive: true)
+        }
+    }
+
     test async `missing compiler selection fails before dependency installation`() {
         let airship = Airship(["--flatc-runtime", "flat", "--flatc-script", "res/test/not-installed-compiler.js"])
         assertAsyncThrows(async { airship.installService.install("main") }, ExecutionFailureException.class,

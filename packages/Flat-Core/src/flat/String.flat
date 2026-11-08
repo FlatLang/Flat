@@ -38,8 +38,8 @@ class implements Comparable<String>, PlusOperator<String, String>, MultiplyOpera
     public repeat(Int times) =>
         Array<String>(times).map({ this }).join()
 
-    public equals(Object other) => (other || !this) && other.class.isOfType(String.class) && equals((String)other)
-    public equals(String other) => (other || !this) && count == other.count && compareTo(other) == 0
+    public equals(Object? other) => (other || !this) && other.class.isOfType(String.class) && equals((String)other)
+    public equals(String? other) => (other || !this) && count == other.count && compareTo(other) == 0
     public equalsIgnoreCase(String other) => (other || !this) && count == other.count && toLowerCase().compareTo(other.toLowerCase()) == 0
 
     public replace(String search, String replacement, Int start = 0) -> String {

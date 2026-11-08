@@ -10,5 +10,6 @@ data class extends ParserBase {
         SingleTokenPattern(type: Token.Type.IDENTIFIER, field: "name"),
         NodeTokenPattern([GenericParametersParser()], optional: true),
         NodeTokenPattern([ArrayBracketsParser()], repeat: true, optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "?", optional: true),
     ])
 }

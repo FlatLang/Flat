@@ -9,23 +9,30 @@ class {
         Es6NameMangler.mangle(entry.value) + "__allocate"
 
     public emit(BoundFunctionUnit functionUnit, BoundTypeUnit owner) -> Es6CodeResult {
-        let plan = functionUnit.constructorPlan
         let expressions = Es6ExpressionOrchestrator()
+        try { return emitBody(functionUnit, owner, expressions) }
+        finally { expressions.resetOwner() }
+    }
+
+    emitBody(BoundFunctionUnit functionUnit, BoundTypeUnit owner, Es6ExpressionOrchestrator expressions) -> Es6CodeResult {
+        let plan = functionUnit.constructorPlan
+        let naming = expressions.prepareOwner(functionUnit)
+        if (naming) return Es6CodeResult(diagnostic: naming)
         expressions.setTemporaryPrefix(Es6NameMangler.mangle(functionUnit.identity.value) + "__setup")
         let statements = Es6StatementOrchestrator(expressions: expressions)
-        let parameters = functionUnit.parameterValues().map((value) => Es6NameMangler.mangle(value.identity.value))
+        let parameters = functionUnit.parameterValues().map((value) => expressions.storageName(value.identity.value))
         var String defaults = ""
         for (parameter in functionUnit.parameterValues()) {
             if (!parameter.defaultValue) continue
             let value = expressions.emit(parameter.defaultValue)
             if (!value.emitted) return value
-            let name = Es6NameMangler.mangle(parameter.identity.value)
+            let name = expressions.storageName(parameter.identity.value)
             defaults += "if (" + name + " === undefined) {\n" + value.setup + name + " = " + value.code + ";\n}\n"
         }
-        let setup = statements.emitAll(plan.preBaseStatements())
+        let setup = statements.emitAll(plan.preBaseStatements(), includePrelude: false)
         if (!setup.emitted) return setup
-        let mostDerived = "__flatMostDerived"
-        let object = "__flatConstructed"
+        let mostDerived = expressions.generatedName("__flatMostDerived")
+        let object = expressions.generatedName("__flatConstructed")
         var String allocation = "Object.create(" + mostDerived + ".prototype)"
         var String parentSetup = ""
         if (plan.parentCall) {
@@ -67,7 +74,7 @@ class {
         }
         let helperName = allocationName(functionUnit.identity)
         let helperParameters = mostDerived + (parameters.isEmpty ? "" : ", " + parameters.join(", "))
-        let helper = "static " + helperName + "(" + helperParameters + ") {\n" + defaults + setup.code +
+        let helper = "static " + helperName + "(" + helperParameters + ") {\n" + expressions.scopePrelude(plan.preBaseStatements()) + defaults + setup.code +
             parentSetup + "const " + object + " = " + allocation + ";\n" + initialization + "return " + object + ";\n}\n"
         // Forward omission exactly; parameter defaults execute only in the allocation helper.
         let ownerName = Es6NameMangler.mangle(owner.identity.value)

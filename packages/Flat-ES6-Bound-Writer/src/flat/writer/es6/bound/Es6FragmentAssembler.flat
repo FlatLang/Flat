@@ -2,8 +2,87 @@ package flat/writer/es6/bound
 
 /** Bounded canonical assembly for one explicitly finite artifact partition. */
 class {
-    public construct(visible Int maxFragments) {
-        if (maxFragments <= 0) throw Exception("ES6 assembly capacity must be positive")
+    public construct(visible Int maxFragments, visible Int maxArtifactCharacters = 33554432) {
+        if (maxFragments <= 0 || maxArtifactCharacters <= 0) throw Exception("ES6 assembly capacity must be positive")
+    }
+
+    /** Finite-artifact runtime-declarations-ready barrier. Complete membership
+     * is needed to prove superclass availability before eager code can execute.
+     * Arrays are bounded by maxFragments; returned String and transient copies
+     * are bounded by aggregate character capacity, not constant-memory spooling.
+     * No initialization effects are reordered by declaration dependencies. */
+    public assembleTypeSections(
+        Es6TypeSections[] sections,
+        String entryCode = "",
+        checkpoint() = {}
+    ) -> Es6AssemblyResult {
+        checkpoint()
+        if (!sections || entryCode == null) throw Exception("ES6 section assembly requires sections and entry code")
+        if (sections.count > maxFragments) return failure("es6.assembly-capacity", "ES6 type section capacity exceeded")
+        // Charge before concatenation. Subtract from positive headroom to avoid
+        // overflow even when several individually valid strings exceed the cap.
+        var Int remaining = maxArtifactCharacters
+        if (entryCode.count > remaining) return failure("es6.artifact-character-capacity", "ES6 artifact character capacity exceeded")
+        remaining -= entryCode.count
+        for (section in sections) {
+            checkpoint()
+            if (!section) throw Exception("ES6 section assembly requires non-null sections")
+            if (section.declarations.count > remaining) return failure("es6.artifact-character-capacity", "ES6 artifact character capacity exceeded")
+            remaining -= section.declarations.count
+            if (section.metadata.count > remaining) return failure("es6.artifact-character-capacity", "ES6 artifact character capacity exceeded")
+            remaining -= section.metadata.count
+            if (section.eagerInitializers.count > remaining) return failure("es6.artifact-character-capacity", "ES6 artifact character capacity exceeded")
+            remaining -= section.eagerInitializers.count
+        }
+        checkpoint()
+        let ordered = sections.sort({ _a.ordinal - _b.ordinal })
+        var Int index
+        while (index < ordered.count) {
+            checkpoint()
+            let section = ordered[index]
+            if (section.ordinal != index) return failure("es6.fragment-order", "ES6 type sections require contiguous unique ordinals")
+            var Int previous
+            while (previous < index) {
+                checkpoint()
+                if (ordered[previous].identity == section.identity) return failure("es6.type-identity", "Duplicate ES6 type section identity: " + section.identity)
+                previous++
+            }
+            if (section.parentIdentity && !ordered.any({ _.identity == section.parentIdentity.value })) {
+                return failure("es6.type-parent-missing", "Missing ES6 superclass declaration for: " + section.identity)
+            }
+            index++
+        }
+        let declarations = Es6TypeSections[]
+        let ready = String[]
+        while (declarations.count < ordered.count) {
+            checkpoint()
+            var Es6TypeSections selected
+            for (section in ordered) {
+                checkpoint()
+                if (!selected && !ready.contains(section.identity) &&
+                    (!section.parentIdentity || ready.contains(section.parentIdentity.value))) selected = section
+            }
+            if (!selected) return failure("es6.type-declaration-cycle", "ES6 superclass declaration cycle")
+            declarations.add(selected)
+            ready.add(selected.identity)
+        }
+        var String code = ""
+        for (section in declarations) {
+            checkpoint()
+            code += section.declarations
+        }
+        for (section in ordered) {
+            checkpoint()
+            code += section.metadata
+        }
+        for (section in ordered) {
+            checkpoint()
+            code += section.eagerInitializers
+        }
+        checkpoint()
+        code += entryCode
+        checkpoint()
+        return Es6AssemblyResult(code: code)
     }
 
     public assemble(Es6ArtifactFragment[] fragments) -> Es6AssemblyResult {

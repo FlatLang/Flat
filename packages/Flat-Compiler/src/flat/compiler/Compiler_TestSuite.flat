@@ -32,6 +32,14 @@ class {
         return args.contains("--infrastructure")
     }
 
+    public static workloadExecutionRequested(String[] args) -> Bool {
+        return args.contains("--workload-execution")
+    }
+
+    public static evidenceRequested(String[] args) -> Bool {
+        return args.contains("--evidence")
+    }
+
     public static failureCount(TestResult[] results) -> Int {
         var Int failures
         for (result in results) {
@@ -61,12 +69,55 @@ class {
 
         var Bool runnerFailed
         try {
-            if (args.contains("--workload-syntax")) {
+            if ((args.count == 1 || (args.count == 2 &&
+                (args.first == "test.js" || args.first.endsWith("/test.js")))) && args.last == "--type-sections") {
+                Console.writeLine("Type sections consumer diagnostic; full suite remains required")
+                CompilerPackage_Test().assertDeclarationRuntime()
+                Console.writeLine("Type sections: assertDeclarationRuntime passed")
+                CompilerPackage_Test().assertDeclarationCapacity()
+                Console.writeLine("Type sections: assertDeclarationCapacity passed")
+                FlatEs6SourceCompiler_Test().assertSourceDeclarationRuntime()
+                Console.writeLine("Type sections: assertSourceDeclarationRuntime passed")
+                CompilerPackageReuse_Test().assertDeclarationReuseCapacity()
+                Console.writeLine("Type sections: assertDeclarationReuseCapacity passed")
+                CompilerSourceReadSchedule_Test().assertDeclarationSchedules()
+                Console.writeLine("Type sections: assertDeclarationSchedules passed")
+                CompilerSourceReadSchedule_Test().assertDeclarationCheckpointIdentity()
+                Console.writeLine("Type sections: assertDeclarationCheckpointIdentity passed")
+                CompilerSourceReadSchedule_Test().assertDeclarationCheckpointCleanup()
+                Console.writeLine("Type sections: assertDeclarationCheckpointCleanup passed")
+                CompilerSourceReadSchedule_Test().assertDeclarationOverflowCleanup()
+                Console.writeLine("Type sections: assertDeclarationOverflowCleanup passed")
+                external js { process.removeListener('beforeExit', #{completionGuard}); }
+                Console.writeLine("Type sections consumer: successful (eight regressions)")
+                return
+            } else if (args.contains("--workload-syntax")) {
                 Console.writeLine("Compiler workload syntax diagnostic; no semantic or product acceptance")
                 CompilerPackage_Test.assertProductionWorkloadSyntax()
                 external js { process.removeListener('beforeExit', #{completionGuard}); }
                 Console.writeLine("Production Core workload syntax: successful")
                 return
+            } else if (args.contains("--runtime-class-name")) {
+                Console.writeLine("Compiler runtime class name diagnostic; full suite remains required")
+                CompilerPackage_Test.assertRuntimeClassNameExecution()
+                external js { process.removeListener('beforeExit', #{completionGuard}); }
+                Console.writeLine("Runtime class name execution: successful (1 true, receiver once, canonical String consumer, empty stderr)")
+                return
+            } else if (args.contains("--captured-native-backing")) {
+                Console.writeLine("Compiler captured native backing execution diagnostic; full suite remains required")
+                CompilerPackage_Test.assertCapturedNativeBackingExecution()
+                external js { process.removeListener('beforeExit', #{completionGuard}); }
+                Console.writeLine("Captured native backing execution: successful (seven results, exit zero, empty stderr)")
+                return
+            } else if (workloadExecutionRequested(args)) {
+                Console.writeLine("Compiler workload execution diagnostic; full suite acceptance remains required")
+                CompilerSourceReadSchedule_Test.assertProductionWorkloadExecution()
+                external js { process.removeListener('beforeExit', #{completionGuard}); }
+                Console.writeLine("Production Core workload execution: successful (capacity 1/3, forward/reverse)")
+                return
+            } else if (evidenceRequested(args)) {
+                Console.writeLine("Compiler evidence subset; full suite acceptance remains required")
+                CompilerEvidence_Test().runTests((result) => { results.add(result) })
             } else if (infrastructureRequested(args)) {
                 Console.writeLine("Compiler infrastructure subset; full suite acceptance remains required")
                 runInfrastructure((result) => { results.add(result) })

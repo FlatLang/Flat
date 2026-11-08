@@ -3,14 +3,20 @@ package flat/exception
 class {
     visible StackTrace stackTrace = StackTrace()
 
-    public construct(visible String message = "") {
-        let text = message == null ? "" : message
+    public construct(visible String? message = "") {
+        let capturedMessage = message
+        let text = capturedMessage ?: ""
         external js {
             this.error = Error(#{text.chars.data});
         }
     }
 
-    public toString() => this.class.name + (message != null && message.count > 0 ? ": #message" : "")
+    public toString() -> String {
+        let name = this.class.name
+        let capturedMessage = message
+        let text = capturedMessage ?: ""
+        return name + (capturedMessage != null && text.count > 0 ? ": #text" : "")
+    }
 
     [Target c]
     public onThrown(Bool soft) {

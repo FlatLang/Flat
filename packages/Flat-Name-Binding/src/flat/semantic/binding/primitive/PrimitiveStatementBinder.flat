@@ -45,7 +45,8 @@ class {
                 let reference = BoundReferenceExpression(
                     value.range, semanticType, value.name, identity
                 )
-                locals.add(LocalBinding(value.name, identity, semanticType))
+                locals.add(LocalBinding(value.name, identity, semanticType,
+                    nativeArrayStorage: value.nativeArrayStorage, nativeScalarStorage: value.nativeScalarStorage))
                 return BoundLocalDeclarationStatement(value.range, reference)
             }
             let requiredType = value.declaredTypeName ? declaredType(value.declaredTypeName) : null
@@ -55,7 +56,8 @@ class {
             let reference = BoundReferenceExpression(
                 value.range, localType, value.name, identity
             )
-            locals.add(LocalBinding(value.name, identity, localType))
+            locals.add(LocalBinding(value.name, identity, localType,
+                nativeArrayStorage: value.nativeArrayStorage, nativeScalarStorage: value.nativeScalarStorage))
             return BoundLocalDeclarationStatement(
                 value.range, reference, expression,
                 TypeConversions.classify(expression.semanticType, localType)

@@ -13,6 +13,29 @@ import flat/future
 
 /** Evidence is a report of observations, never a substitute for acceptance. */
 testable class {
+    test `bounded workload failure preview cannot replace oversized canonical evidence`() {
+        var String message = ""
+        for (index in 0..5000) message += "x"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("Oversized.flat"), "input")
+        let range = SourceRange(snapshot, 3, 7, Location(2, 4), Location(3, 9))
+        let diagnostic = ParserDiagnostic("oversized-parser", message, snapshot, range)
+        let summary = CompilationSummary(1, 0, 1, false, message, parserDiagnostic: diagnostic)
+        let preview = CompilerSourceReadSchedule_Test.renderFailurePreview(summary)
+        expect(preview.contains("\"complete\":false")).toBe(true)
+        expect(preview.contains("\"originalLength\":5000")).toBe(true)
+        expect(preview.contains("\"truncated\":true")).toBe(true)
+        expect(preview.contains("Oversized.flat")).toBe(true)
+        expect(preview.contains("oversized-parser")).toBe(true)
+        expect(preview.contains("\"startTokenIndex\":3,\"endTokenIndex\":7")).toBe(true)
+        expect(preview.count < 4096).toBe(true)
+        var Bool rejected = false
+        try {
+            CompilerEvidence.renderDiagnostics(summary, "input")
+        } catch (Exception error) {
+            rejected = error.message == "Compiler evidence string exceeds receipt capacity"
+        }
+        expect(rejected).toBe(true)
+    }
     test `infrastructure selection is explicit and default remains full`() {
         expect(Compiler_TestSuite.infrastructureRequested(String[])).toBe(false)
         expect(Compiler_TestSuite.infrastructureRequested(["test.js"])).toBe(false)
@@ -20,6 +43,27 @@ testable class {
         expect(Compiler_TestSuite.infrastructureRequested(["test.js", "infrastructure"])).toBe(false)
         expect(Compiler_TestSuite.infrastructureRequested(["--infrastructure=false"])).toBe(false)
         expect(Compiler_TestSuite.infrastructureRequested(["--infrastructure-extra"])).toBe(false)
+    }
+
+    test `workload execution selection is explicit and default remains full`() {
+        expect(Compiler_TestSuite.workloadExecutionRequested(String[])).toBe(false)
+        expect(Compiler_TestSuite.workloadExecutionRequested(["test.js"])).toBe(false)
+        expect(Compiler_TestSuite.workloadExecutionRequested(["test.js", "--workload-execution"])).toBe(true)
+        expect(Compiler_TestSuite.workloadExecutionRequested(["--workload-syntax"])).toBe(false)
+        expect(Compiler_TestSuite.workloadExecutionRequested(["workload-execution"])).toBe(false)
+        expect(Compiler_TestSuite.workloadExecutionRequested(["--workload-execution=false"])).toBe(false)
+        expect(Compiler_TestSuite.workloadExecutionRequested(["--workload-execution-extra"])).toBe(false)
+    }
+
+    test `evidence selection is explicit and does not select infrastructure`() {
+        expect(Compiler_TestSuite.evidenceRequested(String[])).toBe(false)
+        expect(Compiler_TestSuite.evidenceRequested(["test.js", "--evidence"])).toBe(true)
+        expect(Compiler_TestSuite.evidenceRequested(["--infrastructure"])).toBe(false)
+        expect(Compiler_TestSuite.evidenceRequested(["evidence"])).toBe(false)
+        expect(Compiler_TestSuite.evidenceRequested(["--evidence=false"])).toBe(false)
+        expect(Compiler_TestSuite.evidenceRequested(["--evidence-extra"])).toBe(false)
+        expect(Compiler_TestSuite.infrastructureRequested(["--evidence"])).toBe(false)
+        expect(Compiler_TestSuite.infrastructureRequested(["--workload-execution"])).toBe(false)
     }
 
     test `runner accounts for empty failed null and interrupted result sets`() {

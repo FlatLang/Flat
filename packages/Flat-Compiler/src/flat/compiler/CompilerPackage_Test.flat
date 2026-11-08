@@ -143,6 +143,196 @@ testable class {
         }
     }
 
+    // Earlier eager construction must wait for every declaration and metadata record.
+    public static declarationReadySources() -> CompilerSource[] {
+        return [
+            CompilerSource("app/AStatics.flat", "package app\nclass AStatics {\n" +
+                "public static Array first = Array(4);\npublic static Int second = mark();\n" +
+                "public static mark() -> Int { external js { console.log('A'); return 1; } }\n}"),
+            CompilerSource("app/Array.flat", "package app\nclass Array {\nvisible Int count;\npublic construct(Int count) {\nthis.count = count;\n" +
+                "external js { console.log('B', this.constructor.__flatType.name === 'Array'); }\n}\n}"),
+            CompilerSource("app/Main.flat", "package app\nclass Main {\npublic static main() {\n" +
+                "external js { console.log('C'); }\n}\n}"),
+            // Reverse lexical declaration order exercises superclass readiness,
+            // independently of the preserved eager-initializer ordinal order.
+            CompilerSource("app/BChild.flat", "package app\nclass BChild extends ZParent {}"),
+            CompilerSource("app/ZParent.flat", "package app\nclass ZParent {}")
+        ]
+    }
+
+    async test `package eager constructors wait for declarations and metadata before ordered effects`() {
+        assertDeclarationRuntime()
+    }
+
+    public async assertDeclarationRuntime() {
+        let sink = MemoryCompilerArtifactSink()
+        let summary = Compiler().compilePackage(MemoryCompilerSourceProvider(declarationReadySources()),
+            sink, "ready.js", mainClass: "app/Main").completion.get()
+        if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+        expect(summary.succeeded).toBe(true)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(summary.artifactCount).toBe(1)
+        let root = File(".flat-compiler-declarations-ready-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("B true\nA\nC\n")
+            expect(response.stderr.join("")).toBe("")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `package character ceiling includes entry before publication with exact fit allowed`() {
+        assertDeclarationCapacity()
+    }
+
+    public async assertDeclarationCapacity() {
+        let sources = declarationReadySources()
+        let provider = MemoryCompilerSourceProvider(sources)
+        let expected = FlatEs6PackageLinker().linkSources(provider, provider.identities(), mainClass: "app/Main")
+        let exact = FlatEs6PackageLinker(maxArtifactCharacters: expected.count)
+        expect(exact.linkSources(provider, provider.identities(), mainClass: "app/Main")).toBe(expected)
+        let sink = MemoryCompilerArtifactSink()
+        let limited = Compiler(CompilerEngine(packageLinker:
+            FlatEs6PackageLinker(maxArtifactCharacters: expected.count - 1)))
+        let summary = limited.compilePackage(provider, sink, "overflow.js", mainClass: "app/Main").completion.get()
+        expect(summary.succeeded).toBe(false)
+        expect(summary.artifactCount).toBe(0)
+        expect(summary.packageDiagnostic.contains("es6.assembly-capacity")).toBe(true)
+        expect(sink.artifacts().count).toBe(0)
+    }
+
+    async test `runtime metadata name evaluates receiver once and reaches canonical String consumer`() {
+        assertRuntimeClassNameExecution()
+    }
+
+    public static async assertRuntimeClassNameExecution() {
+        var String interpolation = ""
+        interpolation += '#'
+        interpolation += '{'
+        let textSource = "package flat\nclass String { visible native String raw; public construct(native String raw) { this.raw = raw; } }"
+        let source = "package app\nimport flat/String\n" +
+            "class Value { public construct() {} } " +
+            "class Counter { visible Int calls = 0; public next() -> Value { calls += 1; return Value(); } } " +
+            "class Main { public static consume(String value) -> Bool { external js { return " +
+            interpolation + "value.raw} === 'Value'; } } " +
+            "public static main() { let counter = Counter(); let accepted = consume(counter.next().class.name); " +
+            "external js { console.log(" + interpolation + "counter.calls}, " + interpolation + "accepted}); } } }"
+        let sink = MemoryCompilerArtifactSink()
+        let summary = Compiler().compilePackage(MemoryCompilerSourceProvider([
+            CompilerSource("flat/String.flat", textSource), CompilerSource("app/Main.flat", source)]), sink, "runtime-class-name.js", mainClass: "app/Main").completion.get()
+        if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+        expect(summary.succeeded).toBe(true)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(summary.artifactCount).toBe(1)
+        expect(sink.artifacts().count).toBe(1)
+        let root = File(".flat-compiler-runtime-class-name-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("1 true\n")
+            expect(response.stderr.join("")).toBe("")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `captured native character backing executes nullable equality without opaque proof retention`() {
+        assertCapturedNativeBackingExecution()
+    }
+
+    public static async assertCapturedNativeBackingExecution() {
+        var String interpolation = ""
+        interpolation += '#'
+        interpolation += '{'
+        let source = "package app\nclass Storage { visible Int count; visible native_array native Char[] data; " +
+            "construct(Int count) { this.count = count; } " +
+            "equals(Storage? other) -> Bool {\nif (other == null) { return false; }\nif (count != other.count) { return false; }\n" +
+            "native_array native Char[] otherData = other.data; external js { " +
+            "if (" + interpolation + "data} == null) return " + interpolation + "otherData} == null; " +
+            "return " + interpolation + "data} === " + interpolation + "otherData}; } } } " +
+            "class Main { public static main() { let value = Storage(1); let equal = Storage(1); " +
+            "let unequal = Storage(1); let longer = Storage(2); let missing = Storage(1); let alsoMissing = Storage(1); " +
+            "external js { " + interpolation + "value.data} = 'a'; " + interpolation + "equal.data} = 'a'; " +
+            interpolation + "unequal.data} = 'b'; " + interpolation + "longer.data} = 'ab'; " +
+            interpolation + "missing.data} = null; " + interpolation + "alsoMissing.data} = null; } " +
+            "let Storage? absent = null; let a = value.equals(absent); let b = value.equals(longer); " +
+            "let c = value.equals(equal); let d = value.equals(unequal); let e = missing.equals(alsoMissing); " +
+            "let f = missing.equals(value); let g = value.equals(missing); external js { console.log(" +
+            interpolation + "a}, " + interpolation + "b}, " + interpolation + "c}, " + interpolation + "d}, " +
+            interpolation + "e}, " + interpolation + "f}, " + interpolation + "g}); } } }"
+        let sink = MemoryCompilerArtifactSink()
+        let summary = Compiler().compilePackage(MemoryCompilerSourceProvider([
+            CompilerSource("app/Main.flat", source)]), sink, "captured-backing.js", mainClass: "app/Main").completion.get()
+        if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+        expect(summary.succeeded).toBe(true)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(summary.artifactCount).toBe(1)
+        expect(sink.artifacts().count).toBe(1)
+        let root = File(".flat-compiler-captured-backing-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("false false true false true false false\n")
+            expect(response.stderr.join("")).toBe("")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `explicit nullable local guards fallback and parameter execute absent and present paths`() {
+        var String interpolation = ""
+        interpolation += '#'
+        interpolation += '{'
+        let source = "package app\nclass Item { construct(visible Int code) {} } " +
+            "class Main { static read(Item? value) -> Int { if (value != null) return value.code; return 0; } " +
+            "static fallback(Item? value, Item replacement) -> Item { let captured = value; return captured ?: replacement; } " +
+            "public static main() { let Item? absent = null; let value = Item(7); let Item? present = value; " +
+            "let a = read(absent); let b = read(present); let c = fallback(absent, value); let d = fallback(present, value); " +
+            "external js { console.log(" + interpolation + "a}, " + interpolation + "b}, " +
+            interpolation + "c} === " + interpolation + "value}, " + interpolation + "d} === " + interpolation + "value}); } } }"
+        let sink = MemoryCompilerArtifactSink()
+        let summary = Compiler().compilePackage(MemoryCompilerSourceProvider([
+            CompilerSource("app/Main.flat", source)]), sink, "nullable-local.js", mainClass: "app/Main").completion.get()
+        if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+        expect(summary.succeeded).toBe(true)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(summary.artifactCount).toBe(1)
+        expect(sink.artifacts().count).toBe(1)
+        let root = File(".flat-compiler-nullable-local-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+            expect(response.stdout.join("")).toBe("0 7 true true\n")
+            expect(response.stderr.join("")).toBe("")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `nullable guard cannot authorize reassigned or unguarded dereference or nonnullable argument`() {
+        String[] bodies = [
+            "static read(Item? value) -> Int { if (value != null) { value = null; return value.code; } return 0; }",
+            "static read(Item? value) -> Int { return value.code; }",
+            "static consume(Item value) -> Int { return value.code; } static read(Item? value) -> Int { return consume(value); }"
+        ]
+        for (sourceBody in bodies) {
+            let sink = MemoryCompilerArtifactSink()
+            let source = "package app\nclass Item { visible Int code; } class Main { " + sourceBody + " }"
+            let summary = Compiler().compilePackage(MemoryCompilerSourceProvider([
+                CompilerSource("app/Main.flat", source)]), sink, "invalid-nullable.js").completion.get()
+            expect(summary.succeeded).toBe(false)
+            expect(summary.diagnosticCount > 0).toBe(true)
+            expect(summary.artifactCount).toBe(0)
+            expect(sink.artifacts().count).toBe(0)
+        }
+    }
+
     async test `safe nullable callback skips null receiver arguments and evaluates live receiver once`() {
         var String interpolation = ""
         interpolation += '#'

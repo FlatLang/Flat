@@ -1,6 +1,7 @@
 package flat/writer/es6/bound
 
 import flat/bound
+import flat/writer/es6/bound/Es6NativeNamePlan.Es6NativeScope
 import flat/semantic/types
 
 /** Recursive reduced-expression orchestration with diagnostic propagation. */
@@ -10,6 +11,7 @@ class {
         visible Es6CallEmitter calls = Es6CallEmitter()
     ) {
         if (!expressions || !calls) throw Exception("ES6 expression orchestration requires emitters")
+        lexicalScope = null
     }
 
     visible var CallableSignature returnBoxingConstructor = null
@@ -26,7 +28,22 @@ class {
     }
     public setContinueTarget(String target) { continueTarget = target }
     public setBreakTarget(String target) { breakTarget = target }
+    visible var Es6NativeNamePlan namePlan = null
+    visible var Es6NativeScope lexicalScope
+    public storageName(String identity) -> String => namePlan ? namePlan.storageName(identity) : Es6NameMangler.mangle(identity)
+    public setNamePlan(Es6NativeNamePlan plan) { namePlan = plan }
+    public prepareOwner(BoundFunctionUnit owner) -> Es6BackendDiagnostic {
+        let plan = Es6NativeNamePlan(owner)
+        setNamePlan(plan)
+        lexicalScope = plan.scopeFor(owner.constructorPlan ? owner.constructorPlan.preBaseStatements() : owner.statements())
+        return plan.diagnostic
+    }
+    public generatedName(String preferred) -> String => namePlan ? namePlan.generatedName(preferred) : preferred
+    public scopePrelude(BoundStatement[] values, BoundLambdaExpression lambda = null) -> String =>
+        namePlan ? namePlan.prelude(values, lambda) : ""
     public resetOwner() {
+        namePlan = null
+        lexicalScope = null
         temporaryOrdinal = 0
         temporaryPrefix = "__flatEvaluation"
         continueTarget = null
@@ -37,7 +54,7 @@ class {
     public freshTemporary() -> String {
         Int ordinal = temporaryOrdinal
         temporaryOrdinal++
-        return temporaryPrefix + ordinal
+        return generatedName(temporaryPrefix + ordinal)
     }
 
     public emit(BoundExpression expression) -> Es6CodeResult {
@@ -69,7 +86,8 @@ class {
             let value = (BoundInterpolatedStringExpression)expression
             let segmentCode = String[]
             for (segment in value.segmentValues()) {
-                if (segment.literal()) segmentCode.add(segment.literalSourceValue)
+                if (segment.literal()) segmentCode.add(expressions.emitLiteral(
+                    BoundLiteralExpression(segment.range, SemanticTypes.stringType(), segment.literalSourceValue)).code)
                 else {
                     let emitted = emit(segment.expression)
                     if (!emitted.emitted) return emitted
@@ -83,7 +101,7 @@ class {
             if (value.symbolIdentity.symbolKind == "receiver") {
                 return Es6CodeResult(code: "this")
             }
-            return expressions.emitReference(value)
+            return expressions.emitReference(value, namePlan, lexicalScope)
         }
         if (expression.class.isOfType(BoundNativeArrayDataExpression.class)) {
             BoundNativeArrayDataExpression data = (BoundNativeArrayDataExpression)expression
@@ -104,7 +122,7 @@ class {
         if (expression.class.isOfType(BoundDeclarationValueExpression.class)) {
             let value = (BoundDeclarationValueExpression)expression
             return expressions.emitDeclarationValue(
-                expressions.emitReference(value.local), emit(BoundConversionExpression(
+                expressions.emitReference(value.local, namePlan, lexicalScope), emit(BoundConversionExpression(
                     value.range, value.local.semanticType, value.value, value.storageConversion))
             )
         }
@@ -117,7 +135,7 @@ class {
         if (expression.class.isOfType(BoundAssignmentValueExpression.class)) {
             let value = (BoundAssignmentValueExpression)expression
             return expressions.emitAssignmentValue(
-                expressions.emitReference(value.target), emit(BoundConversionExpression(
+                expressions.emitReference(value.target, namePlan, lexicalScope), emit(BoundConversionExpression(
                     value.range, value.target.semanticType, value.value, value.storageConversion))
             )
         }
@@ -138,12 +156,14 @@ class {
         if (expression.class.isOfType(BoundLambdaExpression.class)) {
             let value = (BoundLambdaExpression)expression
             let nested = Es6ExpressionOrchestrator(expressions, calls)
+            nested.setNamePlan(namePlan)
+            nested.lexicalScope = namePlan ? namePlan.scopeFor(value.statementValues(), value) : null
             nested.setReturnDeclaration(value.declarationContract ? value.declarationContract.returnType : null)
             nested.setReturnBoxingConstructor(value.resultBoxingConstructor)
             let parameters = String[]
             var String defaults = ""
             for (parameter in value.parameterValues()) {
-                let name = Es6NameMangler.mangle(parameter.identity.value)
+                let name = storageName(parameter.identity.value)
                 parameters.add(name)
                 if (parameter.defaultValue) {
                     let selected = nested.emit(parameter.defaultValue)
@@ -156,7 +176,7 @@ class {
             let prefix = functionType.asyncFunction ? "async " : ""
             var String bodyCode = ""
             if (value.statementValues().isNotEmpty) {
-                let body = Es6StatementOrchestrator(expressions: nested).emitAll(value.statementValues())
+                let body = Es6StatementOrchestrator(expressions: nested).emitAll(value.statementValues(), includePrelude: false)
                 if (!body.emitted) return body
                 bodyCode = body.code
             } else {
@@ -167,7 +187,7 @@ class {
                 if (!body.emitted) return body
                 bodyCode = body.setup + "return " + body.code + ";\n"
             }
-            return Es6CodeResult(code: prefix + "(" + parameters.join(", ") + ") => {\n" + defaults + bodyCode + "}")
+            return Es6CodeResult(code: prefix + "(" + parameters.join(", ") + ") => {\n" + nested.scopePrelude(value.statementValues(), value) + defaults + bodyCode + "}")
         }
         if (expression.class.isOfType(BoundFunctionValue.class)) {
             let value = (BoundFunctionValue)expression

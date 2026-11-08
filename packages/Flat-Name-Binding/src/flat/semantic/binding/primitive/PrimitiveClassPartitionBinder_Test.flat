@@ -1550,9 +1550,9 @@ testable class {
     }
     async test `explicit null fallback publishes nullable reference contract without weakening other returns`() {
         let sources = [
-            "class Field { construct(visible Int code) {} } class Owner { construct(visible Field value = null) {} lookup() -> Field => null { return value; } use() { let selected = lookup(); } }",
-            "class Field { construct(visible Int code) {} } class Owner { construct(visible Field value = null) {} lookup() -> Field => null { return value; } use() -> Int { return lookup().code; } }",
-            "class Field {} class Owner { construct(visible Field value = null) {} lookup() -> Field { return value; } }",
+            "class Field { construct(visible Int code) {} } class Owner { construct(visible Field? value = null) {} lookup() -> Field => null { return value; } use() { let selected = lookup(); } }",
+            "class Field { construct(visible Int code) {} } class Owner { construct(visible Field? value = null) {} lookup() -> Field => null { return value; } use() -> Int { return lookup().code; } }",
+            "class Field {} class Owner { construct(visible Field? value = null) {} lookup() -> Field { return value; } }",
             "class Field {} class Owner { lookup(Field value) -> Field => value { return value; } }"
         ]
         for (index in 0..sources.count) {
@@ -1602,7 +1602,7 @@ testable class {
     async test `safe generic property fallback retains nullable receiver and result`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:safe-metadata-property"), "one")
         let source = "class Field {} class Array<E> { visible E first => null } " +
-            "class Owner { construct(visible Field[] interfaces = null) {} " +
+            "class Owner { construct(visible Field[]? interfaces = null) {} " +
             "read() { let selected = interfaces?.first; } }"
         let stream = Lexer().lex(source)
         stream.emit("start")
@@ -1621,7 +1621,7 @@ testable class {
     }
     async test `structural array casts preserve explicit nullable narrowing and reject incompatible elements`() {
         let sources = [
-            "class Field {} class Array<E> {} class Owner { construct(visible Field[] metadata = null) {} read() { let available = (Array<Field>)metadata; } }",
+            "class Field {} class Array<E> {} class Owner { construct(visible Field[]? metadata = null) {} read() { let available = (Array<Field>)metadata; } }",
             "class Field {} class Array<E> {} class Owner { read(Array<Field> metadata) { let available = (Array<Field>)metadata; } }",
             "class Field {} class Array<E> {} class Owner { read(Array<Int> metadata) { let available = (Array<Field>)metadata; } }"
         ]
@@ -1767,7 +1767,7 @@ testable class {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:catch-metadata-overlay"), "one")
         let baseStream = Lexer().lex("class Class<Type> { visible String location; construct(visible String location) {} }")
         baseStream.emit("start")
-        let overlayStream = Lexer().lex("class Class<Type> { construct(visible String location, visible native Object jsClass = null) {} }")
+        let overlayStream = Lexer().lex("class Class<Type> { construct(visible String location, visible native Object? jsClass = null) {} }")
         overlayStream.emit("start")
         let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), snapshot)
         let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), snapshot)
@@ -1816,7 +1816,7 @@ testable class {
         for (index in 0..bodies.count) {
             let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:safe-callback:#{index}"), "one")
             let stream = Lexer().lex("class Item { construct(visible Int code) {} apply(func(Item)->Bool predicate) -> Bool { return predicate(this); } } " +
-                "class Owner { construct(visible Item value = null) {} run(Int wanted) { let result = " + bodies[index] + "; } }")
+                "class Owner { construct(visible Item? value = null) {} run(Int wanted) { let result = " + bodies[index] + "; } }")
             stream.emit("start")
             let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
             let classes = PrimitiveClassSyntax[]
@@ -2259,9 +2259,9 @@ testable class {
         expect(message).toBe("Constructor parameter conflicts with field 'location'")
     }
 
-    async test `native array null constructor default has nullable parameter type`() {
+    async test `explicit nullable array null constructor default retains annotated parameter type`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-native-default"), "one")
-        let stream = Lexer().lex("class Meta { construct(visible Int[] values = null) {} }")
+        let stream = Lexer().lex("class Meta { construct(visible Int[]? values = null) {} }")
         stream.emit("start")
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
         let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
@@ -2272,7 +2272,7 @@ testable class {
 
     async test `explicit native array field matches nullable constructor default`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:explicit-nullable-storage"), "one")
-        let stream = Lexer().lex("class Meta { visible Int[] values; construct(visible Int[] values = null) {} }")
+        let stream = Lexer().lex("class Meta { visible Int[]? values; construct(visible Int[]? values = null) {} }")
         stream.emit("start")
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
         let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
@@ -3602,10 +3602,10 @@ testable class {
             "class Item {}",
             "class Example { public construct() {} " +
             "public render(String message) => message ? \"present\" : \"absent\" " +
-            "public nullable(String message = null) => message ? 1 : 2 " +
+            "public nullable(String? message = null) => message ? 1 : 2 " +
             "public raw(native String message) => message ? 1 : 2 " +
             "public object(Item message) => message ? 1 : 2 " +
-            "public maybe(Item message = null) => message ? 1 : 2 }"]
+            "public maybe(Item? message = null) => message ? 1 : 2 }"]
         let contexts = PrimitiveSourceBindingContext[]
         var Int index
         for (source in sources) {

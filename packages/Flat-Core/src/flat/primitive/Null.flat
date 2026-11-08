@@ -7,6 +7,6 @@ class extends String {
     public toJson(Bool: format = false, String: tab = "\t") => toString()
     public Long hashCodeLong => 0
 
-    public equals(Object other) => !other
-    public equals(Null other) => !other
+    public equals(Object? other) => !other
+    public equals(Null? other) => !other
 }

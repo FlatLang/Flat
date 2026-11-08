@@ -10,6 +10,1917 @@ import flat/lexer/Lexer
 testable class {
     textCall(Object value) -> BoundCallExpression => (BoundCallExpression)value
     textReturn(Object value) -> BoundReturnStatement => (BoundReturnStatement)value
+    textAssignment(Object value) -> BoundAssignmentStatement => (BoundAssignmentStatement)value
+    textLocal(Object value) -> BoundLocalDeclarationStatement => (BoundLocalDeclarationStatement)value
+
+    // Coordinator fail-first experiment: retain the new tests against the
+    // pre-repair implementation for their wave, then validate the repaired source.
+    // No package execution is authorized during the source-writing wave.
+    test `explicit nullable structural suffix preserves array and function return boundaries`() {
+        let resolver = PrimitiveStructuralTypeResolver()
+        let optional = resolver.resolve("Int?")
+        expect(optional.kind()).toBe("nullable")
+        Object optionalSource = optional
+        NullableSemanticType optionalType = (NullableSemanticType)optionalSource
+        expect(optionalType.underlyingType.value()).toBe(SemanticTypes.intType().value())
+        let array = resolver.resolve("Int[]?")
+        expect(array.kind()).toBe("nullable")
+        Object arraySource = array
+        NullableSemanticType optionalArray = (NullableSemanticType)arraySource
+        expect(optionalArray.underlyingType.kind()).toBe("array")
+        let callback = resolver.resolve("func()->Int?")
+        expect(callback.kind()).toBe("function")
+        Object callbackSource = callback
+        FunctionSemanticType callbackType = (FunctionSemanticType)callbackSource
+        expect(callbackType.returnType.kind()).toBe("nullable")
+        let optionalNative = resolver.resolveStorage("String?", nativeScalarStorage: true)
+        Object nativeSource = optionalNative
+        NullableSemanticType nativeType = (NullableSemanticType)nativeSource
+        expect(nativeType.underlyingType.value()).toBe(SemanticTypes.stringType().value())
+        var Bool rejected
+        try { resolver.resolve("Int??") }
+        catch (Exception error) { rejected = error.message.contains("cannot be nullable") }
+        expect(rejected).toBe(true)
+    }
+
+    async test `explicit nullable locals and parameters retain absence only at annotated boundaries`() {
+        let sources = textSources("Int")
+        sources.add(textSource("app", "OptionalText",
+            "class OptionalText { static accept(String? value = null) -> String { return value ?: \"fallback\"; } static run() { let String? absent = null; let String? present = \"text\"; absent = \"updated\"; absent = null; let result = accept(absent); accept(); accept(null); accept(\"boundary\"); let declared = \"nonnull\"; accept(declared); } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull({ _.identity.name == "OptionalText" })
+        let text = units.firstOrNull({ _.identity.name == "String" })
+        let accept = owner.functionUnits().firstOrNull({ _.name == "accept" })
+        expect(accept.parameterValues().first.semanticType.kind()).toBe("nullable")
+        expect(accept.parameterValues().first.defaultValue.semanticType.kind()).toBe("nullable")
+        Object defaultSource = accept.parameterValues().first.defaultValue
+        BoundConversionExpression defaultValue = (BoundConversionExpression)defaultSource
+        expect(defaultValue.value.semanticType.kind()).toBe("null")
+        let returned = textReturn(accept.statements().first)
+        expect(returned.value.semanticType.value()).toBe(text.semanticType.value())
+        Object fallbackSource = returned.value
+        BoundBinaryExpression fallback = (BoundBinaryExpression)fallbackSource
+        expect(fallback.operator).toBe("?:")
+        expect(fallback.left.semanticType.kind()).toBe("nullable")
+        expect(textCall(fallback.right).target.callableKind.value).toBe("constructor")
+        let statements = owner.functionUnits().firstOrNull({ _.name == "run" }).statements()
+        let absent = textLocal(statements[0])
+        expect(absent.local.semanticType.kind()).toBe("nullable")
+        expect(absent.initializer.semanticType.kind()).toBe("null")
+        expect(absent.conversion.applicable).toBe(true)
+        expect(absent.conversion.toType.value()).toBe(absent.local.semanticType.value())
+        let present = textLocal(statements[1])
+        expect(present.local.semanticType.kind()).toBe("nullable")
+        expect(textCall(present.initializer).target.callableKind.value).toBe("constructor")
+        expect(textAssignment(statements[2]).conversion.conversionKind).toBe("nullable-lift")
+        expect(textAssignment(statements[3]).conversion.conversionKind).toBe("null")
+        expect(textLocal(statements[4]).local.semanticType.value()).toBe(text.semanticType.value())
+        let nonnull = textLocal(statements[8])
+        expect(nonnull.local.semanticType.value()).toBe(text.semanticType.value())
+        Object nonnullCallSource = statements[9]
+        BoundExpressionStatement nonnullStatement = (BoundExpressionStatement)nonnullCallSource
+        let nonnullCall = textCall(nonnullStatement.expression)
+        expect(nonnullCall.argumentValues().first.semanticType.value()).toBe(text.semanticType.value())
+        expect(nonnullCall.argumentConversions().first.conversionKind).toBe("nullable-lift")
+    }
+
+    async test `nullable receiver safe access with fallback yields checked nonnullable consumer`() {
+        let sources = [defaultSource("app", "Box",
+            "class Box { visible Int count; static consume(Int value) {} static run(Box? value) { let Box? absent = null; let Int count = value?.count ?: 0; consume(count); } }")]
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().first
+        let method = owner.functionUnits().firstOrNull({ _.name == "run" })
+        expect(method.parameterValues().first.semanticType.kind()).toBe("nullable")
+        let local = textLocal(method.statements()[1])
+        expect(local.local.semanticType.value()).toBe(SemanticTypes.intType().value())
+        Object fallbackSource = local.initializer
+        BoundBinaryExpression fallback = (BoundBinaryExpression)fallbackSource
+        expect(fallback.left.semanticType.kind()).toBe("nullable")
+        expect(fallback.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `nullable annotations do not relax nonnullable storage parameters or native text`() {
+        String[] bodies = [
+            "class InvalidOptional { static run() { let String value = null; } }",
+            "class InvalidOptional { static run() { let value = \"present\"; value = null; } }",
+            "class InvalidOptional { static run(String? optional, String value) { value = optional; } }",
+            "class InvalidOptional { static consume(String value) {} static run(String? value) { consume(value); } }",
+            "class InvalidOptional { static run(native String value) { let String? optional = value; } }"
+        ]
+        for (bodySource in bodies) {
+            let sources = textSources("Int")
+            sources.add(textSource("app", "InvalidOptional", bodySource))
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) { rejected = true }
+            if (!rejected) throw Exception("Nullable negative fixture unexpectedly admitted: #bodySource")
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `unannotated reference parameter null default must not infer nullable storage`() {
+        String[] declarations = [
+            "static consume(String value = null) {}",
+            "public construct(visible String value = null) {}",
+            "static consume(native String value = null) {}",
+            "static consume(String[] value = null) {}"
+        ]
+        for (declaration in declarations) {
+            let sources = textSources("Int")
+            let invalid = textSource("app", "InvalidOptional", "class InvalidOptional { " + declaration + " }")
+            sources.add(invalid)
+            let parameter = declaration.contains("construct") ?
+                invalid.classValues().first.constructorValues().first.parameterValues().first :
+                invalid.classValues().first.methodValues().first.parameterValues().first
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (PrimitiveContextBindingException error) {
+                expect(error.diagnostic.code).toBe("binding.parameter-null-default")
+                expect(error.diagnostic.range.snapshot.value).toBe(parameter.defaultValue.range.snapshot.value)
+                expect(error.diagnostic.range.startTokenIndex).toBe(parameter.defaultValue.range.startTokenIndex)
+                expect(error.diagnostic.range.endTokenIndex).toBe(parameter.defaultValue.range.endTokenIndex)
+                expect(error.diagnostic.name.contains("value")).toBe(true)
+                expect(error.diagnostic.name.contains("explicit nullable")).toBe(true)
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `explicit nullable null defaults preserve declared method and constructor storage`() {
+        let sources = textSources("Int")
+        sources.add(textSource("app", "OptionalDefaults",
+            "class OptionalDefaults { public construct(visible String? value = null) {} static consume(String? value = null) {} static run() { consume(); consume(null); } }"))
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().firstOrNull({ _.identity.name == "OptionalDefaults" })
+        let selected = owner.functionUnits().filter((function) => function.constructorFunction || function.name == "consume")
+        expect(selected.count).toBe(2)
+        for (function in selected) {
+            let parameter = function.parameterValues().first
+            expect(parameter.semanticType.kind()).toBe("nullable")
+            expect(parameter.defaultValue.semanticType.value()).toBe(parameter.semanticType.value())
+        }
+        expect(owner.fieldUnits().first.semanticType.kind()).toBe("nullable")
+    }
+
+    async test `normalized override dispatch is published for typed inferred and same owner calls`() {
+        String[] results = ["-> Int", ""]
+        for (result in results) {
+            let sources = [defaultSource("flat", "Object", "class Object { public code() -> Int { return 0; } }"),
+                defaultSource("flat", "Number", "class Number<E> extends Object { public construct() {} }"),
+                defaultSource("flat", "Char", "class Char extends Number<Char> { public construct(Char value) {} public code() " + result + " { return 1; } public self() -> Int { return code(); } public static code(Int value) -> Int { return value; } }"),
+                defaultSource("flat", "DispatchReader", "class DispatchReader { public static run() -> Int { return Char('a').code(); } }")]
+            Bool[] schedules = [false, true]
+            for (reverse in schedules) {
+                let ordered = reverse ? sources.reverse() : sources
+                let units = PrimitiveClassPartitionBinder().bindContexts(ordered).typeUnits()
+                let root = units.firstOrNull((unit) => unit.identity.name == "Object")
+                let child = units.firstOrNull((unit) => unit.identity.name == "Char")
+                let reader = units.firstOrNull((unit) => unit.identity.name == "DispatchReader")
+                let rootMethod = root.functionUnits().firstOrNull((method) => method.name == "code")
+                let implementation = child.functionUnits().firstOrNull((method) => method.name == "code" && !method.staticFunction)
+                expect(implementation.dispatchIdentity).toBe(rootMethod.dispatchIdentity ?: rootMethod.identity.value)
+                let run = reader.functionUnits().firstOrNull((method) => method.name == "run")
+                let selected = textCall(textReturn(run.statements().first).value)
+                expect(selected.target.identity.declaration.value).toBe(implementation.identity.value)
+                expect(selected.target.ownerType.value()).toBe(child.semanticType.value())
+                expect(selected.target.dispatchIdentity).toBe(implementation.dispatchIdentity)
+                let self = child.functionUnits().firstOrNull((method) => method.name == "self")
+                let ownCall = textCall(textReturn(self.statements().first).value)
+                expect(ownCall.target.dispatchIdentity).toBe(implementation.dispatchIdentity)
+                expect(child.functionUnits().firstOrNull((method) => method.name == "code" && method.staticFunction).dispatchIdentity == null).toBe(true)
+            }
+        }
+    }
+
+    async test `native Char constructor setup publishes source storage through delegation`() {
+        let source = defaultSource("app", "NativeText",
+            "class NativeText { public construct(native_array native Char[] data) {} public construct(Char c) { native_array native Char[] chars; external js { chars = []; } this(chars); } }")
+        let unit = PrimitiveClassPartitionBinder().bindContexts([source]).typeUnits().first
+        let constructor = unit.functionUnits().firstOrNull((candidate) => candidate.constructorFunction &&
+            candidate.parameterValues().first.semanticType.value() == SemanticTypes.charType().value())
+        expect(constructor.constructorPlan != null).toBe(true)
+        // Setup and its raw write must survive immutable constructor planning;
+        // the direct substitution test verifies remapping to a helper local.
+    }
+
+    async test `source literal receiver constructs canonical String and preserves negative runtime index`() {
+        let sources = [defaultSource("flat", "String", "class String { public construct(native String text) {} public substring(Int start, Int end) -> String { return this; } }"),
+            defaultSource("flat", "LiteralReceiver", "class LiteralReceiver { public static run() -> String { \"abc\".substring(-1, 2); return \"abc\".substring(1, 3); } }")]
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let text = units.firstOrNull((unit) => unit.identity.name == "String")
+        let owner = units.firstOrNull((unit) => unit.identity.name == "LiteralReceiver")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        Object statementSource = method.statements().first
+        BoundExpressionStatement statement = (BoundExpressionStatement)statementSource
+        let invalidBounds = textCall(statement.expression)
+        expect(invalidBounds.target.ownerType.value()).toBe(text.semanticType.value())
+        let construction = textCall(invalidBounds.receiver)
+        expect(construction.target.callableKind.value).toBe("constructor")
+        expect(construction.argumentValues().first.expressionKind()).toBe("literal")
+        expect(invalidBounds.argumentValues().first.semanticType.value()).toBe(SemanticTypes.intType().value())
+        expect(invalidBounds.argumentValues().first.expressionKind()).toBe("unary")
+        expect(textCall(textReturn(method.statements().last).value).target.name).toBe("substring")
+    }
+
+    async test `literal receiver bridge rejects native variables invalid argument type and arity`() {
+        String[] expressions = ["value.substring(1, 2)", "\"abc\".substring(true, 2)", "\"abc\".substring()"]
+        for (expression in expressions) {
+            let sources = [defaultSource("flat", "String", "class String { public construct(native String text) {} public substring(Int start, Int end) -> String { return this; } }"),
+                defaultSource("flat", "InvalidLiteralReceiver", "class InvalidLiteralReceiver { public static run(native String value) -> String { return " + expression + "; } }")]
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("substring")) throw error
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `inherited nullable field capture refines only checked condition local`() {
+        let sources = [defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+            defaultSource("flat", "Exception", "class Exception { public construct(visible String? message = \"\") {} }"),
+            defaultSource("flat", "InvalidArgumentException", "class InvalidArgumentException extends Exception { public construct(String message) => super(message) }"),
+            defaultSource("flat", "CaptureGuard", "class CaptureGuard { public static text(String value, String expected, String label) {} public static require(Bool value, String label) {} public static run() { try { throw InvalidArgumentException(\"bad input\"); } catch (InvalidArgumentException error) { if (let message = error.message) { text(message, \"bad input\", \"caught exception message\"); } else { require(false, \"caught exception message is present\"); } } } }")]
+        let exceptionSource = sources[1]
+        sources[1] = PrimitiveSourceBindingContext("flat/exception", exceptionSource.snapshot, exceptionSource.classValues())
+        let childSource = sources[2]
+        sources[2] = PrimitiveSourceBindingContext("flat/exception", childSource.snapshot, childSource.classValues())
+        let consumerSource = sources[3]
+        sources[3] = PrimitiveSourceBindingContext("flat", consumerSource.snapshot, consumerSource.classValues(),
+            importValues: [PrimitiveBindingImport("flat/exception/InvalidArgumentException", consumerSource.classValues().first.range)])
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "CaptureGuard")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        expect(method.statements().first.unitKind()).toBe("try")
+    }
+
+    async test `condition capture cannot leak nonnull proof to else skipped scopes or after effects`() {
+        String[] bodies = [
+            "if (let message = error.message) {} else { text(message); }",
+            "if (let message = error.message) {} text(message);",
+            "if (gate && (let message = error.message)) {} else { text(message); }",
+            "if (let message = error.message) { touch(); text(message); }",
+            "if (let message = error.message) { text(error.message); }"
+        ]
+        for (body in bodies) {
+            let sources = [defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+                defaultSource("flat", "Exception", "class Exception { public construct(visible String? message = null) {} }"),
+                defaultSource("flat", "InvalidCapture", "class InvalidCapture { public static text(String value) {} public static touch() {} public static run(Exception error, Bool gate) { " + body + " } }")]
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception failure) {
+                if (!failure.message.contains("text") && !failure.message.contains("message")) throw failure
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `catch descendant reads inherited nullable field with declaring identity and original receiver`() {
+        let sources = [defaultSource("flat", "Array", "class Array<E> {}"),
+            defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+            defaultSource("flat/exception", "Exception", "class Exception { public construct(visible String? message = \"\") {} }"),
+            defaultSource("flat/exception", "InvalidArgumentException", "class InvalidArgumentException extends Exception { public construct(String message) => super(message) }")]
+        let raw = defaultSource("app", "CatchField", "class CatchField { public static run() { try { throw InvalidArgumentException(\"bad input\"); } catch (InvalidArgumentException error) { let retained = error.message; } } }")
+        sources.add(PrimitiveSourceBindingContext("app", raw.snapshot, raw.classValues(),
+            importValues: [PrimitiveBindingImport("flat/exception/InvalidArgumentException", raw.classValues().first.range)]))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let parent = units.firstOrNull((unit) => unit.identity.name == "Exception")
+        let owner = units.firstOrNull((unit) => unit.identity.name == "CatchField")
+        let field = parent.fieldUnits().firstOrNull((candidate) => candidate.name == "message")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        Object trySource = method.statements().first
+        BoundTryStatement tried = (BoundTryStatement)trySource
+        let caught = tried.catchValues().first
+        Object accessSource = textLocal(caught.statements().first).initializer
+        BoundMemberAccessExpression access = (BoundMemberAccessExpression)accessSource
+        expect(access.memberIdentity.value).toBe(field.identity.value)
+        expect(field.canonicalOwner().value).toBe(parent.identity.value)
+        expect(access.semanticType.value()).toBe(field.semanticType.value())
+        expect(access.semanticType.kind()).toBe("nullable")
+        Object receiverSource = access.receiver
+        BoundReferenceExpression receiver = (BoundReferenceExpression)receiverSource
+        expect(receiver.symbolIdentity.value).toBe(caught.local.symbolIdentity.value)
+        expect(access.range.snapshot.value).toBe(raw.snapshot.value)
+    }
+
+    async test `inherited field lookup preserves nearest shadow and rejects unrelated nullable receivers`() {
+        let sources = [defaultSource("app", "Base", "class Base { visible Int message; }"),
+            defaultSource("app", "Child", "class Child extends Base { visible Bool message; public construct() {} }"),
+            defaultSource("app", "ReadShadow", "class ReadShadow { public static run(Child value) -> Bool { return value.message; } }")]
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let child = units.firstOrNull((unit) => unit.identity.name == "Child")
+        let owner = units.firstOrNull((unit) => unit.identity.name == "ReadShadow")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        Object accessSource = textReturn(method.statements().first).value
+        BoundMemberAccessExpression access = (BoundMemberAccessExpression)accessSource
+        expect(access.memberIdentity.value).toBe(child.fieldUnits().first.identity.value)
+        String[] consumers = ["public static run(Child? value) -> Int { return value.message; }",
+            "public static run(Other value) -> Int { return value.message; }"]
+        for (consumer in consumers) {
+            let invalid = [defaultSource("app", "Base", "class Base { visible Int message; }"),
+                defaultSource("app", "Child", "class Child extends Base { public construct() {} }"),
+                defaultSource("app", "Other", "class Other {}"),
+                defaultSource("app", "InvalidField", "class InvalidField { " + consumer + " }")]
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(invalid) }
+            catch (Exception error) {
+                if (!error.message.contains("message")) throw error
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `typed catch retains descendant identity through actual Exception ancestry`() {
+        let sources = [defaultSource("flat", "Array", "class Array<E> {}"),
+            defaultSource("flat/exception", "Exception", "class Exception { public construct() {} }"),
+            defaultSource("flat/exception", "InvalidArgumentException", "class InvalidArgumentException extends Exception { public construct() {} }")]
+        let raw = defaultSource("app", "CatchChild", "class CatchChild { public static run() { try { throw InvalidArgumentException(); } catch (InvalidArgumentException error) { let retained = error; } } }")
+        sources.add(PrimitiveSourceBindingContext("app", raw.snapshot, raw.classValues(),
+            importValues: [PrimitiveBindingImport("flat/exception/InvalidArgumentException", raw.classValues().first.range)]))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let child = units.firstOrNull((unit) => unit.identity.name == "InvalidArgumentException")
+        let owner = units.firstOrNull((unit) => unit.identity.name == "CatchChild")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        Object trySource = method.statements().first
+        BoundTryStatement tried = (BoundTryStatement)trySource
+        let caught = tried.catchValues().first
+        expect(caught.local.semanticType.value()).toBe(child.semanticType.value())
+        let retained = textLocal(caught.statements().first)
+        Object referenceSource = retained.initializer
+        BoundReferenceExpression reference = (BoundReferenceExpression)referenceSource
+        expect(reference.symbolIdentity.value).toBe(caught.local.symbolIdentity.value)
+    }
+
+    async test `typed catch rejects unrelated and builtin declarations with canonical Exception present`() {
+        String[] names = ["Other", "Object", "String"]
+        for (name in names) {
+            let sources = [defaultSource("flat", "Array", "class Array<E> {}"),
+                defaultSource("flat/exception", "Exception", "class Exception { public construct() {} }"),
+                defaultSource("app", "Other", "class Other { public construct() {} }")]
+            let raw = defaultSource("app", "InvalidCatch", "class InvalidCatch { public static run() { try {} catch (" + name + " error) {} } }")
+            sources.add(PrimitiveSourceBindingContext("app", raw.snapshot, raw.classValues(),
+                importValues: [PrimitiveBindingImport("flat/exception/Exception", raw.classValues().first.range)]))
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("not throwable")) throw error
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `explicit exception child selects inherited method with canonical parent callable identity`() {
+        let sources = [
+            defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+            defaultSource("flat", "Exception", "class Exception { public construct(String? message = \"\") {} public toString() -> String { return \"error\"; } }"),
+            defaultSource("flat", "InvalidArgumentException", "class InvalidArgumentException extends Exception { public construct(String message) => super(message) }")
+        ]
+        sources.add(defaultSource("flat", "ExceptionWorkload", "class ExceptionWorkload { public static exceptions() -> String { let explicit = InvalidArgumentException(\"bad input\"); return explicit.toString(); } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let parent = units.firstOrNull((unit) => unit.identity.name == "Exception")
+        let child = units.firstOrNull((unit) => unit.identity.name == "InvalidArgumentException")
+        let owner = units.firstOrNull((unit) => unit.identity.name == "ExceptionWorkload")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "exceptions")
+        let local = textLocal(method.statements().first)
+        let call = textCall(textReturn(method.statements().last).value)
+        expect(call.target.ownerType.value()).toBe(parent.semanticType.value())
+        let target = parent.functionUnits().firstOrNull((candidate) => candidate.name == "toString")
+        expect(call.target.identity.declaration.value).toBe(target.identity.value)
+        expect(call.receiver.semanticType.value()).toBe(child.semanticType.value())
+        Object receiverSource = call.receiver
+        BoundReferenceExpression receiver = (BoundReferenceExpression)receiverSource
+        expect(receiver.symbolIdentity.value).toBe(local.local.symbolIdentity.value)
+    }
+
+    async test `inherited member lookup rejects nullable and unrelated receivers and invalid arguments`() {
+        String[] consumers = [
+            "public static run(Child? value) -> Int { return value.read(); }",
+            "public static run(Other value) -> Int { return value.read(); }",
+            "public static run(Child value) -> Int { return value.read(true); }"
+        ]
+        for (consumer in consumers) {
+            let sources = [defaultSource("app", "Base", "class Base { public read(Int index) -> Int { return index; } }"),
+                defaultSource("app", "Child", "class Child extends Base { public construct() {} }"),
+                defaultSource("app", "Other", "class Other {}"),
+                defaultSource("app", "InvalidInherited", "class InvalidInherited { " + consumer + " }")]
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("read") && !error.message.contains("nullable:")) throw error
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `runtime metadata name constructs canonical text around exactly one receiver intrinsic`() {
+        let sources = [defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+            defaultSource("flat", "Value", "class Value { public construct() {} }")]
+        sources.add(defaultSource("flat", "MetadataText", "class MetadataText { public static next() -> Value { return Value(); } public static text(String value) {} public static run() { text(next().class.name); } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "MetadataText")
+        let canonical = units.firstOrNull((unit) => unit.identity.name == "String")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        Object statementSource = method.statements().first
+        BoundExpressionStatement statement = (BoundExpressionStatement)statementSource
+        let consumer = textCall(statement.expression)
+        let construction = textCall(consumer.argumentValues().first)
+        expect(construction.target.ownerType.value()).toBe(canonical.semanticType.value())
+        expect(construction.target.callableKind.value).toBe("constructor")
+        expect(construction.argumentValues().count).toBe(1)
+        Object intrinsicSource = construction.argumentValues().first
+        BoundClassNameExpression intrinsic = (BoundClassNameExpression)intrinsicSource
+        expect(intrinsic.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        expect(textCall(intrinsic.receiver).target.name).toBe("next")
+        expect(construction.range.snapshot.value).toBe(intrinsic.range.snapshot.value)
+        expect(construction.range.startTokenIndex).toBe(intrinsic.range.startTokenIndex)
+    }
+
+    async test `runtime metadata bridge does not adapt native text references`() {
+        let sources = [defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+            defaultSource("flat", "InvalidMetadataText", "class InvalidMetadataText { public static text(String value) {} public static run(native String value) { text(value); } }")]
+        var Bool rejected
+        try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+        catch (Exception error) {
+            if (!error.message.contains("No overload of 'text'")) throw error
+            rejected = true
+        }
+        expect(rejected).toBe(true)
+    }
+
+    async test `static runtime metadata names bind explicit local foreign and catch receivers`() {
+        let sources = [defaultSource("flat", "Foreign", "class Foreign { public construct() {} }"),
+            defaultSource("flat", "Exception", "class Exception { public construct() {} }")]
+        sources.add(defaultSource("flat", "Names", "class Names { public static localName() -> String { let empty = Foreign(); return empty.class.name; } public static foreignName(Foreign Names) -> String { return Names.class.name; } public static caughtName() -> String { try { throw Exception(); } catch (Exception error) { return error.class.name; } return \"\"; } }"))
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().firstOrNull((unit) => unit.identity.name == "Names")
+        let localMethod = owner.functionUnits().firstOrNull((method) => method.name == "localName")
+        let local = textLocal(localMethod.statements().first)
+        Object localNameSource = textReturn(localMethod.statements().last).value
+        BoundClassNameExpression localName = (BoundClassNameExpression)localNameSource
+        Object localReceiverSource = localName.receiver
+        BoundReferenceExpression localReceiver = (BoundReferenceExpression)localReceiverSource
+        expect(localReceiver.symbolIdentity.value).toBe(local.local.symbolIdentity.value)
+        let foreignMethod = owner.functionUnits().firstOrNull((method) => method.name == "foreignName")
+        Object foreignNameSource = textReturn(foreignMethod.statements().first).value
+        BoundClassNameExpression foreignName = (BoundClassNameExpression)foreignNameSource
+        Object foreignReceiverSource = foreignName.receiver
+        BoundReferenceExpression foreignReceiver = (BoundReferenceExpression)foreignReceiverSource
+        expect(foreignReceiver.symbolIdentity.value).toBe(foreignMethod.parameterValues().first.identity.value)
+        expect(owner.functionUnits().any((method) => method.name == "caughtName")).toBe(true)
+    }
+
+    async test `static runtime metadata rejects this missing locals and escaped catch scope`() {
+        String[] bodies = ["return this.class.name;", "return missing.class.name;", "try { throw Exception(); } catch (Exception error) {} return error.class.name;"]
+        for (body in bodies) {
+            let sources = [defaultSource("flat", "Foreign", "class Foreign { public construct() {} }"),
+                defaultSource("flat", "Exception", "class Exception { public construct() {} }"),
+                defaultSource("flat", "InvalidNames", "class InvalidNames { public static run() -> String { " + body + " } }")]
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("Static method cannot") && !error.message.contains("Unresolved") &&
+                    !error.message.contains("Unknown") && !error.message.contains("unresolved")) {
+                    throw Exception("Expected checked class name receiver rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `source text Object local constructs canonical String before proven upcast`() {
+        let sources = objectArraySources()
+        sources.add(defaultSource("app", "TextObject", "class TextObject { public static run() { let Object nonnumeric = \"-1.25\"; } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "TextObject")
+        let root = units.firstOrNull((unit) => unit.identity.name == "Object")
+        let text = units.firstOrNull((unit) => unit.identity.name == "String")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        let local = textLocal(method.statements().first)
+        expect(local.local.semanticType.value()).toBe(root.semanticType.value())
+        expect(local.conversion.conversionKind).toBe("reference-upcast")
+        expect(local.conversion.fromType.value()).toBe(text.semanticType.value())
+        expect(local.conversion.toType.value()).toBe(root.semanticType.value())
+        let construction = textCall(local.initializer)
+        expect(construction.target.ownerType.value()).toBe(text.semanticType.value())
+        expect(construction.argumentValues().first.expressionKind()).toBe("literal")
+    }
+
+    async test `Object local source text contract rejects native references and unrelated target`() {
+        String[] bodies = ["let Object value = nativeText;", "let Other value = \"text\";"]
+        for (body in bodies) {
+            let sources = objectArraySources()
+            sources.add(defaultSource("app", "Other", "class Other {}"))
+            sources.add(defaultSource("app", "InvalidTextObject", "class InvalidTextObject { public static run(native String nativeText) { " + body + " } }"))
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("binding.local-initializer-type") &&
+                    !error.message.contains("noncanonical String declaration")) {
+                    throw Exception("Expected checked text local rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `explicit constructed reference local uses checked transitive ancestor without primitive boxing`() {
+        let sources = [
+            defaultSource("flat", "Object", "class Object {}"),
+            defaultSource("flat/primitive", "Primitive", "class Primitive {}"),
+            defaultSource("flat/primitive/number", "Number", "class Number<Type> extends Primitive { public construct() {} }"),
+            defaultSource("flat/primitive/number", "Double", "class Double extends Number<Double> { public construct(Double value) {} }")
+        ]
+        let number = sources[2]
+        sources[2] = PrimitiveSourceBindingContext("flat/primitive/number", number.snapshot, number.classValues(),
+            importValues: [PrimitiveBindingImport("flat/primitive/Primitive", number.classValues().first.range)])
+        let raw = defaultSource("core/workloads", "LocalUpcast", "class LocalUpcast { public static run() { let Object zero = Double(0.0); } }")
+        sources.add(PrimitiveSourceBindingContext("core/workloads", raw.snapshot, raw.classValues(),
+            importValues: [PrimitiveBindingImport("flat/primitive/number/Double", raw.classValues().first.range)]))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "LocalUpcast")
+        let root = units.firstOrNull((unit) => unit.identity.name == "Object")
+        let constructed = units.firstOrNull((unit) => unit.identity.name == "Double")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        let local = textLocal(method.statements().first)
+        expect(local.local.semanticType.value()).toBe(root.semanticType.value())
+        expect(local.conversion.conversionKind).toBe("reference-upcast")
+        expect(local.conversion.implicit).toBe(true)
+        expect(local.conversion.fromType.value()).toBe(constructed.semanticType.value())
+        expect(local.conversion.toType.value()).toBe(root.semanticType.value())
+        let call = textCall(local.initializer)
+        expect(call.target.ownerType.value()).toBe(constructed.semanticType.value())
+        expect(call.target.callableKind.value).toBe("constructor")
+        expect(call.argumentValues().count).toBe(1)
+        expect(call.argumentValues().first.semanticType.value()).toBe(SemanticTypes.doubleType().value())
+        expect(call.argumentValues().first.expressionKind()).toBe("literal")
+        expect(local.range.snapshot.value).toBe(raw.snapshot.value)
+    }
+
+    async test `reference local initialization cannot invent primitive boxing nullability or unrelated ancestry`() {
+        String[] bodies = ["let Object zero = 0.0;", "let Object zero = null;", "let Other value = Child();"]
+        for (body in bodies) {
+            let sources = [
+                defaultSource("flat", "Object", "class Object {}"),
+                defaultSource("app", "Other", "class Other {}"),
+                defaultSource("app", "Child", "class Child { public construct() {} }"),
+                defaultSource("app", "InvalidUpcast", "class InvalidUpcast { public static run() { " + body + " } }")
+            ]
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("binding.local-initializer-type")) {
+                    throw Exception("Expected precise local conversion rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `qualified static parsing constructs only source text for canonical String parameter`() {
+        let sources = [
+            defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+            defaultSource("flat/primitive/number", "Double", "class Double { public static parseDouble(String str) -> Double { return 0.0; } }")
+        ]
+        let raw = defaultSource("app", "ParseText", "class ParseText { public static run() -> Double { return Double.parseDouble(\"-0.125\"); } }")
+        sources.add(PrimitiveSourceBindingContext("app", raw.snapshot, raw.classValues(),
+            importValues: [PrimitiveBindingImport("flat/primitive/number/Double", raw.classValues().first.range)]))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "ParseText")
+        let producer = units.firstOrNull((unit) => unit.identity.name == "Double")
+        let text = units.firstOrNull((unit) => unit.identity.name == "String")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        let call = textCall(textReturn(method.statements().first).value)
+        expect(call.target.ownerType.value()).toBe(producer.semanticType.value())
+        expect(call.target.callableKind.value).toBe("static-method")
+        expect(call.semanticType.value()).toBe(SemanticTypes.doubleType().value())
+        expect(call.target.parameterTypes().first.value()).toBe(text.semanticType.value())
+        let construction = textCall(call.argumentValues().first)
+        expect(construction.target.callableKind.value).toBe("constructor")
+        expect(construction.target.ownerType.value()).toBe(text.semanticType.value())
+        expect(construction.argumentValues().first.expressionKind()).toBe("literal")
+        expect(construction.range.snapshot.value).toBe(raw.snapshot.value)
+    }
+
+    async test `qualified static source text boundary rejects native references null and invalid arity`() {
+        String[] expressions = ["Double.parseDouble(value)", "Double.parseDouble(null)", "Double.parseDouble()"]
+        for (expression in expressions) {
+            let sources = [
+                defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+                defaultSource("flat/primitive/number", "Double", "class Double { public static parseDouble(String str) -> Double { return 0.0; } }")
+            ]
+            let raw = defaultSource("app", "InvalidParse", "class InvalidParse { public static run(native String value) -> Double { return " + expression + "; } }")
+            sources.add(PrimitiveSourceBindingContext("app", raw.snapshot, raw.classValues(),
+                importValues: [PrimitiveBindingImport("flat/primitive/number/Double", raw.classValues().first.range)]))
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("No overload of 'parseDouble'")) {
+                    throw Exception("Expected checked static parse rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `constructed receiver inferred Bool reaches require from exact published owner`() {
+        let range = defaultSource("flat/datastruct/list", "IntRange",
+            "class IntRange { public construct(public Int start, public Int end) {} public contains(Int value) => value >= start && value < end }")
+        let raw = defaultSource("core/workloads", "ProductionCoreWorkload",
+            "class ProductionCoreWorkload { public static require(Bool condition) {} public static collectionsAndNumbers() { require(IntRange(2, 5).contains(2)); require(!IntRange(2, 5).contains(5)); } }")
+        let workload = PrimitiveSourceBindingContext("core/workloads", raw.snapshot, raw.classValues(),
+            importValues: [PrimitiveBindingImport("flat/datastruct/list/IntRange", raw.classValues().first.range)])
+        let units = PrimitiveClassPartitionBinder().bindContexts([workload, range]).typeUnits()
+        let producer = units.firstOrNull((unit) => unit.identity.name == "IntRange")
+        let method = producer.functionUnits().firstOrNull((candidate) => candidate.name == "contains")
+        expect(method.returnType.value()).toBe(SemanticTypes.boolType().value())
+        let consumer = units.firstOrNull((unit) => unit.identity.name == "ProductionCoreWorkload")
+        let body = consumer.functionUnits().firstOrNull((candidate) => candidate.name == "collectionsAndNumbers").statements()
+        Object statementSource = body.first
+        BoundExpressionStatement statement = (BoundExpressionStatement)statementSource
+        let requireCall = textCall(statement.expression)
+        let predicate = textCall(requireCall.argumentValues().first)
+        expect(predicate.semanticType.value()).toBe(SemanticTypes.boolType().value())
+        expect(predicate.target.identity.declaration.value).toBe(method.identity.value)
+        expect(predicate.target.ownerType.value()).toBe(producer.semanticType.value())
+        expect(predicate.target.identity.declaration.syntaxIdentity.snapshot.value).toBe(range.snapshot.value)
+        expect(predicate.receiver.expressionKind()).toBe("call")
+        expect(predicate.argumentValues().first.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `constructed inferred non Bool and invalid predicate arguments cannot satisfy require`() {
+        String[] predicates = [
+            "public contains(Int value) => value",
+            "public contains(Int value) => value > 0"
+        ]
+        var Int index
+        for (predicate in predicates) {
+            let producer = defaultSource("flat/datastruct/list", "IntRange", "class IntRange { public construct(Int start, Int end) {} " + predicate + " }")
+            let argument = index == 0 ? "2" : "true"
+            let raw = defaultSource("core/workloads", "InvalidPredicate", "class InvalidPredicate { public static require(Bool value) {} public static run() { require(IntRange(2, 5).contains(" + argument + ")); } }")
+            let consumer = PrimitiveSourceBindingContext("core/workloads", raw.snapshot, raw.classValues(),
+                importValues: [PrimitiveBindingImport("flat/datastruct/list/IntRange", raw.classValues().first.range)])
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts([consumer, producer]) }
+            catch (Exception error) {
+                if (!error.message.contains("No overload of 'require'") && !error.message.contains("No overload of 'contains'")) {
+                    throw Exception("Expected checked predicate rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+            index++
+        }
+    }
+
+    async test `inferred local literal constructs visible Array with canonical text and exact removal overload`() {
+        let sources = inferredArraySources()
+        sources.add(defaultSource("flat", "CollectionWorkload",
+            "class CollectionWorkload { public static next() -> String { return \"last\"; } public static run() { let values = [\"first\", \"middle\", next()]; let removed = values.removeAtIndex(1); let several = values.removeAtIndex(0, 2); } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "CollectionWorkload")
+        let array = units.firstOrNull((unit) => unit.identity.name == "Array")
+        let text = units.firstOrNull((unit) => unit.identity.name == "String")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        let local = textLocal(method.statements().first)
+        expect(local.local.semanticType.kind()).toBe("generic-instance")
+        let construction = textCall(local.initializer)
+        expect(construction.target.ownerType.value()).toBe(array.semanticType.value())
+        Object constructedTypeSource = construction.semanticType
+        GenericInstanceSemanticType constructedType = (GenericInstanceSemanticType)constructedTypeSource
+        expect(constructedType.typeArguments().first.value()).toBe(text.semanticType.value())
+        Object storageSource = construction.argumentValues().first
+        BoundArrayExpression storage = (BoundArrayExpression)storageSource
+        let elements = storage.elementValues()
+        expect(elements.count).toBe(3)
+        expect(textCall(elements.first).target.ownerType.value()).toBe(text.semanticType.value())
+        expect(textCall(elements[1]).target.ownerType.value()).toBe(text.semanticType.value())
+        expect(textCall(elements.last).target.name).toBe("next")
+        // One ordered occurrence of next(), no conversion call or element replay.
+        let removed = textCall(textLocal(method.statements()[1]).initializer)
+        expect(removed.target.name).toBe("removeAtIndex")
+        expect(removed.target.ownerType.value()).toBe(array.semanticType.value())
+        expect(removed.target.parameterTypes().count).toBe(1)
+        expect(removed.target.optionalParameterCount).toBe(0)
+        expect(removed.semanticType.value()).toBe(text.semanticType.value())
+        expect(removed.receiver.semanticType.value()).toBe(local.local.semanticType.value())
+        let selected = array.functionUnits().firstOrNull((candidate) =>
+            candidate.name == "removeAtIndex" && candidate.parameterValues().count == 1)
+        expect(removed.target.identity.declaration.value).toBe(selected.identity.value)
+        let several = textCall(textLocal(method.statements().last).initializer)
+        expect(several.target.parameterTypes().count).toBe(2)
+        expect(several.target.optionalParameterCount).toBe(1)
+        expect(several.semanticType.value()).toBe(local.local.semanticType.value())
+    }
+
+    async test `inferred local array boundary preserves native storage and missing declaration fallback`() {
+        let sources = inferredArraySources()
+        sources.add(defaultSource("flat", "NativeLiteral",
+            "class NativeLiteral { public static run(native String value, Char character) { let native native_array Char[] storage = ['a', character]; let nativeValues = [value]; } }"))
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().firstOrNull((unit) => unit.identity.name == "NativeLiteral")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        expect(textLocal(method.statements().first).local.semanticType.kind()).toBe("array")
+        Object storageSource = textLocal(method.statements().first).initializer
+        BoundArrayExpression storage = (BoundArrayExpression)storageSource
+        expect(storage.elementValues().last.expressionKind()).toBe("reference")
+        let nativeValues = textCall(textLocal(method.statements().last).initializer)
+        Object nativeTypeSource = nativeValues.semanticType
+        GenericInstanceSemanticType nativeType = (GenericInstanceSemanticType)nativeTypeSource
+        expect(nativeType.typeArguments().first.value()).toBe(SemanticTypes.stringType().value())
+        Object nativeStorageSource = nativeValues.argumentValues().first
+        BoundArrayExpression nativeStorage = (BoundArrayExpression)nativeStorageSource
+        expect(nativeStorage.elementValues().first.expressionKind()).toBe("reference")
+        let fallback = defaultSource("app", "Fallback", "class Fallback { public static run() { let values = [\"one\", \"two\"]; } }")
+        let fallbackOwner = PrimitiveClassPartitionBinder().bindContexts([fallback]).typeUnits().first
+        let fallbackMethod = fallbackOwner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        expect(textLocal(fallbackMethod.statements().first).local.semanticType.value()).toBe(
+            ArraySemanticType(SemanticTypes.stringType()).value())
+    }
+
+    async test `inferred declared arrays reject invalid index null and mixed element coercion`() {
+        String[] bodies = [
+            "let values = [\"one\"]; values.removeAtIndex(true);",
+            "let values = [\"one\"]; values.removeAtIndex(null);",
+            "let values = [\"one\", 1];",
+            "let values = [\"one\", null];",
+            "let values = [\"one\", nativeText];"
+        ]
+        for (body in bodies) {
+            let sources = inferredArraySources()
+            sources.add(defaultSource("flat", "InvalidInferred", "class InvalidInferred { public static run(native String nativeText) { " + body + " } }"))
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("removeAtIndex") && !error.message.contains("Array element")) {
+                    throw Exception("Expected checked inferred collection rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async inferredArraySources() -> PrimitiveSourceBindingContext[] {
+        let sources = [
+            defaultSource("flat", "String", "class String { public construct(native String text) {} }"),
+            defaultSource("flat", "Array", "class Array<E> { visible native_array E[] data; public construct(native_array E[] data, Int count) { this.data = data; } public E first => data[0] public removeAtIndex(Int index) => removeAtIndex(index, 1).first public removeAtIndex(Int index, Int count = 1) -> E[] { return this; } }")
+        ]
+        return sources
+    }
+
+    async test `intrinsic reference equality retains original operands and proves actual ancestor conversions in both orders`() {
+        let sources = objectArraySources()
+        sources.add(defaultSource("app", "Equality",
+            "class Equality { public static forward(Object base, ProductionDisplayValue marker) -> Bool { return base == marker; } public static reverse(Object base, ProductionDisplayValue marker) -> Bool { return marker == base; } public static unequal(Object base, ProductionDisplayValue marker) -> Bool { return base != marker; } public static reverseUnequal(Object base, ProductionDisplayValue marker) -> Bool { return marker != base; } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "Equality")
+        let ancestor = units.firstOrNull((unit) => unit.identity.name == "Object")
+        for (method in owner.functionUnits()) {
+            if (method.name != "forward" && method.name != "reverse" &&
+                method.name != "unequal" && method.name != "reverseUnequal") continue
+            Object binarySource = textReturn(method.statements().first).value
+            BoundBinaryExpression binary = (BoundBinaryExpression)binarySource
+            let reversed = method.name == "reverse" || method.name == "reverseUnequal"
+            expect(binary.operator).toBe(method.name == "unequal" || method.name == "reverseUnequal" ? "!=" : "==")
+            expect(binary.left.semanticType.value()).toBe(ancestor.semanticType.value())
+            expect(binary.right.semanticType.value()).toBe(ancestor.semanticType.value())
+            Object conversionSource = reversed ? binary.left : binary.right
+            BoundConversionExpression conversion = (BoundConversionExpression)conversionSource
+            expect(conversion.conversion.conversionKind).toBe("reference-upcast")
+            expect(conversion.conversion.implicit).toBe(true)
+            expect(conversion.conversion.toType.value()).toBe(ancestor.semanticType.value())
+            expect(conversion.value.expressionKind()).toBe("reference")
+            Object markerSource = conversion.value
+            BoundReferenceExpression marker = (BoundReferenceExpression)markerSource
+            expect(marker.symbolIdentity.value).toBe(method.parameterValues().last.identity.value)
+            expect(conversion.conversion.fromType.value()).toBe(marker.semanticType.value())
+            Object baseSource = reversed ? binary.right : binary.left
+            BoundReferenceExpression base = (BoundReferenceExpression)baseSource
+            expect(base.symbolIdentity.value).toBe(method.parameterValues().first.identity.value)
+            expect(conversion.range.snapshot.value).toBe(method.range.snapshot.value)
+            expect(PrimitiveClassBinder.bindReferenceEquality(binary.operator,
+                conversion.value, base, binary.range) == null).toBe(true)
+        }
+    }
+
+    async test `generic reference equality retains only proven ancestor projection`() {
+        let sources = objectArraySources()
+        sources.add(defaultSource("app", "Box", "class Box<E> extends Object { public construct() {} }"))
+        sources.add(defaultSource("app", "GenericEquality",
+            "class GenericEquality { public static same(Object ancestor, Box<Int> value) -> Bool { return value == ancestor; } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "GenericEquality")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "same")
+        Object binarySource = textReturn(method.statements().first).value
+        BoundBinaryExpression binary = (BoundBinaryExpression)binarySource
+        Object conversionSource = binary.left
+        BoundConversionExpression conversion = (BoundConversionExpression)conversionSource
+        expect(conversion.value.semanticType.kind()).toBe("generic-instance")
+        expect(conversion.conversion.conversionKind).toBe("reference-upcast")
+        expect(conversion.semanticType.value()).toBe(method.parameterValues().first.semanticType.value())
+        Object referenceSource = conversion.value
+        BoundReferenceExpression reference = (BoundReferenceExpression)referenceSource
+        expect(reference.symbolIdentity.value).toBe(method.parameterValues().last.identity.value)
+    }
+
+    async test `intrinsic reference equality rejects sibling native and invalid primitive pairs`() {
+        String[] consumers = [
+            "public static check(ProductionDisplayValue left, Sibling right) -> Bool => left == right",
+            "public static check(Object left, native String right) -> Bool => left == right",
+            "public static check(Int left, native String right) -> Bool => left == right"
+        ]
+        for (consumer in consumers) {
+            let sources = objectArraySources()
+            sources.add(defaultSource("app", "Sibling", "class Sibling extends Object {}"))
+            sources.add(defaultSource("app", "InvalidReferenceEquality", "class InvalidReferenceEquality { " + consumer + " }"))
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("Operator '==' is invalid")) {
+                    throw Exception("Expected intrinsic equality rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `explicit Object array literal constructs source text and preserves ordered marker identity without display calls`() {
+        let sources = objectArraySources()
+        let raw = defaultSource("app", "Mixed",
+            "class Mixed { public static run() { let marker = ProductionDisplayValue(); let Object[] mixed = [\"hello\", marker]; } }")
+        sources.add(PrimitiveSourceBindingContext("app", raw.snapshot, raw.classValues(),
+            importValues: [PrimitiveBindingImport("flat/Array", raw.classValues().first.range)]))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "Mixed")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "run")
+        expect(method.statements().count).toBe(2)
+        let marker = textLocal(method.statements().first)
+        let mixed = textLocal(method.statements().last)
+        expect(mixed.local.semanticType.kind()).toBe("generic-instance")
+        let construction = textCall(mixed.initializer)
+        expect(construction.target.name).toBe("Array")
+        Object storageSource = construction.argumentValues().first
+        BoundArrayExpression storage = (BoundArrayExpression)storageSource
+        let elements = storage.elementValues()
+        expect(elements.count).toBe(2)
+        Object textElementSource = elements.first
+        BoundConversionExpression textElement = (BoundConversionExpression)textElementSource
+        expect(textElement.conversion.conversionKind).toBe("reference-upcast")
+        let textConstruction = textCall(textElement.value)
+        let text = units.firstOrNull((unit) => unit.identity.name == "String")
+        let root = units.firstOrNull((unit) => unit.identity.name == "Object")
+        expect(textConstruction.target.callableKind.value).toBe("constructor")
+        expect(textConstruction.target.ownerType.value()).toBe(text.semanticType.value())
+        expect(textConstruction.argumentValues().count).toBe(1)
+        expect(textConstruction.argumentValues().first.expressionKind()).toBe("literal")
+        expect(textElement.semanticType.value()).toBe(root.semanticType.value())
+        Object markerElementSource = elements.last
+        BoundConversionExpression markerElement = (BoundConversionExpression)markerElementSource
+        expect(markerElement.conversion.conversionKind).toBe("reference-upcast")
+        expect(markerElement.value.expressionKind()).toBe("reference")
+        Object referenceSource = markerElement.value
+        BoundReferenceExpression reference = (BoundReferenceExpression)referenceSource
+        expect(reference.symbolIdentity.value).toBe(marker.local.symbolIdentity.value)
+        expect(reference.semanticType.value()).toBe(marker.local.semanticType.value())
+        expect(markerElement.semanticType.value()).toBe(root.semanticType.value())
+        // Both elements contain only a text constructor or the original local:
+        // no marker.toString invocation, duplicate marker construction, or replay.
+    }
+
+    async test `explicit Object array rejects native references null and incompatible elements without inference changes`() {
+        String[] bodies = [
+            "let Object[] mixed = [text];",
+            "let Object[] mixed = [null];",
+            "let Object[] mixed = [1];",
+            "let marker = ProductionDisplayValue(); let mixed = [\"hello\", marker];",
+            "let Object marker = ProductionDisplayValue(); let mixed = [marker, \"hello\"];",
+            "let Object[] mixed = existing;"
+        ]
+        for (body in bodies) {
+            let sources = objectArraySources()
+            let raw = defaultSource("app", "InvalidMixed", "class InvalidMixed { public static run(native String text, native_array native String[] existing) { " + body + " } }")
+            sources.add(PrimitiveSourceBindingContext("app", raw.snapshot, raw.classValues(),
+                importValues: [PrimitiveBindingImport("flat/Array", raw.classValues().first.range)]))
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("Array element") && !error.message.contains("Local initializer type mismatch")) {
+                    throw Exception("Expected checked array storage rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async objectArraySources() -> PrimitiveSourceBindingContext[] {
+        let sources = [
+            defaultSource("flat", "Object", "class Object {}"),
+            defaultSource("flat", "String", "class String extends Object { public construct(native String text) {} }"),
+            defaultSource("flat", "Array", "class Array<E> { visible native_array E[] data; public construct(native_array E[] data, Int count) { this.data = data; } }"),
+            defaultSource("app", "ProductionDisplayValue", "class ProductionDisplayValue extends Object { visible var Int textCalls; public construct() {} public toString() -> String { textCalls = textCalls + 1; return \"marker\"; } }")
+        ]
+        return sources
+    }
+
+    async test `production String constructor accepts declared character copy with native overlay present`() {
+        let array = defaultSource("flat", "Array", "class Array<E> { public construct() {} public add(E value) {} }")
+        let rawStorage = defaultSource("flat/datastruct/list", "StringCharArray",
+            "class StringCharArray { visible Char[] values; public construct(Char[] values) { this.values = values; } public toCharArray() -> Char[] { return values; } }")
+        let storage = PrimitiveSourceBindingContext("flat/datastruct/list", rawStorage.snapshot, rawStorage.classValues(),
+            importValues: [PrimitiveBindingImport("flat/Array", rawStorage.classValues().first.range)])
+        let base = defaultSource("flat", "String",
+            "class String { public construct(Char[] chars) {} public construct(StringCharArray chars) {} }")
+        let overlay = textSource("flat", "String",
+            "class String { public construct(Char c) {} public construct(native_array native Char[] chars, Int count) {} public construct(native_array native Char[] chars) {} public construct(native String str) {} }", "character-copy-js")
+        let merged = base.classValues().first.mergedWith(overlay.classValues().first)
+        let imports = [PrimitiveBindingImport("flat/datastruct/list/StringCharArray", merged.range)]
+        let sources = [array, storage,
+            PrimitiveSourceBindingContext("flat", base.snapshot, [merged], importValues: imports),
+            PrimitiveSourceBindingContext("flat", overlay.snapshot, PrimitiveClassSyntax[],
+                importValues: [PrimitiveBindingImport("flat/datastruct/list/StringCharArray", overlay.classValues().first.range)])]
+        let published = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let text = published.firstOrNull((unit) => unit.identity.name == "String")
+        let chars = published.firstOrNull((unit) => unit.identity.name == "StringCharArray")
+        let copy = chars.functionUnits().firstOrNull((method) => method.name == "toCharArray")
+        expect(copy.returnType.kind()).toBe("generic-instance")
+        expect(text.functionUnits().filter((method) => method.constructorFunction).count).toBe(6)
+        let declaredSyntax = merged.constructorValues().firstOrNull((candidate) =>
+            candidate.parameterValues().count == 1 && candidate.parameterValues().first.typeName == "Char[]" &&
+            !candidate.parameterValues().first.nativeArrayStorage)
+        let nativeSyntax = merged.constructorValues().firstOrNull((candidate) =>
+            candidate.parameterValues().count == 1 && candidate.parameterValues().first.typeName == "Char[]" &&
+            candidate.parameterValues().first.nativeArrayStorage)
+        expect(declaredSyntax.parameterValues().first.nativeArrayStorage).toBe(false)
+        expect(declaredSyntax.parameterValues().first.nativeScalarStorage).toBe(false)
+        expect(nativeSyntax.parameterValues().first.nativeArrayStorage).toBe(true)
+        expect(nativeSyntax.parameterValues().first.nativeScalarStorage).toBe(false)
+        expect(declaredSyntax.range.snapshot.value).toBe(base.snapshot.value)
+        expect(nativeSyntax.range.snapshot.value).toBe(overlay.snapshot.value)
+        let declaredConstructor = text.functionUnits().firstOrNull((method) =>
+            method.constructorFunction && method.parameterValues().count == 1 &&
+            method.parameterValues().first.semanticType.kind() == "generic-instance")
+        expect(declaredConstructor.identity.syntaxIdentity.snapshot.value).toBe(base.snapshot.value)
+        expect(declaredConstructor.parameterValues().first.semanticType.value()).toBe(copy.returnType.value())
+        let nativeConstructor = text.functionUnits().firstOrNull((method) =>
+            method.constructorFunction && method.parameterValues().count == 1 &&
+            method.parameterValues().first.semanticType.kind() == "array")
+        expect(nativeConstructor.parameterValues().first.semanticType.value()).toBe(
+            ArraySemanticType(SemanticTypes.charType()).value())
+        expect(nativeConstructor.identity.syntaxIdentity.snapshot.value).toBe(overlay.snapshot.value)
+        let workload = defaultSource("core/workloads", "ProductionCoreWorkload",
+            "class ProductionCoreWorkload { public static stringsAndCharacters(StringCharArray chars) -> String { let copy = chars.toCharArray(); copy.add('c'); return String(copy); } }")
+        sources.add(PrimitiveSourceBindingContext("core/workloads", workload.snapshot, workload.classValues(),
+            importValues: [PrimitiveBindingImport("flat/datastruct/list/StringCharArray", workload.classValues().first.range),
+                PrimitiveBindingImport("flat/Array", workload.classValues().first.range)]))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "ProductionCoreWorkload")
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "stringsAndCharacters")
+        let invocation = textCall(textReturn(method.statements().last).value)
+        expect(invocation.target.ownerType.value()).toBe(text.semanticType.value())
+        expect(invocation.target.identity.declaration.value).toBe(declaredConstructor.identity.value)
+        expect(invocation.target.identity.declaration.syntaxIdentity.snapshot.value).toBe(base.snapshot.value)
+        expect(invocation.argumentValues().first.semanticType.value()).toBe(copy.returnType.value())
+        expect(invocation.target.parameterTypes().first.value()).toBe(copy.returnType.value())
+    }
+
+    async test `character array String construction preserves strict nullable and element storage checks`() {
+        String[] consumers = [
+            "public static check(Char[]? copy) -> String => String(copy)",
+            "public static check(Int[] copy) -> String => String(copy)"
+        ]
+        for (consumer in consumers) {
+            let sources = [
+                defaultSource("flat", "Array", "class Array<E> { public construct() {} }"),
+                defaultSource("flat", "String", "class String { public construct(Char[] chars) {} }")
+            ]
+            let invalid = defaultSource("app", "InvalidCopy", "class InvalidCopy { " + consumer + " }")
+            sources.add(PrimitiveSourceBindingContext("app", invalid.snapshot, invalid.classValues(),
+                importValues: [PrimitiveBindingImport("flat/Array", invalid.classValues().first.range)]))
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("No overload of 'String'")) {
+                    throw Exception("Expected checked constructor storage rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `Exception catchType compares declared metadata locations through explicit nullable String equality`() {
+        let sources = [
+            defaultSource("flat", "String", "class String { public construct(native String text) {} public equals(String? other) -> Bool { return true; } public equals(Object? other) -> Bool { return false; } }"),
+            defaultSource("flat/meta", "Class", "class Class<Type> { visible String location; public construct(String location) { this.location = location; } }")
+        ]
+        let source = defaultSource("flat/exception", "Exception",
+            "class Exception { public static catchType(func(), Class exceptionType, Bool soft = false, Bool exact = false) -> Exception => null { if (soft) { try { func(); } catch all (Exception e) { if (e.class.location == exceptionType.location) { return e; } } } else { try { func(); } catch (Exception e) { if (e.class.location == exceptionType.location) { return e; } else { throw e; } } } } public static matches(Exception e, Class exceptionType) -> Bool { return e.class.location == exceptionType.location; } public static differs(Exception e, Class exceptionType) -> Bool => e.class.location != exceptionType.location }")
+        sources.add(PrimitiveSourceBindingContext("flat/exception", source.snapshot, source.classValues(),
+            importValues: [PrimitiveBindingImport("flat/meta/Class", source.classValues().first.range)]))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "Exception")
+        let text = units.firstOrNull((unit) => unit.identity.name == "String")
+        let metadata = units.firstOrNull((unit) => unit.identity.name == "Class")
+        let location = metadata.fieldUnits().firstOrNull((field) => field.name == "location")
+        expect(location.semanticType.value()).toBe(text.semanticType.value())
+        expect(owner.functionUnits().any((method) => method.name == "catchType")).toBe(true)
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "matches")
+        let call = textCall(textReturn(method.statements().first).value)
+        expect(call.target.name).toBe("equals")
+        expect(call.target.ownerType.value()).toBe(text.semanticType.value())
+        expect(call.target.parameterTypes().first.kind()).toBe("nullable")
+        Object parameterSource = call.target.parameterTypes().first
+        NullableSemanticType parameter = (NullableSemanticType)parameterSource
+        expect(parameter.underlyingType.value()).toBe(text.semanticType.value())
+        expect(call.receiver.expressionKind()).toBe("member-access")
+        Object receiverSource = call.receiver
+        BoundMemberAccessExpression receiver = (BoundMemberAccessExpression)receiverSource
+        expect(receiver.memberIdentity.value).toBe(location.identity.value)
+        expect(receiver.receiver.semanticType.value()).toBe(metadata.semanticType.value())
+        expect(call.argumentValues().first.semanticType.value()).toBe(text.semanticType.value())
+        expect(call.range.snapshot.value).toBe(source.snapshot.value)
+        let differs = owner.functionUnits().firstOrNull((candidate) => candidate.name == "differs")
+        expect(textReturn(differs.statements().first).value.expressionKind()).toBe("unary")
+    }
+
+    async test `nullable text equality contract does not admit nullable receivers native references or wrong overloads`() {
+        String[] declarations = [
+            "public equals(String? other) -> Bool { return true; }",
+            "public equals(String? other) -> Bool { return true; }",
+            "public equals(Object? other) -> Bool { return true; }",
+            "public equals(String? other) -> Int { return 1; }"
+        ]
+        String[] consumers = [
+            "public static check(String? left, String right) -> Bool => left.equals(right)",
+            "public static check(String left, native String right) -> Bool => left.equals(right)",
+            "public static check(String left, String right) -> Bool => left == right",
+            "public static check(String left, String right) -> Bool => left == right"
+        ]
+        var Int index
+        for (declaration in declarations) {
+            let consumer = consumers[index]
+            let sources = [defaultSource("flat", "String", "class String { public construct(native String text) {} " + declaration + " }")]
+            sources.add(defaultSource("app", "InvalidEquality", "class InvalidEquality { " + consumer + " }"))
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("equals") && !error.message.contains("Bool") &&
+                    !error.message.contains("bool") && !error.message.contains("nullable:")) {
+                    throw Exception("Expected checked text equality rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+            index++
+        }
+    }
+
+    async test `guarded native array capture preserves overlay field identity and setup free opaque references`() {
+        let base = defaultSource("flat/datastruct/list", "StringCharArray",
+            "class StringCharArray { visible Int count; }")
+        var String body = "class StringCharArray { visible native_array native Char[] data; public equals(StringCharArray? other) -> Bool { if (other == null) { return false; } if (count != other.count) { return false; } native_array native Char[] otherData = other.data; external js { if ("
+        body += '#'
+        body += "{data} == null) return "
+        body += '#'
+        body += "{otherData} == null; return "
+        body += '#'
+        body += "{data} === "
+        body += '#'
+        body += "{otherData}; } } }"
+        let overlay = textSource("flat/datastruct/list", "StringCharArray", body, "native-capture-js")
+        let merged = base.classValues().first.mergedWith(overlay.classValues().first)
+        let sources = [PrimitiveSourceBindingContext("flat/datastruct/list", base.snapshot, [merged]),
+            PrimitiveSourceBindingContext("flat/datastruct/list", overlay.snapshot, PrimitiveClassSyntax[])]
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().first
+        let field = owner.fieldUnits().firstOrNull((candidate) => candidate.name == "data")
+        expect(field.nativeArrayStorage).toBe(true)
+        expect(field.semanticType.kind()).toBe("array")
+        expect(field.canonicalOwner().value).toBe(owner.identity.value)
+        expect(field.identity.declaration.syntaxIdentity.snapshot.value).toBe(overlay.snapshot.value)
+        expect(field.range.snapshot.value).toBe(overlay.snapshot.value)
+        let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == "equals")
+        expect(method.statements().count).toBe(4)
+        let capture = textLocal(method.statements()[2])
+        expect(capture.local.name).toBe("otherData")
+        expect(capture.local.semanticType.value()).toBe(field.semanticType.value())
+        expect(capture.initializer.expressionKind()).toBe("member-access")
+        Object accessSource = capture.initializer
+        BoundMemberAccessExpression access = (BoundMemberAccessExpression)accessSource
+        expect(access.memberIdentity.value).toBe(field.identity.value)
+        expect(access.receiver.semanticType.value()).toBe(owner.semanticType.value())
+        expect(access.range.snapshot.value).toBe(overlay.snapshot.value)
+        let parsedMethod = merged.methodValues().firstOrNull((candidate) => candidate.name == "equals")
+        Object parsedCaptureSource = parsedMethod.statements()[2]
+        PrimitiveLocalDeclarationSyntax parsedCapture = (PrimitiveLocalDeclarationSyntax)parsedCaptureSource
+        expect(parsedCapture.nativeArrayStorage).toBe(true)
+        expect(parsedCapture.nativeScalarStorage).toBe(false)
+        Object externalSource = method.statements().last
+        BoundExternalStatement external = (BoundExternalStatement)externalSource
+        let values = external.segmentValues().filter((segment) => segment.value != null)
+        expect(values.count).toBe(4)
+        var Int index
+        for (segment in values) {
+            if (index == 1 || index == 3) {
+                expect(segment.value.expressionKind()).toBe("reference")
+                Object referenceSource = segment.value
+                BoundReferenceExpression reference = (BoundReferenceExpression)referenceSource
+                expect(reference.symbolIdentity.value).toBe(capture.local.symbolIdentity.value)
+                expect(reference.semanticType.value()).toBe(field.semanticType.value())
+            } else {
+                expect(segment.value.expressionKind()).toBe("member-access")
+                Object fieldAccessSource = segment.value
+                BoundMemberAccessExpression fieldAccess = (BoundMemberAccessExpression)fieldAccessSource
+                expect(fieldAccess.memberIdentity.value).toBe(field.identity.value)
+                expect(fieldAccess.semanticType.value()).toBe(field.semanticType.value())
+                expect(fieldAccess.receiver.expressionKind()).toBe("reference")
+                expect(fieldAccess.receiver.semanticType.value()).toBe(owner.semanticType.value())
+            }
+            expect(segment.range.snapshot.value).toBe(overlay.snapshot.value)
+            index++
+        }
+    }
+
+    async test `opaque nullable dereferences reject incoming proofs and native mutation before later use`() {
+        var String interpolatedWrite = "if (other == null) { return false; } external js { "
+        interpolatedWrite += '#'
+        interpolatedWrite += "{other} = null; return "
+        String[] prefixes = [
+            "if (other == null) { return false; } external js { return ",
+            "if (other == null) { return false; } external js { other = null; return ",
+            interpolatedWrite,
+            "external js { return "
+        ]
+        for (prefix in prefixes) {
+            var String body = "class Box { visible native_array native Char[] data; public run(Box? other) -> Bool { " + prefix
+            body += '#'
+            body += "{other.data} == null; } } }"
+            let source = defaultSource("app", "Box", body)
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts([source]) }
+            catch (Exception error) {
+                if (!error.message.contains("Unsupported interpolation path") &&
+                    !(error.message.contains("Unknown member 'data'") && error.message.contains("nullable:"))) {
+                    throw Exception("Expected opaque nullable dereference rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `native array capture rejects unguarded and call invalidated nullable receivers`() {
+        String[] bodies = [
+            "native_array native Char[] otherData = other.data; return true;",
+            "if (other == null) { return false; } touch(); native_array native Char[] otherData = other.data; return true;"
+        ]
+        for (body in bodies) {
+            let source = defaultSource("app", "Box", "class Box { visible native_array native Char[] data; public touch() {} public run(Box? other) -> Bool { " + body + " } }")
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts([source]) }
+            catch (Exception error) {
+                if (!error.message.contains("Unknown member 'data'") || !error.message.contains("nullable:")) {
+                    throw Exception("Expected nullable capture receiver rejection: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `short circuit declarations are visible only in definitely evaluated condition arms`() {
+        String[] bodies = [
+            "if (gate && (let selected = input)) { return selected.count; } else { return 0; }",
+            "if (gate || (let selected = input)) { return 0; } else { return selected.count; }",
+            "if (!(gate && (let selected = input))) { return 0; } else { return selected.count; }",
+            "if (gate && (let selected = input) && selected.count > 0) { return selected.count; } return 0;",
+            "return gate && (let selected = input) ? selected.count : 0;",
+            "return gate || (let selected = input) ? 0 : selected.count;"
+        ]
+        for (body in bodies) {
+            let source = defaultSource("app", "Box", "class Box { visible Int count; static run(Bool gate, Box input) -> Int { " + body + " } }")
+            let owner = PrimitiveClassPartitionBinder().bindContexts([source]).typeUnits().first
+            expect(owner.functionUnits().firstOrNull((function) => function.name == "run").returnType.value()).toBe(SemanticTypes.intType().value())
+        }
+    }
+
+    async test `skipped short circuit declarations reject opposite arms ternary chains and continuation`() {
+        String[] bodies = [
+            "if (gate && (let selected = input)) { return selected.count; } else { return selected.count; }",
+            "if (gate || (let selected = input)) { return selected.count; } else { return 0; }",
+            "if (!(gate && (let selected = input))) { return selected.count; } return 0;",
+            "return gate && (let selected = input) ? 0 : selected.count;",
+            "return gate || (let selected = input) ? selected.count : 0;",
+            "return (gate && (let selected = input)) || selected.count > 0 ? 1 : 0;",
+            "if (gate && (let selected = input)) { return 0; } return selected.count;",
+            "if (gate || (let selected = input)) {} return selected.count;"
+        ]
+        for (body in bodies) {
+            let source = defaultSource("app", "Box", "class Box { visible Int count; static run(Bool gate, Box input) -> Int { " + body + " } }")
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts([source]) }
+            catch (Exception error) {
+                if (!error.message.contains("Unknown local 'selected'") && !error.message.contains("Unknown reference 'selected'")) {
+                    throw Exception("Expected unresolved selected reference, actual #{error.message}; body #body")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `JS StringCharArray early null return retains lexical proof through stored count guard`() {
+        let base = defaultSource("flat/datastruct/list", "StringCharArray",
+            "class StringCharArray { visible Int count; public equals(StringCharArray? other) -> Bool { return other != null && count == other.count; } }")
+        let overlay = textSource("flat/datastruct/list", "StringCharArray",
+            "class StringCharArray { public equals(StringCharArray? other) -> Bool { if (other == null) { return false; } if (count != other.count) { return false; } return count == other.count; } }", "js-early")
+        let merged = base.classValues().first.mergedWith(overlay.classValues().first)
+        let sources = [PrimitiveSourceBindingContext("flat/datastruct/list", base.snapshot, [merged]),
+            PrimitiveSourceBindingContext("flat/datastruct/list", overlay.snapshot, PrimitiveClassSyntax[])]
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().first
+        let method = owner.functionUnits().firstOrNull((function) => function.name == "equals")
+        expect(method.identity.syntaxIdentity.snapshot.value).toBe(overlay.snapshot.value)
+        expect(method.parameterValues().first.semanticType.kind()).toBe("nullable")
+        expect(method.statements().count).toBe(3)
+        Object guardSource = method.statements()[1]
+        BoundIfStatement guard = (BoundIfStatement)guardSource
+        Object conditionSource = guard.condition
+        BoundBinaryExpression condition = (BoundBinaryExpression)conditionSource
+        Object accessSource = condition.right
+        BoundMemberAccessExpression access = (BoundMemberAccessExpression)accessSource
+        expect(access.receiver.semanticType.value()).toBe(owner.semanticType.value())
+        expect(access.range.snapshot.value).toBe(overlay.snapshot.value)
+        expect(textReturn(method.statements().last).value.semanticType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `early null return cannot retain local proofs across getters calls writes or mutable field guards`() {
+        String[] bodies = [
+            "visible Int count; public run(Box? other) -> Int { if (other == null) { return 0; } other = null; return other.count; }",
+            "visible Int count; public touch() -> Bool { return true; } public run(Box? other) -> Int { if (other == null) { return 0; } if (touch()) { return 0; } return other.count; }",
+            "public Int count => 0 public run(Box? other) -> Int { if (other == null) { return 0; } if (count == 0) { return 0; } return other.count; }",
+            "visible Int count; visible Box? field; public run() -> Int { if (field == null) { return 0; } return field.count; }"
+        ]
+        for (body in bodies) {
+            let source = defaultSource("app", "Box", "class Box { " + body + " }")
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts([source]) }
+            catch (Exception error) {
+                if (!error.message.contains("Unknown member 'count'") || !error.message.contains("nullable:")) {
+                    throw Exception("Expected nullable member rejection: #{error.message}; body #body")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `List nullable Object absence guard uses null comparison without overloaded truthiness`() {
+        let object = defaultSource("flat", "Object", "class Object {}")
+        let source = defaultSource("flat/datastruct/list", "Presence",
+            "class Presence { public equals(Object? another) => true { if (!another) { return false; } } public absent(Object? value) -> Bool { return !value; } public nonnull(Object value) -> Bool { return !value; } public boolean(Bool value) -> Bool { return !value; } }")
+        let units = PrimitiveClassPartitionBinder().bindContexts([object, source]).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "Presence")
+        let equals = owner.functionUnits().firstOrNull((function) => function.name == "equals")
+        Object branchSource = equals.statements().first
+        BoundIfStatement branch = (BoundIfStatement)branchSource
+        Object conditionSource = branch.condition
+        BoundBinaryExpression condition = (BoundBinaryExpression)conditionSource
+        expect(condition.operator).toBe("==")
+        expect(condition.semanticType.value()).toBe(SemanticTypes.boolType().value())
+        expect(condition.left.semanticType.kind()).toBe("nullable")
+        expect(condition.left.expressionKind()).toBe("reference")
+        expect(condition.right.semanticType.kind()).toBe("null")
+        expect(condition.range.snapshot.value).toBe(source.snapshot.value)
+        let absent = owner.functionUnits().firstOrNull((function) => function.name == "absent")
+        Object absentSource = textReturn(absent.statements().first).value
+        BoundBinaryExpression absence = (BoundBinaryExpression)absentSource
+        expect(absence.operator).toBe("==")
+        expect(absence.left.expressionKind()).toBe("reference")
+        let nonnull = owner.functionUnits().firstOrNull((function) => function.name == "nonnull")
+        Object nonnullSource = textReturn(nonnull.statements().first).value
+        BoundBinaryExpression nonnullAbsence = (BoundBinaryExpression)nonnullSource
+        expect(nonnullAbsence.operator).toBe("==")
+        expect(nonnullAbsence.left.expressionKind()).toBe("conversion")
+        let boolean = owner.functionUnits().firstOrNull((function) => function.name == "boolean")
+        Object booleanSource = textReturn(boolean.statements().first).value
+        BoundUnaryExpression negation = (BoundUnaryExpression)booleanSource
+        expect(negation.operator).toBe("!")
+        expect(negation.operand.semanticType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `nullable scalar and composite negation do not borrow reference absence semantics`() {
+        String[] bodies = [
+            "public invalid(Int? value) -> Bool { return !value; }",
+            "public invalid(Int value) -> Bool { return !value; }",
+            "public invalid(Object? value) -> Bool { return !(value + 1); }"
+        ]
+        for (body in bodies) {
+            let object = defaultSource("flat", "Object", "class Object {}")
+            let source = defaultSource("app", "InvalidPresence", "class InvalidPresence { " + body + " }")
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts([object, source]) }
+            catch (Exception error) {
+                let invalidOperator = error.message.contains("Operator '!'") || error.message.contains("Operator '+'")
+                if ((!error.message.contains("type.unary") && !error.message.contains("type.binary") && !invalidOperator) ||
+                    !error.message.contains("invalid")) {
+                    throw Exception("Expected invalid unary/binary diagnostic; actual #{error.message}; body #body")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `Core substring bounds source text constructs canonical String before nullable Exception argument lift`() {
+        let sources = textSources("Int")
+        sources.add(textSource("flat/exception", "Exception",
+            "class Exception { public construct(visible String? message = \"\") {} }"))
+        var String message = "\"Substring bounds of ["
+        message += '#'
+        message += "start, "
+        message += '#'
+        message += "end] are invalid\""
+        let source = textSource("flat", "Bounds",
+            "class Bounds { visible Int count; public validateSubstringBounds(Int start, Int end, Bool throwException = false) => true { if (start < 0 || end < start || end > count) { if (throwException) { throw Exception(" + message + "); } return false; } } static literal() { Exception(\"literal\"); } static absent() { Exception(null); } }")
+        sources.add(source)
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "Bounds")
+        let text = units.firstOrNull((unit) => unit.identity.name == "String")
+        let exception = units.firstOrNull((unit) => unit.identity.name == "Exception")
+        let bounds = owner.functionUnits().firstOrNull((function) => function.name == "validateSubstringBounds")
+        Object outerSource = bounds.statements().first
+        BoundIfStatement outer = (BoundIfStatement)outerSource
+        Object innerSource = outer.thenValues().first
+        BoundIfStatement inner = (BoundIfStatement)innerSource
+        Object throwSource = inner.thenValues().first
+        BoundThrowStatement thrown = (BoundThrowStatement)throwSource
+        let call = textCall(thrown.value)
+        expect(call.target.ownerType.value()).toBe(exception.semanticType.value())
+        expect(call.target.parameterTypes().first.kind()).toBe("nullable")
+        expect(call.argumentConversions().first.conversionKind).toBe("nullable-lift")
+        let constructed = textCall(call.argumentValues().first)
+        expect(constructed.target.ownerType.value()).toBe(text.semanticType.value())
+        expect(constructed.argumentValues().first.expressionKind()).toBe("interpolated-string")
+        expect(constructed.argumentValues().first.range.snapshot.value).toBe(source.snapshot.value)
+        let literal = owner.functionUnits().firstOrNull((function) => function.name == "literal")
+        Object literalSource = literal.statements().first
+        BoundExpressionStatement literalStatement = (BoundExpressionStatement)literalSource
+        expect(textCall(literalStatement.expression).argumentConversions().first.conversionKind).toBe("nullable-lift")
+        let absent = owner.functionUnits().firstOrNull((function) => function.name == "absent")
+        Object absentSource = absent.statements().first
+        BoundExpressionStatement absentStatement = (BoundExpressionStatement)absentSource
+        expect(textCall(absentStatement.expression).argumentValues().first.semanticType.kind()).toBe("null")
+        expect(textCall(absentStatement.expression).argumentConversions().first.conversionKind).toBe("null")
+    }
+
+    async test `nullable constructor source text boundary rejects native references and preserves native overload`() {
+        let sources = textSources("Int")
+        sources.add(textSource("app", "OptionalMessage", "class OptionalMessage { public construct(String? message) {} }"))
+        sources.add(textSource("app", "InvalidMessage", "class InvalidMessage { static run(native String message) { OptionalMessage(message); } }"))
+        var Bool rejected
+        try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+        catch (Exception error) {
+            rejected = error.message.contains("OptionalMessage") && error.message.contains("nullable:")
+        }
+        expect(rejected).toBe(true)
+        let overloaded = textSources("Int")
+        overloaded.add(textSource("app", "Choice", "class Choice { public construct(String? message) {} public construct(native String message) {} static run() { Choice(\"native overload\"); } }"))
+        let owner = PrimitiveClassPartitionBinder().bindContexts(overloaded).typeUnits().firstOrNull((unit) => unit.identity.name == "Choice")
+        let run = owner.functionUnits().firstOrNull((function) => function.name == "run")
+        Object statementSource = run.statements().first
+        BoundExpressionStatement statement = (BoundExpressionStatement)statementSource
+        expect(textCall(statement.expression).target.parameterTypes().first.value()).toBe(SemanticTypes.stringType().value())
+    }
+
+    async test `Core String equals retains guarded local across stored count reads into JS overlay compareTo`() {
+        let base = defaultSource("flat", "String",
+            "class String { visible Int count; public equals(String? other) => (other || !this) && count == other.count && compareTo(other) == 0 public compareTo(String other) -> Int { return 0; } }")
+        let overlay = textSource("flat", "String",
+            "class String { public compareTo(String other) -> Int { return 0; } }", "js-compare")
+        let merged = base.classValues().first.mergedWith(overlay.classValues().first)
+        let sources = [PrimitiveSourceBindingContext("flat", base.snapshot, [merged]),
+            PrimitiveSourceBindingContext("flat", overlay.snapshot, PrimitiveClassSyntax[])]
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().first
+        let equals = owner.functionUnits().firstOrNull((method) => method.name == "equals")
+        let compare = owner.functionUnits().firstOrNull((method) => method.name == "compareTo")
+        expect(equals.parameterValues().first.semanticType.kind()).toBe("nullable")
+        expect(compare.identity.syntaxIdentity.snapshot.value).toBe(overlay.snapshot.value)
+        expect(compare.parameterValues().first.semanticType.value()).toBe(owner.semanticType.value())
+        Object returnedSource = textReturn(equals.statements().first).value
+        BoundBinaryExpression returned = (BoundBinaryExpression)returnedSource
+        Object lastSource = returned.right
+        BoundBinaryExpression last = (BoundBinaryExpression)lastSource
+        let call = textCall(last.left)
+        expect(call.target.identity.declaration.value).toBe(compare.identity.value)
+        expect(call.target.ownerType.value()).toBe(owner.semanticType.value())
+        expect(call.receiver.semanticType.value()).toBe(owner.semanticType.value())
+        expect(call.argumentValues().first.semanticType.value()).toBe(owner.semanticType.value())
+    }
+
+    async test `presence proofs do not cross property getters or calls`() {
+        String[] bodies = [
+            "public Int count => touch() public touch() -> Int { return 0; } public run(Box? other) -> Bool { return other != null && count == other.count && consume(other) == 0; }",
+            "visible Int count; public touch() -> Bool { return true; } public run(Box? other) -> Bool { return other != null && touch() && consume(other) == 0; }"
+        ]
+        for (body in bodies) {
+            let source = defaultSource("app", "Box", "class Box { " + body + " public consume(Box other) -> Int { return 0; } }")
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts([source]) }
+            catch (Exception error) {
+                let nullableMember = error.message.contains("Unknown member 'count'") &&
+                    error.message.contains("nullable:")
+                let nullableArgument = error.message.contains("consume") &&
+                    error.message.contains("nullable:")
+                if ((!nullableMember && !nullableArgument) || error.message.contains("syntax error")) {
+                    throw Exception("Expected checked nullable rejection; actual #{error.message}; body #body")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `interpolation cannot reuse presence proof after an earlier segment changes the local`() {
+        // Build the embedded interpolation text without interpolating this test's source.
+        var String expression = "\""
+        expression += '#'
+        expression += "{(value = null)}"
+        expression += '#'
+        expression += "{value.count}\""
+        String[] bodies = [
+            "class Box { visible Int count; static run(Box? value) -> String { if (value) { return " + expression + "; } return \"\"; } }",
+            "class Box { visible Int count; static run(Box? value) -> String { if (value) { let text = " + expression + "; return text; } return \"\"; } }"
+        ]
+        for (bodySource in bodies) {
+            let sources = textSources("Int")
+            sources.add(textSource("app", "Box", bodySource))
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("Unknown member 'count'") || !error.message.contains("nullable:")) {
+                    throw Exception("Interpolation fixture failed before the expected nullable member diagnostic: #{error.message}")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `nullable local guards refine branches short circuit and early return only`() {
+        let sources = [defaultSource("app", "Box",
+            "class Box { visible Int count; static andRead(Box? value) -> Bool { return value != null && value.count > 0; } static present(Box? value) -> Int { if (value) { return value.count; } else { return 0; } } static early(Box? value) -> Int { if (value == null) { return 0; } return value.count; } static conditional(Box? value) -> Int { return value == null ? 0 : value.count; } static orRead(Box? value) -> Bool { return value == null || value.count > 0; } public receiverOr(Box? value) -> Int { return (value || !this) ? value.count : 0; } }")]
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().first
+        expect(owner.functionUnits().filter({ _.staticFunction }).count).toBe(5)
+        expect(owner.functionUnits().firstOrNull({ _.name == "receiverOr" }).parameterValues().first.semanticType.kind()).toBe("nullable")
+        for (method in owner.functionUnits().filter({ _.staticFunction })) {
+            expect(method.parameterValues().first.semanticType.kind()).toBe("nullable")
+        }
+    }
+
+    async test `nullable local reassignment retains declared storage and requires a fresh guard`() {
+        let sources = [defaultSource("app", "Box",
+            "class Box { visible Int count; static run(Box? value) -> Int { if (value) { value = null; if (value != null) { return value.count; } } return 0; } }")]
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().first
+        let method = owner.functionUnits().firstOrNull({ _.name == "run" })
+        Object branchSource = method.statements().first
+        BoundIfStatement branch = (BoundIfStatement)branchSource
+        expect(method.parameterValues().first.semanticType.kind()).toBe("nullable")
+        // Published assignment must still target nullable storage, not the
+        // nonnullable read type established by the outer guard.
+        let assignment = textAssignment(branch.thenValues().first)
+        expect(assignment.target.semanticType.kind()).toBe("nullable")
+        expect(assignment.value.semanticType.kind()).toBe("null")
+        expect(assignment.conversion.applicable).toBe(true)
+    }
+
+    async test `nullable local proofs cannot escape branches writes calls closures or mutable fields`() {
+        String[] sourcesText = [
+            "class Box { visible Int count; static run(Box? value) -> Int { if (value) { return 0; } else { return value.count; } } }",
+            "class Box { visible Int count; static run(Box? value) -> Int { if (value) { value = null; return value.count; } return 0; } }",
+            "class Box { visible Int count; static touch() {} static run(Box? value) -> Int { if (value) { touch(); return value.count; } return 0; } }",
+            "class Box { visible Int count; static consume(func()->Int callback) {} static run(Box? value) { if (value) { consume({ value.count }); } } }",
+            "class Box { visible Int count; Box? field; public run() -> Int { if (field != null) { return field.count; } return 0; } }",
+            "class Box { visible Int count; static run(Box? value, Bool other) -> Bool { return (value != null || other) && value.count > 0; } }",
+            "class Box { visible Int count; static run(Box? value) -> Int { if (value) {} return value.count; } }",
+            "class Box { visible Int count; static run(Box? value) -> Int { return value.count; } }"
+        ]
+        for (sourceText in sourcesText) {
+            let sources = [defaultSource("app", "Box", sourceText)]
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                if (!error.message.contains("Unknown member 'count'") || !error.message.contains("nullable:")) {
+                    throw Exception("Proof invalidation fixture failed before the expected nullable member diagnostic: #{error.message}; source: #sourceText")
+                }
+                rejected = true
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `Exception constructor conditional refines parameter before text join and opaque projection`() {
+        let sources = textSources("Int")
+        sources[1] = textSource("flat", "String",
+            "class String implements PlusOperator<String, String> { visible StringCharArray chars; public construct(native String str) {} public plus(String another) -> String { return this; } }")
+        sources.add(textSource("flat", "StringCharArray", "class StringCharArray { native_array native Char[] data; }"))
+        var String exceptionSource = "class Exception { public construct(visible String? message = \"\") { let text = message == null ? \"\" : message; external js { this.error = Error("
+        exceptionSource += '#'
+        exceptionSource += "{text.chars.data}); } } }"
+        sources.add(textSource("app", "Exception", exceptionSource))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let text = units.firstOrNull({ _.identity.name == "String" })
+        let owner = units.firstOrNull({ _.identity.name == "Exception" })
+        expect(owner.fieldUnits().first.semanticType.kind()).toBe("nullable")
+        let entry = owner.functionUnits().firstOrNull({ _.constructorFunction })
+        expect(entry.parameterValues().first.semanticType.kind()).toBe("nullable")
+        let helpers = owner.functionUnits().filter({ !_.constructorFunction })
+        var Bool found
+        var Bool foundExternal
+        for (helper in helpers) {
+            for (statement in helper.statements()) {
+                if (statement.class.isOfType(BoundLocalDeclarationStatement.class)) {
+                    let local = textLocal(statement)
+                    if (local.local.name == "text") {
+                        expect(local.local.semanticType.value()).toBe(text.semanticType.value())
+                        Object conditionalSource = local.initializer
+                        BoundConditionalExpression conditional = (BoundConditionalExpression)conditionalSource
+                        expect(conditional.whenTrue.semanticType.value()).toBe(text.semanticType.value())
+                        expect(conditional.whenFalse.semanticType.value()).toBe(text.semanticType.value())
+                        found = true
+                    }
+                }
+                if (statement.class.isOfType(BoundExternalStatement.class)) {
+                    Object externalSource = statement
+                    BoundExternalStatement external = (BoundExternalStatement)externalSource
+                    expect(external.segmentValues().any({ _.value != null })).toBe(true)
+                    foundExternal = true
+                }
+            }
+        }
+        expect(found).toBe(true)
+        expect(foundExternal).toBe(true)
+    }
+
+    async test `explicit nullable fields and constructor null defaults never nest nullable types`() {
+        let sources = textSources("Int")
+        sources.add(textSource("app", "OptionalFields",
+            "class OptionalFields { visible String? stored = null; public construct(visible String? message = null) {} }") )
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().firstOrNull({ _.identity.name == "OptionalFields" })
+        expect(owner.fieldUnits().count).toBe(2)
+        for (field in owner.fieldUnits()) {
+            expect(field.semanticType.kind()).toBe("nullable")
+            Object typeSource = field.semanticType
+            NullableSemanticType type = (NullableSemanticType)typeSource
+            expect(type.underlyingType.kind()).toBe("user-class")
+        }
+        let constructor = owner.functionUnits().firstOrNull({ _.constructorFunction })
+        expect(constructor.parameterValues().first.semanticType.kind()).toBe("nullable")
+        expect(constructor.parameterValues().first.defaultValue.semanticType.kind()).toBe("nullable")
+    }
+
+    async test `published native nullable parameters agree with body storage and checked calls`() {
+        let sources = textSources("Int")
+        sources.add(textSource("app", "NativeOptional",
+            "class NativeOptional { static text(native String? value) {} static array(native_array native Char[]? value) {} static run(native String? value, native_array native Char[]? values) { text(value); array(values); text(null); array(null); } }"))
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().firstOrNull({ _.identity.name == "NativeOptional" })
+        let method = owner.functionUnits().firstOrNull({ _.name == "run" })
+        expect(method.parameterValues().count).toBe(2)
+        Object textSource = method.parameterValues().first.semanticType
+        NullableSemanticType textType = (NullableSemanticType)textSource
+        expect(textType.underlyingType.value()).toBe(SemanticTypes.stringType().value())
+        Object arraySource = method.parameterValues().last.semanticType
+        NullableSemanticType arrayType = (NullableSemanticType)arraySource
+        expect(arrayType.underlyingType.kind()).toBe("array")
+        for (statementValue in method.statements()) {
+            Object statementSource = statementValue
+            BoundExpressionStatement statement = (BoundExpressionStatement)statementSource
+            let call = textCall(statement.expression)
+            expect(call.target.parameterTypes().first.kind()).toBe("nullable")
+            expect(call.argumentConversions().first.applicable).toBe(true)
+        }
+    }
+
+    async test `nullable visible constructor default publishes the annotated field contract`() {
+        let sources = textSources("Int")
+        sources.add(textSource("app", "OptionalMessage",
+            "class OptionalMessage { public construct(visible String? message = \"\") {} public read() -> String { return message ?: \"fallback\"; } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull({ _.identity.name == "OptionalMessage" })
+        let text = units.firstOrNull({ _.identity.name == "String" })
+        let field = owner.fieldUnits().firstOrNull({ _.name == "message" })
+        expect(field.semanticType.kind()).toBe("nullable")
+        let constructor = owner.functionUnits().firstOrNull({ _.constructorFunction })
+        expect(constructor.parameterValues().first.semanticType.value()).toBe(field.semanticType.value())
+        expect(constructor.parameterValues().first.defaultValue.semanticType.kind()).toBe("nullable")
+        let read = owner.functionUnits().firstOrNull({ _.name == "read" })
+        expect(textReturn(read.statements().first).value.semanticType.value()).toBe(text.semanticType.value())
+    }
+
+    async test `nullable override keeps exact optional parameter contract`() {
+        let sources = [
+            defaultSource("app", "Base", "class Base { public equals(Base? other) -> Bool { return other != null; } }"),
+            defaultSource("app", "Child", "class Child extends Base { public construct() {} override public equals(Base? other) -> Bool { return other != null; } }")
+        ]
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let base = units.firstOrNull({ _.identity.name == "Base" })
+        let child = units.firstOrNull({ _.identity.name == "Child" })
+        let inherited = base.functionUnits().firstOrNull({ _.name == "equals" })
+        let implemented = child.functionUnits().firstOrNull({ _.name == "equals" })
+        expect(inherited.parameterValues().first.semanticType.kind()).toBe("nullable")
+        expect(implemented.parameterValues().first.semanticType.value()).toBe(inherited.parameterValues().first.semanticType.value())
+    }
+
+    async test `strict null initializer diagnostic retains exact local source range`() {
+        let source = textSource("app", "StrictRange", "class StrictRange { static run() { let String absent = null; } }")
+        let syntax = source.classValues().first.methodValues().first
+        let expected = syntax.statements().first.range
+        let statements = PrimitiveStatementSyntaxResult(syntax.statements())
+        let sources = textSources("Int")
+        sources.add(source)
+        let resolver = PrimitiveStructuralTypeResolver(declarationContext:
+            PrimitiveResolvedDeclarationContext(source, sources))
+        var Bool rejected
+        try { PrimitiveControlStatementBinder().bind(statements, source.snapshot, typeResolver: resolver) }
+        catch (Exception error) {
+            expect(error.class.isOfType(PrimitiveContextBindingException.class)).toBe(true)
+            Object errorSource = error
+            PrimitiveContextBindingException failure = (PrimitiveContextBindingException)errorSource
+            expect(failure.diagnostic.code).toBe("binding.local-initializer-type")
+            expect(failure.diagnostic.range.snapshot.value).toBe(expected.snapshot.value)
+            expect(failure.diagnostic.range.startTokenIndex).toBe(expected.startTokenIndex)
+            expect(failure.diagnostic.range.endTokenIndex).toBe(expected.endTokenIndex)
+            rejected = true
+        }
+        expect(rejected).toBe(true)
+    }
+
+    async test `production nonnullable null local reports binding storage types before IR publication`() {
+        let sources = textSources("Int")
+        sources.add(textSource("core/workloads", "ProductionCoreWorkload",
+            "class ProductionCoreWorkload { static stringsAndCharacters() { let String absent = null; } }"))
+        var Bool rejected
+        try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+        catch (Exception error) {
+            rejected = error.message.contains("Local initializer type mismatch for 'absent'") &&
+                error.message.contains(": null -> class:") &&
+                error.message.contains("memory:canonical-text:core/workloads:ProductionCoreWorkload")
+            expect(error.message.contains("Bound local declaration requires")).toBe(false)
+        }
+        expect(rejected).toBe(true)
+    }
+
+    async test `production native concatenation retains native local for Core String constructor overloads`() {
+        let sources = textSources("Int")
+        // Declared and native-storage Char[] are distinct overloads. Preserve
+        // both source snapshots and storage contracts through overlay merging.
+        let base = textSource("flat", "String",
+            "class String implements PlusOperator<String, String> { public construct(Char[] chars) {} public construct(StringCharArray chars) {} public plus(String another) -> String { return this; } }", "base")
+        let overlay = textSource("flat", "String",
+            "class String { public construct(Char c) {} public construct(native_array native Char[] chars, Int count) {} public construct(native_array native Char[] chars) {} public construct(native String str) {} }", "js")
+        let merged = base.classValues().first.mergedWith(overlay.classValues().first)
+        expect(merged.constructorValues().count).toBe(6)
+        let declaredArray = merged.constructorValues().firstOrNull((candidate) =>
+            candidate.parameterValues().count == 1 && candidate.parameterValues().first.typeName == "Char[]" &&
+            !candidate.parameterValues().first.nativeArrayStorage)
+        expect(declaredArray.parameterValues().first.nativeArrayStorage).toBe(false)
+        expect(declaredArray.parameterValues().first.nativeScalarStorage).toBe(false)
+        expect(declaredArray.range.snapshot.value).toBe(base.snapshot.value)
+        let charArray = merged.constructorValues().firstOrNull((candidate) =>
+            candidate.parameterValues().count == 1 && candidate.parameterValues().first.typeName == "Char[]" &&
+            candidate.parameterValues().first.nativeArrayStorage)
+        expect(charArray.range.snapshot.value).toBe(overlay.snapshot.value)
+        expect(charArray.parameterValues().first.nativeArrayStorage).toBe(true)
+        // Parser stores native scalars only for non-array types; native Char[]
+        // is represented by nativeArrayStorage, never by nativeScalarStorage.
+        expect(charArray.parameterValues().first.nativeScalarStorage).toBe(false)
+        expect(charArray.range.snapshot.value).toBe(overlay.snapshot.value)
+        sources[1] = PrimitiveSourceBindingContext("flat", base.snapshot, [merged],
+            importValues: [PrimitiveBindingImport("flat/operators/PlusOperator", merged.range)])
+        sources.add(PrimitiveSourceBindingContext("flat", overlay.snapshot, PrimitiveClassSyntax[]))
+        sources.add(textSource("flat", "StringCharArray", "class StringCharArray {}"))
+        sources.add(textSource("core/workloads", "ProductionCoreWorkload",
+            "class ProductionCoreWorkload { static String trace = \"\"; static text(String actual, String expected, String label) {} static leftNative(native String value) => value { trace += \"L\"; } static rightNative(native String value) => value { trace += \"R\"; } static concatenation() { trace = \"\"; let nn = leftNative(\"native-left|\") + rightNative(\"native-right\"); text(trace, \"LR\", \"native native evaluation\"); text(String(nn), \"native-left|native-right\", \"native native contents\"); } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull({ _.identity.name == "ProductionCoreWorkload" })
+        let text = units.firstOrNull({ _.identity.name == "String" })
+        let constructors = text.functionUnits().filter({ _.constructorFunction })
+        expect(constructors.count).toBe(6)
+        let declaredArrayConstructor = constructors.firstOrNull((candidate) =>
+            candidate.parameterValues().count == 1 &&
+            candidate.parameterValues().first.semanticType.kind() == "array" &&
+            candidate.identity.syntaxIdentity.snapshot.value == base.snapshot.value)
+        let nativeArrayConstructor = constructors.firstOrNull((candidate) =>
+            candidate.parameterValues().count == 1 &&
+            candidate.parameterValues().first.semanticType.kind() == "array" &&
+            candidate.identity.syntaxIdentity.snapshot.value == overlay.snapshot.value)
+        expect(declaredArrayConstructor.range.startTokenIndex).toBe(declaredArray.range.startTokenIndex)
+        expect(nativeArrayConstructor.range.startTokenIndex).toBe(charArray.range.startTokenIndex)
+        expect(declaredArrayConstructor.identity.value == nativeArrayConstructor.identity.value).toBe(false)
+        expect(declaredArrayConstructor.parameterValues().first.semanticType.value()).toBe(
+            ArraySemanticType(SemanticTypes.charType()).value())
+        expect(nativeArrayConstructor.parameterValues().first.semanticType.value()).toBe(
+            ArraySemanticType(SemanticTypes.charType()).value())
+        let statements = owner.functionUnits().firstOrNull({ _.name == "concatenation" }).statements()
+        expect(statements.count).toBe(4)
+        let nativeLocal = textLocal(statements[1])
+        expect(nativeLocal.local.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        expect(nativeLocal.initializer.expressionKind()).toBe("binary")
+        Object binarySource = nativeLocal.initializer
+        BoundBinaryExpression binary = (BoundBinaryExpression)binarySource
+        expect(textCall(binary.left).target.name).toBe("leftNative")
+        expect(textCall(binary.right).target.name).toBe("rightNative")
+        Object statementSource = statements.last
+        BoundExpressionStatement statement = (BoundExpressionStatement)statementSource
+        let call = textCall(statement.expression)
+        let constructed = textCall(call.argumentValues().first)
+        expect(constructed.target.callableKind.value).toBe("constructor")
+        expect(constructed.target.ownerType.value()).toBe(text.semanticType.value())
+        expect(constructed.target.parameterTypes().count).toBe(1)
+        expect(constructed.target.parameterTypes().first.value()).toBe(SemanticTypes.stringType().value())
+        expect(constructed.argumentValues().first.expressionKind()).toBe("reference")
+        expect(constructed.argumentValues().first.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        Object referenceSource = constructed.argumentValues().first
+        BoundReferenceExpression reference = (BoundReferenceExpression)referenceSource
+        expect(reference.symbolIdentity.value).toBe(nativeLocal.local.symbolIdentity.value)
+        for (index in 1..3) {
+            let literal = textCall(call.argumentValues()[index])
+            expect(literal.target.parameterTypes().first.value()).toBe(SemanticTypes.stringType().value())
+        }
+    }
+
+    async test `inferred source text constructs String but inferred native references remain native`() {
+        let sources = textSources("Int")
+        sources.add(textSource("app", "Inference",
+            "class Inference { static run(native String input) { let literal = \"source\"; let nativeValue = input; let constructed = String(nativeValue); } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull({ _.identity.name == "Inference" })
+        let text = units.firstOrNull({ _.identity.name == "String" })
+        let statements = owner.functionUnits().firstOrNull({ _.name == "run" }).statements()
+        expect(textLocal(statements[0]).local.semanticType.value()).toBe(text.semanticType.value())
+        expect(textCall(textLocal(statements[0]).initializer).target.callableKind.value).toBe("constructor")
+        expect(textLocal(statements[1]).local.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        expect(textLocal(statements[1]).initializer.expressionKind()).toBe("reference")
+        expect(textCall(textLocal(statements[2]).initializer).target.parameterTypes().first.value()).toBe(SemanticTypes.stringType().value())
+
+        let invalidSources = textSources("Int")
+        invalidSources.add(textSource("app", "InvalidInference",
+            "class InvalidInference { static accept(String value) {} static run(native String input) { let nativeValue = input; accept(nativeValue); } }"))
+        var Bool rejected
+        try { PrimitiveClassPartitionBinder().bindContexts(invalidSources) }
+        catch (Exception error) { rejected = error.message.contains("No overload of 'accept'") }
+        expect(rejected).toBe(true)
+    }
+
+    async test `production static text call constructs literal arguments without changing declared input`() {
+        let sources = textSources("Int")
+        sources.add(textSource("core/workloads", "ProductionCoreWorkload",
+            "class ProductionCoreWorkload { static String trace = \"\"; static text(String actual, String expected, String label) {} static concatenation() { text(trace, \"LR\", \"declared declared evaluation\"); } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull({ _.identity.name == "ProductionCoreWorkload" })
+        let text = units.firstOrNull({ _.identity.name == "String" })
+        let method = owner.functionUnits().firstOrNull({ _.name == "concatenation" })
+        Object statementSource = method.statements().first
+        BoundExpressionStatement statement = (BoundExpressionStatement)statementSource
+        let call = textCall(statement.expression)
+        expect(call.target.name).toBe("text")
+        expect(call.target.callableKind.value).toBe("static-method")
+        expect(call.receiver == null).toBe(true)
+        expect(call.argumentValues().count).toBe(3)
+        expect(call.argumentValues().first.expressionKind()).toBe("reference")
+        for (index in 1..3) {
+            let wrapped = textCall(call.argumentValues()[index])
+            expect(wrapped.target.callableKind.value).toBe("constructor")
+            expect(wrapped.target.ownerType.value()).toBe(text.semanticType.value())
+            expect(wrapped.argumentValues().count).toBe(1)
+            let literal = wrapped.argumentValues().first
+            expect(literal.expressionKind()).toBe("literal")
+            expect(literal.semanticType.value()).toBe(SemanticTypes.stringType().value())
+            expect(wrapped.range.startTokenIndex).toBe(literal.range.startTokenIndex)
+            expect(wrapped.range.endTokenIndex).toBe(literal.range.endTokenIndex)
+        }
+        expect(call.argumentValues()[1].range.endTokenIndex <= call.argumentValues()[2].range.startTokenIndex).toBe(true)
+    }
+
+    async test `static declared String parameters reject native references and retain native overloads`() {
+        let sources = textSources("Int")
+        sources.add(textSource("app", "NativeArguments",
+            "class NativeArguments { static text(String actual, String expected, String label) {} static run(String actual, native String value) { text(actual, value, \"label\"); } }"))
+        var Bool rejected
+        try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+        catch (Exception error) { rejected = error.message.contains("No overload of 'text'") }
+        expect(rejected).toBe(true)
+
+        let overloadSources = textSources("Int")
+        overloadSources.add(textSource("app", "NativeOverloads",
+            "class NativeOverloads { static select(String value) {} static select(native String value) {} static run(native String value) { select(value); select(\"literal\"); } }"))
+        let owner = PrimitiveClassPartitionBinder().bindContexts(overloadSources).typeUnits().firstOrNull({ _.identity.name == "NativeOverloads" })
+        let run = owner.functionUnits().firstOrNull({ _.name == "run" })
+        expect(run.statements().count).toBe(2)
+        for (boundStatement in run.statements()) {
+            Object statementSource = boundStatement
+            BoundExpressionStatement statement = (BoundExpressionStatement)statementSource
+            let call = textCall(statement.expression)
+            expect(call.target.parameterTypes().first.value()).toBe(SemanticTypes.stringType().value())
+            expect(call.argumentValues().first.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        }
+    }
+
+    async test `production static trace writes retain canonical String owner and source order`() {
+        let sources = textSources("Int")
+        sources.add(textSource("core/workloads", "ProductionCoreWorkload",
+            "class ProductionCoreWorkload { static String trace = \"\"; static leftDeclared(native String value) -> String { trace += \"L\"; return String(value); } static rightDeclared(native String value) -> String { trace += \"R\"; return String(value); } static concatenation() { trace = \"\"; let dd = leftDeclared(\"left\") + rightDeclared(\"right\"); trace += dd; } }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull({ _.identity.name == "ProductionCoreWorkload" })
+        let text = units.firstOrNull({ _.identity.name == "String" })
+        let field = owner.fieldUnits().firstOrNull({ _.name == "trace" })
+        String[] methodNames = ["leftDeclared", "rightDeclared"]
+        for (methodName in methodNames) {
+            let method = owner.functionUnits().firstOrNull((candidate) => candidate.name == methodName)
+            expect(method.statements().count).toBe(2)
+            let write = textAssignment(method.statements().first)
+            expect(write.target.symbolIdentity.value).toBe(field.identity.value)
+            expect(write.target.staticOwner.value).toBe(owner.identity.value)
+            expect(write.target.fieldOwnerIdentity.value).toBe(field.canonicalOwner().value)
+            expect(write.target.range.snapshot.value).toBe(field.range.snapshot.value)
+            let plus = textCall(write.value)
+            expect(plus.target.name).toBe("plus")
+            expect(plus.receiver == write.target).toBe(true)
+            expect(plus.semanticType.value()).toBe(text.semanticType.value())
+            let literal = textCall(plus.argumentValues().first)
+            expect(literal.target.callableKind.value).toBe("constructor")
+            expect(literal.argumentValues().first.expressionKind()).toBe("literal")
+            let returned = textCall(textReturn(method.statements().last).value)
+            expect(returned.target.callableKind.value).toBe("constructor")
+            expect(returned.argumentValues().first.semanticType.value()).toBe(SemanticTypes.stringType().value())
+            expect(write.range.endTokenIndex <= method.statements().last.range.startTokenIndex).toBe(true)
+        }
+        let sequence = owner.functionUnits().firstOrNull({ _.name == "concatenation" }).statements()
+        expect(sequence.count).toBe(3)
+        let reset = textAssignment(sequence.first)
+        expect(reset.target.staticOwner.value).toBe(owner.identity.value)
+        expect(textCall(reset.value).target.callableKind.value).toBe("constructor")
+        let joined = textCall(textLocal(sequence[1]).initializer)
+        expect(joined.target.name).toBe("plus")
+        expect(textCall(joined.receiver).target.name).toBe("leftDeclared")
+        expect(textCall(joined.argumentValues().first).target.name).toBe("rightDeclared")
+        expect(textAssignment(sequence.last).target.symbolIdentity.value).toBe(field.identity.value)
+    }
+
+    async test `static field writes preserve lexical shadowing and instance method access`() {
+        let sources = textSources("Int")
+        sources.add(textSource("app", "Trace",
+            "class Trace { static String trace = \"\"; public construct() {} public append() { trace = \"I\"; trace += \"N\"; } static shadow() { let String trace = \"local\"; trace = \"S\"; trace += \"L\"; } }"))
+        let owner = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits().firstOrNull({ _.identity.name == "Trace" })
+        let field = owner.fieldUnits().firstOrNull({ _.name == "trace" })
+        let append = owner.functionUnits().firstOrNull({ _.name == "append" })
+        for (statement in append.statements()) {
+            let write = textAssignment(statement)
+            expect(write.target.staticOwner.value).toBe(owner.identity.value)
+            expect(write.target.symbolIdentity.value).toBe(field.identity.value)
+        }
+        let shadow = owner.functionUnits().firstOrNull({ _.name == "shadow" }).statements()
+        let local = textLocal(shadow.first).local
+        for (index in 1..3) {
+            let write = textAssignment(shadow[index])
+            expect(write.target.staticOwner == null).toBe(true)
+            expect(write.target.symbolIdentity.value).toBe(local.symbolIdentity.value)
+        }
+    }
+
+    async test `unqualified static writes cannot select another published owner by field name`() {
+        let sources = textSources("Int")
+        sources.add(textSource("app", "OtherTrace", "class OtherTrace { static String trace = \"\"; }"))
+        sources.add(textSource("app", "InvalidTrace", "class InvalidTrace { static write() { trace = \"x\"; } }"))
+        var Bool rejected
+        try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+        catch (Exception error) { rejected = error.message.contains("Unknown local 'trace'") }
+        expect(rejected).toBe(true)
+    }
+
+    async test `static writes reject instance storage and unchecked native String references`() {
+        String[] invalidSources = [
+            "class InvalidTrace { String trace; static write() { trace = \"x\"; } }",
+            "class InvalidTrace { String trace; static write() { trace += \"x\"; } }",
+            "class InvalidTrace { static String trace = \"\"; static write(native String value) { trace = value; } }"
+        ]
+        for (sourceText in invalidSources) {
+            let sources = textSources("Int")
+            sources.add(textSource("app", "InvalidTrace", sourceText))
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bindContexts(sources) }
+            catch (Exception error) {
+                rejected = error.message.contains("instance receiver") || error.message.contains("Assignment value type mismatch")
+            }
+            expect(rejected).toBe(true)
+        }
+    }
 
     async textSource(String namespaceName, String name, String source, String suffix = "") -> PrimitiveSourceBindingContext {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:canonical-text:#namespaceName:#name:#suffix"), "one")

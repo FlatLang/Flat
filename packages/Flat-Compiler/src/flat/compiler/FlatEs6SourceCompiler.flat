@@ -17,10 +17,11 @@ class {
         visible Int maxSourceCharacters = 65536,
         visible Int maxTokens = 8192,
         visible Int maxFragments = 1024,
-        visible Int maxTypes = 256
+        visible Int maxTypes = 256,
+        visible Int maxArtifactCharacters = 33554432
     ) {
         if (maxSourceCharacters <= 0 || maxTokens <= 0 ||
-            maxFragments <= 0 || maxTypes <= 0) {
+            maxFragments <= 0 || maxTypes <= 0 || maxArtifactCharacters <= 0) {
             throw Exception("Flat ES6 source compiler capacities must be positive")
         }
     }
@@ -83,13 +84,29 @@ class {
             syntaxes, snapshot, maxTypes
         ).typeUnits()
         requireFragmentCapacity(types.count)
-        let fragments = Es6ArtifactFragment[]
+        // Existing finite artifact runtime-declarations-ready boundary:
+        // bounded count plus aggregate text, not a project-wide barrier.
+        let sections = Es6TypeSections[]
+        var Int retainedCharacters
         var Int index
         while (index < types.count) {
-            fragments.add(requireEmission(Es6UnitOrchestrator().emitType(TypeFeatureLowering.lowerLazyProperties(types[index]), index)))
+            let emitted = Es6UnitOrchestrator().emitTypeSections(TypeFeatureLowering.lowerLazyProperties(types[index]), index)
+            if (!emitted.emitted) {
+                throw Exception("#{emitted.diagnostic.code}: #{emitted.diagnostic.message}")
+            }
+            let section = emitted.sections
+            retainedCharacters = chargeCharacters(retainedCharacters, section.declarations.count)
+            retainedCharacters = chargeCharacters(retainedCharacters, section.metadata.count)
+            retainedCharacters = chargeCharacters(retainedCharacters, section.eagerInitializers.count)
+            sections.add(section)
             index++
         }
-        return assemble(fragments)
+        // Direct immutable source compilation has no provider/session checkpoint.
+        // Use the assembler's no-op default; package linking forwards its scoped
+        // provider checkpoint without retaining it beyond this assembly call.
+        let assembly = Es6FragmentAssembler(maxFragments, maxArtifactCharacters).assembleTypeSections(sections)
+        if (!assembly.assembled) throw Exception("#{assembly.diagnostic.code}: #{assembly.diagnostic.message}")
+        return assembly.code
     }
 
     compileFunctions(Token[] tokens, SourceSnapshotIdentity snapshot) -> Es6ArtifactFragment[] {
@@ -117,6 +134,13 @@ class {
         return [requireEmission(Es6UnitOrchestrator().emitType(TypeFeatureLowering.lowerLazyProperties(type), ordinal))]
     }
 
+    chargeCharacters(Int retained, Int additional) -> Int {
+        if (additional > maxArtifactCharacters - retained) {
+            throw Exception("es6.assembly-capacity: ES6 artifact exceeds configured character capacity")
+        }
+        return retained + additional
+    }
+
     requireEmission(Es6EmissionResult emitted) -> Es6ArtifactFragment {
         if (!emitted.emitted) {
             throw Exception("#{emitted.diagnostic.code}: #{emitted.diagnostic.message}")
@@ -131,7 +155,11 @@ class {
     }
 
     assemble(Es6ArtifactFragment[] fragments) -> String {
-        let assembly = Es6FragmentAssembler(maxFragments).assemble(fragments)
+        var Int retainedCharacters
+        for (fragment in fragments) {
+            retainedCharacters = chargeCharacters(retainedCharacters, fragment.code.count)
+        }
+        let assembly = Es6FragmentAssembler(maxFragments, maxArtifactCharacters).assemble(fragments)
         if (!assembly.assembled) {
             throw Exception("#{assembly.diagnostic.code}: #{assembly.diagnostic.message}")
         }

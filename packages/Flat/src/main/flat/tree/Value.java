@@ -1200,8 +1200,17 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     public ClassDeclaration getFlatTypeClass() {
-        return getProgram().getClassDeclaration(
-            SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getFlatType(this))));
+        return getFlatTypeClassFromType(getFlatType(this));
+    }
+
+    private ClassDeclaration getFlatTypeClassFromType(String flatType) {
+        String type = SyntaxUtils.stripGenerics(flatType);
+        // Nullability belongs to the value declaration, not the class name.
+        // Strip only the rendered outer suffix; array/generic wrappers remain.
+        if (type != null && type.endsWith("?")) {
+            type = type.substring(0, type.length() - 1);
+        }
+        return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, type));
     }
 
     public ClassDeclaration getFlatTypeClass(Value context) {
@@ -1214,8 +1223,7 @@ public abstract class Value extends Node implements AbstractValue {
 
     public ClassDeclaration getFlatTypeClass(Value context, boolean checkArray,
         boolean checkGeneric) {
-        return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this,
-            SyntaxUtils.stripGenerics(getFlatType(context, checkArray, checkGeneric))));
+        return getFlatTypeClassFromType(getFlatType(context, checkArray, checkGeneric));
     }
 
     public boolean isOriginallyGenericType() {

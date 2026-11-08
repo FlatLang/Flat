@@ -1,6 +1,7 @@
 package flat/writer/es6/bound
 
 import flat/bound
+import flat/writer/es6/bound/Es6NativeNamePlan.Es6NativeScope
 import flat/semantic/types
 
 /** Emits literal/reference/member/conversion expressions for the first vertical slice. */
@@ -71,7 +72,46 @@ class {
     public emitLiteral(BoundLiteralExpression expression) -> Es6CodeResult {
         if (!expression) throw Exception("ES6 literal emission requires an expression")
         if (expression.semanticType.kind() == "unit") return Es6CodeResult(code: "void 0")
-        return Es6CodeResult(code: expression.emissionValue())
+        return Es6CodeResult(code: encodeQuotedSource(expression.emissionValue()))
+    }
+
+    /** Target spelling only: preserve source escapes and unquoted evaluation
+     * references. Parser owns multiline margin and lexical normalization. */
+    encodeQuotedSource(String source) -> String {
+        if (source.count < 2) return source
+        let delimiter = source.substring(0, 1)
+        if ((delimiter != "\"" && delimiter != "'") ||
+            source.substring(source.count - 1) != delimiter) return source
+        var String code = delimiter
+        var Int index = 1
+        while (index < source.count - 1) {
+            let character = source.substring(index, index + 1)
+            if (character == "\\" && index + 1 < source.count - 1) {
+                let next = source.substring(index + 1, index + 2)
+                // ES6 line continuations have no runtime character. Preserve
+                // that meaning without leaving a physical terminator in code.
+                if (next == "\r" || next == "\n" || next == " " || next == " ") {
+                    index += 2
+                    if (next == "\r" && index < source.count - 1 &&
+                        source.substring(index, index + 1) == "\n") index++
+                } else if (next == "\t") {
+                    code += "\\t"
+                    index += 2
+                } else {
+                    code += character + next
+                    index += 2
+                }
+            } else {
+                if (character == "\n") code += "\\n"
+                else if (character == "\r") code += "\\r"
+                else if (character == "\t") code += "\\t"
+                else if (character == " ") code += "\\u2028"
+                else if (character == " ") code += "\\u2029"
+                else code += character
+                index++
+            }
+        }
+        return code + delimiter
     }
 
     public emitInterpolatedString(
@@ -89,9 +129,9 @@ class {
         return Es6CodeResult(code: "(\"\" + " + segmentCode.join(" + ") + ")")
     }
 
-    public emitReference(BoundReferenceExpression expression) -> Es6CodeResult {
+    public emitReference(BoundReferenceExpression expression, Es6NativeNamePlan namePlan = null, Es6NativeScope scope = null) -> Es6CodeResult {
         if (!expression) throw Exception("ES6 reference emission requires an expression")
-        let field = Es6NameMangler.mangle(expression.symbolIdentity.value)
+        let field = namePlan ? namePlan.referenceName(expression.symbolIdentity.value, scope) : Es6NameMangler.mangle(expression.symbolIdentity.value)
         return Es6CodeResult(code: expression.staticOwner ?
             Es6NameMangler.mangle(expression.staticOwner.value) + "." + field : field)
     }

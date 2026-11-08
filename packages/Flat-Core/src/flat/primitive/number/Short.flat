@@ -40,7 +40,7 @@ class extends Number<Short> implements Integer {
     public multiplyEqualsReal(Double other) => this.value *= other
     public multiplyEqualsInteger(Long other) => this.value *= other
 
-    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Short)other == value
+    public equals(Object? other) => (other || !this) && other.class.isOfType(Number.class) && (Short)other == value
     public equals(Short other) => this.value == other
     public equalsReal(Double other) => this.value == other
     public equalsInteger(Long other) => this.value == other

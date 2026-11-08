@@ -10,10 +10,11 @@ class {
             throw Exception("ES6 external statement requires selected es6 evidence")
         }
         var String code = ""
+        // Binding evidence reserves the declaration's actual slot before function
+        // emission. Never introduce a copied alias at an opaque insertion point.
         for (binding in statement.nameBindingValues()) {
-            let emitted = expressions.emit(binding.value)
-            if (!emitted.emitted) return emitted
-            code += "let " + binding.sourceName + " = " + emitted.code + ";\n"
+            if (!expressions.namePlan || expressions.storageName(binding.storageReference().symbolIdentity.value) != binding.sourceName)
+                return Es6CodeResult(diagnostic: Es6BackendDiagnostic("es6.native-storage-plan", "Native storage requires a complete enclosing lexical name plan", statement.range))
         }
         for (segment in statement.segmentValues()) {
             if (!segment.interpolated()) code += segment.text
@@ -76,11 +77,12 @@ class {
 
     public emitCatch(
         BoundCatchClause clause,
-        Es6CodeResult body
+        Es6CodeResult body,
+        Es6ExpressionOrchestrator expressions = Es6ExpressionOrchestrator()
     ) -> Es6CodeResult {
         if (!clause || !body) throw Exception("ES6 catch requires clause and body")
         if (!body.emitted) return body
-        let name = Es6NameMangler.mangle(clause.local.symbolIdentity.value)
+        let name = expressions.storageName(clause.local.symbolIdentity.value)
         return Es6CodeResult(code: "catch (" + name + ") {\n" + indent(body.code) + "}")
     }
 
@@ -178,24 +180,30 @@ class {
 
     public emitInitializedLocal(
         BoundLocalDeclarationStatement statement,
-        Es6CodeResult initializer
+        Es6CodeResult initializer,
+        Es6ExpressionOrchestrator expressions = Es6ExpressionOrchestrator()
     ) -> Es6CodeResult {
         if (!statement || !statement.initializer || !initializer) {
             throw Exception("ES6 initialized local requires statement and initializer")
         }
         if (!initializer.emitted) return initializer
-        let name = Es6NameMangler.mangle(statement.local.symbolIdentity.value)
-        return Es6CodeResult(code: initializer.setup + "let " + name + " = " + initializer.code + ";\n")
+        let name = expressions.storageName(statement.local.symbolIdentity.value)
+        let hoisted = expressions.namePlan && expressions.namePlan.hoisted(statement.local.symbolIdentity.value)
+        return Es6CodeResult(code: initializer.setup + (hoisted ? "" : "let ") + name + " = " + initializer.code + ";\n" +
+            (!hoisted && expressions.namePlan ? expressions.namePlan.accessorDeclaration(statement.local.symbolIdentity.value) : ""))
     }
 
     public emitUninitializedLocal(
-        BoundLocalDeclarationStatement statement
+        BoundLocalDeclarationStatement statement,
+        Es6ExpressionOrchestrator expressions = Es6ExpressionOrchestrator()
     ) -> Es6CodeResult {
         if (!statement || statement.initializer) {
             throw Exception("ES6 uninitialized local requires a local without initializer")
         }
-        let name = Es6NameMangler.mangle(statement.local.symbolIdentity.value)
-        return Es6CodeResult(code: "let " + name + ";\n")
+        let name = expressions.storageName(statement.local.symbolIdentity.value)
+        if (expressions.namePlan && expressions.namePlan.hoisted(statement.local.symbolIdentity.value)) return Es6CodeResult(code: "")
+        return Es6CodeResult(code: "let " + name + ";\n" +
+            (expressions.namePlan ? expressions.namePlan.accessorDeclaration(statement.local.symbolIdentity.value) : ""))
     }
 
     public emitAssignmentValue(
@@ -212,13 +220,14 @@ class {
 
     public emitAssignment(
         BoundAssignmentStatement statement,
-        Es6CodeResult value
+        Es6CodeResult value,
+        Es6ExpressionOrchestrator expressions = Es6ExpressionOrchestrator()
     ) -> Es6CodeResult {
         if (!statement || !value) {
             throw Exception("ES6 assignment requires statement and value")
         }
         if (!value.emitted) return value
-        let name = Es6ExpressionEmitter().emitReference(statement.target).code
+        let name = expressions.emit(statement.target).code
         return Es6CodeResult(code: value.setup + name + " = " + value.code + ";\n")
     }
 
