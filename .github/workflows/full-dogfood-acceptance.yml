@@ -162,8 +162,10 @@ jobs:
       DISPATCH_MANIFEST: ${{ inputs.dispatch_manifest }}
       DISPATCH_MANIFEST_SHA256: ${{ inputs.dispatch_manifest_sha256 }}
       PYTHONDONTWRITEBYTECODE: "1"
-      ACCEPTANCE_ROOT: ${{ runner.temp }}/flat-acceptance-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
+      - name: Set run-specific acceptance directory
+        shell: bash
+        run: echo "ACCEPTANCE_ROOT=$RUNNER_TEMP/flat-acceptance-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
