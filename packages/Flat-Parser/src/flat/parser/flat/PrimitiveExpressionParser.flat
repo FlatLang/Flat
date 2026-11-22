@@ -721,24 +721,27 @@ class {
             if (depth > 0) cursor++
         }
         if (depth != 0) syntax("Expected closing implicit lambda brace", cursor)
-        if (statementBody) {
-            let statements = PrimitiveControlStatementParser().parse(
-                tokens.skip(bodyStart).take(cursor - bodyStart), snapshot,
-                bodyStart + tokenIndexOffset
-            ).statements()
-            index = cursor + 1
-            return PrimitiveLambdaSyntax(range(start, index), parameters,
-                PrimitiveLiteralSyntax(range(start, index), Token.Type.NULL, "null"),
-                statementValues: statements)
+        if (!statementBody) {
+            let body = parseConditional()
+            if (index == cursor) {
+                index++
+                return PrimitiveLambdaSyntax(range(start, index), parameters, body)
+            }
+            // A complete expression followed by a write operator or a new statement
+            // belongs to the ordinary statement grammar. Never split a continued call.
+            if (index >= cursor || (!assignmentOperator(tokens[index].value) && tokens[index].value != "=" &&
+                tokens[index].location.lineNumber <= tokens[index - 1].endLineNumber)) {
+                syntax("Expected closing implicit lambda brace", index)
+            }
         }
-        let body = parseConditional()
-        if (index >= tokens.count || tokens[index].value != "}") {
-            syntax("Expected closing implicit lambda brace", index)
-        }
-        index++
-        return PrimitiveLambdaSyntax(
-            range(start, index), parameters, body
-        )
+        let statements = PrimitiveControlStatementParser().parse(
+            tokens.skip(bodyStart).take(cursor - bodyStart), snapshot,
+            bodyStart + tokenIndexOffset
+        ).statements()
+        index = cursor + 1
+        return PrimitiveLambdaSyntax(range(start, index), parameters,
+            PrimitiveLiteralSyntax(range(start, index), Token.Type.NULL, "null"),
+            statementValues: statements)
     }
 
     parseLambda(Int start) -> PrimitiveExpressionSyntax {

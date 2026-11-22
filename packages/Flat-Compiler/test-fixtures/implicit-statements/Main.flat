@@ -1,0 +1,21 @@
+package probe
+class Marker { constructor() {} }
+class Main {
+    static writer(Marker[] slots) -> func(Marker) { return { slots[0] = _1 }; }
+    static notify(next(Marker data), Marker value) -> Int { next(value); return 1; }
+    static signal(Marker value) -> Int => notify({ first(_data)
+        second(_data) }, value)
+    static first(Marker value) { external js { globalThis.order += '1'; globalThis.seen = #{value}; } }
+    static second(Marker value) { external js { if (globalThis.seen !== #{value}) throw Error('second argument'); globalThis.order += '2'; } }
+    public static main() {
+        let original = Marker()
+        let replacement = Marker()
+        let slots = [original]
+        let write = writer(slots)
+        write(replacement)
+        external js { globalThis.order = ''; }
+        signal(replacement)
+        let stored = slots[0]
+        external js { if (#{stored} !== #{replacement} || globalThis.seen !== #{replacement} || globalThis.order !== '12') throw Error('callback semantics'); console.log('same:12'); }
+    }
+}

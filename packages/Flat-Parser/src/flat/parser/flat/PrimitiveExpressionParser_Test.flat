@@ -28,6 +28,36 @@ testable class {
         expect(message).toBe("Primitive expression syntax error at token 7: Expected lambda parameter name")
     }
 
+    async test `implicit callback statements retain indexed write and ordered call ranges`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:implicit-statements"), "one")
+        let stream = Lexer().lex("{\npackage.sources[_x.key] = _x.value\n}")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let callback = (PrimitiveLambdaSyntax)parsed
+        let statement = callback.statementValues().first
+        let write = (PrimitiveArrayAssignmentSyntax)statement
+        expect(write.target.receiver.expressionKind()).toBe("member-access")
+        expect(write.target.index.range.start.column).toBe(17)
+        expect(write.value.range.start.column).toBe(27)
+        expect(write.range.start.lineNumber).toBe(2)
+        let calls = Lexer().lex("{\npendingFutures.remove((Future)future)\n_resolve(_data)\n}")
+        calls.emit("start")
+        let sequence = PrimitiveExpressionParser().parse(calls.consumeAll<Token>("data"), snapshot)
+        let statements = ((PrimitiveLambdaSyntax)sequence).statementValues()
+        expect(statements.map({ _.statementKind() })).toBe(["expression", "expression"])
+        expect(statements.map({ _.range.start.lineNumber })).toBe([2, 3])
+    }
+
+    async test `adjacent calls on the same line require a statement separator`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-separator"), "one")
+        let stream = Lexer().lex("{ a() b() }")
+        stream.emit("start")
+        var String message = ""
+        try { PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { message = error.message }
+        expect(message).toBe("Primitive expression syntax error at token 4: Expected closing implicit lambda brace")
+    }
+
     async test `arrow callback retains ordered explicit parameter names`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:contextual-parameters"), "one")
         let stream = Lexer().lex("(str, Int i) => { return str }")
