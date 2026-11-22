@@ -86,6 +86,7 @@ testable class {
     }
 
     class IdentityLinker extends FlatEs6PackageLinker {
+        public construct() => super()
         visible var String observedIdentity
         override public async linkSources(
             CompilerSourceProvider provider, String[] identities,
@@ -119,6 +120,7 @@ testable class {
     }
 
     class CleanupGatedLinker extends FlatEs6PackageLinker {
+        public construct() => super()
         visible Future.CompletableFuture<Bool> cleanupEntered = Future.create<Bool>()
         visible Future.CompletableFuture<Bool> cleanupRelease = Future.create<Bool>()
         visible var Bool cleaned
