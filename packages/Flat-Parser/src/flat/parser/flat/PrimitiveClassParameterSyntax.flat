@@ -1,0 +1,12 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** One class type parameter in declaration order. */
+data class {
+    public construct(visible String name, visible Int position, visible SourceRange range) {
+        if (!name || name.trim().isEmpty || position < 0 || !range) {
+            throw Exception("Class parameter requires name position and range")
+        }
+    }
+}

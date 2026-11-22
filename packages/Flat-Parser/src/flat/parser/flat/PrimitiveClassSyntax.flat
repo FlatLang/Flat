@@ -4,6 +4,10 @@ import flat/compiler/models
 
 /** Immutable syntax-only reduced class declaration. */
 data class {
+    var PrimitiveClassParameterSyntax[] parameters
+
+    public genericParameters() -> PrimitiveClassParameterSyntax[] => PrimitiveClassParameterSyntax[]:addAll(parameters)
+
     var PrimitiveFieldSyntax[] fields
     var PrimitiveFunctionSyntax[] methods
     var String[] implementedTypes
@@ -23,7 +27,8 @@ data class {
         PrimitiveArrayOverrideSyntax[] arrayOverrideValues = PrimitiveArrayOverrideSyntax[],
         PrimitiveConstructorSyntax[] constructorValues = PrimitiveConstructorSyntax[],
         visible PrimitiveTypeReferenceSyntax parentType = null,
-        visible SourceRange extensionModifierRange = null
+        visible SourceRange extensionModifierRange = null,
+        PrimitiveClassParameterSyntax[] parameterValues = PrimitiveClassParameterSyntax[]
     ) {
         if (!range || !name || name.trim().count == 0 ||
             (genericParameterName && genericParameterName.trim().count == 0) ||
@@ -38,6 +43,15 @@ data class {
                 parentType.nullableType))) {
             throw Exception("Primitive class syntax requires range name fields constructor and methods")
         }
+        parameters = PrimitiveClassParameterSyntax[]
+        for (parameter in parameterValues) {
+            if (!parameter || parameter.position != parameters.count || parameters.any({ _.name == parameter.name })) {
+                throw Exception("Invalid class parameter order or duplicate name")
+            }
+            parameters.add(parameter)
+        }
+        if (parameters.isEmpty && genericParameterName) parameters.add(PrimitiveClassParameterSyntax(genericParameterName, 0, range))
+        if (parameters.isNotEmpty && parameters.first.name != genericParameterName) throw Exception("Class parameter name mismatch")
         fields = PrimitiveFieldSyntax[]
         fields.addAll(fieldValues)
         methods = PrimitiveFunctionSyntax[]
@@ -138,7 +152,7 @@ data class {
             fields, mergedConstructors.first, methods, implementedTypeNames(), abstractClass,
             overlay.arrayOverrideValues().isNotEmpty ?
                 overlay.arrayOverrideValues() : arrayOverrideValues(),
-            mergedConstructors, parentType, extensionModifierRange
+            mergedConstructors, parentType, extensionModifierRange, parameters
         )
     }
 

@@ -65,13 +65,22 @@ class {
                 tokens[index].value == "implements")
             ? implicitName
             : identifier("Expected class name")
+        let parameters = PrimitiveClassParameterSyntax[]
         var String genericParameterName
         if (index < tokens.count && tokens[index].value == "<") {
             index++
-            genericParameterName = identifier("Expected generic parameter name")
-            if (index < tokens.count && tokens[index].value == "extends") {
+            while (true) {
+                let parameterStart = index
+                let parameterName = identifier("Expected generic parameter name")
+                if (parameters.any({ _.name == parameterName })) syntax("Duplicate generic parameter '#parameterName'", parameterStart)
+                parameters.add(PrimitiveClassParameterSyntax(parameterName, parameters.count, parameterNameRange(parameterStart)))
+                if (!genericParameterName) genericParameterName = parameterName
+                if (index < tokens.count && tokens[index].value == "extends") {
+                    index++
+                    identifier("Expected generic parameter bound")
+                }
+                if (index >= tokens.count || tokens[index].value != ",") break
                 index++
-                identifier("Expected generic parameter bound")
             }
             require(">")
         }
@@ -445,7 +454,7 @@ class {
         return PrimitiveClassSyntax(
             range(start, index), name, genericParameterName, parentName,
             fields, constructorValue, methods, implementedTypeNames, abstractClass,
-            arrayOverrides, constructorValues, parentType, extensionModifierRange
+            arrayOverrides, constructorValues, parentType, extensionModifierRange, parameters
         )
     }
 
@@ -1014,6 +1023,12 @@ class {
     require(String value) {
         if (index >= tokens.count || tokens[index].value != value) syntax("Expected '#value'", index)
         index++
+    }
+
+    parameterNameRange(Int start) -> SourceRange {
+        let token = tokens[start]
+        return SourceRange(snapshot, sourceTokenIndexes[start], sourceTokenIndexes[start] + 1,
+            token.location, Location(lineNumber: token.endLineNumber, column: token.endColumn))
     }
 
     range(Int start, Int end) -> SourceRange {

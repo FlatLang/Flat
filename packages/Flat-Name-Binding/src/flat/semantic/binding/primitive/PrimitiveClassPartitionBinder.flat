@@ -342,9 +342,7 @@ class {
                     else if (syntax.name != "Object" && syntaxes.any({ _.name == "Object" })) {
                         parents.add(UserClassSemanticType(scope.resolve("Object", syntax.range)))
                     }
-                    let genericParameters = GenericParameterSemanticType[]
-                    if (syntax.genericParameterName) genericParameters.add(GenericParameterSemanticType(
-                        type.declarationIdentity, syntax.genericParameterName, 0))
+                    let genericParameters = PrimitiveClassParameters.bind(syntax, type.declarationIdentity)
                     contextHierarchy.add(TypeHierarchyDeclaration(type, "class", parents,
                         genericParameters: genericParameters))
                     // Only the admitted canonical declaration owns universal-root authority.
@@ -434,7 +432,7 @@ class {
         PrimitiveClassSyntax syntax,
         PrimitiveClassSyntax[] syntaxes,
         SourceSnapshotIdentity snapshot,
-        GenericParameterSemanticType classGeneric
+        GenericParameterSemanticType[] classGeneric
     ) -> SemanticType {
         var SemanticType agreed
         PrimitiveFunctionSyntax[] seedTargets = syntax.methodValues().filter((candidate) => candidate.name == seedCall.name &&
@@ -609,10 +607,9 @@ class {
                 if (!type && parameter) {
                     let resolver = PrimitiveStructuralTypeResolver(
                         syntaxes: syntaxes, interfaces: interfaces,
-                        genericParameter: syntax.genericParameterName ? GenericParameterSemanticType(
+                        classGenericParameters: PrimitiveClassParameters.bind(syntax,
                             DeclarationIdentity(SyntaxIslandIdentity(syntax.range.snapshot,
-                                "class", syntax.range.startTokenIndex), "class", syntax.name),
-                            syntax.genericParameterName, 0) : null,
+                                "class", syntax.range.startTokenIndex), "class", syntax.name)),
                         methodGenericParameters: method.genericParameterNames().map((name) =>
                             GenericParameterSemanticType(DeclarationIdentity(
                                 SyntaxIslandIdentity(method.range.snapshot,
@@ -770,10 +767,9 @@ class {
             let identity = DeclarationIdentity(SyntaxIslandIdentity(snapshot ?: syntax.range.snapshot,
                 "class", syntax.range.startTokenIndex), "class", syntax.name)
             let scope = context ? context.scopeFor(identity) : null
-            let concreteGeneric = syntax.genericParameterName ? GenericParameterSemanticType(
-                identity, syntax.genericParameterName, 0) : null
+            let concreteGeneric = PrimitiveClassParameters.bind(syntax, identity)
             let concreteResolver = PrimitiveStructuralTypeResolver(syntaxes: syntaxes, snapshot: snapshot,
-                genericParameter: concreteGeneric, interfaces: interfaces, declarationContext: scope, lookupRange: syntax.range)
+                classGenericParameters: concreteGeneric, interfaces: interfaces, declarationContext: scope, lookupRange: syntax.range)
             let concreteParents = GenericInstanceSemanticType[]
             for (name in syntax.implementedTypeNames()) {
                 let resolved = concreteResolver.resolve(name)
@@ -810,8 +806,7 @@ class {
             for (parent in concreteParents) {
                 if (directParents.none({ _.value() == parent.declarationType.value() })) directParents.add(parent.declarationType)
             }
-            let declaredGenerics = GenericParameterSemanticType[]
-            if (concreteGeneric) declaredGenerics.add(concreteGeneric)
+            let declaredGenerics = concreteGeneric
             hierarchy.add(TypeHierarchyDeclaration(UserClassSemanticType(identity), "class", directParents,
                 genericParameters: declaredGenerics, genericParents: concreteParents))
         }
@@ -870,7 +865,7 @@ class {
         return PrimitiveClassSyntax(syntax.range, syntax.name, syntax.genericParameterName,
             syntax.parentName, fields, syntax.constructorValue, methods,
             syntax.implementedTypeNames(), syntax.abstractClass,
-            syntax.arrayOverrideValues(), syntax.constructorValues(), syntax.parentType)
+            syntax.arrayOverrideValues(), syntax.constructorValues(), syntax.parentType, syntax.extensionModifierRange, syntax.genericParameters())
     }
 
     publishTraitStorage(PrimitiveClassSyntax syntax, String implementedName,
@@ -916,7 +911,7 @@ class {
 
     classGenericNames(PrimitiveClassSyntax syntax) -> String[] {
         let names = String[]
-        if (syntax.genericParameterName) names.add(syntax.genericParameterName)
+        names.addAll(syntax.genericParameters().map({ _.name }))
         return names
     }
 
@@ -1033,7 +1028,7 @@ class {
         traitParameters.addAll(memberGenerics)
         traitParameters.add(contract.name)
         let classParameters = String[]
-        if (syntax.genericParameterName) classParameters.add(syntax.genericParameterName)
+        classParameters.addAll(syntax.genericParameters().map({ _.name }))
         classParameters.addAll(methodGenerics)
         classParameters.add(syntax.name)
         let memberContext = signatureContext ? signatureContext.scopeForSnapshot(member.range.snapshot) : null
@@ -1138,7 +1133,7 @@ class {
             syntax.range, syntax.name, syntax.genericParameterName, "Object",
             syntax.fieldValues(), syntax.constructorValue, syntax.methodValues(),
             syntax.implementedTypeNames(), syntax.abstractClass,
-            syntax.arrayOverrideValues(), syntax.constructorValues()
+            syntax.arrayOverrideValues(), syntax.constructorValues(), parameterValues: syntax.genericParameters()
         )
     }
 
@@ -1156,7 +1151,7 @@ class {
             let owner = UserClassSemanticType(ownerIdentity)
             var SemanticType selfType = owner
             if (syntax.genericParameterName) selfType = GenericInstanceSemanticType(owner,
-                [GenericParameterSemanticType(ownerIdentity, syntax.genericParameterName, 0)])
+                PrimitiveClassParameters.bind(syntax, ownerIdentity))
             var Int ordinal
             for (method in syntax.methodValues()) {
                 let methodKind = method.staticMethod ? "static-method" : "instance-method"
@@ -1170,9 +1165,7 @@ class {
                         methodIdentity, genericName, methodGenerics.count
                     ))
                 }
-                let classGeneric = syntax.genericParameterName ? GenericParameterSemanticType(
-                    ownerIdentity, syntax.genericParameterName, 0
-                ) : null
+                let classGeneric = PrimitiveClassParameters.bind(syntax, ownerIdentity)
                 var SemanticType[] parameterTypes = method.parameterValues().map((parameter) =>
                     signatureType(parameter.typeName, syntaxes, snapshot, classGeneric, methodGenerics,
                         syntax, method.range, parameter.nativeArrayStorage, parameter.nativeScalarStorage)
@@ -1239,7 +1232,7 @@ class {
                                 if (targets.count == 1) {
                                     let target = targets.first
                                     inferredMethodReturn = signatureType(target.returnTypeName, syntaxes, snapshot,
-                                        null, GenericParameterSemanticType[], targetOwner, target.range,
+                                        GenericParameterSemanticType[], GenericParameterSemanticType[], targetOwner, target.range,
                                         nativeArrayStorage: target.nativeArrayReturnModifierRange != null,
                                         nativeScalarStorage: target.nativeReturnModifierRange != null && target.nativeArrayReturnModifierRange == null)
                                 }
@@ -1310,7 +1303,7 @@ class {
                     parameterTypes, returnType, owner,
                     method.parameterValues().filter({ _.defaultValue != null }).count,
                     method.parameterValues().map({ _.name }), methodGenerics,
-                    classGeneric ? GenericDeclaration(owner.declarationIdentity, [classGeneric], owner) : null,
+                    classGeneric.isNotEmpty ? GenericDeclaration(owner.declarationIdentity, classGeneric, owner) : null,
                     asyncFunction: method.asyncMethod, externalName: method.externalName
                 ))
                 ordinal++
@@ -1331,8 +1324,7 @@ class {
                 "class", syntax.name
             )
             let type = UserClassSemanticType(typeIdentity)
-            let classGeneric = syntax.genericParameterName ?
-                GenericParameterSemanticType(typeIdentity, syntax.genericParameterName, 0) : null
+            let classGeneric = PrimitiveClassParameters.bind(syntax, typeIdentity)
             for (constructor in syntax.constructorValues()) {
                 let constructorIdentity = DeclarationIdentity(
                     SyntaxIslandIdentity(
@@ -1371,7 +1363,7 @@ class {
                     type,
                     optionalCount,
                     constructor.parameterValues().map({ _.name }),
-                    ownerGenericDeclaration: classGeneric ? GenericDeclaration(typeIdentity, [classGeneric], type) : null
+                    ownerGenericDeclaration: classGeneric.isNotEmpty ? GenericDeclaration(typeIdentity, classGeneric, type) : null
                 ))
             }
         }
@@ -1454,11 +1446,9 @@ class {
                 "class", syntax.name
             )
             let owner = UserClassSemanticType(ownerIdentity)
-            let classGeneric = syntax.genericParameterName ? GenericParameterSemanticType(
-                ownerIdentity, syntax.genericParameterName, 0
-            ) : null
-            let ownerGenerics = classGeneric ? GenericDeclaration(
-                ownerIdentity, [classGeneric], owner
+            let classGeneric = PrimitiveClassParameters.bind(syntax, ownerIdentity)
+            let ownerGenerics = classGeneric.isNotEmpty ? GenericDeclaration(
+                ownerIdentity, classGeneric, owner
             ) : null
             let indexType = signatureType(
                 override.indexParameter.typeName, syntaxes, snapshot
@@ -1528,9 +1518,7 @@ class {
                 SyntaxIslandIdentity(syntaxSnapshot, "class", syntax.range.startTokenIndex),
                 "class", syntax.name
             )
-            let classGeneric = syntax.genericParameterName ? GenericParameterSemanticType(
-                ownerIdentity, syntax.genericParameterName, 0
-            ) : null
+            let classGeneric = PrimitiveClassParameters.bind(syntax, ownerIdentity)
             var Int ordinal
             for (field in syntax.fieldValues()) {
                 let fieldRange = field.range
@@ -1575,7 +1563,7 @@ class {
         String name,
         PrimitiveClassSyntax[] syntaxes,
         SourceSnapshotIdentity snapshot,
-        GenericParameterSemanticType classGeneric = null,
+        GenericParameterSemanticType[] classGeneric = GenericParameterSemanticType[],
         GenericParameterSemanticType[] methodGenerics = GenericParameterSemanticType[],
         PrimitiveClassSyntax implementationOwner = null,
         SourceRange implementationRange = null,
@@ -1591,7 +1579,7 @@ class {
         }
         let resolver = PrimitiveStructuralTypeResolver(
             syntaxes: syntaxes, snapshot: snapshot,
-            genericParameter: classGeneric, methodGenericParameters: methodGenerics,
+            classGenericParameters: classGeneric, methodGenericParameters: methodGenerics,
             interfaces: interfaces, implementationOwner: implementationOwner,
             implementationRange: implementationRange,
             declarationContext: signatureContext && implementationRange ?

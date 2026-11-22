@@ -4,6 +4,25 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `parses ordered type parameters`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:ordered"), "one")
+        let stream = Lexer().lex("class Pair<K, V> { K key; V value; }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let formals = parsed.genericParameters()
+        expect(formals.map({ _.position })).toBe([0, 1])
+        expect(formals.map({ _.name })).toBe(["K", "V"])
+        expect(formals.first.range.start.column).toBe(12)
+        expect(formals.last.range.start.column).toBe(15)
+        expect(parsed.fieldValues().map({ _.typeName })).toBe(["K", "V"])
+        let duplicate = Lexer().lex("class Pair<K, K> {}")
+        duplicate.emit("start")
+        var String failure
+        try { PrimitiveClassParser().parse(duplicate.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("Duplicate generic parameter")).toBe(true)
+    }
+
     async test `overlay without a constructor preserves explicit base initialization`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Array.flat"), "one")
         let stream = Lexer().lex("class Array { construct() { this(0); } construct(Int count) {} }")

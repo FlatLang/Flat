@@ -263,9 +263,7 @@ class {
                 let argumentNames = implementedName.substring(genericStart + 1, implementedName.count - 1)
                 let arguments = PrimitiveStructuralTypeResolver(
                     callables: availableConstructors, receiverType: childType,
-                    genericParameter: childSyntax.genericParameterName ? GenericParameterSemanticType(
-                        childType.declarationIdentity, childSyntax.genericParameterName, 0
-                    ) : null, interfaces: interfaceSyntaxValues,
+                    classGenericParameters: PrimitiveClassParameters.bind(childSyntax, childType.declarationIdentity), interfaces: interfaceSyntaxValues,
                     declarationContext: context, lookupRange: childSyntax.range
                 ).resolve("#{syntax.name}<#{argumentNames}>")
                 let instance = (GenericInstanceSemanticType)arguments

@@ -6,6 +6,9 @@ import flat/semantic/types
 
 /** Resolves reduced declaration type text without erasing structural array/function evidence. */
 class {
+    var GenericParameterSemanticType[] classParameters
+    public ownerParameters() -> GenericParameterSemanticType[] => GenericParameterSemanticType[]:addAll(classParameters)
+
     var GenericParameterSemanticType[] methodParameters
 
     public construct(
@@ -19,8 +22,11 @@ class {
         visible PrimitiveClassSyntax implementationOwner = null,
         visible SourceRange implementationRange = null,
         visible PrimitiveResolvedDeclarationContext declarationContext = null,
-        visible SourceRange lookupRange = null
+        visible SourceRange lookupRange = null,
+        GenericParameterSemanticType[] classGenericParameters = GenericParameterSemanticType[]
     ) {
+        classParameters = GenericParameterSemanticType[]:addAll(classGenericParameters)
+        if (classParameters.isEmpty && genericParameter) classParameters.add(genericParameter)
         methodParameters = GenericParameterSemanticType[]
         if (!methodGenericParameters || methodGenericParameters.any({ !_ })) {
             throw Exception("Method generic scope requires valid parameters")
@@ -237,7 +243,7 @@ class {
     public resolveReference(PrimitiveTypeReferenceSyntax syntax) -> SemanticType {
         let scoped = PrimitiveStructuralTypeResolver(syntaxes, callables, snapshot, genericParameter,
             receiverType, methodParameters, interfaces, implementationOwner, implementationRange,
-            declarationContext, syntax.range)
+            declarationContext, syntax.range, classParameters)
         return scoped.resolveReferenceValue(syntax)
     }
 
@@ -249,12 +255,21 @@ class {
                     throw Exception("Generic type reference requires a declared class at token " + syntax.range.startTokenIndex)
                 Object declarationSource = result
                 UserClassSemanticType declaration = (UserClassSemanticType)declarationSource
+                checkClassArity(declaration, arguments.count)
                 result = GenericInstanceSemanticType(declaration, arguments.map({ resolveReference(_) }))
             }
             var Int dimension
             while (dimension++ < syntax.arrayDimensions) result = ArraySemanticType(result)
             if (syntax.nullableType) result = NullableSemanticType(result)
             return result
+    }
+
+    checkClassArity(UserClassSemanticType type, Int actual) {
+        let declaration = declarationContext ? declarationContext.classFor(type.declarationIdentity) :
+            syntaxes.firstOrNull({ _.name == type.declarationIdentity.name })
+        if (declaration && declaration.genericParameters().count != actual) {
+            throw Exception("Generic argument count does not match class '#{declaration.name}'")
+        }
     }
 
     public resolve(String name) -> SemanticType {
@@ -304,9 +319,11 @@ class {
                 if (resolved) return resolved
             }
         }
-        if (genericParameter && name == genericParameter.name) return genericParameter
-        if (name == "this" && receiverType) return genericParameter ?
-            GenericInstanceSemanticType(receiverType, [genericParameter]) : receiverType
+        for (parameter in classParameters) {
+            if (name == parameter.name) return parameter
+        }
+        if (name == "this" && receiverType) return classParameters.isNotEmpty ?
+            GenericInstanceSemanticType(receiverType, classParameters) : receiverType
         if (name == "Unknown") return SemanticTypes.unknownType()
         if (name == "Bool") return SemanticTypes.boolType()
         if (name == "Byte") return SemanticTypes.byteType()
@@ -341,6 +358,7 @@ class {
             for (argument in splitTypes(
                 name.substring(genericOpen + 1, name.count - 1)
             )) arguments.add(resolveTypeArgument(argument))
+            checkClassArity(declarationType, arguments.count)
             return GenericInstanceSemanticType(declarationType, arguments)
         }
         if (declarationContext) {
@@ -421,7 +439,7 @@ class {
         if (names.count != argumentNames.count) throw Exception("Trait implementation generic arity mismatch")
         let argumentResolver = PrimitiveStructuralTypeResolver(
             syntaxes: syntaxes, callables: callables, snapshot: snapshot,
-            genericParameter: genericParameter, receiverType: receiverType,
+            classGenericParameters: classParameters, receiverType: receiverType,
             methodGenericParameters: edgeParameters, interfaces: interfaces,
             declarationContext: edgeContext, lookupRange: implementationOwner.range)
         let arguments = SemanticType[]

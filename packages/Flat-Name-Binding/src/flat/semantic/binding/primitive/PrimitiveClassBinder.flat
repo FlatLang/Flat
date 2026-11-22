@@ -11,7 +11,7 @@ class {
     var BoundFunctionUnit[] constructorSetupUnits = BoundFunctionUnit[]
     var BoundStatement[] constructorFieldStatements = BoundStatement[]
     var CallableSignature[] directParentConstructors = CallableSignature[]
-    var GenericParameterSemanticType genericParameter
+    var GenericParameterSemanticType[] classParameters = GenericParameterSemanticType[]
     var CallableSignature[] constructors
     var UserClassSemanticType boundType
     var CallableSignature arrayGetter
@@ -29,7 +29,7 @@ class {
 
     /** Self result retains the declaration-owned class argument, never a method generic. */
     selfType(UserClassSemanticType type) -> SemanticType {
-        return genericParameter ? GenericInstanceSemanticType(type, [genericParameter]) : type
+        return classParameters.isNotEmpty ? GenericInstanceSemanticType(type, classParameters) : type
     }
 
     public bind(
@@ -78,12 +78,10 @@ class {
         )
         let type = UserClassSemanticType(typeIdentity)
         boundType = type
-        genericParameter = syntax.genericParameterName ? GenericParameterSemanticType(
-            typeIdentity, syntax.genericParameterName, 0
-        ) : null
+        classParameters = PrimitiveClassParameters.bind(syntax, typeIdentity)
         if (parentConstructor && syntax.parentType && syntax.parentType.typeArguments().isNotEmpty) {
             let resolver = PrimitiveStructuralTypeResolver(callables: availableConstructors,
-                genericParameter: genericParameter, receiverType: type,
+                classGenericParameters: classParameters, receiverType: type,
                 interfaces: interfaceSyntaxValues, implementationOwner: syntax,
                 implementationRange: syntax.parentType.range, declarationContext: declarationContext,
                 lookupRange: syntax.parentType.range)
@@ -137,8 +135,8 @@ class {
                 type, type,
                 constructorSyntax.parameterValues().filter({ _.defaultValue != null }).count,
                 constructorSyntax.parameterValues().map({ _.name }),
-                ownerGenericDeclaration: genericParameter ? GenericDeclaration(
-                    typeIdentity, [genericParameter], type
+                ownerGenericDeclaration: classParameters.isNotEmpty ? GenericDeclaration(
+                    typeIdentity, classParameters, type
                 ) : null
             ))
             constructorSignatureIndex++
@@ -150,8 +148,8 @@ class {
             let indexType = typeOf(override.indexParameter.typeName)
             let elementType = override.elementTypeName == "inferred"
                 ? SemanticTypes.unknownType() : typeOf(override.elementTypeName)
-            let ownerGenerics = genericParameter ? GenericDeclaration(
-                typeIdentity, [genericParameter], type
+            let ownerGenerics = classParameters.isNotEmpty ? GenericDeclaration(
+                typeIdentity, classParameters, type
             ) : null
             if (override.getterValues().isNotEmpty) {
                 let identity = DeclarationIdentity(
@@ -252,7 +250,7 @@ class {
                 CallableKind(methodKind), parameterTypes, methodReturnType, type,
                 method.parameterValues().filter({ _.defaultValue != null }).count,
                 method.parameterValues().map({ _.name }), methodGenerics,
-                genericParameter ? GenericDeclaration(typeIdentity, [genericParameter], type) : null,
+                classParameters.isNotEmpty ? GenericDeclaration(typeIdentity, classParameters, type) : null,
                 asyncFunction: method.asyncMethod, externalName: method.externalName
             ))
         }
@@ -413,9 +411,9 @@ class {
         }
         functions.addAll(boundMethods)
         let metadata = BoundMetadataUnit[]
-        if (genericParameter) {
-            metadata.add(BoundMetadataUnit("generic", genericParameter.name, genericParameter.value()))
-            metadata.add(BoundMetadataUnit("reified", genericParameter.name, genericParameter.value()))
+        for (parameter in classParameters) {
+            metadata.add(BoundMetadataUnit("generic", parameter.name, parameter.value()))
+            metadata.add(BoundMetadataUnit("reified", parameter.name, parameter.value()))
         }
         for (implementedType in syntax.implementedTypeNames()) {
             metadata.add(BoundMetadataUnit("implements", implementedType, implementedType))
@@ -585,7 +583,7 @@ class {
                 })), syntax.range.snapshot,
                 locals, constructors, receiver, allFields, arrayGetter, arraySetter,
                 publishedFields, PrimitiveStructuralTypeResolver(
-                    callables: constructors, genericParameter: genericParameter,
+                    callables: constructors, classGenericParameters: classParameters,
                     receiverType: type, interfaces: interfaces, implementationOwner: owner,
                     implementationRange: syntax.range, declarationContext: declarationContext,
                     lookupRange: syntax.range), typeHierarchy
@@ -1447,8 +1445,8 @@ class {
         let previousBoundType = boundType
         // Static expressions have a lexical owner even without an instance receiver.
         if (typeResolver && typeResolver.receiverType) boundType = typeResolver.receiverType
-        let previousGenericParameter = genericParameter
-        if (typeResolver) genericParameter = typeResolver.genericParameter
+        let previousClassParameters = classParameters
+        if (typeResolver) classParameters = typeResolver.ownerParameters()
         let previousArrayGetter = arrayGetter
         let previousArraySetter = arraySetter
         constructors = callables
@@ -1471,7 +1469,7 @@ class {
             declarationContext = previousDeclarationContext
             declarationLookupRange = previousLookupRange
             boundType = previousBoundType
-            genericParameter = previousGenericParameter
+            classParameters = previousClassParameters
             arrayGetter = previousArrayGetter
             arraySetter = previousArraySetter
         }
@@ -2085,7 +2083,7 @@ class {
                                     if (context.kind() != "function") throw Exception("Lambda argument requires function parameter")
                                     let callbackLocals = LocalBinding[]:addAll(locals)
                                     if (receiver) callbackLocals.add(LocalBinding("this", receiver.symbolIdentity,
-                                        genericParameter ? GenericInstanceSemanticType(boundType, [genericParameter]) : receiver.semanticType))
+                                        classParameters.isNotEmpty ? GenericInstanceSemanticType(boundType, classParameters) : receiver.semanticType))
                                     let bound = bindCallback(
                                         (PrimitiveLambdaSyntax)argument, (FunctionSemanticType)context,
                                         callbackLocals, constructors, typeHierarchy,
@@ -2236,7 +2234,7 @@ class {
                                 if (context.kind() != "function") throw Exception("Lambda argument requires function parameter")
                                 let callbackLocals = LocalBinding[]:addAll(locals)
                                 if (receiver) callbackLocals.add(LocalBinding("this", receiver.symbolIdentity,
-                                    genericParameter ? GenericInstanceSemanticType(boundType, [genericParameter]) : receiver.semanticType))
+                                    classParameters.isNotEmpty ? GenericInstanceSemanticType(boundType, classParameters) : receiver.semanticType))
                                 let bound = bindCallback(
                                     (PrimitiveLambdaSyntax)argument, (FunctionSemanticType)context,
                                     callbackLocals, constructors, typeHierarchy,
@@ -2843,10 +2841,10 @@ class {
             }
             let local = locals.reverse().firstOrNull({ _.name == value.name })
             if (local) {
-                if (value.name == "this" && genericParameter && receiver &&
+                if (value.name == "this" && classParameters.isNotEmpty && receiver &&
                     local.identity.value == receiver.symbolIdentity.value) {
                     return BoundReferenceExpression(value.range,
-                        GenericInstanceSemanticType(boundType, [genericParameter]), local.name, local.identity)
+                        GenericInstanceSemanticType(boundType, classParameters), local.name, local.identity)
                 }
                 return BoundReferenceExpression(
                     value.range, local.semanticType, local.name, local.identity
@@ -2854,9 +2852,9 @@ class {
             }
             if (value.name == "this") {
                 if (!receiver) throw Exception("Static method cannot reference 'this'")
-                if (genericParameter) {
+                if (classParameters.isNotEmpty) {
                     return BoundReferenceExpression(value.range,
-                        GenericInstanceSemanticType(boundType, [genericParameter]),
+                        GenericInstanceSemanticType(boundType, classParameters),
                         receiver.name, receiver.symbolIdentity)
                 }
                 return receiver
@@ -3182,11 +3180,11 @@ class {
                         contextualStaticCandidates.first.parameterTypes()[suppliedIndex] : null
                 if (argument.class.isOfType(PrimitiveReferenceSyntax.class) &&
                     ((PrimitiveReferenceSyntax)argument).name == "this" && receiver &&
-                    genericParameter && constructorCall &&
+                    classParameters.isNotEmpty && constructorCall &&
                     (locals.reverse().firstOrNull({ _.name == "this" }) == null ||
                         locals.reverse().firstOrNull({ _.name == "this" }).identity == receiver.symbolIdentity)) {
                     arguments.add(BoundReferenceExpression(
-                        argument.range, GenericInstanceSemanticType(boundType, [genericParameter]),
+                        argument.range, GenericInstanceSemanticType(boundType, classParameters),
                         "this", receiver.symbolIdentity
                     ))
                 } else {
@@ -3785,10 +3783,7 @@ class {
         let owner = instance ? instance.declarationType : (UserClassSemanticType)left.semanticType
         let syntax = context.classFor(owner.declarationIdentity)
         if (!syntax) return null
-        let parameters = GenericParameterSemanticType[]
-        if (syntax.genericParameterName) {
-            parameters.add(GenericParameterSemanticType(owner.declarationIdentity, syntax.genericParameterName, 0))
-        }
+        let parameters = PrimitiveClassParameters.bind(syntax, owner.declarationIdentity)
         let substitution = instance ? GenericSubstitution(parameters, instance.typeArguments()) : null
         let resolver = PrimitiveStructuralTypeResolver(declarationContext: context.scopeFor(owner.declarationIdentity),
             receiverType: owner, methodGenericParameters: parameters, lookupRange: syntax.range)
@@ -4108,7 +4103,7 @@ class {
             generics.add(GenericParameterSemanticType(identity, genericName, generics.count))
         }
         return PrimitiveStructuralTypeResolver(
-            callables: constructors, genericParameter: genericParameter,
+            callables: constructors, classGenericParameters: classParameters,
             receiverType: boundType, methodGenericParameters: generics, interfaces: interfaces,
             implementationOwner: boundSyntax, implementationRange: method.range,
             declarationContext: declarationContext ? declarationContext.scopeForSnapshot(method.range.snapshot) : null,
@@ -4120,7 +4115,7 @@ class {
         SourceRange memberRange = null) -> SemanticType {
         if (nativeScalarStorage && name == "String") return SemanticTypes.stringType()
         let resolver = scopedTypeResolver ?: PrimitiveStructuralTypeResolver(
-            callables: constructors, genericParameter: genericParameter,
+            callables: constructors, classGenericParameters: classParameters,
             receiverType: boundType, interfaces: interfaces,
             declarationContext: declarationContext && memberRange ?
                 declarationContext.scopeForSnapshot(memberRange.snapshot) : declarationContext,

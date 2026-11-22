@@ -7,6 +7,31 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `binds distinct positional field types`() {
+        let stream = Lexer().lex("class Duo<K, V> { K key; V value; }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:duo"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let fields = unit.fieldUnits()
+        expect(fields.first.semanticType.value()).toBe(GenericParameterSemanticType(unit.identity, "K", 0).value())
+        expect(fields.last.semanticType.value()).toBe(GenericParameterSemanticType(unit.identity, "V", 1).value())
+        let memo = GenericInstantiationMemo(2)
+        let instantiated = PrimitiveGenericClassBinder().instantiateArguments(syntax, snapshot,
+            [SemanticTypes.intType(), SemanticTypes.stringType()], memo)
+        let work = memo.work().first
+        expect(work.substitution.apply(fields.first.semanticType).value()).toBe(SemanticTypes.intType().value())
+        expect(work.substitution.apply(fields.last.semanticType).value()).toBe(SemanticTypes.stringType().value())
+        var String failure
+        try { PrimitiveGenericClassBinder().instantiate(syntax, snapshot, SemanticTypes.intType(), memo) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("argument count")).toBe(true)
+        let resolver = PrimitiveStructuralTypeResolver(syntaxes: [syntax], snapshot: snapshot)
+        var String badType
+        try { resolver.resolve("Duo<Int>") } catch (Exception error) { badType = error.message }
+        expect(badType != null).toBe(true)
+    }
+
     constructorBody(BoundTypeUnit owner, BoundFunctionUnit constructor) -> BoundStatement[] {
         let identity = BoundConstructorPlan.bodyInitializerIdentity(constructor.identity)
         return owner.functionUnits().firstOrNull((function) => function.identity.value == identity.value).statements()
