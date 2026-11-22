@@ -126,6 +126,17 @@ testable class {
         expect(message).toBe("Primitive expression syntax error at token 15: Expected 'else' in if expression")
     }
 
+    async test `throw arm rejects a missing operand at the keyword`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-throw-operand"), "one")
+        let stream = Lexer().lex("if (a) { b } else { throw }")
+        stream.emit("start")
+        var String message = ""
+        try {
+            PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        } catch (Exception error) { message = error.message }
+        expect(message).toBe("Primitive expression syntax error at token 9: Throw arm requires a value")
+    }
+
     async test `braced if value requires an else branch`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-else"), "one")
         let stream = Lexer().lex("if (ready) { value }")

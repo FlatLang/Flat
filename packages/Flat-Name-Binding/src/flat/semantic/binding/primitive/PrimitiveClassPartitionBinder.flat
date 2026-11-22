@@ -665,6 +665,10 @@ class {
                 }
             }
         }
+        if (expression.class.isOfType(PrimitiveThrowArmSyntax.class)) {
+            return awaitInExpression(((PrimitiveThrowArmSyntax)expression).operand, syntax, method, syntaxes,
+                signatures, fields, boundNames)
+        }
         if (expression.class.isOfType(PrimitiveConditionalSyntax.class)) {
             let value = (PrimitiveConditionalSyntax)expression
             return awaitInExpression(value.condition, syntax, method, syntaxes,

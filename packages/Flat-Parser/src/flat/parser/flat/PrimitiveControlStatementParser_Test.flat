@@ -4,6 +4,23 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `return if throw arm preserves the throw and operand source ranges`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Airship-throw-arm"), "one")
+        let stream = Lexer().lex("return if (valid) { path } else {\nthrow InvalidLocation(path)\n}")
+        stream.emit("start")
+        let parsed = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let statement = parsed.statements().first
+        let returned = (PrimitiveReturnSyntax)statement
+        let branchValue = returned.value
+        let branch = (PrimitiveConditionalSyntax)branchValue
+        let exitValue = branch.whenFalse
+        let thrown = (PrimitiveThrowArmSyntax)exitValue
+        expect(thrown.range.start.lineNumber).toBe(2)
+        expect(thrown.range.start.column).toBe(1)
+        expect(thrown.operand.range.start.column).toBe(7)
+        expect(thrown.operand.expressionKind()).toBe("call")
+    }
+
     async test `multiline return keeps else if inside its value expression`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Airship-return"), "one")
         let stream = Lexer().lex("return if (dir || link) {\n1\n} else if (file) {\n2\n} else {\n3\n}")

@@ -1,0 +1,36 @@
+package flat/semantic/binding/primitive
+
+import flat/parser/flat
+import flat/bound
+import flat/compiler/models
+import flat/semantic/types
+import flat/semantic/binding/BindingDiagnostic
+
+/** Produce branch-local control transfer, with the type of the sole completing arm. */
+class {
+    public static bind(PrimitiveConditionalSyntax value, BoundExpression condition,
+        bindBranch(PrimitiveExpressionSyntax syntax, Bool positive, Bool throwing) -> BoundExpression) -> BoundExpression {
+        let throwsOnTrue = value.whenTrue.class.isOfType(PrimitiveThrowArmSyntax.class)
+        let throwsOnFalse = value.whenFalse.class.isOfType(PrimitiveThrowArmSyntax.class)
+        if (throwsOnTrue || throwsOnFalse) {
+            if (throwsOnTrue && throwsOnFalse) throw PrimitiveContextBindingException(BindingDiagnostic(
+                "type.no-conditional-value", "Neither conditional arm produces a value",
+                SyntaxIslandIdentity(value.range.snapshot, "conditional", value.range.startTokenIndex), value.range))
+            let abrupt = throwsOnTrue ? value.whenTrue : value.whenFalse
+            let arm = (PrimitiveThrowArmSyntax)abrupt
+            let thrown = bindBranch(arm.operand, throwsOnTrue, true)
+            let kind = thrown.semanticType.kind()
+            if (kind != "string" && kind != "object" && kind != "user-class") throw PrimitiveContextBindingException(BindingDiagnostic(
+                "type.invalid-throw-operand", "Throw arm requires a throwable reference value",
+                SyntaxIslandIdentity(arm.range.snapshot, "throw-arm", arm.range.startTokenIndex), arm.operand.range))
+            let transfer = BoundThrowStatement(arm.range, thrown)
+            let guard = throwsOnTrue ? BoundIfStatement(value.range, condition, [transfer])
+                : BoundIfStatement(value.range, condition, BoundStatement[], [transfer])
+            let normal = throwsOnTrue ? value.whenFalse : value.whenTrue
+            let result = bindBranch(normal, !throwsOnTrue, false)
+            // At this evaluation site the guard either throws or falls through to the sole value.
+            return BoundEvaluationExpression(value.range, result.semanticType, [guard], result)
+        }
+        return null
+    }
+}

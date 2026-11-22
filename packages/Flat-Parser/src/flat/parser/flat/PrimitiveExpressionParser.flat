@@ -158,6 +158,14 @@ class {
 
     parseIfBranch() -> PrimitiveExpressionSyntax {
         requireIfToken("{")
+        if (index < tokens.count && tokens[index].value == "throw") {
+            let start = index++
+            if (index >= tokens.count || tokens[index].value == "}") syntax("Throw arm requires a value", start)
+            let operand = parseConditional()
+            let arm = PrimitiveThrowArmSyntax(range(start, index), operand)
+            requireIfToken("}")
+            return arm
+        }
         let value = parseConditional()
         requireIfToken("}")
         return value

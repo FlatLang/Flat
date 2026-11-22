@@ -1334,6 +1334,10 @@ class {
             let condition = conditionValue(classExpression(
                 value.condition, receiver, fields, locals, callables
             ))
+            let guarded = PrimitiveThrowArmBinding.bind(value, condition, (branch, positive, throwing) => {
+                return classExpression(branch, receiver, fields, PrimitiveNullableLocalFlow.branch(value.condition, positive, locals, receiver), callables)
+            })
+            if (guarded) return guarded
             var BoundExpression whenTrue = classExpression(
                 value.whenTrue, receiver, fields,
                 PrimitiveNullableLocalFlow.branch(value.condition, true, locals, receiver), callables

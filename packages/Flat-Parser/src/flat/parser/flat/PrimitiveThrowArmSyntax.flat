@@ -1,0 +1,12 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** A braced conditional arm that exits by throwing rather than producing a value. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(SourceRange range, visible PrimitiveExpressionSyntax operand) {
+        if (!range || !operand) throw Exception("Throw arm requires an operand")
+        super(range)
+    }
+    override public expressionKind() => "throw-arm"
+}

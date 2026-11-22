@@ -1,0 +1,24 @@
+package probe
+class Marker { constructor() {} }
+class Main {
+    public static condition(Bool answer) -> Bool { external js { globalThis.trace += 'c'; } return answer }
+    public static normal() -> Int { external js { globalThis.trace += 'v'; } return 7 }
+    public static fail(Marker marker) -> Marker { external js { globalThis.trace += 't'; } return marker }
+    public static select(Bool answer, Marker marker) -> Int {
+        let selected = if (condition(answer)) { throw fail(marker) } else { normal() }
+        return selected
+    }
+    public static main() {
+        external js { globalThis.trace = ''; }
+        let marker = Marker()
+        let value = select(false, marker)
+        var Bool observed = false
+        try { select(true, marker) } catch (Object caught) {
+            external js { #{observed} = #{caught} === #{marker}; }
+        }
+        external js {
+            if (!#{observed} || #{value} !== 7 || globalThis.trace !== 'cvct') throw Error(globalThis.trace);
+            console.log('cvct:original-exception');
+        }
+    }
+}

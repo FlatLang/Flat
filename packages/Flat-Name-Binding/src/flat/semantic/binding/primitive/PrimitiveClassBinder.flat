@@ -2573,6 +2573,13 @@ class {
             let condition = PrimitiveControlStatementBinder().conditionValue(expression(
                 value.condition, receiver, fields, locals
             ))
+            let guarded = PrimitiveThrowArmBinding.bind(value, condition, (branch, positive, throwing) => {
+                let result = expression(branch, receiver, fields, PrimitiveNullableLocalFlow.branch(value.condition, positive, locals, receiver), throwing ? null : requiredType)
+                if (!throwing && requiredType) return PrimitiveStringAdapter.conditionalText(branch, result, requiredType,
+                    declarationContext, constructors, typeHierarchy)
+                return result
+            })
+            if (guarded) return guarded
             var BoundExpression whenTrue = expression(
                 value.whenTrue, receiver, fields,
                 PrimitiveNullableLocalFlow.branch(value.condition, true, locals, receiver), requiredType

@@ -429,6 +429,9 @@ class {
             return ((PrimitiveInterpolatedStringSyntax)syntax).segmentValues().any((segment) =>
                 !segment.literal() && referencesName(segment.expression, name))
         }
+        if (syntax.class.isOfType(PrimitiveThrowArmSyntax.class)) {
+            return referencesName(((PrimitiveThrowArmSyntax)syntax).operand, name)
+        }
         if (syntax.class.isOfType(PrimitiveConditionalSyntax.class)) {
             let conditional = (PrimitiveConditionalSyntax)syntax
             return referencesName(conditional.condition, name) ||
@@ -1333,6 +1336,13 @@ class {
             let value = (PrimitiveConditionalSyntax)syntax
             let condition = PrimitiveControlStatementBinder().conditionValue(
                 bindSyntax(value.condition, locals, callables))
+            let guarded = PrimitiveThrowArmBinding.bind(value, condition, (branch, positive, throwing) => {
+                let result = bindSyntax(branch, locals, callables, throwing ? null : requiredType)
+                if (!throwing && requiredType) return PrimitiveStringAdapter.conditionalText(branch, result, requiredType,
+                    currentDeclarationContext, callables, currentHierarchy)
+                return result
+            })
+            if (guarded) return guarded
             var BoundExpression whenTrue = bindSyntax(value.whenTrue, locals, callables, requiredType)
             var BoundExpression whenFalse = bindSyntax(value.whenFalse, locals, callables, requiredType)
             if (requiredType) {
