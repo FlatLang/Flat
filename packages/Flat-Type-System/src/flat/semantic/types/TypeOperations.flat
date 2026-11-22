@@ -101,6 +101,10 @@ class {
             }
             return invalid("type.binary", "Null fallback requires compatible operands", range)
         }
+        if (operator == "&" && TypeConversions.isIntegral(leftType) && TypeConversions.isIntegral(rightType)) {
+            let integral = commonNumeric(leftType, rightType)
+            if (integral) return TypedOperationResult(integral)
+        }
         if ((operator == "&&" || operator == "||") &&
             leftType.value() == "primitive:Bool" && rightType.value() == "primitive:Bool") {
             return TypedOperationResult(SemanticTypes.boolType())
