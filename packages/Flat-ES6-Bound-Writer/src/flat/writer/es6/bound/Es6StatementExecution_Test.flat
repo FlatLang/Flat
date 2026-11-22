@@ -10,6 +10,51 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    async test `fallthrough executes ordered bodies without revisiting labels`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let range = fixture.range()
+        let type = SemanticTypes.intType()
+        let selector = fixture.reference("parameter", "input", 1, type)
+        let owner = fixture.declaration("type", "Trace", 2)
+        let ownerName = Es6NameMangler.mangle(owner.value)
+        var String setup = "const trace = []; const " + ownerName + " = {};\n"
+        let labels = BoundExpression[]
+        // Getters make each evaluated label observable, independently of arm effects.
+        for (i in 0..6) {
+            let name = "label#i"
+            let field = fixture.symbol("field", name, i + 3)
+            labels.add(BoundReferenceExpression(range, type, name, field, staticOwner: owner, fieldOwnerIdentity: owner))
+            setup += "Object.defineProperty(" + ownerName + ", '" + Es6NameMangler.mangle(field.value) +
+                "', {get() { trace.push('L#i'); return #i; }});\n"
+        }
+        let returned = BoundReturnStatement(range, type, BoundLiteralExpression(range, type, "7"), TypeConversions.classify(type, type))
+        let switched = BoundSwitchStatement(range, selector, [
+            BoundSwitchCase(range, labels[0], BoundStatement[], fallsThrough: true),
+            BoundSwitchCase(range, labels[1], [traceStep(fixture, "A")], fallsThrough: true),
+            BoundSwitchCase(range, labels[2], [traceStep(fixture, "B")]),
+            BoundSwitchCase(range, labels[3], [traceStep(fixture, "C"), BoundBreakStatement(range)], fallsThrough: true),
+            BoundSwitchCase(range, labels[4], [traceStep(fixture, "D"), returned], fallsThrough: true),
+            BoundSwitchCase(range, labels[5], [traceStep(fixture, "E")]),
+            BoundSwitchCase(range, null, [traceStep(fixture, "F")], defaultCase: true)
+        ])
+        let emitted = Es6StatementOrchestrator().emit(switched)
+        expect(emitted.emitted).toBe(true)
+        let inputName = Es6ExpressionOrchestrator().emit(selector).code
+        let root = File(".flat-es6-switch-flow-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let file = File(root, "flow.js")
+        Es6ArtifactCommitter().commit(file, setup + "function run(" + inputName + ") {\n" + emitted.code +
+            "return 9; }\nfor (const x of [0,1,3,4,8]) { trace.length = 0; const result = run(x); console.log(trace.join(',') + ':' + result); }")
+        let response = System.execute(["node", file.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        expect(response.exitCode).toBe(0)
+        expect(response.stdout.join("")).toBe("L0,A,B:9\nL0,L1,A,B:9\nL0,L1,L2,L3,C:9\nL0,L1,L2,L3,L4,D:7\nL0,L1,L2,L3,L4,L5,F:9\n")
+    }
+
+    traceStep(Es6BoundWriter_TestFixture fixture, String marker) -> BoundStatement {
+        return BoundExternalStatement(fixture.range(), "es6", [BoundExternalCodeSegment(fixture.range(), "trace.push('" + marker + "');")])
+    }
+
     async test `parsed locals conditionals loops and returns emit and execute under Node`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:statement-execute"), "revision:one"

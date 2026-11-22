@@ -620,6 +620,22 @@ testable class {
         expect(selected.argumentConversions()).toBe([projected])
         expect(unbox.value).toBe(foreignValue)
     }
+    test `labeled fallthrough preserves its body without changing the default contract`() {
+        let fixture = BoundIR_TestFixture()
+        let label = BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1")
+        BoundStatement[] body = [BoundExpressionStatement(fixture.range(), label)]
+        let selected = BoundSwitchCase(fixture.range(), label, body, fallsThrough: true)
+        var Bool rejected
+        try { BoundSwitchCase(fixture.range(), null, body, true, true) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        body.clear()
+        selected.statementValues().clear()
+        expect(selected.statementValues().count).toBe(1)
+        expect(selected.fallsThrough).toBe(true)
+        expect(BoundSwitchCase(fixture.range(), null, body, true, true).defaultCase).toBe(true)
+    }
+
     test `collection lowering descends into immutable switch cases`() {
         let fixture = BoundIR_TestFixture()
         let value = BoundLiteralExpression(fixture.range(1, 2), SemanticTypes.intType(), "1")
@@ -628,7 +644,7 @@ testable class {
         let caseLoop = containerForeach(fixture, 10)
         let defaultLoop = containerForeach(fixture, 20)
         let shared = BoundSwitchCase(fixture.range(2, 3), sharedLabel, BoundStatement[], false, true)
-        let selected = BoundSwitchCase(fixture.range(3, 19), label, containerBody(fixture, caseLoop, 10))
+        let selected = BoundSwitchCase(fixture.range(3, 19), label, containerBody(fixture, caseLoop, 10), fallsThrough: true)
         let fallback = BoundSwitchCase(fixture.range(20, 29), null, containerBody(fixture, defaultLoop, 20), true)
         let switched = BoundSwitchStatement(fixture.range(1, 30), value, [shared, selected, fallback])
         let input = BoundFunctionUnit(fixture.declaration("function", "switchLoops", 1),
