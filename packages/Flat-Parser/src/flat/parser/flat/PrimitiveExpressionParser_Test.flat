@@ -4,6 +4,32 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `braced if initializer parses both branch values`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Colorizer"), "one")
+        let source = "if (code != RESET) {\n    value.replace(old, newValue)\n} else {\n    value\n}"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let expression = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 10)
+        expect(expression.expressionKind()).toBe("conditional")
+        let conditional = (PrimitiveConditionalSyntax)expression
+        expect(conditional.condition.expressionKind()).toBe("binary")
+        expect(conditional.whenTrue.expressionKind()).toBe("member-call")
+        expect(conditional.whenFalse.expressionKind()).toBe("reference")
+        expect(expression.range.startTokenIndex).toBe(10)
+        expect(expression.range.end.lineNumber).toBe(5)
+    }
+
+    async test `braced if value requires an else branch`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-else"), "one")
+        let stream = Lexer().lex("if (ready) { value }")
+        stream.emit("start")
+        var String message = ""
+        try {
+            PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        } catch (Exception error) { message = error.message }
+        expect(message).toBe("Primitive expression syntax error at token 7: Expected 'else' in if expression")
+    }
+
     test `multiline literal payload preserves exact legacy oracle compatibility`() {
         // Compatibility with Literal.formatMultilitestring, not endorsement of
         // its CRLF doubling, backslash adjacency or empty-margin quirks.

@@ -147,8 +147,32 @@ class {
     assignmentOperator(String value) -> Bool =>
         value == "+=" || value == "-=" || value == "*=" || value == "/=" || value == "%="
 
+    requireIfToken(String value) {
+        if (index >= tokens.count || tokens[index].value != value) {
+            syntax("Expected '#value' in if expression", index)
+        }
+        index++
+    }
+
+    parseIfBranch() -> PrimitiveExpressionSyntax {
+        requireIfToken("{")
+        let value = parseConditional()
+        requireIfToken("}")
+        return value
+    }
+
     parsePrimary() -> PrimitiveExpressionSyntax {
         if (index >= tokens.count) syntax("Expected primitive expression", index)
+        if (tokens[index].value == "if") {
+            let start = index++
+            requireIfToken("(")
+            let condition = parseConditional()
+            requireIfToken(")")
+            let whenTrue = parseIfBranch()
+            requireIfToken("else")
+            let whenFalse = parseIfBranch()
+            return parsePostfix(start, PrimitiveConditionalSyntax(range(start, index), condition, whenTrue, whenFalse))
+        }
         if (tokens[index].value == "(") {
             let start = index++
             if (index + 2 < tokens.count && tokens[index].value == "let" &&
