@@ -98,6 +98,34 @@ testable class {
         expect(expression.range.end.lineNumber).toBe(5)
     }
 
+    async test `else if value nests in the false arm and spans the terminal branch`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Airship-location"), "one")
+        let stream = Lexer().lex("if (file.isDirectory || file.isSymbolicLink) { directory }\nelse if (file.isFile) { regular }\nelse { invalid }")
+        stream.emit("start")
+        let expression = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 10)
+        let chain = (PrimitiveConditionalSyntax)expression
+        let branchValue = chain.whenFalse
+        let alternative = (PrimitiveConditionalSyntax)branchValue
+        expect(chain.condition.expressionKind()).toBe("binary")
+        expect(alternative.whenTrue.expressionKind()).toBe("reference")
+        expect(alternative.whenFalse.expressionKind()).toBe("reference")
+        expect(chain.range.startTokenIndex).toBe(10)
+        expect(alternative.range.start.lineNumber).toBe(2)
+        expect(alternative.range.end.lineNumber).toBe(3)
+        expect(alternative.range.endTokenIndex).toBe(chain.range.endTokenIndex)
+    }
+
+    async test `else if value requires a final else`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-final-else"), "one")
+        let stream = Lexer().lex("if (a) { b } else if (c) { d }")
+        stream.emit("start")
+        var String message = ""
+        try {
+            PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        } catch (Exception error) { message = error.message }
+        expect(message).toBe("Primitive expression syntax error at token 15: Expected 'else' in if expression")
+    }
+
     async test `braced if value requires an else branch`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-else"), "one")
         let stream = Lexer().lex("if (ready) { value }")

@@ -4,6 +4,14 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `multiline return keeps else if inside its value expression`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Airship-return"), "one")
+        let stream = Lexer().lex("return if (dir || link) {\n1\n} else if (file) {\n2\n} else {\n3\n}")
+        stream.emit("start")
+        let parsed = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.statements().map({ _.statementKind() })).toBe(["return"])
+    }
+
     async test `adjacent chained receiver calls remain separate without splitting their predicate`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:airship-help"), "one")
         let stream = Lexer().lex("cli.usedArgs.removeFirstWhere({ _ == cliArgs.allHelpArg })\ncli.usedArgs.removeWhere({ _ == cliArgs.readmeCommand })")

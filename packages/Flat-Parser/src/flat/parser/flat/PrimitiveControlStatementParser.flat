@@ -434,7 +434,7 @@ class {
             value == "/=" || value == "%="
 
     expressionContinuation(String value) -> Bool =>
-        value == "=" || value == "." || value == "," || value == "return" ||
+        value == "=" || value == "." || value == "," || value == "return" || value == "else" ||
         value == "+" || value == "-" || value == "*" || value == "/" ||
         value == "%" || value == "&&" || value == "||" || value == "?" ||
         value == ":" || value == "==" || value == "!=" || value == "<" ||

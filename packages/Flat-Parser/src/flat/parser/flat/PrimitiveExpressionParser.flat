@@ -222,18 +222,26 @@ class {
         return null
     }
 
+    // Parse the false arm recursively without consuming postfixes belonging to the whole chain.
+    parseIfValue() -> PrimitiveConditionalSyntax {
+        let start = index++
+        requireIfToken("(")
+        let condition = parseConditional()
+        requireIfToken(")")
+        let whenTrue = parseIfBranch()
+        requireIfToken("else")
+        var PrimitiveExpressionSyntax whenFalse
+        if (index < tokens.count && tokens[index].value == "if") whenFalse = parseIfValue()
+        else whenFalse = parseIfBranch()
+        return PrimitiveConditionalSyntax(range(start, index), condition, whenTrue, whenFalse)
+    }
+
     parsePrimary() -> PrimitiveExpressionSyntax {
         if (index >= tokens.count) syntax("Expected primitive expression", index)
         if (tokens[index].value == "/") return parseRegex()
         if (tokens[index].value == "if") {
-            let start = index++
-            requireIfToken("(")
-            let condition = parseConditional()
-            requireIfToken(")")
-            let whenTrue = parseIfBranch()
-            requireIfToken("else")
-            let whenFalse = parseIfBranch()
-            return parsePostfix(start, PrimitiveConditionalSyntax(range(start, index), condition, whenTrue, whenFalse))
+            let start = index
+            return parsePostfix(start, parseIfValue())
         }
         if (tokens[index].value == "(") {
             let start = index++
