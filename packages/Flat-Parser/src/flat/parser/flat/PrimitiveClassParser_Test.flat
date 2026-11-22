@@ -1608,6 +1608,36 @@ testable class {
         expect(rejected).toBe(true)
     }
 
+    async test `constructor delegation retains mixed arguments and label ranges in both bodies`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:delegation-labels"), "one")
+        let forms = ["=> this(1, last: 3)", "{ this(1, last: 3); }"]
+        for (form in forms) {
+            let source = "class Box { construct() " + form + " }"
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            let first = syntax.constructorValue.statements().first
+            let edge = (PrimitiveConstructorDelegationSyntax)first
+            expect(edge.argumentValues().count).toBe(1)
+            let label = edge.namedArgumentValues().first
+            expect(label.name).toBe("last")
+            expect(label.range.start.column).toBe(source.indexOf("last") + 1)
+            expect(label.value.range.start.column).toBe(source.indexOf("3") + 1)
+        }
+    }
+
+    async test `constructor delegation rejects positional arguments after labels`() {
+        let source = "class Box { construct() => this(last: 1, 2) }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        var ParseFailure failure
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-label"), "one")
+        try { PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+        catch (ParseFailure error) { failure = error }
+        expect(failure.diagnostic.code).toBe("invalid-expression-syntax")
+        expect(failure.diagnostic.range.start.column).toBe(source.indexOf("2") + 1)
+    }
+
     test `parses same-receiver constructor delegation`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:same-receiver-construct"), "one"

@@ -97,6 +97,7 @@ class {
                 let setupIdentity = DeclarationIdentity(SyntaxIslandIdentity(entry.range.snapshot,
                     "constructor-setup", entry.identity.syntaxIdentity.ordinal), "constructor-setup", current.identity.value)
                 let values = rewrite.lowerExpressions(delegation.argumentValues())
+                let slots = delegation.parameterSlots()
                 let converted = BoundExpression[]
                 // Evaluate ALL supplied edge operands before target defaults/bindings.
                 var Int index
@@ -114,7 +115,7 @@ class {
                 index = 0
                 for (parameter in next.parameterValues()) {
                     var BoundExpression value
-                    if (index < converted.count) value = converted[index]
+                    if (slots.contains(index)) value = converted[slots.indexOf(index)]
                     else {
                         if (!parameter.defaultValue) throw Exception("Constructor delegation is missing a required argument")
                         value = rewrite.lowerExpression(parameter.defaultValue)

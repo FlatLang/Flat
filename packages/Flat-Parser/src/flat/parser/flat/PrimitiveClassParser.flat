@@ -540,40 +540,20 @@ class {
                 let delegationStart = index
                 index++
                 require("(")
-                let arguments = PrimitiveExpressionSyntax[]
-                if (index < tokens.count && tokens[index].value != ")") {
-                    while (true) {
-                        let argumentStart = index
-                        var Int parenthesisDepth
-                        while (index < tokens.count) {
-                            let value = tokens[index].value
-                            if (value == "(") parenthesisDepth++
-                            else if (value == ")") {
-                                if (parenthesisDepth == 0) break
-                                parenthesisDepth--
-                            } else if (value == "," && parenthesisDepth == 0) break
-                            index++
-                        }
-                        if (argumentStart == index) {
-                            syntax("Expected delegated constructor argument", index)
-                        }
-                        arguments.add(PrimitiveExpressionParser().parse(
-                            tokens.skip(argumentStart).take(index - argumentStart), snapshot,
-                            argumentStart + tokenIndexOffset
-                        ))
-                        if (index >= tokens.count || tokens[index].value == ")") break
-                        require(",")
-                        if (index >= tokens.count || tokens[index].value == ")") {
-                            syntax("Expected delegated constructor argument", index)
-                        }
-                    }
+                var Int depth = 1
+                while (index < tokens.count && depth > 0) {
+                    if (tokens[index].value == "(") depth++
+                    else if (tokens[index].value == ")") depth--
+                    index++
                 }
-                require(")")
+                if (depth != 0) syntax("Expected closing delegated constructor parenthesis", index)
+                let parsed = PrimitiveExpressionParser().parse(
+                    tokens.skip(delegationStart).take(index - delegationStart), snapshot, tokenIndexOffset + delegationStart)
+                let call = (PrimitiveCallSyntax)parsed
+                let edge = PrimitiveConstructorDelegationSyntax(range(delegationStart, index), call.argumentValues(), call.namedArgumentValues())
                 return PrimitiveConstructorSyntax(
                     range(start, index), parameters,
-                    [PrimitiveConstructorDelegationSyntax(
-                        range(delegationStart, index), arguments
-                    )]
+                    [edge]
                 )
             }
             require("super")

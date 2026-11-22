@@ -1,0 +1,10 @@
+package probe
+
+class Main {
+    public construct(Int first, Int middle = 5, Int last = 9) {
+        external js { console.log(#{first}, #{middle}, #{last}); }
+    }
+    public construct() => this(last: Main.mark(3), first: Main.mark(1))
+    public static mark(Int i) -> Int { external js { console.log(#{i}); } return i }
+    public static main() { let probe = Main() }
+}

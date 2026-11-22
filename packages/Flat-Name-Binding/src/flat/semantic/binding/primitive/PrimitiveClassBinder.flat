@@ -623,18 +623,59 @@ class {
                 candidate.ownerType.value() == type.value() &&
                 candidate.identity.declaration.value != identity.value
             )
-            let resolution = OverloadResolver.resolve(
-                owner.name, candidates, null,
-                arguments.map({ _.semanticType }), value.range
-            )
-            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
-            let checked = CallTypeChecker.check(
-                resolution.selected, null, arguments.map({ _.semanticType }), value.range
-            )
-            if (!checked.valid) throw Exception(checked.diagnostic.message)
-            delegation = BoundConstructorDelegation(
-                resolution.selected, arguments, checked.argumentConversions(), value.range
-            )
+            let named = value.namedArgumentValues()
+            if (named.isNotEmpty) {
+                let positional = arguments.count
+                for (label in named) arguments.add(expression(label.value, receiver, fields, locals))
+                let checks = CallCheckResult[]
+                let edges = BoundConstructorDelegation[]
+                for (candidate in candidates) {
+                    let edgeTypes = candidate.parameterTypes()
+                    let names = candidate.parameterNames()
+                    if (names.count != edgeTypes.count || arguments.count > edgeTypes.count) continue
+                    let slots = Int[]
+                    let conversions = TypeConversion[]
+                    var Int i
+                    for (argument in arguments) {
+                        var Int slot = i
+                        if (i >= positional) {
+                            let label = named[i - positional].name
+                            if (!names.contains(label)) break
+                            slot = names.indexOf(label)
+                        }
+                        if (slots.contains(slot)) break
+                        let conversion = TypeConversions.classify(argument.semanticType, edgeTypes[slot], hierarchy: typeHierarchy)
+                        if (!conversion.applicable) break
+                        slots.add(slot)
+                        conversions.add(conversion)
+                        i++
+                    }
+                    if (slots.count != arguments.count) continue
+                    var Bool missing
+                    for (required in 0..(edgeTypes.count - candidate.optionalParameterCount)) {
+                        if (!slots.contains(required)) missing = true
+                    }
+                    if (missing) continue
+                    checks.add(CallCheckResult(candidate, conversions, candidate.returnType))
+                    edges.add(BoundConstructorDelegation(candidate, arguments, conversions, value.range, slots))
+                }
+                let selected = OverloadResolver.resolveChecked(owner.name, candidates, checks, value.range)
+                if (!selected.resolved) throw Exception(selected.diagnostic.message)
+                delegation = edges.firstOrNull((edge) => edge.target.identity.value == selected.selected.identity.value)
+            } else {
+                let resolution = OverloadResolver.resolve(
+                    owner.name, candidates, null,
+                    arguments.map({ _.semanticType }), value.range
+                )
+                if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+                let checked = CallTypeChecker.check(
+                    resolution.selected, null, arguments.map({ _.semanticType }), value.range
+                )
+                if (!checked.valid) throw Exception(checked.diagnostic.message)
+                delegation = BoundConstructorDelegation(
+                    resolution.selected, arguments, checked.argumentConversions(), value.range
+                )
+            }
         }
         var BoundParentConstructorCall parentCall
         if (parentConstructor && !delegation) {

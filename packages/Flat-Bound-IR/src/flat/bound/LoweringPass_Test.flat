@@ -267,10 +267,10 @@ testable class {
             parentConstructorCall: BoundParentConstructorCall(target, [foreignValue], [identity], fixture.range()))
         let childType = UserClassSemanticType(fixture.declaration("class", "Child", 153))
         let childTarget = CallableSignature(fixture.symbol("constructor", "Child", 154), "Child",
-            CallableKind("constructor"), [intType], childType, childType)
+            CallableKind("constructor"), [intType, intType], childType, childType, 2)
         let delegated = BoundFunctionUnit(input.identity, input.name, unitType,
             BoundStatement[], fixture.range(), [parameter], constructorFunction: true,
-            constructorDelegation: BoundConstructorDelegation(childTarget, [foreignValue], [identity], fixture.range()))
+            constructorDelegation: BoundConstructorDelegation(childTarget, [foreignValue], [identity], fixture.range(), [1]))
         let parentResult = ExternalNativeLoweringPass().lower(input)
         let delegationResult = ExternalNativeLoweringPass().lower(delegated)
         expect(parentResult.parameterValues().first.defaultValue.expressionKind()).toBe("native-call")
@@ -278,6 +278,7 @@ testable class {
         expect(parentResult.parentConstructorCall.argumentValues().first.expressionKind()).toBe("native-call")
         expect(parentResult.parentConstructorCall.argumentConversions()).toBe([identity])
         expect(delegationResult.constructorDelegation.argumentValues().first.expressionKind()).toBe("native-call")
+        expect(delegationResult.constructorDelegation.parameterSlots()).toBe([1])
         expect(delegationResult.constructorDelegation.target).toBe(childTarget)
         expect(delegationResult.constructorDelegation.target.ownerType.declarationIdentity).toBe(childType.declarationIdentity)
         expect(parentResult.parentConstructorCall.target).toBe(target)
