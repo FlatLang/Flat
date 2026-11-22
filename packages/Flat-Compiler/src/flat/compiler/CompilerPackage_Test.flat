@@ -696,7 +696,7 @@ testable class {
                 "external js { console.log(); console.log(" + reference + "{nativeNativeText.chars.data}); }\n" +
             "} }"
         sources.add(CompilerSource("app/Main.flat", program))
-        let sink = MemoryCompilerArtifactSink()
+        let sink = MemoryCompilerArtifactSink(1, 33554432)
         let session = Compiler().compilePackage(
             MemoryCompilerSourceProvider(sources), sink, "string-concatenation.js", "app/Main"
         )
@@ -732,8 +732,8 @@ testable class {
 
     async test `package artifact is independent of provider order`() {
         let sources = realSources()
-        let forward = MemoryCompilerArtifactSink()
-        let backward = MemoryCompilerArtifactSink()
+        let forward = MemoryCompilerArtifactSink(1, 33554432)
+        let backward = MemoryCompilerArtifactSink(1, 33554432)
         let compiler = Compiler()
         let first = compiler.compilePackage(MemoryCompilerSourceProvider(sources), forward, "core.js")
         let reversed = CompilerSource[]

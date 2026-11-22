@@ -38,7 +38,7 @@ testable class {
     async test `default package closure compiles more than 64 sources without truncation`() {
         let values = CompilerSource[]
         for (index in 0..70) values.add(CompilerSource("Value#{index}.flat", "class Value#index {}"))
-        let sink = MemoryCompilerArtifactSink()
+        let sink = MemoryCompilerArtifactSink(1, 2097152)
         let summary = CompilerEngine(maxActiveSources: 2).compilePackage(
             MemoryCompilerSourceProvider(values), sink, "closure.js").completion.get()
         expect(summary.sourceCount).toBe(70)
