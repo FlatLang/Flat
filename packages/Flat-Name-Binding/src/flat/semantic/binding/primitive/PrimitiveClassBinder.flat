@@ -311,6 +311,11 @@ class {
                     if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                     initializer = bound.expression
                 }
+            } else if (fieldType.kind() == "primitive") {
+                // Field storage has a Flat default even when the declaration has no initializer.
+                let literal = fieldType.value() == "primitive:Bool" ? "false" :
+                    fieldType.value() == "primitive:Char" ? "'\\0'" : "0"
+                initializer = BoundLiteralExpression(fieldRange, fieldType, literal)
             }
             fields.add(BoundFieldUnit(
                 field.name, identity, fieldType, fieldRange,

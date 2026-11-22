@@ -12,6 +12,23 @@ testable class {
         return owner.functionUnits().firstOrNull((function) => function.identity.value == identity.value).statements()
     }
 
+    async test `constructor initializes primitive field storage before its first read`() {
+        let stream = Lexer().lex("class Counter { visible var Int calls; public construct() {} public bump() { calls = calls + 1; } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:counter-default"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let stage = unit.functionUnits().firstOrNull((method) => method.identity.value == BoundConstructorPlan.fieldInitializerIdentity(unit.identity).value)
+        expect(stage.statements().count).toBe(1)
+        Object statement = stage.statements().first
+        let assignment = (BoundMemberAssignmentStatement)statement
+        expect(assignment.target.memberIdentity).toBe(unit.fieldUnits().first.identity)
+        Object value = assignment.value
+        let zero = (BoundLiteralExpression)value
+        expect(zero.semanticType.value()).toBe(SemanticTypes.intType().value())
+        expect(zero.sourceValue).toBe("0")
+    }
+
     async test `declared null guard retains structured equality without nullable storage`() {
         let stream = Lexer().lex("class StringCharArray { visible Int count; public equals(StringCharArray other) -> Bool { if (other == null) { return false; } if (count != other.count) { return false; } return true; } public present() -> Bool => this != null }")
         stream.emit("start")
