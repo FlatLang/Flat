@@ -756,7 +756,24 @@ class {
                 if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected lambda parameter type", index)
                 var String typeName = null
                 var String name = tokens[index++].value
-                if (index < tokens.count && tokens[index].type == Token.Type.IDENTIFIER) {
+                if (index < tokens.count && tokens[index].value == "<") {
+                    // Commas inside the generic spelling belong to the type, not the lambda.
+                    var Int depth = 1
+                    index++
+                    while (index < tokens.count && depth > 0) {
+                        let part = tokens[index].value
+                        if (part == "<") depth++
+                        else if (part == ">") depth--
+                        else if (part == ")" || part == "=>") syntax("Expected closing generic lambda parameter type", index)
+                        index++
+                    }
+                    if (depth != 0) syntax("Expected closing generic lambda parameter type", index)
+                    let typeTokens = Token[]
+                    for (i in parameterStart..index) typeTokens.add(tokens[i])
+                    typeName = PrimitiveFunctionParser().parseTypeTokens(typeTokens, snapshot, parameterStart + tokenIndexOffset)
+                    if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected lambda parameter name", index)
+                    name = tokens[index++].value
+                } else if (index < tokens.count && tokens[index].type == Token.Type.IDENTIFIER) {
                     typeName = name
                     name = tokens[index++].value
                 } else if (!allowOmittedType) syntax("Expected lambda parameter name", index)

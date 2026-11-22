@@ -1065,7 +1065,10 @@ class {
                 if (parameters.any({ _.name == parameter.name })) {
                     throw Exception("Duplicate lambda parameter '#{parameter.name}'")
                 }
-                let type = namedType(parameter.typeName)
+                let type = parameter.typeName && parameter.typeName.contains("<")
+                    ? PrimitiveStructuralTypeResolver(callables: callables, declarationContext: currentDeclarationContext,
+                        lookupRange: parameter.range).resolveParameter(parameter)
+                    : namedType(parameter.typeName)
                 if (expected && type.value() != expected.parameterTypes()[parameterIndex].value()) {
                     throw Exception("Lambda parameter type does not match expected function")
                 }

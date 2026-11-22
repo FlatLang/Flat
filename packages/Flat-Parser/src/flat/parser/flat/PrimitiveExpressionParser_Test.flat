@@ -4,6 +4,30 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+
+    async test `generic lambda parameter owns its type commas and full source range`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Airship-pair"), "one")
+        let stream = Lexer().lex("(Pair<String, Object> pair, i) => { return pair }")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 20)
+        let parameters = ((PrimitiveLambdaSyntax)parsed).parameterValues()
+        expect(parameters.map({ _.name })).toBe(["pair", "i"])
+        expect(parameters.first.typeName).toBe("Pair<String,Object>")
+        expect(parameters.first.range.start.column).toBe(2)
+        expect(parameters.first.range.end.column).toBe(27)
+        expect(parameters.last.omittedLambdaType).toBe(true)
+    }
+
+    async test `generic lambda type must end before its parameter name`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-name"), "one")
+        let stream = Lexer().lex("(Pair<String,Object>) => 1")
+        stream.emit("start")
+        var String message = ""
+        try { PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { message = error.message }
+        expect(message).toBe("Primitive expression syntax error at token 7: Expected lambda parameter name")
+    }
+
     async test `arrow callback retains ordered explicit parameter names`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:contextual-parameters"), "one")
         let stream = Lexer().lex("(str, Int i) => { return str }")

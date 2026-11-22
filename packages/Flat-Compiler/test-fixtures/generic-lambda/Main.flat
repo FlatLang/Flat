@@ -1,0 +1,8 @@
+package probe
+class Pair<A, B> { constructor() {} }
+class Main {
+    public static main() {
+        let callback = (Pair<String, Object> pair) => pair
+        external js { const marker = {}; const result = #{callback}(marker); if (result !== marker) throw Error('callback'); console.log("same-pair"); }
+    }
+}

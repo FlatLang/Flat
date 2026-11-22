@@ -384,11 +384,11 @@ class {
     }
 
     /** Parse one finite type spelling using the same grammar as method signatures. */
-    public parseTypeTokens(Token[] tokenValues, SourceSnapshotIdentity sourceSnapshot) -> String {
+    public parseTypeTokens(Token[] tokenValues, SourceSnapshotIdentity sourceSnapshot, Int sourceTokenIndexOffset = 0) -> String {
         if (!tokenValues || tokenValues.isEmpty || !sourceSnapshot) {
             throw Exception("Primitive type parsing requires tokens and snapshot")
         }
-        prepareTokens(tokenValues, 0)
+        prepareTokens(tokenValues, sourceTokenIndexOffset)
         snapshot = sourceSnapshot
         index = 0
         try {
