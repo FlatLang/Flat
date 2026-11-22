@@ -102,11 +102,11 @@ class {
             assignmentCursor++
         }
         if (start + 1 < end &&
-            (tokens[start + 1].value == "(" ||
-                (tokens[start + 1].value == "." && start + 3 < end &&
-                    tokens[start + 3].value == "("))) {
+            (tokens[start + 1].value == "(" || tokens[start + 1].value == "." ||
+                tokens[start + 1].value == "?.")) {
             let value = expression(start, end)
             if (value.class.isOfType(PrimitiveCallSyntax.class) ||
+                value.class.isOfType(PrimitiveMemberAccessSyntax.class) ||
                 value.class.isOfType(PrimitiveMemberCallSyntax.class)) {
                 return PrimitiveExpressionStatementSyntax(range(start, end), value)
             }

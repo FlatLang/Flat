@@ -4,6 +4,13 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `adjacent chained receiver calls remain separate without splitting their predicate`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:airship-help"), "one")
+        let stream = Lexer().lex("cli.usedArgs.removeFirstWhere({ _ == cliArgs.allHelpArg })\ncli.usedArgs.removeWhere({ _ == cliArgs.readmeCommand })")
+        stream.emit("start")
+        let parsed = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.statements().map({ _.statementKind() })).toBe(["expression", "expression"])
+    }
     async test `fallthrough after work retains the arm body and marker range`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:fallthrough"), "one")
         let stream = Lexer().lex("match c { 1 => {\nif (ready) { work() }\nfallthrough\n}\ndefault => break }")

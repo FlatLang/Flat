@@ -418,10 +418,12 @@ class {
             return close + 1 < tokens.count && assignmentOperator(tokens[close + 1].value)
         }
         if (next == "(") return true
-        if (next == "." && tokenIndex + 3 < tokens.count) {
-            let memberOperator = tokens[tokenIndex + 3].value
-            return memberOperator == "(" || memberOperator == "=" || memberOperator == "+=" || memberOperator == "-=" ||
-                memberOperator == "*=" || memberOperator == "/=" || memberOperator == "%="
+        if (next == ".") {
+            // The receiver may itself be a member path (cli.usedArgs.removeWhere(...)).
+            var Int cursor = tokenIndex + 1
+            while (cursor + 1 < tokens.count && tokens[cursor].value == "." &&
+                tokens[cursor + 1].type == Token.Type.IDENTIFIER) cursor += 2
+            return cursor < tokens.count && (tokens[cursor].value == "(" || assignmentOperator(tokens[cursor].value))
         }
         return next == "=" || next == "+=" || next == "-=" || next == "*=" ||
             next == "/=" || next == "%=" || next == "++" || next == "--"
