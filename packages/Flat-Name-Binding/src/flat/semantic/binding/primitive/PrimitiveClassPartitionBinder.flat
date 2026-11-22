@@ -743,22 +743,24 @@ class {
             }
             templates.add(instance)
         }
-        let parameters = GenericParameterSemanticType[]
-        if (parameter) parameters.add(parameter)
-        hierarchy.add(TypeHierarchyDeclaration(type, "class", parents,
-            genericParameters: parameters, genericParents: templates))
-        if (registerArray) hierarchy.registerArrayDeclaration(type)
-        // Keep both language contracts in this scoped component: selecting a
-        // separate root-only component would erase registered array conversions.
+        // The selected declaration is published separately from the other classes.
+        // Include its implicit superclass as well as its implemented interfaces.
         let rootSyntax = syntaxes.firstOrNull({ _.name == "Object" })
         if (rootSyntax) {
             let root = UserClassSemanticType(DeclarationIdentity(
                 SyntaxIslandIdentity(snapshot ?: rootSyntax.range.snapshot,
                     "class", rootSyntax.range.startTokenIndex), "class", rootSyntax.name))
-            if (root.value() != type.value())
+            if (root.value() != type.value()) {
                 hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+                if (!array.parentName || array.parentName == rootSyntax.name) parents.add(root)
+            }
             hierarchy.registerRootDeclaration(root)
         }
+        let parameters = GenericParameterSemanticType[]
+        if (parameter) parameters.add(parameter)
+        hierarchy.add(TypeHierarchyDeclaration(type, "class", parents,
+            genericParameters: parameters, genericParents: templates))
+        if (registerArray) hierarchy.registerArrayDeclaration(type)
         for (syntax in syntaxes) {
             if (syntax.name == array.name || syntax.name == "Object") continue
             let identity = DeclarationIdentity(SyntaxIslandIdentity(snapshot ?: syntax.range.snapshot,

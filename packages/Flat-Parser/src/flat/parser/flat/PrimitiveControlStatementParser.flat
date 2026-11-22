@@ -32,13 +32,7 @@ class {
     parseStatements(Bool insideBody) -> PrimitiveStatementSyntax[] {
         let statements = PrimitiveStatementSyntax[]
         while (index < tokens.count && (!insideBody || tokens[index].value != "}")) {
-            if (tokens[index].value == "if") statements.add(parseIf())
-            else if (tokens[index].value == "switch" || tokens[index].value == "match") statements.add(parseSwitch())
-            else if (tokens[index].value == "while") statements.add(parseWhile())
-            else if (tokens[index].value == "for") statements.add(parseFor())
-            else if (tokens[index].value == "try") statements.add(parseTry())
-            else if (tokens[index].value == "external") statements.add(parseExternal())
-            else statements.add(parseSimple())
+            statements.add(parseStatement())
         }
         if (insideBody) {
             if (index >= tokens.count || tokens[index].value != "}") {
@@ -47,6 +41,18 @@ class {
             index++
         }
         return statements
+    }
+
+    parseStatement() -> PrimitiveStatementSyntax {
+        let word = tokens[index].value
+        if (word == "if") return parseIf()
+        if (word == "switch" || word == "match") return parseSwitch()
+        if (word == "while") return parseWhile()
+        if (word == "for") return parseFor()
+        if (word == "try") return parseTry()
+        if (word == "external") return parseExternal()
+        if (word == "fallthrough") syntax("Fallthrough requires a case arm", index)
+        return parseSimple()
     }
 
     parseIf() -> PrimitiveStatementSyntax {
@@ -101,12 +107,33 @@ class {
                 syntax("Switch case requires arrow", index)
             }
             index++
+            if (index < tokens.count && tokens[index].value == "{") {
+                index++
+                let statements = PrimitiveStatementSyntax[]
+                while (index < tokens.count && tokens[index].value != "}" && tokens[index].value != "fallthrough") {
+                    statements.add(parseStatement())
+                }
+                var SourceRange marker = null
+                if (index < tokens.count && tokens[index].value == "fallthrough") {
+                    if (defaultCase) syntax("Fallthrough requires a non-default case", index)
+                    marker = range(index, index + 1)
+                    index++
+                    if (index < tokens.count && tokens[index].value == ";") index++
+                    if (index < tokens.count && tokens[index].value != "}") syntax("Fallthrough must end the case arm", index)
+                }
+                if (index >= tokens.count) syntax("Expected closing case brace", index)
+                index++
+                cases.add(PrimitiveSwitchCaseSyntax(range(caseStart, index), label, statements, defaultCase,
+                    marker != null, marker))
+                continue
+            }
             let bodyStart = index
             while (index < tokens.count && tokens[index].value != "}" &&
                 !(index + 1 < tokens.count && tokens[index + 1].value == "=>")) index++
             let bodyTokens = tokens.skip(bodyStart).take(index - bodyStart)
-            let fallsThrough = bodyTokens.isEmpty || (bodyTokens.count == 1 &&
-                bodyTokens.first.value == "fallthrough")
+            let explicitMarker = bodyTokens.count == 1 && bodyTokens.first.value == "fallthrough"
+            if (explicitMarker && defaultCase) syntax("Fallthrough requires a non-default case", bodyStart)
+            let fallsThrough = bodyTokens.isEmpty || explicitMarker
             if (bodyTokens.isEmpty && (index >= tokens.count || tokens[index].value == "}")) {
                 syntax("Switch case requires body after arrow", bodyStart)
             }
@@ -116,7 +143,7 @@ class {
                 ).statements()
             cases.add(PrimitiveSwitchCaseSyntax(
                 range(caseStart, index), label, statements,
-                defaultCase, fallsThrough
+                defaultCase, fallsThrough, explicitMarker ? range(bodyStart, index) : null
             ))
         }
         if (index >= tokens.count) syntax("Expected closing switch brace", start)
@@ -380,7 +407,7 @@ class {
         if (tokenIndex >= tokens.count) return false
         let value = tokens[tokenIndex].value
         if (value == "let" || value == "var" || value == "return" ||
-            value == "continue" || value == "throw" || value == "native") return true
+            value == "fallthrough" || value == "break" || value == "continue" || value == "throw" || value == "native") return true
         if (tokens[tokenIndex].type != Token.Type.IDENTIFIER ||
             tokenIndex + 1 >= tokens.count) return false
         if (value == "native_array") return true

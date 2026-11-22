@@ -12,7 +12,8 @@ data class {
         visible SourceRange range,
         PrimitiveFunctionParameterSyntax[] parameterValues,
         PrimitiveStatementSyntax[] statements,
-        PrimitiveExpressionSyntax[] parentArgumentValues = PrimitiveExpressionSyntax[]
+        PrimitiveExpressionSyntax[] parentArgumentValues = PrimitiveExpressionSyntax[],
+        visible Bool implicitDefault = false
     ) {
         if (!range || !parameterValues || parameterValues.any({ !_ }) ||
             !statements || statements.any({ !_ }) || !parentArgumentValues ||

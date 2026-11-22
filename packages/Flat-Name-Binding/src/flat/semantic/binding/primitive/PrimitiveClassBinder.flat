@@ -1311,7 +1311,7 @@ class {
                     defaultValue = bound.expression
                 }
                 defaultValue = type.kind() == "nullable" ? PrimitiveStringAdapter.storageText(
-                    value.defaultValue, defaultValue, type, declarationContext, constructors) : adaptText(defaultValue, type)
+                    value.defaultValue, defaultValue, type, declarationContext, constructors, typeHierarchy) : adaptText(defaultValue, type)
                 var TypeConversion conversion = TypeConversions.classify(
                     defaultValue.semanticType, type,
                     explicit: defaultValue.semanticType.kind() != "nullable" || type.kind() == "nullable"
@@ -1453,7 +1453,7 @@ class {
             var BoundExpression bound = expression(element, receiver, fields, locals)
             let strings = declarationContext.candidates("flat/String")
             if (strings.count == 1) bound = PrimitiveStringAdapter.conditionalText(element, bound,
-                UserClassSemanticType(strings.first), declarationContext, constructors)
+                UserClassSemanticType(strings.first), declarationContext, constructors, typeHierarchy)
             if (!elementType) elementType = bound.semanticType
             let conversion = TypeConversions.classify(bound.semanticType, elementType, hierarchy: typeHierarchy)
             if (!conversion.applicable || conversion.conversionKind == "reference-upcast") throw Exception(
@@ -1636,7 +1636,7 @@ class {
                 originalCallbackContract ?: (FunctionSemanticType)requiredType, declarationContext, constructors)
         }
         return requiredType && requiredType.kind() == "nullable" ?
-            PrimitiveStringAdapter.storageText(syntax, value, requiredType, declarationContext, constructors) :
+            PrimitiveStringAdapter.storageText(syntax, value, requiredType, declarationContext, constructors, typeHierarchy) :
             adaptText(value, requiredType)
     }
 
@@ -1646,7 +1646,7 @@ class {
             ((UserClassSemanticType)requiredType).declarationIdentity.name == "String" &&
             value.semanticType.value() == SemanticTypes.stringType().value()) {
             try {
-                return PrimitiveStringAdapter.wrap(value, requiredType, declarationContext, constructors)
+                return PrimitiveStringAdapter.wrap(value, requiredType, declarationContext, constructors, typeHierarchy)
             } catch (Exception error) {
                 throw Exception("Text representation adapter unavailable: #{error.message}")
             }
@@ -2133,7 +2133,7 @@ class {
                 }
             }
             let rawOwner = PrimitiveStringAdapter.sourceTextReceiver(value.receiver,
-                expression(value.receiver, receiver, fields, locals), declarationContext, constructors)
+                expression(value.receiver, receiver, fields, locals), declarationContext, constructors, typeHierarchy)
             // Retain the established native Char case-conversion intrinsic contract.
             let nativeCharCase = rawOwner.semanticType.value() == "primitive:Char" &&
                 (value.memberName == "toLowerCase" || value.memberName == "toUpperCase")
@@ -2172,7 +2172,7 @@ class {
                                     bound.semanticType.value() == SemanticTypes.stringType().value() && declarationContext) {
                                     let strings = declarationContext.candidates("flat/String")
                                     if (strings.count == 1) bound = PrimitiveStringAdapter.wrap(bound,
-                                        UserClassSemanticType(strings.first), declarationContext, constructors)
+                                        UserClassSemanticType(strings.first), declarationContext, constructors, typeHierarchy)
                                 }
                                 arguments.add(bound)
                                 formals.add(candidate.parameterTypes()[index])
@@ -2328,7 +2328,7 @@ class {
                 if (genericRoot) {
                     callOwner = BoundConversionExpression(value.receiver.range, candidateReceiverType, owner,
                         TypeConversions.classify(owner.semanticType, candidateReceiverType, hierarchy: typeHierarchy))
-                } else callOwner = PrimitiveStringAdapter.wrap(owner, candidateReceiverType, declarationContext, constructors)
+                } else callOwner = PrimitiveStringAdapter.wrap(owner, candidateReceiverType, declarationContext, constructors, typeHierarchy)
             }
             return PrimitiveStringAdapter.call(value.memberName, candidates, callOwner,
                 arguments, declarationContext, constructors, typeHierarchy)
@@ -2509,7 +2509,7 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveCastSyntax.class)) {
             let value = (PrimitiveCastSyntax)syntax
-            let operand = expression(value.value, receiver, fields, locals)
+            var BoundExpression operand = expression(value.value, receiver, fields, locals)
             var SemanticType target
             let namedTarget = typeOf(value.typeName)
             let canonicalTarget = canonicalScalarOwner(namedTarget)
@@ -2517,6 +2517,15 @@ class {
                 (!canonicalTarget || canonicalTarget.value() != boundType.value())) {
                 target = boundType
             } else target = namedTarget
+            // Preserve both steps of an explicit nullable Object -> scalar cast:
+            // removing nullability alone does not extract the Number payload.
+            if (operand.semanticType.kind() == "nullable" && target.kind() == "primitive") {
+                let underlying = ((NullableSemanticType)operand.semanticType).underlyingType
+                if (TypeConversions.classify(underlying, target, explicit: true, hierarchy: typeHierarchy).conversionKind == "numeric-unboxing") {
+                    let unwrap = TypeConversions.classify(operand.semanticType, underlying, explicit: true, hierarchy: typeHierarchy)
+                    operand = BoundConversionExpression(value.range, underlying, operand, unwrap)
+                }
+            }
             let conversion = TypeConversions.classify(
                 operand.semanticType, target, explicit: true, hierarchy: typeHierarchy
             )
@@ -2573,9 +2582,9 @@ class {
                 PrimitiveNullableLocalFlow.branch(value.condition, false, locals, receiver), requiredType
             )
             whenTrue = PrimitiveStringAdapter.conditionalText(value.whenTrue, whenTrue,
-                whenFalse.semanticType, declarationContext, constructors)
+                whenFalse.semanticType, declarationContext, constructors, typeHierarchy)
             whenFalse = PrimitiveStringAdapter.conditionalText(value.whenFalse, whenFalse,
-                whenTrue.semanticType, declarationContext, constructors)
+                whenTrue.semanticType, declarationContext, constructors, typeHierarchy)
             if (requiredType) {
                 // Context does not authorize a cast. Explicit source casts have
                 // already been bound inside their branches before this join.
@@ -2729,7 +2738,7 @@ class {
                 )
             }
             if (value.operator == "?:") right = PrimitiveStringAdapter.storageText(
-                value.right, right, left.semanticType, declarationContext, constructors)
+                value.right, right, left.semanticType, declarationContext, constructors, typeHierarchy)
             let textEquality = bindTextEquality(value.operator, left, right, value.range,
                 declarationContext, constructors, typeHierarchy)
             if (textEquality) return textEquality
@@ -3148,7 +3157,7 @@ class {
                                     ((NullableSemanticType)staticRequiredType).underlyingType.value() ==
                                         UserClassSemanticType(canonicalStrings.first).value()))) {
                             boundArgument = PrimitiveStringAdapter.storageText(argument, boundArgument,
-                                staticRequiredType, declarationContext, constructors)
+                                staticRequiredType, declarationContext, constructors, typeHierarchy)
                         }
                     }
                     arguments.add(boundArgument)
@@ -3401,7 +3410,7 @@ class {
                     candidate.name == access.memberName && candidate.parameterTypes().isEmpty)
                 if (properties.isNotEmpty) {
                     let adaptedReceiver = PrimitiveStringAdapter.wrap(projectedReceiver,
-                        UserClassSemanticType(canonicalText.first), declarationContext, constructors)
+                        UserClassSemanticType(canonicalText.first), declarationContext, constructors, typeHierarchy)
                     return PrimitiveStringAdapter.call(access.memberName,
                         properties, adaptedReceiver, BoundExpression[], declarationContext,
                         constructors, typeHierarchy, callRange: access.range)
@@ -3646,14 +3655,14 @@ class {
         if (nativeLeft) {
             let owner = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "text-equality", range.startTokenIndex),
                 "text-equality", "operands")
-            let wrapped = PrimitiveStringAdapter.wrap(left, type, context, callables)
+            let wrapped = PrimitiveStringAdapter.wrap(left, type, context, callables, hierarchy)
             let first = BoundReferenceExpression(range, type, "textLeft", SymbolIdentity(owner, "left"))
             let second = BoundReferenceExpression(range, type, "textRight", SymbolIdentity(owner, "right"))
             setup.add(BoundLocalDeclarationStatement(range, first, wrapped, TypeConversions.classify(type, type)))
             setup.add(BoundLocalDeclarationStatement(range, second, right, TypeConversions.classify(type, type)))
             receiver = second
             argument = first
-        } else argument = nativeRight ? PrimitiveStringAdapter.wrap(right, type, context, callables) : right
+        } else argument = nativeRight ? PrimitiveStringAdapter.wrap(right, type, context, callables, hierarchy) : right
         let call = PrimitiveStringAdapter.call("equals", candidates, receiver, [argument], context,
             callables, hierarchy, callRange: range)
         let result = operator == "!=" ? BoundUnaryExpression(range, SemanticTypes.boolType(), "!", call) : call

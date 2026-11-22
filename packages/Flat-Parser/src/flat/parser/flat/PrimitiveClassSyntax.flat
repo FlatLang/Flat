@@ -22,7 +22,8 @@ data class {
         visible Bool abstractClass = false,
         PrimitiveArrayOverrideSyntax[] arrayOverrideValues = PrimitiveArrayOverrideSyntax[],
         PrimitiveConstructorSyntax[] constructorValues = PrimitiveConstructorSyntax[],
-        visible PrimitiveTypeReferenceSyntax parentType = null
+        visible PrimitiveTypeReferenceSyntax parentType = null,
+        visible SourceRange extensionModifierRange = null
     ) {
         if (!range || !name || name.trim().count == 0 ||
             (genericParameterName && genericParameterName.trim().count == 0) ||
@@ -89,6 +90,7 @@ data class {
             while (candidateIndex < overlay.methodValues().count && !duplicate) {
                 let candidate = overlay.methodValues()[candidateIndex]
                 if (candidate.name == method.name &&
+                    sameExtensionReceiver(candidate, method) &&
                     candidate.staticMethod == method.staticMethod &&
                     sameParameterSignature(candidate.parameterValues(),
                         method.parameterValues())) duplicate = method
@@ -104,6 +106,7 @@ data class {
             while (methodIndex < methods.count && existingIndex < 0) {
                 let existing = methods[methodIndex]
                 if (existing.name == method.name &&
+                    sameExtensionReceiver(existing, method) &&
                     existing.staticMethod == method.staticMethod &&
                     sameParameterSignature(existing.parameterValues(),
                         method.parameterValues())) existingIndex = methodIndex
@@ -114,6 +117,8 @@ data class {
         }
         let mergedConstructors = constructorValues()
         for (overlayConstructor in overlay.constructorValues()) {
+            // A parser-provided default is not a declaration in the overlay.
+            if (overlayConstructor.implicitDefault) continue
             var Int existingConstructorIndex = -1
             var Int constructorIndex
             while (constructorIndex < mergedConstructors.count &&
@@ -133,13 +138,17 @@ data class {
             fields, mergedConstructors.first, methods, implementedTypeNames(), abstractClass,
             overlay.arrayOverrideValues().isNotEmpty ?
                 overlay.arrayOverrideValues() : arrayOverrideValues(),
-            mergedConstructors, parentType
+            mergedConstructors, parentType, extensionModifierRange
         )
     }
 
     /** Exact syntax signature, not argument compatibility. Nullable/generic/array
      * shape remains in typeName; storage representation is independent evidence.
-     * Parameter names, defaults and promotion visibility do not select overloads. */
+     * Parameter names, defaults and promotion visibility do not select overloads. */    sameExtensionReceiver(PrimitiveFunctionSyntax left, PrimitiveFunctionSyntax right) -> Bool {
+        if (!left.extensionReceiver || !right.extensionReceiver) return !left.extensionReceiver && !right.extensionReceiver
+        return left.extensionReceiver.name == right.extensionReceiver.name
+    }
+
     sameParameterSignature(
         PrimitiveFunctionParameterSyntax[] left,
         PrimitiveFunctionParameterSyntax[] right

@@ -4,6 +4,94 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `overlay without a constructor preserves explicit base initialization`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Array.flat"), "one")
+        let stream = Lexer().lex("class Array { construct() { this(0); } construct(Int count) {} }")
+        stream.emit("start")
+        let base = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let target = SourceSnapshotIdentity(SourceIdentity("memory:Array.js.flat"), "one")
+        let forms = ["class Array { public get() => 1 }", "class Array { construct() {} }"]
+        for (source in forms) {
+            let tokens = Lexer().lex(source)
+            tokens.emit("start")
+            let overlay = PrimitiveClassParser().parse(tokens.consumeAll<Token>("data"), target)
+            let merged = base.mergedWith(overlay)
+            let expected = source.contains("construct") ? overlay.constructorValue : base.constructorValue
+            expect(merged.constructorValues().count).toBe(2)
+            expect(merged.constructorValue.range).toBe(expected.range)
+            expect(merged.constructorValue.statements().count).toBe(expected.statements().count)
+        }
+    }
+
+    async test `qualified property retains the receiver and separate member name`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Properties.flat"), "one")
+        let stream = Lexer().lex("extension class Properties {\n public Bool String.isReady => true\n}")
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let parsed = PrimitiveClassParser().parse(tokens, snapshot, 30)
+        let property = parsed.methodValues().first
+        expect(property.name).toBe("isReady")
+        expect(property.returnTypeName).toBe("Bool")
+        expect(property.parameterValues().count).toBe(0)
+        expect(property.extensionReceiver.name).toBe("String")
+        let receiverRange = property.extensionReceiver.range
+        var Int start
+        while (tokens[start].value != "String") start++
+        expect(receiverRange.startTokenIndex).toBe(30 + start)
+        expect(receiverRange.endTokenIndex).toBe(31 + start)
+        expect(receiverRange.start.lineNumber).toBe(2)
+        expect(receiverRange.start.column).toBe(14)
+        expect(receiverRange.end.column).toBe(20)
+        let overlay = Lexer().lex("extension class Properties { Bool Other.isReady => false }")
+        overlay.emit("start")
+        let merged = parsed.mergedWith(PrimitiveClassParser().parse(overlay.consumeAll<Token>("data"), snapshot))
+        expect(merged.methodValues().map({ _.extensionReceiver.name })).toBe(["String", "Other"])
+    }
+
+    async test `malformed receiver properties diagnose the offending token`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Invalid.flat"), "one")
+        String[] sources = ["class NotExtensions { Bool String.ok => true }",
+            "extension class Invalid { Bool String. => true }",
+            "extension class Invalid { Bool String.ok = true }"]
+        String[] offenders = [".", "=>", "="]
+        for (i in 0..sources.count) {
+            let stream = Lexer().lex(sources[i])
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data")
+            var ParseFailure failure
+            try { PrimitiveClassParser().parse(tokens, snapshot, 20) }
+            catch (ParseFailure error) { failure = error }
+            var Int start
+            while (tokens[start].value != offenders[i]) start++
+            expect(failure.diagnostic.code).toBe("invalid-class-syntax")
+            expect(failure.diagnostic.range.startTokenIndex).toBe(20 + start)
+            expect(failure.diagnostic.range.endTokenIndex).toBe(21 + start)
+        }
+    }
+
+    async test `retains the modifier and implicit file name on an extended declaration`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:SyntaxStringFunctions.flat"), "one")
+        let stream = Lexer().lex("extension class { public static Int LIMIT = 1 }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot,
+            40, "SyntaxStringFunctions")
+        expect(parsed.name).toBe("SyntaxStringFunctions")
+        expect(parsed.range.startTokenIndex).toBe(40)
+        expect(parsed.extensionModifierRange.startTokenIndex).toBe(40)
+        expect(parsed.extensionModifierRange.endTokenIndex).toBe(41)
+        expect(parsed.fieldValues().first.name).toBe("LIMIT")
+    }
+
+    async test `requires the expected keyword after the modifier`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Invalid.flat"), "one")
+        let stream = Lexer().lex("extension trait Invalid {}")
+        stream.emit("start")
+        var String message
+        try { PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { message = error.message }
+        expect(message).toBe("Primitive class syntax error at token 1: Expected 'class'")
+    }
+
     async test `overlay signature storage type spelling and source evidence stay distinct`() {
         String[] spellings = ["Char[]", "native_array native Char[]", "String",
             "native String", "Char[]?"]

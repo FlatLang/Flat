@@ -1,8 +1,74 @@
 package flat/parser/flat
 
 import flat/compiler/models
+import flat/lexer/Lexer
 
 testable class {
+    async test `fallthrough after work retains the arm body and marker range`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:fallthrough"), "one")
+        let stream = Lexer().lex("match c { 1 => {\nif (ready) { work() }\nfallthrough\n}\ndefault => break }")
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let parsed = PrimitiveControlStatementParser().parse(tokens, snapshot)
+        let statements = parsed.statements()
+        let switchObject = (Object)statements.first
+        let cases = ((PrimitiveSwitchSyntax)switchObject).caseValues()
+        expect(cases.first.fallsThrough).toBe(true)
+        expect(cases.first.statementValues().map({ _.statementKind() })).toBe(["if"])
+        expect(cases.first.fallthroughRange.start.lineNumber).toBe(3)
+        expect(cases.first.fallthroughRange.start.column).toBe(1)
+        expect(cases.first.fallthroughRange.end.column).toBe(12)
+        expect(cases.last.fallthroughRange == null).toBe(true)
+        expect(cases.last.fallsThrough).toBe(false)
+        expect(cases.last.statementValues().first.statementKind()).toBe("break")
+    }
+
+    async test `fallthrough requires a terminal position directly in a case`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:misplaced-marker"), "one")
+        String[] sources = ["fallthrough", "match x { default => { fallthrough } }",
+            "match x { 1 => { fallthrough break } }", "match x { 1 => { if (x) { fallthrough } } }"]
+        String[] offending = ["fallthrough", "fallthrough", "break", "fallthrough"]
+        for (i in 0..sources.count) {
+            let stream = Lexer().lex(sources[i])
+            stream.emit("start")
+            var ParseFailure failure
+            try { PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure.diagnostic.code).toBe("invalid-control-syntax")
+            expect(failure.diagnostic.range.start.column).toBe(sources[i].indexOf(offending[i]) + 1)
+        }
+    }
+
+    async test `braced switch arm owns nested statements and not the following label`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:decimal-arm"), "one")
+        let stream = Lexer().lex("switch c { '0' => '1' => continue\n'.' => {\nif (i == 0) return false\nreturn check(i + 1)\n}\ndefault => break }")
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let parsed = PrimitiveControlStatementParser().parse(tokens, snapshot)
+        let statements = parsed.statements()
+        let switchObject = (Object)statements.first
+        let value = (PrimitiveSwitchSyntax)switchObject
+        let cases = value.caseValues()
+        expect(cases.count).toBe(4)
+        expect(cases.first.fallsThrough).toBe(true)
+        expect(cases[2].statementValues().map({ _.statementKind() })).toBe(["if", "return"])
+        expect(cases[2].range.start.lineNumber).toBe(2)
+        expect(cases[2].range.end.lineNumber).toBe(5)
+        expect(cases.last.defaultCase).toBe(true)
+        expect(cases.last.statementValues().first.statementKind()).toBe("break")
+    }
+
+    async test `closing a braced arm does not close its switch`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:incomplete-switch"), "one")
+        let stream = Lexer().lex("switch x { default => { return x }")
+        stream.emit("start")
+        var ParseFailure failure
+        try { PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot, 8) }
+        catch (ParseFailure error) { failure = error }
+        expect(failure.diagnostic.code).toBe("invalid-control-syntax")
+        expect(failure.diagnostic.range.startTokenIndex).toBe(8)
+    }
+
     test `separates member call after local initializer`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:adjacent-call"), "one")
         let values = [

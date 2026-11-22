@@ -47,11 +47,14 @@ class {
         index = 0
         let start = index
         var Bool abstractClass
-        if (index < tokens.count && tokens[index].value == "data") {
+        var SourceRange extensionModifierRange
+        if (index < tokens.count && tokens[index].value == "extension") {
+            extensionModifierRange = range(index, index + 1)
+            index++
+        } else if (index < tokens.count && tokens[index].value == "data") {
             index++
             if (index >= tokens.count || tokens[index].value != "class") syntax("Expected 'class'", index)
-        }
-        if (index < tokens.count && tokens[index].value == "abstract") {
+        } else if (index < tokens.count && tokens[index].value == "abstract") {
             abstractClass = true
             index++
         }
@@ -320,10 +323,23 @@ class {
             } else if (index + 2 < tokens.count &&
                 tokens[index].type == Token.Type.IDENTIFIER &&
                 tokens[index + 1].type == Token.Type.IDENTIFIER &&
-                (tokens[index + 2].value == "=>" || tokens[index + 2].value == "<=>")) {
+                (tokens[index + 2].value == "=>" || tokens[index + 2].value == "<=>" ||
+                    tokens[index + 2].value == ".")) {
                 let propertyStart = index
                 let returnType = tokens[index++].value
-                let propertyName = tokens[index++].value
+                var PrimitiveTypeReferenceSyntax receiver
+                if (tokens[index + 1].value == ".") {
+                    if (!extensionModifierRange) syntax("Receiver-qualified property requires an extension class", index + 1)
+                    let token = tokens[index]
+                    let receiverRange = SourceRange(snapshot, sourceTokenIndexes[index], sourceTokenIndexes[index] + 1,
+                        token.location, Location(lineNumber: token.endLineNumber, column: token.endColumn))
+                    receiver = PrimitiveTypeReferenceSyntax(receiverRange, token.value)
+                    index += 2
+                }
+                let propertyName = identifier("Expected property name")
+                if (receiver && (index >= tokens.count || tokens[index].value != "=>")) {
+                    syntax("Expected '=>' after receiver-qualified property", index)
+                }
                 let storedProperty = tokens[index].value == "<=>" && mutableField
                 if (storedProperty) {
                     if (fields.any({ _.name == propertyName })) {
@@ -349,7 +365,8 @@ class {
                 methods.add(PrimitiveFunctionSyntax(
                     range(propertyStart, end), propertyName,
                     PrimitiveFunctionParameterSyntax[], returnType,
-                    [PrimitiveReturnSyntax(range(expressionStart, expressionEnd), value)]
+                    [PrimitiveReturnSyntax(range(expressionStart, expressionEnd), value)],
+                    extensionReceiver: receiver
                 ))
                 index = end
                 visibleField = false
@@ -421,14 +438,14 @@ class {
         if (index != tokens.count) syntax("Unexpected trailing class token", index)
         if (!constructorValue) {
             constructorValue = PrimitiveConstructorSyntax(
-                range(start, index), PrimitiveFunctionParameterSyntax[], PrimitiveStatementSyntax[]
+                range(start, index), PrimitiveFunctionParameterSyntax[], PrimitiveStatementSyntax[], implicitDefault: true
             )
             constructorValues.add(constructorValue)
         }
         return PrimitiveClassSyntax(
             range(start, index), name, genericParameterName, parentName,
             fields, constructorValue, methods, implementedTypeNames, abstractClass,
-            arrayOverrides, constructorValues, parentType
+            arrayOverrides, constructorValues, parentType, extensionModifierRange
         )
     }
 

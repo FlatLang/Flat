@@ -75,6 +75,10 @@ class {
             return parseLocal(start, end)
         }
         if (first == "return") return parseReturn(start, end)
+        if (first == "break") {
+            if (end - start != 1) syntax("Unexpected token after break", start + 1, end)
+            return PrimitiveBreakSyntax(range(start, end))
+        }
         if (first == "continue" && end - start == 1) {
             return PrimitiveContinueSyntax(range(start, end))
         }

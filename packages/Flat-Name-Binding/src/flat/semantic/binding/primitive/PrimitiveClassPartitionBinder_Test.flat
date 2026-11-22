@@ -82,9 +82,14 @@ testable class {
         expect(falseJoin.value.semanticType.value()).toBe(functionType.parameterTypes().first.value())
         Object storageSource = trueJoin.value
         BoundCallExpression storage = (BoundCallExpression)storageSource
-        expect(storage.target.callableKind.value).toBe("constructor")
+        expect(storage.target.name).toBe("plus")
         expect(storage.semanticType.value()).toBe(text.value())
-        expect(storage.argumentValues().first.expressionKind()).toBe("interpolated-string")
+        Object prefixSource = storage.receiver
+        BoundCallExpression prefix = (BoundCallExpression)prefixSource
+        Object convertedSource = prefix.argumentValues().first
+        BoundCallExpression converted = (BoundCallExpression)convertedSource
+        expect(converted.target.name).toBe("toString")
+        expect(converted.target.ownerType.value()).toBe(root.value())
         for (conversion in call.argumentConversions()) expect(conversion.applicable).toBe(true)
         let sourceMethod = arraySyntax.methodValues().firstOrNull((function) => function.name == "mapped")
         let sourceStatements = sourceMethod.statements()
@@ -1325,6 +1330,29 @@ testable class {
         catch (Exception error) { failure = error.message }
         if (!failure) throw Exception("Shadow scalar declaration acquired native receiver authority")
         expect(failure.contains("toFixed")).toBe(true)
+    }
+
+    async test `explicit nullable Object numeric cast preserves unwrap and Number projection`() {
+        let sources = ["class Object { construct() {} }", "class Number { visible Double realValue => 0.0 }",
+            "class Double { public convert(Object? other) -> Double { return (Double)other; } }"]
+        let contexts = PrimitiveSourceBindingContext[]
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-number:#index"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            contexts.add(PrimitiveSourceBindingContext(index++ == 0 ? "flat" : "flat/primitive/number", snapshot, [syntax]))
+        }
+        let unit = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits().firstOrNull({ _.identity.name == "Double" })
+        let method = unit.functionUnits().firstOrNull({ _.name == "convert" })
+        Object statement = method.statements().first
+        let returned = (BoundReturnStatement)statement
+        expect(returned.value.class.isOfType(BoundNumericUnboxExpression.class)).toBe(true)
+        Object source = returned.value
+        let projection = (BoundNumericUnboxExpression)source
+        expect(projection.projection.name).toBe("realValue")
+        expect(projection.value.expressionKind()).toBe("conversion")
     }
 
     async test `same name casts in canonical numeric classes select primitive projection`() {

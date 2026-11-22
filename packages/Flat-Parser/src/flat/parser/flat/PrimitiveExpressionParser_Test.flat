@@ -4,6 +4,85 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `arrow callback retains ordered explicit parameter names`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:contextual-parameters"), "one")
+        let stream = Lexer().lex("(str, Int i) => { return str }")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 40)
+        let callback = (PrimitiveLambdaSyntax)parsed
+        let parameters = callback.parameterValues()
+        expect(parameters.map({ _.name })).toBe(["str", "i"])
+        expect(parameters.first.typeName == null).toBe(true)
+        expect(parameters.last.typeName).toBe("Int")
+        expect(parameters.first.range.startTokenIndex).toBe(41)
+        expect(parameters.last.range.startTokenIndex).toBe(44)
+        expect(parameters.last.range.endTokenIndex).toBe(47)
+        expect(parameters.first.omittedLambdaType).toBe(true)
+        expect(parameters.last.omittedLambdaType).toBe(false)
+        expect(callback.statementValues().first.statementKind()).toBe("return")
+    }
+
+    async test `malformed arrow parameter lists fail at the offending token`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-parameters"), "one")
+        String[] sources = ["(x,x)=>x", "(x,)=>x", "(Int x y)=>x", "(3)=>x"]
+        Int[] columns = [4, 4, 8, 2]
+        for (i in 0..sources.count) {
+            let stream = Lexer().lex(sources[i])
+            stream.emit("start")
+            var ParseFailure failure
+            try { PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure.diagnostic.code).toBe("invalid-expression-syntax")
+            expect(failure.diagnostic.range.start.column).toBe(columns[i])
+        }
+    }
+
+    async test `explicit empty array construction retains its full spelling range`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:new-array"), "one")
+        let stream = Lexer().lex("new String[]")
+        stream.emit("start")
+        let expression = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let array = (PrimitiveEmptyArrayConstructionSyntax)expression
+        expect(array.elementTypeName).toBe("String")
+        expect(array.range.start.column).toBe(1)
+        expect(array.range.end.column).toBe(13)
+    }
+
+    async test `regex in operand position leaves division infix`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:regex"), "one")
+        let stream = Lexer().lex("value / /a[/]b\\/c/gi")
+        stream.emit("start")
+        let expression = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 20)
+        let binary = (PrimitiveBinarySyntax)expression
+        expect(binary.operator).toBe("/")
+        expect(binary.right.expressionKind()).toBe("regex")
+        let regex = (PrimitiveRegexSyntax)binary.right
+        expect(regex.patternSource).toBe("a[/]b\\/c")
+        expect(regex.flagSource).toBe("gi")
+        expect(regex.range.startTokenIndex).toBe(24)
+        expect(regex.range.start.column).toBe(9)
+        expect(regex.range.end.column).toBe(21)
+    }
+
+    async test `regex keeps literal whitespace and rejects missing delimiter`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:regex-range"), "one")
+        let stream = Lexer().lex("/a b/")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 10)
+        let regex = (PrimitiveRegexSyntax)parsed
+        expect(regex.patternSource).toBe("a b")
+        expect(regex.flagSource).toBe("")
+        expect(regex.range.endTokenIndex).toBe(15)
+        let invalid = Lexer().lex("/[a/b]")
+        invalid.emit("start")
+        var ParseFailure failure
+        try { PrimitiveExpressionParser().parse(invalid.consumeAll<Token>("data"), snapshot, 10) }
+        catch (ParseFailure error) { failure = error }
+        expect(failure.diagnostic.code).toBe("invalid-expression-syntax")
+        expect(failure.diagnostic.range.startTokenIndex).toBe(10)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(11)
+    }
+
     async test `braced if initializer parses both branch values`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Colorizer"), "one")
         let source = "if (code != RESET) {\n    value.replace(old, newValue)\n} else {\n    value\n}"
@@ -648,6 +727,32 @@ testable class {
         let copied = interpolation.segmentValues()
         copied.clear()
         expect(interpolation.segmentValues().count).toBe(5)
+    }
+
+    async test `escaped hash stays literal beside an active interpolation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:ALL_SYMBOLS_CHARS"), "one")
+        var String prefix = "\"().\\"
+        prefix += '#'
+        prefix += "$"
+        let plain = prefix + "\""
+        let stream = Lexer().lex(plain)
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.expressionKind()).toBe("literal")
+        expect(((PrimitiveLiteralSyntax)parsed).sourceValue).toBe(plain)
+
+        // Two backslashes leave the following marker active.
+        var String mixed = prefix + "\\\\"
+        mixed += '#'
+        mixed += "name\""
+        let other = Lexer().lex(mixed)
+        other.emit("start")
+        let expression = PrimitiveExpressionParser().parse(other.consumeAll<Token>("data"), snapshot)
+        let parts = ((PrimitiveInterpolatedStringSyntax)expression).segmentValues()
+        expect(parts.count).toBe(2)
+        expect(parts.first.literalSourceValue).toBe(prefix + "\\\\\"")
+        expect(parts.last.expression.expressionKind()).toBe("interpolation-path")
+        expect(parts.last.range.start.column).toBe(10)
     }
 
     test `rejects malformed string interpolation`() {
@@ -1610,7 +1715,8 @@ testable class {
                 token("new", Token.Type.IDENTIFIER, 1),
                 token("Char", Token.Type.IDENTIFIER, 5),
                 token("[", Token.Type.SYMBOL, 9),
-                token("]", Token.Type.SYMBOL, 10)
+                token(",", Token.Type.SYMBOL, 10),
+                token("]", Token.Type.SYMBOL, 11)
             ], snapshot)
         } catch (Exception error) { rejected++ }
         try {

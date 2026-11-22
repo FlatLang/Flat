@@ -208,14 +208,14 @@ class {
             if (canonical && canonical.count == 1 && TypeConversions.classify(
                 UserClassSemanticType(canonical.first), required, hierarchy: currentHierarchy).applicable) {
                 adapted = PrimitiveStringAdapter.conditionalText(syntax, value, required,
-                    currentDeclarationContext, callables)
+                    currentDeclarationContext, callables, currentHierarchy)
             }
         }
         if (required.kind() == "user-class" &&
             ((UserClassSemanticType)required).declarationIdentity.name == "String" &&
             value.semanticType.kind() == "string") {
             try {
-                adapted = PrimitiveStringAdapter.wrap(value, required, currentDeclarationContext, callables)
+                adapted = PrimitiveStringAdapter.wrap(value, required, currentDeclarationContext, callables, currentHierarchy)
             } catch (Exception error) {
                 throw arrayDiagnostic(
                     "type.array-element-conversion", error.message ?: "Invalid array text element", value.range)
@@ -1337,14 +1337,14 @@ class {
             var BoundExpression whenFalse = bindSyntax(value.whenFalse, locals, callables, requiredType)
             if (requiredType) {
                 whenTrue = PrimitiveStringAdapter.conditionalText(value.whenTrue, whenTrue,
-                    requiredType, currentDeclarationContext, callables)
+                    requiredType, currentDeclarationContext, callables, currentHierarchy)
                 whenFalse = PrimitiveStringAdapter.conditionalText(value.whenFalse, whenFalse,
-                    requiredType, currentDeclarationContext, callables)
+                    requiredType, currentDeclarationContext, callables, currentHierarchy)
             }
             whenTrue = PrimitiveStringAdapter.conditionalText(value.whenTrue, whenTrue,
-                whenFalse.semanticType, currentDeclarationContext, callables)
+                whenFalse.semanticType, currentDeclarationContext, callables, currentHierarchy)
             whenFalse = PrimitiveStringAdapter.conditionalText(value.whenFalse, whenFalse,
-                whenTrue.semanticType, currentDeclarationContext, callables)
+                whenTrue.semanticType, currentDeclarationContext, callables, currentHierarchy)
             let joined = TypeOperations.conditional(condition.semanticType,
                 whenTrue.semanticType, whenFalse.semanticType, value.range, currentHierarchy)
             if (!joined.valid) throw PrimitiveContextBindingException(BindingDiagnostic(

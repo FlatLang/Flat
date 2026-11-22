@@ -4,6 +4,7 @@ import flat/compiler/models
 
 /** Source-ranged syntax-only parser for the first primitive expression slice. */
 class {
+    var Token[] sourceSlice
     var Token[] tokens
     var Int index
     var Int tokenIndexOffset
@@ -19,6 +20,7 @@ class {
         if (!tokenValues || tokenValues.isEmpty || !sourceSnapshot) {
             throw Exception("Primitive expression parsing requires tokens and snapshot")
         }
+        sourceSlice = tokenValues
         tokens = tokenValues.filter({
             let type = _.type
             return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
@@ -161,8 +163,68 @@ class {
         return value
     }
 
+    // A slash starts a pattern only when the expression grammar needs an operand.
+    // Read the original slice here: filtering trivia inside a pattern changes it.
+    parseRegex() -> PrimitiveExpressionSyntax {
+        let start = index
+        // Slices from declaration parsers may already exclude trivia. Never
+        // invent missing pattern characters from column distances.
+        var Int raw = index
+        while (raw < sourceSlice.count && sourceSlice[raw].location != tokens[index].location) raw++
+        let rawStart = raw
+        var Int column = tokens[index].endColumn
+        let line = tokens[index].location.lineNumber
+        index++
+        raw++
+        var Bool escaped
+        var Bool inClass
+        var String pattern = ""
+        while (raw < sourceSlice.count) {
+            let token = sourceSlice[raw++]
+            if (token.location.lineNumber != line || token.endLineNumber != line) break
+            if (token.location.column != column) syntax("Missing source text in regex literal", index)
+            column = token.endColumn
+            if (token.type != Token.Type.WHITESPACE && token.type != Token.Type.COMMENT) index++
+            if (!escaped && !inClass && token.value == "/") {
+                var String flags = ""
+                if (index < tokens.count && tokens[index].location.lineNumber == line &&
+                    tokens[index].location.column == column && tokens[index].type == Token.Type.IDENTIFIER) {
+                    flags = tokens[index++].value
+                    for (i in 0..flags.count) {
+                        let letter = flags.substring(i, i + 1)
+                        if (!"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".contains(letter)) {
+                            syntax("Expected letters in regex flags", index - 1)
+                        }
+                    }
+                }
+                let literalRange = range(start, index)
+                var SourceRange regexRange = literalRange
+                if (!containingRange) {
+                    if (flags.isNotEmpty) raw++
+                    regexRange = SourceRange(snapshot, tokenIndexOffset + rawStart, tokenIndexOffset + raw,
+                        literalRange.start, literalRange.end)
+                }
+                return parsePostfix(start, PrimitiveRegexSyntax(regexRange, pattern, flags))
+            }
+            var Int characterIndex = 0
+            while (characterIndex < token.value.count) {
+                let c = token.value.substring(characterIndex, characterIndex + 1)
+                characterIndex++
+                if (escaped) escaped = false
+                else if (c == "\\") escaped = true
+                else if (c == "[") inClass = true
+                else if (c == "]") inClass = false
+                else if (!inClass && c == "/") syntax("Regex delimiter is not a separate token", start)
+            }
+            pattern += token.value
+        }
+        syntax("Unterminated regex literal", start)
+        return null
+    }
+
     parsePrimary() -> PrimitiveExpressionSyntax {
         if (index >= tokens.count) syntax("Expected primitive expression", index)
+        if (tokens[index].value == "/") return parseRegex()
         if (tokens[index].value == "if") {
             let start = index++
             requireIfToken("(")
@@ -199,6 +261,9 @@ class {
                 if (token == "(") parentheses++
                 if (token == ")") parentheses--
                 typeEnd++
+            }
+            if (typeEnd + 1 < tokens.count && tokens[typeEnd].value == ")" && tokens[typeEnd + 1].value == "=>") {
+                return parseLambdaParameters(start, true)
             }
             if (typeEnd > index && typeEnd + 1 < tokens.count &&
                 tokens[index].type == Token.Type.IDENTIFIER && tokens[typeEnd].value == ")" &&
@@ -257,49 +322,7 @@ class {
             return parsePostfix(start, expression)
         }
         if (tokens[index].value == "[") return parseArray()
-        if (tokens[index].value == "{") {
-            let start = index++
-            if (index < tokens.count && tokens[index].value == "}") {
-                index++
-                return PrimitiveLambdaSyntax(
-                    range(start, index), PrimitiveFunctionParameterSyntax[],
-                    PrimitiveLiteralSyntax(range(start, index), Token.Type.NULL, "null"),
-                    emptyBody: true
-                )
-            }
-            let bodyStart = index
-            var Int cursor = index
-            var Int depth = 1
-            var Bool statementBody
-            while (cursor < tokens.count && depth > 0) {
-                let value = tokens[cursor].value
-                if (value == "{") depth++
-                else if (value == "}") depth--
-                if (depth == 1 && (value == "return" || value == ";" ||
-                    value == "let" || value == "var" || value == "if" ||
-                    value == "for" || value == "while")) statementBody = true
-                if (depth > 0) cursor++
-            }
-            if (depth != 0) syntax("Expected closing implicit lambda brace", cursor)
-            if (statementBody) {
-                let statements = PrimitiveControlStatementParser().parse(
-                    tokens.skip(bodyStart).take(cursor - bodyStart), snapshot,
-                    bodyStart + tokenIndexOffset
-                ).statements()
-                index = cursor + 1
-                return PrimitiveLambdaSyntax(range(start, index), PrimitiveFunctionParameterSyntax[],
-                    PrimitiveLiteralSyntax(range(start, index), Token.Type.NULL, "null"),
-                    statementValues: statements)
-            }
-            let body = parseConditional()
-            if (index >= tokens.count || tokens[index].value != "}") {
-                syntax("Expected closing implicit lambda brace", index)
-            }
-            index++
-            return PrimitiveLambdaSyntax(
-                range(start, index), PrimitiveFunctionParameterSyntax[], body
-            )
-        }
+        if (tokens[index].value == "{") return parseBracedLambda(index, PrimitiveFunctionParameterSyntax[])
         let tokenIndex = index
         let token = tokens[index++]
         if (token.value == "native") return parseNative(tokenIndex)
@@ -330,6 +353,10 @@ class {
             let typeName = tokens[index++].value
             if (index < tokens.count && tokens[index].value == "[") {
                 index++
+                if (index < tokens.count && tokens[index].value == "]") {
+                    index++
+                    return parsePostfix(tokenIndex, PrimitiveEmptyArrayConstructionSyntax(range(tokenIndex, index), typeName), true)
+                }
                 let size = parseConditional()
                 if (index >= tokens.count || tokens[index].value != "]") {
                     syntax("Expected closing array construction bracket", index)
@@ -481,12 +508,13 @@ class {
         }
         if (token.type == Token.Type.STRING) {
             var PrimitiveExpressionSyntax expression
-            if (!hasInterpolationMarker(token.value)) {
+            let strings = PrimitiveInterpolatedStringParser()
+            if (!strings.hasMarker(token.value)) {
                 expression = PrimitiveLiteralSyntax(
                     range(tokenIndex, tokenIndex + 1), token.type,
-                    PrimitiveInterpolatedStringParser().literalSource(token.value)
+                    strings.literalSource(token.value)
                 )
-            } else expression = PrimitiveInterpolatedStringParser().parse(
+            } else expression = strings.parse(
                 token, snapshot, tokenIndex + tokenIndexOffset
             ).expression
             return parsePostfix(tokenIndex, expression)
@@ -653,19 +681,80 @@ class {
         return PrimitiveNamedCallSyntax(range(start, index), name, values)
     }
 
+    parseBracedLambda(Int start, PrimitiveFunctionParameterSyntax[] parameters) -> PrimitiveExpressionSyntax {
+        index++
+        if (index < tokens.count && tokens[index].value == "}") {
+            index++
+            return PrimitiveLambdaSyntax(
+                range(start, index), parameters,
+                PrimitiveLiteralSyntax(range(start, index), Token.Type.NULL, "null"),
+                emptyBody: true
+            )
+        }
+        let bodyStart = index
+        var Int cursor = index
+        var Int depth = 1
+        var Bool statementBody
+        while (cursor < tokens.count && depth > 0) {
+            let value = tokens[cursor].value
+            if (value == "{") depth++
+            else if (value == "}") depth--
+            if (depth == 1 && (value == "return" || value == ";" ||
+                value == "let" || value == "var" || value == "if" ||
+                value == "for" || value == "while")) statementBody = true
+            if (depth > 0) cursor++
+        }
+        if (depth != 0) syntax("Expected closing implicit lambda brace", cursor)
+        if (statementBody) {
+            let statements = PrimitiveControlStatementParser().parse(
+                tokens.skip(bodyStart).take(cursor - bodyStart), snapshot,
+                bodyStart + tokenIndexOffset
+            ).statements()
+            index = cursor + 1
+            return PrimitiveLambdaSyntax(range(start, index), parameters,
+                PrimitiveLiteralSyntax(range(start, index), Token.Type.NULL, "null"),
+                statementValues: statements)
+        }
+        let body = parseConditional()
+        if (index >= tokens.count || tokens[index].value != "}") {
+            syntax("Expected closing implicit lambda brace", index)
+        }
+        index++
+        return PrimitiveLambdaSyntax(
+            range(start, index), parameters, body
+        )
+    }
+
     parseLambda(Int start) -> PrimitiveExpressionSyntax {
         if (index >= tokens.count || tokens[index].value != "(") syntax("Expected lambda parameters", index)
         index++
+        return parseLambdaParameters(start, false)
+    }
+
+    parseLambdaParameters(Int start, Bool allowOmittedType) -> PrimitiveExpressionSyntax {
+        var Int raw = index
         let parameters = PrimitiveFunctionParameterSyntax[]
         if (index < tokens.count && tokens[index].value != ")") {
             while (true) {
                 let parameterStart = index
                 if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected lambda parameter type", index)
-                let typeName = tokens[index++].value
-                if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected lambda parameter name", index)
-                let name = tokens[index++].value
-                if (parameters.any({ _.name == name })) syntax("Duplicate lambda parameter", parameterStart)
-                parameters.add(PrimitiveFunctionParameterSyntax(range(parameterStart, index), typeName, name))
+                var String typeName = null
+                var String name = tokens[index++].value
+                if (index < tokens.count && tokens[index].type == Token.Type.IDENTIFIER) {
+                    typeName = name
+                    name = tokens[index++].value
+                } else if (!allowOmittedType) syntax("Expected lambda parameter name", index)
+                if (parameters.any({ _.name == name })) syntax("Duplicate lambda parameter", index - 1)
+                let first = tokens[parameterStart]
+                let last = tokens[index - 1]
+                while (sourceSlice[raw].location != first.location) raw++
+                let rawStart = raw
+                while (sourceSlice[raw].location != last.location) raw++
+                let parameterRange = containingRange ? range(parameterStart, index) : SourceRange(snapshot,
+                    tokenIndexOffset + rawStart, tokenIndexOffset + raw + 1, first.location,
+                    Location(lineNumber: last.endLineNumber, column: last.endColumn))
+                parameters.add(PrimitiveFunctionParameterSyntax(parameterRange, typeName, name,
+                    omittedLambdaType: typeName == null))
                 if (index >= tokens.count || tokens[index].value != ",") break
                 index++
             }
@@ -674,6 +763,7 @@ class {
         index++
         if (index >= tokens.count || tokens[index].value != "=>") syntax("Expected lambda arrow", index)
         index++
+        if (allowOmittedType && index < tokens.count && tokens[index].value == "{") return parseBracedLambda(start, parameters)
         let body = parseConditional()
         return PrimitiveLambdaSyntax(range(start, index), parameters, body)
     }
@@ -755,15 +845,6 @@ class {
                 syntax("Expected call argument after ','", index)
             }
         }
-    }
-
-    hasInterpolationMarker(String value) -> Bool {
-        var Int index
-        while (index < value.count) {
-            if (value.chars[index] == '#') return true
-            index++
-        }
-        return value.isEmpty
     }
 
     range(Int startIndex, Int endIndex) -> SourceRange {
