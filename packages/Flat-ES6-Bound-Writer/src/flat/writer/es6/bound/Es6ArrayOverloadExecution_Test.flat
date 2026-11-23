@@ -128,6 +128,32 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `indexed write returns converted value without reading it back`() {
+        let source = "class Buffer { visible var Int stored; visible var Int reads; visible var Int writes; " +
+            "this[Int index] -> Int { get { reads = reads + 1; return stored; } set { writes = writes + 1; stored = value + index; } } " +
+            "put(func() -> Buffer owner, func() -> Int key, func() -> Char rhs) => owner()[key()] = rhs() }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:indexed-write-value"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let method = type.functionUnits().firstOrNull({ _.name == "put" })
+        expect(method.returnType.value()).toBe(SemanticTypes.intType().value())
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let root = File(".flat-es6-index-write-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "index-write.js")
+        let fields = type.fieldUnits().map({ Es6NameMangler.mangle(_.identity.value) })
+        Es6ArtifactCommitter().commit(destination, code + "const o = new " + Es6NameMangler.mangle(type.identity.value) +
+            "(); let trace = ''; const result = o." + Es6NameMangler.mangle(method.identity.value) +
+            "(() => (trace += 'R', o), () => (trace += 'I', 2), () => (trace += 'V', 'A')); console.log(trace,result,o." +
+            fields[0] + ",o." + fields[1] + ",o." + fields[2] + ");\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("RIV 65 67 0 1\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `class array override getter and setter execute under Node`() {
         let source = "class Buffer { Char[] data; construct() { data = new Char[1] } " +
             "this[Int index] -> Char { get { return data[index] } " +

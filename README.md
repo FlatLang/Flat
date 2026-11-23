@@ -478,6 +478,7 @@ Numeric-unboxing contract tests do not establish production Core `Double.equals(
 | Consecutive initialized mutable fields | A following `var` starts a new field. Generated code reads and updates distinct fields on separate instances (`1,2,1`). |
 | Typed static lazy arrays | `static lazy String[]` does not require `visible`. First access initializes the array once; subsequent reads preserve its identity and contents. |
 | Throw at the start of an implicit callback | The callback transfers the original exception object. A missing throw operand reports its source range and emits no artifact. |
+| Expression-bodied indexed assignment | Reduced `receiver[key] = value` result: generated Node test verifies receiver/index/RHS order, one setter, no getter, and the converted storage value as the result. Not indexed compound assignment or package acceptance. |
 | Match after an indexed initializer | A following `match` starts a statement. The generated program selects either listed label or continues to the next return for an unmatched value (`0,0,9`). |
 | Colon calls on local receivers | A colon call preserves the receiver, evaluates its argument once, and does not consume the separator of a conditional expression. Ordinary dot calls still return the method result. |
 | Nested empty array construction | `Token[][]` constructs an empty outer array of `Token[]`; a nonempty bracket remains indexing. The Node fixture appends two independent rows and prints `0 2 1 0`. |

@@ -1,0 +1,13 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Indexed storage write whose converted operand is consumed as a value. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(SourceRange range, visible PrimitiveArrayAccessSyntax target,
+        visible PrimitiveExpressionSyntax value) {
+        if (!range || !target || !value) throw Exception("Indexed assignment requires target and value")
+        super(range)
+    }
+    override public expressionKind() => "indexed-assignment-value"
+}

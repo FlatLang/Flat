@@ -1,0 +1,48 @@
+package flat/semantic/binding/primitive
+
+import flat/bound
+import flat/compiler/models
+import flat/semantic/types
+
+/** Capture the receiver, converted index and converted value as invocation arguments.
+ * A setter returns Unit; the assignment returns its retained operand, not a getter call. */
+class {
+    public static bind(SourceRange range, BoundExpression receiver, BoundExpression key, BoundExpression rhs,
+        SemanticType keyType, SemanticType storage, CallableSignature setter, TypeHierarchyComponent hierarchy) -> BoundExpression {
+        let types = [receiver.semanticType, keyType, storage]
+        let inputs = [receiver, key, rhs]
+        let names = ["indexedOwner", "indexedKey", "indexedValue"]
+        let parameters = BoundFunctionParameter[]
+        let arguments = BoundExpression[]
+        let references = BoundReferenceExpression[]
+        let declaration = DeclarationIdentity(SyntaxIslandIdentity(range.snapshot, "indexed-write", range.startTokenIndex), "local", "indexedWrite")
+        var Int i
+        while (i < inputs.count) {
+            let input = inputs[i]
+            let type = types[i]
+            let conversion = TypeConversions.classify(input.semanticType, type, hierarchy: hierarchy)
+            if (!conversion.applicable) throw Exception("Indexed assignment cannot convert '#{input.semanticType.value()}' to '#{type.value()}'")
+            arguments.add(input.semanticType.value() == type.value() ? input : BoundConversionExpression(input.range, type, input, conversion))
+            let identity = SymbolIdentity(declaration, "parameter", i)
+            parameters.add(BoundFunctionParameter(names[i], identity, type))
+            references.add(BoundReferenceExpression(input.range, type, names[i], identity))
+            i++
+        }
+        let stored = references[2]
+        let identityConversion = TypeConversions.classify(storage, storage)
+        var BoundStatement write
+        if (setter) {
+            let checked = CallTypeChecker.check(setter, receiver.semanticType, [keyType, storage], range, hierarchy)
+            if (!checked.valid) throw Exception(checked.diagnostic.message)
+            write = BoundExpressionStatement(range, BoundCallExpression(range, checked.semanticType, checked.target,
+                references[0], [references[1], stored], checked.argumentConversions()))
+        } else {
+            let element = BoundArrayAccessExpression(range, storage, references[0], references[1])
+            write = BoundArrayAssignmentStatement(range, element, stored, identityConversion)
+        }
+        let functionType = FunctionSemanticType(types, storage)
+        let body = BoundLambdaExpression(range, functionType, parameters, BoundReferenceExpression[], stored,
+            [write, BoundReturnStatement(range, storage, stored, identityConversion)])
+        return BoundFunctionInvocationExpression(range, body, functionType, arguments)
+    }
+}

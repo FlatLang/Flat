@@ -38,6 +38,11 @@ class {
             if (tokens.isEmpty) syntax("Postfix $ requires an identifier or call", 0)
         }
         var PrimitiveExpressionSyntax expression = parseConditional()
+        if (index < tokens.count && tokens[index].value == "=" && expression.class.isOfType(PrimitiveArrayAccessSyntax.class)) {
+            index++
+            let operand = parseConditional()
+            expression = (PrimitiveExpressionSyntax)PrimitiveIndexedAssignmentValueSyntax(range(0, index), (PrimitiveArrayAccessSyntax)expression, operand)
+        }
         if (index != tokens.count) syntax("Unexpected token '#{tokens[index].value}'", index)
         if (suffix) {
             let suffixRange = SourceRange(snapshot, expression.range.startTokenIndex,

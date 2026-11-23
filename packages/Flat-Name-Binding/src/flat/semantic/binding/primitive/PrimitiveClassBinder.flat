@@ -2460,6 +2460,29 @@ class {
                 value.range, localType, local, initialized, storage
             )
         }
+        if (syntax.class.isOfType(PrimitiveIndexedAssignmentValueSyntax.class)) {
+            let write = (PrimitiveIndexedAssignmentValueSyntax)syntax
+            let owner = expression(write.target.receiver, receiver, fields, locals)
+            let key = expression(write.target.index, receiver, fields, locals)
+            let selectedType = owner.semanticType
+            var CallableSignature setter
+            var SemanticType storage
+            var SemanticType keyType
+            if (selectedType.kind() == "array") {
+                storage = ((ArraySemanticType)selectedType).elementType
+                keyType = SemanticTypes.intType()
+            } else {
+                let instance = selectedType.kind() == "generic-instance" ? (GenericInstanceSemanticType)selectedType : null
+                let ownerKey = instance ? instance.declarationType.value() : selectedType.value()
+                setter = constructors.firstOrNull((candidate) => candidate.identity.symbolKind == "array-setter" && candidate.ownerType.value() == ownerKey)
+                if (!setter) throw Exception("Indexed receiver does not declare a setter")
+                if (instance && setter.ownerGenericDeclaration) setter = setter.instantiateReceiver(instance)
+                keyType = setter.parameterTypes().first
+                storage = setter.parameterTypes().last
+            }
+            let rhs = expression(write.value, receiver, fields, locals, storage)
+            return PrimitiveIndexedWriteValue.bind(write.range, owner, key, rhs, keyType, storage, setter, typeHierarchy)
+        }
         if (syntax.class.isOfType(PrimitiveArrayAccessSyntax.class)) {
             let value = (PrimitiveArrayAccessSyntax)syntax
             var BoundExpression indexedReceiver = expression(

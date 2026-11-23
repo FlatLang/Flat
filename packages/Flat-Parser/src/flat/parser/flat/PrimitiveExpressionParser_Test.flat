@@ -89,6 +89,25 @@ testable class {
         expect(callback.statementValues().first.statementKind()).toBe("return")
     }
 
+    async test `indexed assignment retains its target operand and range`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:indexed-write"), "one")
+        let stream = Lexer().lex("this[key] = value")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 30)
+        let write = (PrimitiveIndexedAssignmentValueSyntax)parsed
+        expect(write.target.index.expressionKind()).toBe("reference")
+        expect(write.target.range.end.column).toBe(10)
+        expect(write.value.range.start.column).toBe(13)
+        expect(write.range.startTokenIndex).toBe(30)
+        expect(write.range.end.column).toBe(18)
+        let missing = Lexer().lex("this[key] =")
+        missing.emit("start")
+        var ParseFailure failure
+        try { PrimitiveExpressionParser().parse(missing.consumeAll<Token>("data"), snapshot) }
+        catch (ParseFailure error) { failure = error }
+        expect(failure.diagnostic.code).toBe("invalid-expression-syntax")
+    }
+
     async test `malformed arrow parameter lists fail at the offending token`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-parameters"), "one")
         String[] sources = ["(x,x)=>x", "(x,)=>x", "(Int x y)=>x", "(3)=>x"]
