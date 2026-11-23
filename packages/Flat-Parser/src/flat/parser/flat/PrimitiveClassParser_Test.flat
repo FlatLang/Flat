@@ -4,6 +4,22 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `callback input can omit its own name`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Listener.flat"), "one")
+        let stream = Lexer().lex("trait Listener { public async notify(onResult(Event, Int count) = {}) {} }")
+        stream.emit("start")
+        let syntax = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let member = syntax.methodValues().first
+        expect(member.parameterTypeNames().first).toBe("onResult(Event,Int)")
+        let method = member.declaration()
+        let callback = method.parameterValues().first
+        expect(callback.name).toBe("onResult")
+        expect(callback.typeName).toBe("func(Event,Int)")
+        expect(callback.callbackParameterNames().first).toBe("")
+        expect(callback.callbackParameterNames().last).toBe("count")
+        expect(method.asyncMethod).toBe(true)
+    }
+
     async test `uninitialized field ends before indexer`() {
         let stream = Lexer().lex("class Table<K, V> { visible var Int count\nthis[K key] -> V { get { return null } } }")
         stream.emit("start")

@@ -320,10 +320,11 @@ class {
             while (index < tokens.count && tokens[index].value != ")") {
                 if (!first) result += ","
                 result += parseTypeName("Expected function parameter type")
-                identifier("Expected function parameter name")
+                if (index < tokens.count && tokens[index].type == Token.Type.IDENTIFIER) index++
                 first = false
                 if (index >= tokens.count || tokens[index].value != ",") break
                 index++
+                if (index >= tokens.count || tokens[index].value == ")") syntax("Expected callback parameter after ','")
             }
             require(")")
             result += ")"
