@@ -253,6 +253,7 @@ class {
 
     continuesMember(Int count) -> Bool => false {
         if (count >= retained.count) return false
+        if (isSymbol(retained[count], "->")) return true
         if (isSymbol(retained[count], ".")) return true
         // An identifier expression may still become a call. A following '(' is
         // continuation evidence, not a new class-body member boundary.

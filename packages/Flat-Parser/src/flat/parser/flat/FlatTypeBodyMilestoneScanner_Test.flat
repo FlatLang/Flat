@@ -5,6 +5,25 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `HashMap fields and braced indexer publish disjoint headers`() {
+        let source = "Pair<K, V>[][] buckets\n\n    visible var Int count\n\n    this[K key] -> V {\n        get { return value }\n        set { count++ }\n    }"
+        let islands = collect(source)
+        var NonBracedMemberHeaderSyntaxIsland buckets
+        buckets = (NonBracedMemberHeaderSyntaxIsland)islands[0]
+        var NonBracedMemberHeaderSyntaxIsland count
+        count = (NonBracedMemberHeaderSyntaxIsland)islands[1]
+        var BracedMemberHeaderSyntaxIsland indexer
+        indexer = (BracedMemberHeaderSyntaxIsland)islands[2]
+        expect(buckets.name).toBe("buckets")
+        expect(count.name).toBe("count")
+        expect(count.range.end.lineNumber).toBe(3)
+        expect(indexer.memberKind).toBe("array-override")
+        expect(indexer.name).toBe("this")
+        expect(indexer.range.start.lineNumber).toBe(5)
+        expect(indexer.range.start.column).toBe(5)
+        expect(indexer.range.end.lineNumber).toBe(5)
+    }
+
     async test `coordinates canonical generic async function header as one braced member`() {
         let islands = collect(
             "public async mapParallel<Out>(async mapFunc(Type x, Int i, List<Type> list) -> Out, " +

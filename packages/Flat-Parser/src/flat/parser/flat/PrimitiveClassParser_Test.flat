@@ -4,6 +4,15 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `uninitialized field ends before indexer`() {
+        let stream = Lexer().lex("class Table<K, V> { visible var Int count\nthis[K key] -> V { get { return null } } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:table-indexer"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(syntax.fieldValues().first.name).toBe("count")
+        expect(syntax.arrayOverrideValues().first.elementTypeName).toBe("V")
+    }
+
     async test `bare fields terminate a completed initializer on a later line`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:bare-field"), "one")
         let stream = Lexer().lex("class Test<X> {\nInt pre = 1\nInt first = 2 +\n3\nX data\nX[] items\n}")

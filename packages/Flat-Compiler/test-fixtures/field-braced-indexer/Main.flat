@@ -1,0 +1,20 @@
+package probe
+class Token {}
+class Table<V> {
+    var V slot
+    visible var Int writes
+    this[Int key] -> V {
+        get { return slot; }
+        set { slot = value; writes++; }
+    }
+}
+class Main {
+    public static main() {
+        let table = Table<Token>()
+        let token = Token()
+        table[1] = token
+        let read = table[1]
+        let writes = table.writes
+        external js { if (#{read} !== #{token} || #{writes} !== 1) throw Error('indexer'); console.log('same:1'); }
+    }
+}

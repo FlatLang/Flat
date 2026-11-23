@@ -428,7 +428,8 @@ class {
                     tokens[index].value != "visible" && tokens[index].value != "static" &&
                     tokens[index].value != "override" &&
                     tokens[index].value != "constructor" &&
-                    tokens[index].value != "var" && tokens[index].value != "construct" && tokens[index].value != "}"))) require(";")
+                    tokens[index].value != "var" && tokens[index].value != "construct" && tokens[index].value != "}" &&
+                    !(tokens[index].value == "this" && index + 1 < tokens.count && tokens[index + 1].value == "[")))) require(";")
                 if (fields.any({ _.name == fieldName })) syntax("Duplicate field '#fieldName'", fieldStart)
                 fields.add(PrimitiveFieldSyntax(
                     range(fieldStart, index), typeName, fieldName,
