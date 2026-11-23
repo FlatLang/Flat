@@ -3817,8 +3817,8 @@ class {
     }
 
     compoundOperator(String assignmentOperator) -> String {
-        if (assignmentOperator == "+=") return "+"
-        if (assignmentOperator == "-=") return "-"
+        if (assignmentOperator == "+=" || assignmentOperator == "++") return "+"
+        if (assignmentOperator == "-=" || assignmentOperator == "--") return "-"
         if (assignmentOperator == "*=") return "*"
         if (assignmentOperator == "/=") return "/"
         if (assignmentOperator == "%=") return "%"

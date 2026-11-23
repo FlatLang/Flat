@@ -968,6 +968,23 @@ testable class {
         expect(expression.range.endTokenIndex).toBe(5)
     }
 
+    async test `empty nested array shorthand consumes only empty dimensions`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-empty"), "one")
+        String[] sources = ["Token[][]", "Box<Token>[][]", "new Token[][]"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            let empty = (PrimitiveEmptyArrayConstructionSyntax)parsed
+            expect(empty.elementTypeName).toBe(source.contains("Box") ? "Box<Token>[]" : "Token[]")
+            expect(empty.range.end.column).toBe(source.count + 1)
+        }
+        let stream = Lexer().lex("Token[][][0]")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.class.isOfType(PrimitiveArrayAccessSyntax.class)).toBe(true)
+    }
+
     test `parses typed empty array shorthand without erasing element type`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:typed-empty-array"), "revision:one"

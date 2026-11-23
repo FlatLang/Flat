@@ -1,0 +1,18 @@
+package probe
+import flat/datastruct/list/Array
+class Token { construct() {} }
+class Main {
+    public static main() {
+        let splitTokens = Token[][]
+        let empty = splitTokens.count
+        splitTokens.add(Token[])
+        let first = splitTokens.item()
+        first.add(Token())
+        splitTokens.add(Token[])
+        let second = splitTokens.item()
+        let outer = splitTokens.count
+        let a = first.count
+        let b = second.count
+        external js { console.log(#{empty}, #{outer}, #{a}, #{b}); }
+    }
+}

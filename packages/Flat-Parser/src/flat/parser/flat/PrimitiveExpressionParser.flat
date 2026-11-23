@@ -371,7 +371,7 @@ class {
                 index++
                 if (index < tokens.count && tokens[index].value == "]") {
                     index++
-                    return parsePostfix(tokenIndex, PrimitiveEmptyArrayConstructionSyntax(range(tokenIndex, index), typeName), true)
+                    return emptyArrayPostfix(tokenIndex, typeName)
                 }
                 let size = parseConditional()
                 if (index >= tokens.count || tokens[index].value != "]") {
@@ -405,16 +405,13 @@ class {
                 if (depth == 0 && cursor + 1 < tokens.count &&
                     tokens[cursor].value == "[" && tokens[cursor + 1].value == "]") {
                     index = cursor + 2
-                    return parsePostfix(tokenIndex, PrimitiveEmptyArrayConstructionSyntax(
-                        range(tokenIndex, index), elementType), true)
+                    return emptyArrayPostfix(tokenIndex, elementType)
                 }
             }
             if (index + 1 < tokens.count && tokens[index].value == "[" &&
                 tokens[index + 1].value == "]") {
                 index += 2
-                return parsePostfix(tokenIndex, PrimitiveEmptyArrayConstructionSyntax(
-                    range(tokenIndex, index), token.value
-                ), true)
+                return emptyArrayPostfix(tokenIndex, token.value)
             }
             if (index < tokens.count && tokens[index].value == "<") {
                 var Int cursor = index
@@ -567,6 +564,17 @@ class {
         if (depth != 0 || cursor >= tokens.count || tokens[cursor].value != "(") return String[]
         index = cursor
         return arguments
+    }
+
+    // The first [] allocates one empty outer array. Additional empty pairs
+    // describe its element type; a nonempty pair remains a postfix index.
+    emptyArrayPostfix(Int start, String baseType) -> PrimitiveExpressionSyntax {
+        var String elementType = baseType
+        while (index + 1 < tokens.count && tokens[index].value == "[" && tokens[index + 1].value == "]") {
+            elementType += "[]"
+            index += 2
+        }
+        return parsePostfix(start, PrimitiveEmptyArrayConstructionSyntax(range(start, index), elementType), true)
     }
 
     parsePostfix(

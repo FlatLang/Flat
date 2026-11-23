@@ -4,6 +4,17 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `var starts a stored field after an uninitialized field`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Array.flat"), "one")
+        let stream = Lexer().lex("class Array<E> { visible var Int count\nvar E last\nconstruct() {} }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let fields = parsed.fieldValues()
+        expect(fields.map({ _.name })).toBe(["count", "last"])
+        expect(fields.map({ _.typeName })).toBe(["Int", "E"])
+        expect(fields.first.range.endTokenIndex).toBe(fields.last.range.startTokenIndex)
+    }
+
     async test `parses ordered type parameters`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:ordered"), "one")
         let stream = Lexer().lex("class Pair<K, V> { K key; V value; }")
