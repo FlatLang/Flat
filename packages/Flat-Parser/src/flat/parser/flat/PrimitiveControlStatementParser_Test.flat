@@ -337,6 +337,20 @@ testable class {
         expect(rejected).toBe(true)
     }
 
+    async test `match separates qualified labels without splitting arrows in arguments`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:qualified-arms"), "one")
+        let stream = Lexer().lex("match (command) {\ncli.setup => run((x) => x)\ncli.group.install => install()\ndefault => stop()\n}")
+        stream.emit("start")
+        let statements = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot).statements()
+        let cases = ((PrimitiveSwitchSyntax)statements.first).caseValues()
+        expect(cases.count).toBe(3)
+        expect(cases[1].label.range.start.lineNumber).toBe(3)
+        expect(cases[1].label.range.start.column).toBe(1)
+        expect(cases[1].label.range.end.column).toBe(18)
+        expect(cases[0].statementValues().first.range.end.lineNumber).toBe(2)
+        expect(cases.last.defaultCase).toBe(true)
+    }
+
     test `parses switch cases fallthrough and return body`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-switch"), "revision:one"

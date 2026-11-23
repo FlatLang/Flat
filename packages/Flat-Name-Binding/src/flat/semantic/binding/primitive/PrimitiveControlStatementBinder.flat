@@ -157,7 +157,11 @@ class {
                 for (caseValue in value.caseValues()) {
                     var BoundExpression label
                     if (!caseValue.defaultCase) {
-                        let boundLabel = PrimitiveExpressionBinder().bind(
+                        let boundLabel = caseValue.label.class.isOfType(PrimitiveMemberAccessSyntax.class) ?
+                            PrimitiveExpressionBinder.convertBound(
+                                classExpression(caseValue.label, receiver, fields, scopeLocals, callables),
+                                switchedExpression.semanticType, true, currentHierarchy
+                            ) : PrimitiveExpressionBinder().bind(
                             caseValue.label, requiredType: switchedExpression.semanticType,
                             locals: scopeLocals, callables: callables,
                             explicitConversion: true

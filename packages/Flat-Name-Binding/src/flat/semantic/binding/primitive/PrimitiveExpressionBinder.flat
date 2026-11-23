@@ -356,28 +356,7 @@ class {
             var BoundExpression expression = bindSyntax(syntax, locals, callables, requiredType)
             if (requiredType && requiredType.kind() == "function") expression = adaptCallbackReference(
                 expression, (FunctionSemanticType)requiredType, currentDeclarationContext, callables)
-            if (!requiredType) return PrimitiveExpressionBindingResult(expression: expression)
-            let conversion = TypeConversions.classify(
-                expression.semanticType, requiredType, explicit: explicitConversion, hierarchy: currentHierarchy
-            )
-            if (!conversion.applicable) {
-                return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
-                    "type.primitive-conversion",
-                    "Primitive expression '#{expression.semanticType.value()}' cannot convert to '#{requiredType.value()}'",
-                    expression.range
-                ))
-            }
-            if (conversion.conversionKind == "numeric-unboxing") {
-                return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
-                    "binding.numeric-unboxing-projection-unsupported",
-                    "Numeric unboxing requires resolved Number projection evidence", expression.range))
-            }
-            if (conversion.conversionKind == "identity") {
-                return PrimitiveExpressionBindingResult(expression: expression)
-            }
-            return PrimitiveExpressionBindingResult(expression: BoundConversionExpression(
-                expression.range, requiredType, expression, conversion
-            ))
+            return convertBound(expression, requiredType, explicitConversion, currentHierarchy)
         } catch (Exception error) {
             if (error.class.isOfType(PrimitiveContextBindingException.class)) {
                 let diagnostic = ((PrimitiveContextBindingException)error).diagnostic
@@ -390,6 +369,31 @@ class {
                 syntax.range
             ))
         }
+    }
+
+    public static convertBound(BoundExpression expression, SemanticType requiredType, Bool explicitConversion, TypeHierarchyComponent hierarchy) -> PrimitiveExpressionBindingResult {
+        if (!requiredType) return PrimitiveExpressionBindingResult(expression: expression)
+        let conversion = TypeConversions.classify(
+            expression.semanticType, requiredType, explicit: explicitConversion, hierarchy: hierarchy
+        )
+        if (!conversion.applicable) {
+            return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                "type.primitive-conversion",
+                "Primitive expression '#{expression.semanticType.value()}' cannot convert to '#{requiredType.value()}'",
+                expression.range
+            ))
+        }
+        if (conversion.conversionKind == "numeric-unboxing") {
+            return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                "binding.numeric-unboxing-projection-unsupported",
+                "Numeric unboxing requires resolved Number projection evidence", expression.range))
+        }
+        if (conversion.conversionKind == "identity") {
+            return PrimitiveExpressionBindingResult(expression: expression)
+        }
+        return PrimitiveExpressionBindingResult(expression: BoundConversionExpression(
+            expression.range, requiredType, expression, conversion
+        ))
     }
 
     namedType(String name) -> SemanticType {

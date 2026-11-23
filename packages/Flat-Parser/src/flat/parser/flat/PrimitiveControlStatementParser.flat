@@ -128,8 +128,7 @@ class {
                 continue
             }
             let bodyStart = index
-            while (index < tokens.count && tokens[index].value != "}" &&
-                !(index + 1 < tokens.count && tokens[index + 1].value == "=>")) index++
+            index = switchArmBodyEnd(bodyStart)
             let bodyTokens = tokens.skip(bodyStart).take(index - bodyStart)
             let explicitMarker = bodyTokens.count == 1 && bodyTokens.first.value == "fallthrough"
             if (explicitMarker && defaultCase) syntax("Fallthrough requires a non-default case", bodyStart)
@@ -149,6 +148,29 @@ class {
         if (index >= tokens.count) syntax("Expected closing switch brace", start)
         index++
         return PrimitiveSwitchSyntax(range(start, index), value, cases)
+    }
+
+    // Only an outer arrow introduces another case; arrows and closing braces
+    // inside call arguments or callback bodies belong to the current statement.
+    switchArmBodyEnd(Int start) -> Int {
+        var Int depth
+        var Int cursor = start
+        while (cursor < tokens.count) {
+            let word = tokens[cursor].value
+            if (depth == 0 && word == "}") return cursor
+            if (depth == 0 && word == "=>" && cursor > start) {
+                var Int labelStart = cursor - 1
+                while (labelStart >= start + 2 && tokens[labelStart].type == Token.Type.IDENTIFIER &&
+                    tokens[labelStart - 1].value == "." && tokens[labelStart - 2].type == Token.Type.IDENTIFIER) {
+                    labelStart -= 2
+                }
+                return labelStart
+            }
+            if (word == "(" || word == "[" || word == "{") depth++
+            else if (word == ")" || word == "]" || word == "}") depth--
+            cursor++
+        }
+        return cursor
     }
 
     parseFor() -> PrimitiveStatementSyntax {
