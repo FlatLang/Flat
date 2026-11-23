@@ -725,7 +725,7 @@ class {
         let bodyStart = index
         var Int cursor = index
         var Int depth = 1
-        var Bool statementBody
+        var Bool statementBody = tokens[bodyStart].value == "throw"
         while (cursor < tokens.count && depth > 0) {
             let value = tokens[cursor].value
             if (value == "{") depth++

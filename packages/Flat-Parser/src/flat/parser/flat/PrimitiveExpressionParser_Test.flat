@@ -4,6 +4,19 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `implicit callback can start with throw`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:throw-callback"), "one")
+        let stream = Lexer().lex("{ throw TestException(\"hey there\") }")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let callback = (PrimitiveLambdaSyntax)parsed
+        expect(callback.statementValues().count).toBe(1)
+        let first = callback.statementValues().first
+        let transfer = (PrimitiveThrowSyntax)first
+        expect(transfer.range.start.column).toBe(3)
+        expect(transfer.value.range.start.column).toBe(9)
+    }
+
 
     async test `generic lambda parameter owns its type commas and full source range`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Airship-pair"), "one")

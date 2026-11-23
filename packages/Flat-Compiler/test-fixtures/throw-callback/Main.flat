@@ -1,0 +1,10 @@
+package probe
+class Marker {}
+class Main {
+    static invoke(action()) { action() }
+    public static main() {
+        let marker = Marker()
+        try { invoke({ throw marker }) }
+        catch (Object caught) { external js { if (#{caught} !== #{marker}) throw Error('identity'); console.log('caught:original'); } }
+    }
+}
