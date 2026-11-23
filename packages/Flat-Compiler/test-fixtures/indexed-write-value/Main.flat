@@ -1,0 +1,24 @@
+package probe
+class Buffer {
+    visible var Int stored
+    visible var Int reads
+    visible var Int writes
+    this[Int key] -> Int {
+        get { reads = reads + 1; return stored; }
+        set { writes = writes + 1; stored = value + key; }
+    }
+    owner() -> Buffer { external js { process.stdout.write('R'); } return this; }
+    key() -> Int { external js { process.stdout.write('I'); } return 2; }
+    rhs() -> Char { external js { process.stdout.write('V'); } return 'A'; }
+    public put() => owner()[key()] = rhs()
+}
+class Main {
+    public static main() {
+        let o = Buffer()
+        let result = o.put()
+        let stored = o.stored
+        let reads = o.reads
+        let writes = o.writes
+        external js { console.log('', #{result}, #{stored}, #{reads}, #{writes}); }
+    }
+}

@@ -13,20 +13,23 @@ class {
         SemanticType argument,
         GenericInstantiationMemo memo
     ) -> BoundTypeUnit {
-        if (!syntax || !snapshot || !argument || !memo || !syntax.genericParameterName) {
-            throw Exception("Generic class instantiation requires generic syntax argument and memo")
+        return instantiateArguments(syntax, snapshot, [argument], memo)
+    }
+
+    public instantiateArguments(PrimitiveClassSyntax syntax, SourceSnapshotIdentity snapshot,
+        SemanticType[] arguments, GenericInstantiationMemo memo) -> BoundTypeUnit {
+        if (!syntax || !snapshot || !arguments || !memo || syntax.genericParameters().isEmpty) {
+            throw Exception("Generic class instantiation requires generic syntax arguments and memo")
         }
         let bound = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
-        let parameter = GenericParameterSemanticType(
-            bound.identity, syntax.genericParameterName, 0
-        )
-        let declaration = GenericDeclaration(
-            bound.identity, [parameter],
-            GenericInstanceSemanticType(bound.semanticType, [parameter])
-        )
-        let work = memo.instantiate(declaration, [argument])
+        let parameters = PrimitiveClassParameters.bind(syntax, bound.identity)
+        let declaration = GenericDeclaration(bound.identity, parameters,
+            GenericInstanceSemanticType(bound.semanticType, parameters))
+        let work = memo.instantiate(declaration, arguments)
         let metadata = bound.metadata()
-        metadata.add(BoundMetadataUnit("reified", "type-argument", argument.value()))
+        for (parameter in parameters) {
+            metadata.add(BoundMetadataUnit("reified", "type-argument", work.substitution.apply(parameter).value()))
+        }
         metadata.add(BoundMetadataUnit("generic", "instantiation-key", work.key))
         return BoundTypeUnit(
             bound.identity, bound.semanticType, bound.functionUnits(), bound.range,

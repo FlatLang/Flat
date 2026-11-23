@@ -1,0 +1,8 @@
+package flat/datastruct/list
+class Array<E> {
+    visible var Int count
+    var E last
+    construct() {}
+    public add(E value) { last = value; count++; }
+    public item() -> E { return last; }
+}

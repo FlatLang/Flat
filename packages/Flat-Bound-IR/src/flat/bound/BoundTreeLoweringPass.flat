@@ -24,7 +24,7 @@ abstract class extends BoundFunctionLoweringPass {
             parent ? BoundParentConstructorCall(parent.target, lowerExpressions(parent.argumentValues()),
                 parent.argumentConversions(), parent.range) : null,
             delegation ? BoundConstructorDelegation(delegation.target,
-                lowerExpressions(delegation.argumentValues()), delegation.argumentConversions(), delegation.range) : null,
+                lowerExpressions(delegation.argumentValues()), delegation.argumentConversions(), delegation.range, delegation.parameterSlots()) : null,
             input.asyncFunction, input.externalName, input.abstractFunction, input.lazyProperty,
             lowerConstructorPlan(input.constructorPlan))
     }

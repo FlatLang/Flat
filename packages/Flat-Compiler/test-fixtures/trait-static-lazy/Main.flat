@@ -1,0 +1,28 @@
+package probe
+class Token {}
+class Factory {
+    static special() -> Token { external js { globalThis.special++; } return Token(); }
+    static fresh() -> Token {
+        external js { globalThis.calls++; }
+        return Token()
+    }
+}
+trait Defaults {
+    static visible lazy Token aliases => Factory.fresh()
+}
+class Base implements Defaults {}
+class Other implements Defaults {}
+class Custom implements Defaults {
+    override static visible lazy Token aliases => Factory.special()
+}
+class Main {
+    public static main() {
+        external js { globalThis.special = 0; globalThis.calls = 0; }
+        let a = Base.aliases
+        let b = Base.aliases
+        let e = Other.aliases
+        let c = Custom.aliases
+        let d = Custom.aliases
+        external js { if (!#{a} || #{a} !== #{b} || #{c} !== #{d} || #{a} === #{c} || globalThis.calls !== 2 || globalThis.special !== 1 || #{e} === #{a}) throw Error('lazy identity/count'); console.log('inherited:2 override:1'); }
+    }
+}

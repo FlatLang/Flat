@@ -4,6 +4,236 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `implicit callback can start with throw`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:throw-callback"), "one")
+        let stream = Lexer().lex("{ throw TestException(\"hey there\") }")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let callback = (PrimitiveLambdaSyntax)parsed
+        expect(callback.statementValues().count).toBe(1)
+        let first = callback.statementValues().first
+        let transfer = (PrimitiveThrowSyntax)first
+        expect(transfer.range.start.column).toBe(3)
+        expect(transfer.value.range.start.column).toBe(9)
+    }
+
+
+    async test `generic lambda parameter owns its type commas and full source range`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Airship-pair"), "one")
+        let stream = Lexer().lex("(Pair<String, Object> pair, i) => { return pair }")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 20)
+        let parameters = ((PrimitiveLambdaSyntax)parsed).parameterValues()
+        expect(parameters.map({ _.name })).toBe(["pair", "i"])
+        expect(parameters.first.typeName).toBe("Pair<String,Object>")
+        expect(parameters.first.range.start.column).toBe(2)
+        expect(parameters.first.range.end.column).toBe(27)
+        expect(parameters.last.omittedLambdaType).toBe(true)
+    }
+
+    async test `generic lambda type must end before its parameter name`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-name"), "one")
+        let stream = Lexer().lex("(Pair<String,Object>) => 1")
+        stream.emit("start")
+        var String message = ""
+        try { PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { message = error.message }
+        expect(message).toBe("Primitive expression syntax error at token 7: Expected lambda parameter name")
+    }
+
+    async test `implicit callback statements retain indexed write and ordered call ranges`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:implicit-statements"), "one")
+        let stream = Lexer().lex("{\npackage.sources[_x.key] = _x.value\n}")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let callback = (PrimitiveLambdaSyntax)parsed
+        let statement = callback.statementValues().first
+        let write = (PrimitiveArrayAssignmentSyntax)statement
+        expect(write.target.receiver.expressionKind()).toBe("member-access")
+        expect(write.target.index.range.start.column).toBe(17)
+        expect(write.value.range.start.column).toBe(27)
+        expect(write.range.start.lineNumber).toBe(2)
+        let calls = Lexer().lex("{\npendingFutures.remove((Future)future)\n_resolve(_data)\n}")
+        calls.emit("start")
+        let sequence = PrimitiveExpressionParser().parse(calls.consumeAll<Token>("data"), snapshot)
+        let statements = ((PrimitiveLambdaSyntax)sequence).statementValues()
+        expect(statements.map({ _.statementKind() })).toBe(["expression", "expression"])
+        expect(statements.map({ _.range.start.lineNumber })).toBe([2, 3])
+    }
+
+    async test `adjacent calls on the same line require a statement separator`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-separator"), "one")
+        let stream = Lexer().lex("{ a() b() }")
+        stream.emit("start")
+        var String message = ""
+        try { PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { message = error.message }
+        expect(message).toBe("Primitive expression syntax error at token 4: Expected closing implicit lambda brace")
+    }
+
+    async test `arrow callback retains ordered explicit parameter names`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:contextual-parameters"), "one")
+        let stream = Lexer().lex("(str, Int i) => { return str }")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 40)
+        let callback = (PrimitiveLambdaSyntax)parsed
+        let parameters = callback.parameterValues()
+        expect(parameters.map({ _.name })).toBe(["str", "i"])
+        expect(parameters.first.typeName == null).toBe(true)
+        expect(parameters.last.typeName).toBe("Int")
+        expect(parameters.first.range.startTokenIndex).toBe(41)
+        expect(parameters.last.range.startTokenIndex).toBe(44)
+        expect(parameters.last.range.endTokenIndex).toBe(47)
+        expect(parameters.first.omittedLambdaType).toBe(true)
+        expect(parameters.last.omittedLambdaType).toBe(false)
+        expect(callback.statementValues().first.statementKind()).toBe("return")
+    }
+
+    async test `indexed assignment retains its target operand and range`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:indexed-write"), "one")
+        let stream = Lexer().lex("this[key] = value")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 30)
+        let write = (PrimitiveIndexedAssignmentValueSyntax)parsed
+        expect(write.target.index.expressionKind()).toBe("reference")
+        expect(write.target.range.end.column).toBe(10)
+        expect(write.value.range.start.column).toBe(13)
+        expect(write.range.startTokenIndex).toBe(30)
+        expect(write.range.end.column).toBe(18)
+        let missing = Lexer().lex("this[key] =")
+        missing.emit("start")
+        var ParseFailure failure
+        try { PrimitiveExpressionParser().parse(missing.consumeAll<Token>("data"), snapshot) }
+        catch (ParseFailure error) { failure = error }
+        expect(failure.diagnostic.code).toBe("invalid-expression-syntax")
+    }
+
+    async test `malformed arrow parameter lists fail at the offending token`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-parameters"), "one")
+        String[] sources = ["(x,x)=>x", "(x,)=>x", "(Int x y)=>x", "(3)=>x"]
+        Int[] columns = [4, 4, 8, 2]
+        for (i in 0..sources.count) {
+            let stream = Lexer().lex(sources[i])
+            stream.emit("start")
+            var ParseFailure failure
+            try { PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure.diagnostic.code).toBe("invalid-expression-syntax")
+            expect(failure.diagnostic.range.start.column).toBe(columns[i])
+        }
+    }
+
+    async test `explicit empty array construction retains its full spelling range`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:new-array"), "one")
+        let stream = Lexer().lex("new String[]")
+        stream.emit("start")
+        let expression = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let array = (PrimitiveEmptyArrayConstructionSyntax)expression
+        expect(array.elementTypeName).toBe("String")
+        expect(array.range.start.column).toBe(1)
+        expect(array.range.end.column).toBe(13)
+    }
+
+    async test `regex in operand position leaves division infix`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:regex"), "one")
+        let stream = Lexer().lex("value / /a[/]b\\/c/gi")
+        stream.emit("start")
+        let expression = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 20)
+        let binary = (PrimitiveBinarySyntax)expression
+        expect(binary.operator).toBe("/")
+        expect(binary.right.expressionKind()).toBe("regex")
+        let regex = (PrimitiveRegexSyntax)binary.right
+        expect(regex.patternSource).toBe("a[/]b\\/c")
+        expect(regex.flagSource).toBe("gi")
+        expect(regex.range.startTokenIndex).toBe(24)
+        expect(regex.range.start.column).toBe(9)
+        expect(regex.range.end.column).toBe(21)
+    }
+
+    async test `regex keeps literal whitespace and rejects missing delimiter`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:regex-range"), "one")
+        let stream = Lexer().lex("/a b/")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 10)
+        let regex = (PrimitiveRegexSyntax)parsed
+        expect(regex.patternSource).toBe("a b")
+        expect(regex.flagSource).toBe("")
+        expect(regex.range.endTokenIndex).toBe(15)
+        let invalid = Lexer().lex("/[a/b]")
+        invalid.emit("start")
+        var ParseFailure failure
+        try { PrimitiveExpressionParser().parse(invalid.consumeAll<Token>("data"), snapshot, 10) }
+        catch (ParseFailure error) { failure = error }
+        expect(failure.diagnostic.code).toBe("invalid-expression-syntax")
+        expect(failure.diagnostic.range.startTokenIndex).toBe(10)
+        expect(failure.diagnostic.range.endTokenIndex).toBe(11)
+    }
+
+    async test `braced if initializer parses both branch values`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Colorizer"), "one")
+        let source = "if (code != RESET) {\n    value.replace(old, newValue)\n} else {\n    value\n}"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let expression = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 10)
+        expect(expression.expressionKind()).toBe("conditional")
+        let conditional = (PrimitiveConditionalSyntax)expression
+        expect(conditional.condition.expressionKind()).toBe("binary")
+        expect(conditional.whenTrue.expressionKind()).toBe("member-call")
+        expect(conditional.whenFalse.expressionKind()).toBe("reference")
+        expect(expression.range.startTokenIndex).toBe(10)
+        expect(expression.range.end.lineNumber).toBe(5)
+    }
+
+    async test `else if value nests in the false arm and spans the terminal branch`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Airship-location"), "one")
+        let stream = Lexer().lex("if (file.isDirectory || file.isSymbolicLink) { directory }\nelse if (file.isFile) { regular }\nelse { invalid }")
+        stream.emit("start")
+        let expression = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot, 10)
+        let chain = (PrimitiveConditionalSyntax)expression
+        let branchValue = chain.whenFalse
+        let alternative = (PrimitiveConditionalSyntax)branchValue
+        expect(chain.condition.expressionKind()).toBe("binary")
+        expect(alternative.whenTrue.expressionKind()).toBe("reference")
+        expect(alternative.whenFalse.expressionKind()).toBe("reference")
+        expect(chain.range.startTokenIndex).toBe(10)
+        expect(alternative.range.start.lineNumber).toBe(2)
+        expect(alternative.range.end.lineNumber).toBe(3)
+        expect(alternative.range.endTokenIndex).toBe(chain.range.endTokenIndex)
+    }
+
+    async test `else if value requires a final else`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-final-else"), "one")
+        let stream = Lexer().lex("if (a) { b } else if (c) { d }")
+        stream.emit("start")
+        var String message = ""
+        try {
+            PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        } catch (Exception error) { message = error.message }
+        expect(message).toBe("Primitive expression syntax error at token 15: Expected 'else' in if expression")
+    }
+
+    async test `throw arm rejects a missing operand at the keyword`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-throw-operand"), "one")
+        let stream = Lexer().lex("if (a) { b } else { throw }")
+        stream.emit("start")
+        var String message = ""
+        try {
+            PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        } catch (Exception error) { message = error.message }
+        expect(message).toBe("Primitive expression syntax error at token 9: Throw arm requires a value")
+    }
+
+    async test `braced if value requires an else branch`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-else"), "one")
+        let stream = Lexer().lex("if (ready) { value }")
+        stream.emit("start")
+        var String message = ""
+        try {
+            PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        } catch (Exception error) { message = error.message }
+        expect(message).toBe("Primitive expression syntax error at token 7: Expected 'else' in if expression")
+    }
+
     test `multiline literal payload preserves exact legacy oracle compatibility`() {
         // Compatibility with Literal.formatMultilitestring, not endorsement of
         // its CRLF doubling, backslash adjacency or empty-margin quirks.
@@ -290,6 +520,18 @@ testable class {
             catch (Exception error) { rejected++ }
         }
         expect(rejected).toBe(3)
+    }
+
+    async test `colon navigation on a local keeps the conditional separator distinct`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:local-chain"), "one")
+        let stream = Lexer().lex("ready ? lines : lines:addAll(next())")
+        stream.emit("start")
+        let expression = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let choice = (PrimitiveConditionalSyntax)expression
+        expect(choice.whenTrue.expressionKind()).toBe("reference")
+        let chain = (PrimitiveMemberCallSyntax)choice.whenFalse
+        expect(chain.chainNavigation).toBe(true)
+        expect(chain.memberName).toBe("addAll")
     }
 
     async test `colon call retains navigation intent distinct from dot`() {
@@ -624,6 +866,32 @@ testable class {
         expect(interpolation.segmentValues().count).toBe(5)
     }
 
+    async test `escaped hash stays literal beside an active interpolation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:ALL_SYMBOLS_CHARS"), "one")
+        var String prefix = "\"().\\"
+        prefix += '#'
+        prefix += "$"
+        let plain = prefix + "\""
+        let stream = Lexer().lex(plain)
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.expressionKind()).toBe("literal")
+        expect(((PrimitiveLiteralSyntax)parsed).sourceValue).toBe(plain)
+
+        // Two backslashes leave the following marker active.
+        var String mixed = prefix + "\\\\"
+        mixed += '#'
+        mixed += "name\""
+        let other = Lexer().lex(mixed)
+        other.emit("start")
+        let expression = PrimitiveExpressionParser().parse(other.consumeAll<Token>("data"), snapshot)
+        let parts = ((PrimitiveInterpolatedStringSyntax)expression).segmentValues()
+        expect(parts.count).toBe(2)
+        expect(parts.first.literalSourceValue).toBe(prefix + "\\\\\"")
+        expect(parts.last.expression.expressionKind()).toBe("interpolation-path")
+        expect(parts.last.range.start.column).toBe(10)
+    }
+
     test `rejects malformed string interpolation`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-interpolation-invalid"), "revision:one"
@@ -742,6 +1010,23 @@ testable class {
         expect(expression.expressionKind()).toBe("class-name")
         expect(expression.range.startTokenIndex).toBe(0)
         expect(expression.range.endTokenIndex).toBe(5)
+    }
+
+    async test `empty nested array shorthand consumes only empty dimensions`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-empty"), "one")
+        String[] sources = ["Token[][]", "Box<Token>[][]", "new Token[][]"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            let empty = (PrimitiveEmptyArrayConstructionSyntax)parsed
+            expect(empty.elementTypeName).toBe(source.contains("Box") ? "Box<Token>[]" : "Token[]")
+            expect(empty.range.end.column).toBe(source.count + 1)
+        }
+        let stream = Lexer().lex("Token[][][0]")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.class.isOfType(PrimitiveArrayAccessSyntax.class)).toBe(true)
     }
 
     test `parses typed empty array shorthand without erasing element type`() {
@@ -1584,7 +1869,8 @@ testable class {
                 token("new", Token.Type.IDENTIFIER, 1),
                 token("Char", Token.Type.IDENTIFIER, 5),
                 token("[", Token.Type.SYMBOL, 9),
-                token("]", Token.Type.SYMBOL, 10)
+                token(",", Token.Type.SYMBOL, 10),
+                token("]", Token.Type.SYMBOL, 11)
             ], snapshot)
         } catch (Exception error) { rejected++ }
         try {

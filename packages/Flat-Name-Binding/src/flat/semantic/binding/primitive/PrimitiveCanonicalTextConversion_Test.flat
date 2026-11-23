@@ -2391,6 +2391,102 @@ testable class {
         }
     }
 
+    async test `Core Array of CaughtException retains Object dispatch beside its generic interfaces`() {
+        let sources = textSources("Int")
+        sources.add(textSource("flat", "Object", "class Object { public toString() -> String { return \"object\"; } }"))
+        let names = ["Iterable", "List", "OrderedList", "PlusEqualsOperator"]
+        let contracts = ["trait Iterable<Type> {}", "trait List<Type> implements Iterable<Type> {}",
+            "trait OrderedList<Type> implements List<Type> {}", "trait PlusEqualsOperator<In, Out> {}"]
+        var Int index
+        for (code in contracts) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:core-array:" + names[index]), "one")
+            let stream = Lexer().lex(code)
+            stream.emit("start")
+            let contract = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            sources.add(PrimitiveSourceBindingContext(index == 3 ? "flat/operators" : "flat/datastruct/list",
+                snapshot, PrimitiveClassSyntax[], [contract]))
+            index++
+        }
+        let array = defaultSource("flat/datastruct/list", "Array", "class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<E>>, PlusEqualsOperator<Array<E>, Array<E>> { override public toString() -> String { return \"array\"; } }")
+        sources.add(PrimitiveSourceBindingContext("flat/datastruct/list", array.snapshot, array.classValues(), importValues: [PrimitiveBindingImport("flat/operators/PlusOperator", array.classValues().first.range), PrimitiveBindingImport("flat/operators/PlusEqualsOperator", array.classValues().first.range)]))
+        sources.add(textSource("flat/exception", "CaughtException", "class CaughtException {}"))
+        var String code = "class ExceptionData { visible CaughtException[] caught; public toString() => \"Caught: "
+        code += '#'
+        code += "caught\" }"
+        let data = defaultSource("flat/exception", "ExceptionData", code)
+        sources.add(PrimitiveSourceBindingContext("flat/exception", data.snapshot, data.classValues(), importValues: [PrimitiveBindingImport("flat/datastruct/list/Array", data.classValues().first.range)]))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let method = units.firstOrNull((unit) => unit.identity.name == "ExceptionData").functionUnits().firstOrNull((fn) => fn.name == "toString")
+        let added = textCall(textReturn(method.statements().first).value)
+        let converted = textCall(added.argumentValues().first)
+        expect(converted.target.name).toBe("toString")
+        expect(converted.target.ownerType.value()).toBe(units.firstOrNull((unit) => unit.identity.name == "Object").semanticType.value())
+        expect(converted.receiver.semanticType.kind()).toBe("generic-instance")
+    }
+
+    async test `mixed interpolation retains native scalar formatting before inferred Bool contract settles`() {
+        let sources = textSources("Int")
+        sources.add(textSource("flat", "Object", "class Object { public toString() -> String { return \"object\"; } }"))
+        sources.add(textSource("flat/exception", "Array", "class Array<E> {}"))
+        var String code = "class CaughtException { visible Object[] type; public construct(visible Bool soft = true) {} public toString() => \"Catching "
+        code += '#'
+        code += "type, soft: "
+        code += '#'
+        code += "soft\" }"
+        sources.add(textSource("flat/exception", "CaughtException", code))
+        sources.add(textSource("flat/primitive", "Bool", "class Bool { public static toString(Bool value) => value ? \"true\" : \"false\" }"))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let owner = units.firstOrNull((unit) => unit.identity.name == "CaughtException")
+        let method = owner.functionUnits().firstOrNull((fn) => fn.name == "toString")
+        let end = textCall(textReturn(method.statements().first).value)
+        expect(end.target.name).toBe("plus")
+        let wrapped = textCall(end.argumentValues().first)
+        expect(wrapped.target.callableKind.value).toBe("constructor")
+        Object nativeSource = wrapped.argumentValues().first
+        let interpolation = (BoundInterpolatedStringExpression)nativeSource
+        expect(interpolation.segmentValues().first.expression.semanticType.value()).toBe(SemanticTypes.boolType().value())
+        let boolean = units.firstOrNull((unit) => unit.identity.name == "Bool")
+        let conversion = boolean.functionUnits().firstOrNull((fn) => fn.name == "toString")
+        expect(conversion.returnType.value()).toBe(end.semanticType.value())
+    }
+
+    async test `declared text addition converts interpolated conditional inside selected branch`() {
+        let sources = textSources("Int")
+        var String code = "class Message { public render(String name, String text, Bool present) -> String { return name + (present ? \": "
+        code += '#'
+        code += "text\" : \"\"); } }"
+        sources.add(textSource("app", "Message", code))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let method = units.firstOrNull((unit) => unit.identity.name == "Message").functionUnits().firstOrNull((fn) => fn.name == "render")
+        let added = textCall(textReturn(method.statements().first).value)
+        Object argument = added.argumentValues().first
+        expect(argument.class.isOfType(BoundConditionalExpression.class)).toBe(true)
+        let choice = (BoundConditionalExpression)argument
+        expect(textCall(choice.whenTrue).target.name).toBe("plus")
+        expect(choice.semanticType.value()).toBe(added.semanticType.value())
+    }
+
+    async test `declared generic interpolation concatenates through String plus and Object dispatch`() {
+        let sources = textSources("Int")
+        sources.add(textSource("flat", "Object", "class Object { public toString() -> String { return \"object\"; } }"))
+        var String code = "class Display<E> { public render(E value) -> String { return \"["
+        code += '#'
+        code += "{value}]\"; } }"
+        sources.add(textSource("app", "Display", code))
+        let units = PrimitiveClassPartitionBinder().bindContexts(sources).typeUnits()
+        let method = units.firstOrNull((unit) => unit.identity.name == "Display").functionUnits().firstOrNull((fn) => fn.name == "render")
+        Object statement = method.statements().first
+        let returned = (BoundReturnStatement)statement
+        let end = textCall(returned.value)
+        expect(end.target.name).toBe("plus")
+        let middle = textCall(end.receiver)
+        expect(middle.target.name).toBe("plus")
+        let conversion = textCall(middle.argumentValues().first)
+        expect(conversion.target.ownerType.declarationIdentity.name).toBe("Object")
+        expect(conversion.target.name).toBe("toString")
+        expect(conversion.receiver.expressionKind()).toBe("reference")
+    }
+
     async test `inherited List Int join specializes both text addition positions`() {
         let sources = textSources("Int")
         sources.add(textSource("flat", "Object", "class Object { public toString() -> String { return \"object\"; } }"))

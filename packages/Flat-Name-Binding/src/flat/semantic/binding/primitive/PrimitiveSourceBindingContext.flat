@@ -5,6 +5,7 @@ import flat/parser/flat
 
 /** Immutable ownership of declarations, actual source imports and range-free defaults. */
 data class {
+    var PrimitiveClassSyntax[] declarations = PrimitiveClassSyntax[]
     var PrimitiveClassSyntax[] classes
     var PrimitiveInterfaceSyntax[] interfaces
     var PrimitiveBindingImport[] imports
@@ -27,12 +28,19 @@ data class {
         }
         // Merged members retain their own real snapshots; only canonical owner ranges are checked.
         classes = PrimitiveClassSyntax[]:addAll(classValues)
+        for (root in classes) retainDeclaration(root)
         interfaces = PrimitiveInterfaceSyntax[]:addAll(interfaceValues)
         imports = PrimitiveBindingImport[]:addAll(importValues)
         // Values own their String storage and expose copies; only the array needs copying.
         defaults = PrimitiveDefaultImport[]:addAll(defaultImports)
     }
 
+    retainDeclaration(PrimitiveClassSyntax syntax) {
+        declarations.add(syntax)
+        for (child in syntax.nestedClasses()) retainDeclaration(child)
+    }
+
+    public allClassValues() -> PrimitiveClassSyntax[] => PrimitiveClassSyntax[]:addAll(declarations)
     public classValues() -> PrimitiveClassSyntax[] => PrimitiveClassSyntax[]:addAll(classes)
     public interfaceValues() -> PrimitiveInterfaceSyntax[] => PrimitiveInterfaceSyntax[]:addAll(interfaces)
     public defaultImportValues() -> PrimitiveDefaultImport[] => PrimitiveDefaultImport[]:addAll(defaults)

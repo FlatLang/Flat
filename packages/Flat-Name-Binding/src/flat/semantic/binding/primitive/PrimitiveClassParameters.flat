@@ -1,0 +1,16 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/semantic/types
+
+/** Binds class parameter identities to the owning declaration, in source order. */
+class {
+    public static bind(PrimitiveClassSyntax syntax, DeclarationIdentity owner) -> GenericParameterSemanticType[] {
+        let result = GenericParameterSemanticType[]
+        for (parameter in syntax.genericParameters()) {
+            result.add(GenericParameterSemanticType(owner, parameter.name, parameter.position))
+        }
+        return result
+    }
+}

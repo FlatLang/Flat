@@ -157,7 +157,11 @@ class {
                 for (caseValue in value.caseValues()) {
                     var BoundExpression label
                     if (!caseValue.defaultCase) {
-                        let boundLabel = PrimitiveExpressionBinder().bind(
+                        let boundLabel = caseValue.label.class.isOfType(PrimitiveMemberAccessSyntax.class) ?
+                            PrimitiveExpressionBinder.convertBound(
+                                classExpression(caseValue.label, receiver, fields, scopeLocals, callables),
+                                switchedExpression.semanticType, true, currentHierarchy
+                            ) : PrimitiveExpressionBinder().bind(
                             caseValue.label, requiredType: switchedExpression.semanticType,
                             locals: scopeLocals, callables: callables,
                             explicitConversion: true
@@ -652,7 +656,7 @@ class {
                         value.value, receiver, fields, scopeLocals, callables
                     )
                     if (target.semanticType.kind() == "nullable") expression = PrimitiveStringAdapter.storageText(
-                        value.value, expression, target.semanticType, currentTypeResolver.declarationContext, callables)
+                        value.value, expression, target.semanticType, currentTypeResolver.declarationContext, callables, currentHierarchy)
                     var TypeConversion conversion = TypeConversions.classify(
                         expression.semanticType, target.semanticType
                     )
@@ -662,9 +666,9 @@ class {
                     if (!conversion.applicable && declaredStringAssignment) {
                         expression = staticTarget ? PrimitiveStringAdapter.conditionalText(
                             value.value, expression, target.semanticType,
-                            currentTypeResolver.declarationContext, callables) :
+                            currentTypeResolver.declarationContext, callables, currentHierarchy) :
                             PrimitiveStringAdapter.wrap(expression, target.semanticType,
-                                currentTypeResolver.declarationContext, callables)
+                                currentTypeResolver.declarationContext, callables, currentHierarchy)
                         conversion = TypeConversions.classify(expression.semanticType, target.semanticType)
                     }
                     if (!conversion.applicable) throw Exception(
@@ -744,7 +748,7 @@ class {
                                 // published type for explicit constructors and overloads.
                                 initialized = PrimitiveStringAdapter.conditionalText(
                                     value.initializer, initialized, UserClassSemanticType(declarations.first),
-                                    currentTypeResolver.declarationContext, callables)
+                                    currentTypeResolver.declarationContext, callables, currentHierarchy)
                                 semanticType = initialized.semanticType
                             }
                         }
@@ -770,7 +774,7 @@ class {
                 var TypeConversion initializerConversion
                 if (initialized) {
                     if (semanticType.kind() == "nullable") initialized = PrimitiveStringAdapter.storageText(
-                        value.initializer, initialized, semanticType, currentTypeResolver.declarationContext, callables)
+                        value.initializer, initialized, semanticType, currentTypeResolver.declarationContext, callables, currentHierarchy)
                     if (semanticType.kind() == "user-class" && initialized.semanticType.kind() == "string" &&
                         currentHierarchy && currentTypeResolver.declarationContext) {
                         let canonical = currentTypeResolver.declarationContext.candidates("flat/String")
@@ -779,7 +783,7 @@ class {
                             let upcast = TypeConversions.classify(target, semanticType, hierarchy: currentHierarchy)
                             if (upcast.applicable && upcast.implicit && upcast.conversionKind == "reference-upcast") {
                                 initialized = PrimitiveStringAdapter.conditionalText(value.initializer, initialized,
-                                    target, currentTypeResolver.declarationContext, callables)
+                                    target, currentTypeResolver.declarationContext, callables, currentHierarchy)
                             }
                         }
                     }
@@ -793,7 +797,7 @@ class {
                         initialized.semanticType.kind() == "string"
                     if (!initializerConversion.applicable && declaredStringInitializer) {
                         initialized = PrimitiveStringAdapter.wrap(initialized, semanticType,
-                            currentTypeResolver.declarationContext, callables)
+                            currentTypeResolver.declarationContext, callables, currentHierarchy)
                         initializerConversion = TypeConversions.classify(initialized.semanticType, semanticType)
                     }
                     if (!initializerConversion.applicable) throw PrimitiveContextBindingException(BindingDiagnostic(
@@ -1299,7 +1303,7 @@ class {
             if (assigned.semanticType.value() == SemanticTypes.stringType().value() &&
                 target.semanticType.kind() == "user-class") {
                 assigned = PrimitiveStringAdapter.wrap(assigned, target.semanticType,
-                    currentTypeResolver.declarationContext, callables)
+                    currentTypeResolver.declarationContext, callables, currentHierarchy)
             }
             var TypeConversion conversion = TypeConversions.classify(
                 assigned.semanticType, target.semanticType, hierarchy: currentHierarchy
@@ -1321,7 +1325,7 @@ class {
                 )
             if (!conversion.applicable && declaredStringAssignment) {
                 assigned = PrimitiveStringAdapter.wrap(assigned, target.semanticType,
-                    currentTypeResolver.declarationContext, callables)
+                    currentTypeResolver.declarationContext, callables, currentHierarchy)
                 conversion = TypeConversions.classify(assigned.semanticType, target.semanticType)
             }
             if (!conversion.applicable) throw Exception("Assignment value type mismatch")
@@ -1334,6 +1338,10 @@ class {
             let condition = conditionValue(classExpression(
                 value.condition, receiver, fields, locals, callables
             ))
+            let guarded = PrimitiveThrowArmBinding.bind(value, condition, (branch, positive, throwing) => {
+                return classExpression(branch, receiver, fields, PrimitiveNullableLocalFlow.branch(value.condition, positive, locals, receiver), callables)
+            })
+            if (guarded) return guarded
             var BoundExpression whenTrue = classExpression(
                 value.whenTrue, receiver, fields,
                 PrimitiveNullableLocalFlow.branch(value.condition, true, locals, receiver), callables
@@ -1343,9 +1351,9 @@ class {
                 PrimitiveNullableLocalFlow.branch(value.condition, false, locals, receiver), callables
             )
             whenTrue = PrimitiveStringAdapter.conditionalText(value.whenTrue, whenTrue,
-                whenFalse.semanticType, currentTypeResolver.declarationContext, callables)
+                whenFalse.semanticType, currentTypeResolver.declarationContext, callables, currentHierarchy)
             whenFalse = PrimitiveStringAdapter.conditionalText(value.whenFalse, whenFalse,
-                whenTrue.semanticType, currentTypeResolver.declarationContext, callables)
+                whenTrue.semanticType, currentTypeResolver.declarationContext, callables, currentHierarchy)
             let joined = TypeOperations.conditional(condition.semanticType, whenTrue.semanticType,
                 whenFalse.semanticType, value.range, currentHierarchy)
             if (!joined.valid) throw PrimitiveContextBindingException(BindingDiagnostic(
@@ -1378,7 +1386,7 @@ class {
             )
             PrimitiveNullableLocalFlow.retainDeclarations(locals, rightLocals)
             if (value.operator == "?:") right = PrimitiveStringAdapter.storageText(
-                value.right, right, left.semanticType, currentTypeResolver.declarationContext, callables)
+                value.right, right, left.semanticType, currentTypeResolver.declarationContext, callables, currentHierarchy)
             if (value.operator == "+") {
                 let resolved = PrimitiveStringAdapter.plus(left, right,
                     currentTypeResolver ? currentTypeResolver.declarationContext : null, callables, currentHierarchy)
@@ -1507,7 +1515,7 @@ class {
             }
             let owner = PrimitiveStringAdapter.sourceTextReceiver(value.receiver, classExpression(
                 value.receiver, receiver, fields, locals, callables
-            ), currentTypeResolver ? currentTypeResolver.declarationContext : null, callables)
+            ), currentTypeResolver ? currentTypeResolver.declarationContext : null, callables, currentHierarchy)
             if (owner.semanticType.kind() == "generic-parameter" ||
                 (owner.semanticType.kind() == "generic-instance" && value.memberName == "set")) {
                 return PrimitiveClassBinder().bindScopedExpression(syntax, receiver, fields, locals,

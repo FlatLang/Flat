@@ -11,10 +11,12 @@ data class {
         visible PrimitiveExpressionSyntax label,
         PrimitiveStatementSyntax[] statements,
         visible Bool defaultCase = false,
-        visible Bool fallsThrough = false
+        visible Bool fallsThrough = false,
+        visible SourceRange fallthroughRange = null
     ) {
         if (!range || (defaultCase == (label != null)) || !statements ||
-            statements.any({ !_ }) || (fallsThrough && statements.isNotEmpty)) {
+            statements.any({ !_ }) || (fallthroughRange && (!fallsThrough || defaultCase)) ||
+            (fallsThrough && statements.isNotEmpty && !fallthroughRange)) {
             throw Exception("Primitive switch case requires one label/default and valid body")
         }
         body = PrimitiveStatementSyntax[]

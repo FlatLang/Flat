@@ -45,13 +45,26 @@ class {
         snapshot = sourceSnapshot
         tokenIndexOffset = sourceTokenIndexOffset
         index = 0
+        let declaration = parseClass(implicitName, null)
+        if (index != tokens.count) syntax("Unexpected trailing class token", index)
+        return declaration
+    }
+
+    parseClass(String implicitName, String enclosingPath) -> PrimitiveClassSyntax {
         let start = index
+        var SourceRange nestedPublicRange
+        var SourceRange nestedStaticRange
+        if (enclosingPath && tokens[index].value == "public") { nestedPublicRange = range(index, index + 1); index++ }
+        if (enclosingPath && tokens[index].value == "static") { nestedStaticRange = range(index, index + 1); index++ }
         var Bool abstractClass
-        if (index < tokens.count && tokens[index].value == "data") {
+        var SourceRange extensionModifierRange
+        if (index < tokens.count && tokens[index].value == "extension") {
+            extensionModifierRange = range(index, index + 1)
+            index++
+        } else if (index < tokens.count && tokens[index].value == "data") {
             index++
             if (index >= tokens.count || tokens[index].value != "class") syntax("Expected 'class'", index)
-        }
-        if (index < tokens.count && tokens[index].value == "abstract") {
+        } else if (index < tokens.count && tokens[index].value == "abstract") {
             abstractClass = true
             index++
         }
@@ -62,13 +75,22 @@ class {
                 tokens[index].value == "implements")
             ? implicitName
             : identifier("Expected class name")
+        let parameters = PrimitiveClassParameterSyntax[]
         var String genericParameterName
         if (index < tokens.count && tokens[index].value == "<") {
             index++
-            genericParameterName = identifier("Expected generic parameter name")
-            if (index < tokens.count && tokens[index].value == "extends") {
+            while (true) {
+                let parameterStart = index
+                let parameterName = identifier("Expected generic parameter name")
+                if (parameters.any({ _.name == parameterName })) syntax("Duplicate generic parameter '#parameterName'", parameterStart)
+                parameters.add(PrimitiveClassParameterSyntax(parameterName, parameters.count, parameterNameRange(parameterStart)))
+                if (!genericParameterName) genericParameterName = parameterName
+                if (index < tokens.count && tokens[index].value == "extends") {
+                    index++
+                    identifier("Expected generic parameter bound")
+                }
+                if (index >= tokens.count || tokens[index].value != ",") break
                 index++
-                identifier("Expected generic parameter bound")
             }
             require(">")
         }
@@ -89,6 +111,8 @@ class {
             }
         }
         require("{")
+        let children = PrimitiveClassSyntax[]
+        let path = enclosingPath ? enclosingPath + "/" + name : name
         let fields = PrimitiveFieldSyntax[]
         var PrimitiveConstructorSyntax constructorValue
         let constructorValues = PrimitiveConstructorSyntax[]
@@ -101,6 +125,17 @@ class {
         var Bool nativeFieldModifier
         var Int fieldModifierStart = -1
         while (index < tokens.count && tokens[index].value != "}") {
+            var Int classIndex = index
+            if (tokens[classIndex].value == "public") classIndex++
+            if (classIndex < tokens.count && tokens[classIndex].value == "static") classIndex++
+            if (classIndex < tokens.count && tokens[classIndex].value == "class") {
+                if (fieldModifierStart >= 0) syntax("Unsupported nested type modifier", fieldModifierStart)
+                let childStart = index
+                let child = parseClass(null, path)
+                if (children.any({ _.name == child.name })) syntax("Duplicate nested type '#{child.name}'", childStart)
+                children.add(child)
+                continue
+            }
             if (isFunctionModifier(tokens[index].value) || tokens[index].value == "visible") {
                 let propertyStart = index
                 var Int propertyCursor = index
@@ -133,7 +168,8 @@ class {
                     propertyCursor++
                 }
                 let typeStart = propertyCursor
-                if (visibleProperty && propertyCursor < tokens.count &&
+                let typedProperty = visibleProperty || lazyProperty
+                if (typedProperty && propertyCursor < tokens.count &&
                     tokens[propertyCursor].type == Token.Type.IDENTIFIER) {
                     propertyCursor++
                     if (propertyCursor < tokens.count && tokens[propertyCursor].value == "<") {
@@ -150,7 +186,7 @@ class {
                         propertyCursor += 2
                     }
                 }
-                if (visibleProperty && propertyCursor + 1 < tokens.count &&
+                if (typedProperty && propertyCursor + 1 < tokens.count &&
                     tokens[propertyCursor].type == Token.Type.IDENTIFIER &&
                     (tokens[propertyCursor + 1].value == "=>" ||
                     tokens[propertyCursor + 1].value == "<=>")) {
@@ -273,8 +309,10 @@ class {
                     [PrimitiveReturnSyntax(range(expressionStart, expressionEnd), value)]
                 ))
                 index = end
-            } else if (tokens[index].value == "visible") {
+            } else if (tokens[index].value == "visible" ||
+                (tokens[index].value == "override" && index + 1 < tokens.count && tokens[index + 1].value == "visible")) {
                 fieldModifierStart = index
+                if (tokens[index].value == "override") index++
                 visibleField = true
                 index++
                 if (index < tokens.count && tokens[index].value == "static") {
@@ -320,10 +358,23 @@ class {
             } else if (index + 2 < tokens.count &&
                 tokens[index].type == Token.Type.IDENTIFIER &&
                 tokens[index + 1].type == Token.Type.IDENTIFIER &&
-                (tokens[index + 2].value == "=>" || tokens[index + 2].value == "<=>")) {
+                (tokens[index + 2].value == "=>" || tokens[index + 2].value == "<=>" ||
+                    tokens[index + 2].value == ".")) {
                 let propertyStart = index
                 let returnType = tokens[index++].value
-                let propertyName = tokens[index++].value
+                var PrimitiveTypeReferenceSyntax receiver
+                if (tokens[index + 1].value == ".") {
+                    if (!extensionModifierRange) syntax("Receiver-qualified property requires an extension class", index + 1)
+                    let token = tokens[index]
+                    let receiverRange = SourceRange(snapshot, sourceTokenIndexes[index], sourceTokenIndexes[index] + 1,
+                        token.location, Location(lineNumber: token.endLineNumber, column: token.endColumn))
+                    receiver = PrimitiveTypeReferenceSyntax(receiverRange, token.value)
+                    index += 2
+                }
+                let propertyName = identifier("Expected property name")
+                if (receiver && (index >= tokens.count || tokens[index].value != "=>")) {
+                    syntax("Expected '=>' after receiver-qualified property", index)
+                }
                 let storedProperty = tokens[index].value == "<=>" && mutableField
                 if (storedProperty) {
                     if (fields.any({ _.name == propertyName })) {
@@ -349,7 +400,8 @@ class {
                 methods.add(PrimitiveFunctionSyntax(
                     range(propertyStart, end), propertyName,
                     PrimitiveFunctionParameterSyntax[], returnType,
-                    [PrimitiveReturnSyntax(range(expressionStart, expressionEnd), value)]
+                    [PrimitiveReturnSyntax(range(expressionStart, expressionEnd), value)],
+                    extensionReceiver: receiver
                 ))
                 index = end
                 visibleField = false
@@ -367,6 +419,7 @@ class {
                 index = typeEnd
                 let fieldName = tokens[index++].value
                 var PrimitiveExpressionSyntax initializer
+                var Bool followingField = fieldHeaderAt(index, fieldStart)
                 if (index < tokens.count && tokens[index].value == "=") {
                     index++
                     let initializerStart = index
@@ -375,10 +428,14 @@ class {
                         let value = tokens[index].value
                         if (value == "(" || value == "[") initializerDepth++
                         else if (value == ")" || value == "]") initializerDepth--
+                        if (initializerDepth == 0 && fieldHeaderAt(index, initializerStart)) {
+                            followingField = true
+                            break
+                        }
                         if (initializerDepth == 0 && (value == ";" ||
                             value == "public" || value == "private" ||
                             value == "protected" || value == "visible" || value == "static" ||
-                            value == "override" ||
+                            value == "override" || value == "var" ||
                             value == "constructor" || value == "construct" || value == "}")) break
                         index++
                     }
@@ -389,12 +446,13 @@ class {
                     )
                 }
                 if (index < tokens.count && tokens[index].value == ";") index++
-                else if (index >= tokens.count || (tokens[index].value != "public" &&
+                else if (!followingField && (index >= tokens.count || (tokens[index].value != "public" &&
                     tokens[index].value != "private" && tokens[index].value != "protected" &&
                     tokens[index].value != "visible" && tokens[index].value != "static" &&
                     tokens[index].value != "override" &&
                     tokens[index].value != "constructor" &&
-                    tokens[index].value != "construct" && tokens[index].value != "}")) require(";")
+                    tokens[index].value != "var" && tokens[index].value != "construct" && tokens[index].value != "}" &&
+                    !(tokens[index].value == "this" && index + 1 < tokens.count && tokens[index + 1].value == "[")))) require(";")
                 if (fields.any({ _.name == fieldName })) syntax("Duplicate field '#fieldName'", fieldStart)
                 fields.add(PrimitiveFieldSyntax(
                     range(fieldStart, index), typeName, fieldName,
@@ -418,17 +476,16 @@ class {
         }
         if (visibleField || staticField) syntax("Expected field declaration", index)
         require("}")
-        if (index != tokens.count) syntax("Unexpected trailing class token", index)
         if (!constructorValue) {
             constructorValue = PrimitiveConstructorSyntax(
-                range(start, index), PrimitiveFunctionParameterSyntax[], PrimitiveStatementSyntax[]
+                range(start, index), PrimitiveFunctionParameterSyntax[], PrimitiveStatementSyntax[], implicitDefault: true
             )
             constructorValues.add(constructorValue)
         }
         return PrimitiveClassSyntax(
             range(start, index), name, genericParameterName, parentName,
             fields, constructorValue, methods, implementedTypeNames, abstractClass,
-            arrayOverrides, constructorValues, parentType
+            arrayOverrides, constructorValues, parentType, extensionModifierRange, parameters, enclosingPath, children, nestedPublicRange, nestedStaticRange
         )
     }
 
@@ -523,40 +580,20 @@ class {
                 let delegationStart = index
                 index++
                 require("(")
-                let arguments = PrimitiveExpressionSyntax[]
-                if (index < tokens.count && tokens[index].value != ")") {
-                    while (true) {
-                        let argumentStart = index
-                        var Int parenthesisDepth
-                        while (index < tokens.count) {
-                            let value = tokens[index].value
-                            if (value == "(") parenthesisDepth++
-                            else if (value == ")") {
-                                if (parenthesisDepth == 0) break
-                                parenthesisDepth--
-                            } else if (value == "," && parenthesisDepth == 0) break
-                            index++
-                        }
-                        if (argumentStart == index) {
-                            syntax("Expected delegated constructor argument", index)
-                        }
-                        arguments.add(PrimitiveExpressionParser().parse(
-                            tokens.skip(argumentStart).take(index - argumentStart), snapshot,
-                            argumentStart + tokenIndexOffset
-                        ))
-                        if (index >= tokens.count || tokens[index].value == ")") break
-                        require(",")
-                        if (index >= tokens.count || tokens[index].value == ")") {
-                            syntax("Expected delegated constructor argument", index)
-                        }
-                    }
+                var Int depth = 1
+                while (index < tokens.count && depth > 0) {
+                    if (tokens[index].value == "(") depth++
+                    else if (tokens[index].value == ")") depth--
+                    index++
                 }
-                require(")")
+                if (depth != 0) syntax("Expected closing delegated constructor parenthesis", index)
+                let parsed = PrimitiveExpressionParser().parse(
+                    tokens.skip(delegationStart).take(index - delegationStart), snapshot, tokenIndexOffset + delegationStart)
+                let call = (PrimitiveCallSyntax)parsed
+                let edge = PrimitiveConstructorDelegationSyntax(range(delegationStart, index), call.argumentValues(), call.namedArgumentValues())
                 return PrimitiveConstructorSyntax(
                     range(start, index), parameters,
-                    [PrimitiveConstructorDelegationSyntax(
-                        range(delegationStart, index), arguments
-                    )]
+                    [edge]
                 )
             }
             require("super")
@@ -640,16 +677,11 @@ class {
                 else nativeModifier = true
                 index++
             }
-            var String typeName = identifier("Expected parameter type")
-            if (index + 1 < tokens.count && tokens[index].value == "[" &&
-                tokens[index + 1].value == "]") {
-                typeName += "[]"
-                index += 2
-            }
-            if (index < tokens.count && tokens[index].value == "?") {
-                typeName += "?"
-                index++
-            }
+            let typeStart = index
+            let typeEnd = fieldTypeEnd(typeStart)
+            if (typeEnd <= typeStart) syntax("Expected parameter type", typeStart)
+            let typeName = PrimitiveFunctionParser().parseTypeTokens(tokens.skip(typeStart).take(typeEnd - typeStart), snapshot, tokenIndexOffset + typeStart)
+            index = typeEnd
             let name = identifier("Expected parameter name")
             if (result.any({ _.name == name })) syntax("Duplicate parameter '#name'", start)
             var PrimitiveExpressionSyntax defaultValue
@@ -974,6 +1006,18 @@ class {
     }
 
     /** Locate a finite field type; signature grammar validates its spelling. */
+    fieldHeaderAt(Int cursor, Int expressionStart) -> Bool {
+        if (cursor <= expressionStart || cursor + 2 >= tokens.count || tokens[cursor].type != Token.Type.IDENTIFIER ||
+            tokens[cursor].location.lineNumber <= tokens[cursor - 1].location.lineNumber) return false
+        var Int end = cursor + 1
+        while (end < tokens.count && tokens[end].location.lineNumber == tokens[cursor].location.lineNumber &&
+            tokens[end].value != "=" && tokens[end].value != ";" && tokens[end].value != "}") end++
+        if (end <= cursor + 1 || tokens[end - 1].type != Token.Type.IDENTIFIER) return false
+        try { PrimitiveFunctionParser().parseTypeTokens(tokens.skip(cursor).take(end - cursor - 1), snapshot) }
+        catch (ParseFailure error) { return false }
+        return true
+    }
+
     fieldTypeEnd(Int start) -> Int {
         if (start >= tokens.count || tokens[start].type != Token.Type.IDENTIFIER) return start
         var Int cursor = start + 1
@@ -1017,6 +1061,12 @@ class {
     require(String value) {
         if (index >= tokens.count || tokens[index].value != value) syntax("Expected '#value'", index)
         index++
+    }
+
+    parameterNameRange(Int start) -> SourceRange {
+        let token = tokens[start]
+        return SourceRange(snapshot, sourceTokenIndexes[start], sourceTokenIndexes[start] + 1,
+            token.location, Location(lineNumber: token.endLineNumber, column: token.endColumn))
     }
 
     range(Int start, Int end) -> SourceRange {

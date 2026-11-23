@@ -22,7 +22,8 @@ data class {
         String[] genericParameterNameValues = String[],
         visible Bool lazyProperty = false,
         visible SourceRange nativeReturnModifierRange = null,
-        visible SourceRange nativeArrayReturnModifierRange = null
+        visible SourceRange nativeArrayReturnModifierRange = null,
+        visible PrimitiveTypeReferenceSyntax extensionReceiver = null
     ) {
         if (!range || !name || name.trim().count == 0 || !parameterValues ||
             parameterValues.any({ !_ }) || !returnTypeName ||

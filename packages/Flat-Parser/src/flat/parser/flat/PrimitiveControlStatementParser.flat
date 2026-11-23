@@ -32,13 +32,7 @@ class {
     parseStatements(Bool insideBody) -> PrimitiveStatementSyntax[] {
         let statements = PrimitiveStatementSyntax[]
         while (index < tokens.count && (!insideBody || tokens[index].value != "}")) {
-            if (tokens[index].value == "if") statements.add(parseIf())
-            else if (tokens[index].value == "switch" || tokens[index].value == "match") statements.add(parseSwitch())
-            else if (tokens[index].value == "while") statements.add(parseWhile())
-            else if (tokens[index].value == "for") statements.add(parseFor())
-            else if (tokens[index].value == "try") statements.add(parseTry())
-            else if (tokens[index].value == "external") statements.add(parseExternal())
-            else statements.add(parseSimple())
+            statements.add(parseStatement())
         }
         if (insideBody) {
             if (index >= tokens.count || tokens[index].value != "}") {
@@ -47,6 +41,18 @@ class {
             index++
         }
         return statements
+    }
+
+    parseStatement() -> PrimitiveStatementSyntax {
+        let word = tokens[index].value
+        if (word == "if") return parseIf()
+        if (word == "switch" || word == "match") return parseSwitch()
+        if (word == "while") return parseWhile()
+        if (word == "for") return parseFor()
+        if (word == "try") return parseTry()
+        if (word == "external") return parseExternal()
+        if (word == "fallthrough") syntax("Fallthrough requires a case arm", index)
+        return parseSimple()
     }
 
     parseIf() -> PrimitiveStatementSyntax {
@@ -101,12 +107,32 @@ class {
                 syntax("Switch case requires arrow", index)
             }
             index++
+            if (index < tokens.count && tokens[index].value == "{") {
+                index++
+                let statements = PrimitiveStatementSyntax[]
+                while (index < tokens.count && tokens[index].value != "}" && tokens[index].value != "fallthrough") {
+                    statements.add(parseStatement())
+                }
+                var SourceRange marker = null
+                if (index < tokens.count && tokens[index].value == "fallthrough") {
+                    if (defaultCase) syntax("Fallthrough requires a non-default case", index)
+                    marker = range(index, index + 1)
+                    index++
+                    if (index < tokens.count && tokens[index].value == ";") index++
+                    if (index < tokens.count && tokens[index].value != "}") syntax("Fallthrough must end the case arm", index)
+                }
+                if (index >= tokens.count) syntax("Expected closing case brace", index)
+                index++
+                cases.add(PrimitiveSwitchCaseSyntax(range(caseStart, index), label, statements, defaultCase,
+                    marker != null, marker))
+                continue
+            }
             let bodyStart = index
-            while (index < tokens.count && tokens[index].value != "}" &&
-                !(index + 1 < tokens.count && tokens[index + 1].value == "=>")) index++
+            index = switchArmBodyEnd(bodyStart)
             let bodyTokens = tokens.skip(bodyStart).take(index - bodyStart)
-            let fallsThrough = bodyTokens.isEmpty || (bodyTokens.count == 1 &&
-                bodyTokens.first.value == "fallthrough")
+            let explicitMarker = bodyTokens.count == 1 && bodyTokens.first.value == "fallthrough"
+            if (explicitMarker && defaultCase) syntax("Fallthrough requires a non-default case", bodyStart)
+            let fallsThrough = bodyTokens.isEmpty || explicitMarker
             if (bodyTokens.isEmpty && (index >= tokens.count || tokens[index].value == "}")) {
                 syntax("Switch case requires body after arrow", bodyStart)
             }
@@ -116,12 +142,35 @@ class {
                 ).statements()
             cases.add(PrimitiveSwitchCaseSyntax(
                 range(caseStart, index), label, statements,
-                defaultCase, fallsThrough
+                defaultCase, fallsThrough, explicitMarker ? range(bodyStart, index) : null
             ))
         }
         if (index >= tokens.count) syntax("Expected closing switch brace", start)
         index++
         return PrimitiveSwitchSyntax(range(start, index), value, cases)
+    }
+
+    // Only an outer arrow introduces another case; arrows and closing braces
+    // inside call arguments or callback bodies belong to the current statement.
+    switchArmBodyEnd(Int start) -> Int {
+        var Int depth
+        var Int cursor = start
+        while (cursor < tokens.count) {
+            let word = tokens[cursor].value
+            if (depth == 0 && word == "}") return cursor
+            if (depth == 0 && word == "=>" && cursor > start) {
+                var Int labelStart = cursor - 1
+                while (labelStart >= start + 2 && tokens[labelStart].type == Token.Type.IDENTIFIER &&
+                    tokens[labelStart - 1].value == "." && tokens[labelStart - 2].type == Token.Type.IDENTIFIER) {
+                    labelStart -= 2
+                }
+                return labelStart
+            }
+            if (word == "(" || word == "[" || word == "{") depth++
+            else if (word == ")" || word == "]" || word == "}") depth--
+            cursor++
+        }
+        return cursor
     }
 
     parseFor() -> PrimitiveStatementSyntax {
@@ -372,7 +421,7 @@ class {
     controlStart(Int tokenIndex) -> Bool {
         if (tokenIndex >= tokens.count) return false
         let value = tokens[tokenIndex].value
-        return value == "if" || value == "switch" || value == "while" || value == "for" ||
+        return value == "if" || value == "switch" || value == "match" || value == "while" || value == "for" ||
             value == "try" || value == "external"
     }
 
@@ -380,21 +429,25 @@ class {
         if (tokenIndex >= tokens.count) return false
         let value = tokens[tokenIndex].value
         if (value == "let" || value == "var" || value == "return" ||
-            value == "continue" || value == "throw" || value == "native") return true
+            value == "fallthrough" || value == "break" || value == "continue" || value == "throw" || value == "native") return true
         if (tokens[tokenIndex].type != Token.Type.IDENTIFIER ||
             tokenIndex + 1 >= tokens.count) return false
         if (value == "native_array") return true
         let next = tokens[tokenIndex + 1].value
+        if (tokens[tokenIndex + 1].type == Token.Type.IDENTIFIER && tokenIndex + 2 < tokens.count &&
+            tokens[tokenIndex + 2].value == "=") return true
         if (next == "[" && tokenIndex + 2 < tokens.count) {
             var Int close = tokenIndex + 2
             while (close < tokens.count && tokens[close].value != "]") close++
             return close + 1 < tokens.count && assignmentOperator(tokens[close + 1].value)
         }
         if (next == "(") return true
-        if (next == "." && tokenIndex + 3 < tokens.count) {
-            let memberOperator = tokens[tokenIndex + 3].value
-            return memberOperator == "(" || memberOperator == "=" || memberOperator == "+=" || memberOperator == "-=" ||
-                memberOperator == "*=" || memberOperator == "/=" || memberOperator == "%="
+        if (next == ".") {
+            // The receiver may itself be a member path (cli.usedArgs.removeWhere(...)).
+            var Int cursor = tokenIndex + 1
+            while (cursor + 1 < tokens.count && tokens[cursor].value == "." &&
+                tokens[cursor + 1].type == Token.Type.IDENTIFIER) cursor += 2
+            return cursor < tokens.count && (tokens[cursor].value == "(" || assignmentOperator(tokens[cursor].value))
         }
         return next == "=" || next == "+=" || next == "-=" || next == "*=" ||
             next == "/=" || next == "%=" || next == "++" || next == "--"
@@ -405,7 +458,7 @@ class {
             value == "/=" || value == "%="
 
     expressionContinuation(String value) -> Bool =>
-        value == "=" || value == "." || value == "," || value == "return" ||
+        value == "=" || value == "." || value == "," || value == "return" || value == "else" ||
         value == "+" || value == "-" || value == "*" || value == "/" ||
         value == "%" || value == "&&" || value == "||" || value == "?" ||
         value == ":" || value == "==" || value == "!=" || value == "<" ||

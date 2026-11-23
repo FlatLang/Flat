@@ -13,7 +13,7 @@ class {
      * semantic common type still belongs to TypeOperations, not this adapter. */
     public static conditionalText(PrimitiveExpressionSyntax syntax, BoundExpression value,
         SemanticType opposite, PrimitiveResolvedDeclarationContext context,
-        CallableSignature[] callables) -> BoundExpression {
+        CallableSignature[] callables, TypeHierarchyComponent hierarchy = null) -> BoundExpression {
         if (value.semanticType.kind() != "string" ||
             (opposite.kind() != "user-class" && opposite.kind() != "generic-instance" &&
                 opposite.kind() != "generic-parameter")) return value
@@ -26,7 +26,7 @@ class {
             let canonical = context ? context.candidates("flat/String") : null
             if (!canonical || canonical.count != 1)
                 throw Exception("Conditional source text requires one canonical flat/String declaration")
-            return wrap(value, UserClassSemanticType(canonical.first), context, callables)
+            return wrap(value, UserClassSemanticType(canonical.first), context, callables, hierarchy)
         } catch (Exception error) {
             throw PrimitiveContextBindingException(BindingDiagnostic(
                 "binding.conditional-text-contract", error.message,
@@ -39,13 +39,13 @@ class {
      * lift. Native variables remain native; the ordinary checker proves the lift. */
     public static storageText(PrimitiveExpressionSyntax syntax, BoundExpression value,
         SemanticType required, PrimitiveResolvedDeclarationContext context,
-        CallableSignature[] callables) -> BoundExpression {
+        CallableSignature[] callables, TypeHierarchyComponent hierarchy = null) -> BoundExpression {
         let target = required.kind() == "nullable" ?
             ((NullableSemanticType)required).underlyingType : required
         let canonical = context ? context.candidates("flat/String") : null
         if (!canonical || canonical.count != 1 ||
             target.value() != UserClassSemanticType(canonical.first).value()) return value
-        return conditionalText(syntax, value, target, context, callables)
+        return conditionalText(syntax, value, target, context, callables, hierarchy)
     }
 
     /** A literal may acquire selected declared collection storage; an existing
@@ -74,10 +74,10 @@ class {
     }
 
     public static sourceTextReceiver(PrimitiveExpressionSyntax syntax, BoundExpression value,
-        PrimitiveResolvedDeclarationContext context, CallableSignature[] callables) -> BoundExpression {
+        PrimitiveResolvedDeclarationContext context, CallableSignature[] callables, TypeHierarchyComponent hierarchy = null) -> BoundExpression {
         let canonical = context ? context.candidates("flat/String") : null
         if (!canonical || canonical.count != 1) return value
-        return conditionalText(syntax, value, UserClassSemanticType(canonical.first), context, callables)
+        return conditionalText(syntax, value, UserClassSemanticType(canonical.first), context, callables, hierarchy)
     }
 
     /** Runtime metadata keeps its intrinsic native representation; only this
@@ -92,7 +92,7 @@ class {
     }
 
     public static wrap(BoundExpression value, SemanticType required,
-        PrimitiveResolvedDeclarationContext context, CallableSignature[] callables) -> BoundExpression {
+        PrimitiveResolvedDeclarationContext context, CallableSignature[] callables, TypeHierarchyComponent hierarchy = null) -> BoundExpression {
         if (value.semanticType.value() == required.value()) return value
         if (value.semanticType.kind() == "nullable" || required.kind() == "nullable")
             throw Exception("Nullable text adaptation requires single-evaluation null-preserving lowering")
@@ -104,6 +104,36 @@ class {
         let owner = UserClassSemanticType(canonical.first)
         if (required.value() != owner.value())
             throw Exception("Text adaptation cannot target a noncanonical String declaration")
+        if (value.class.isOfType(BoundConditionalExpression.class)) {
+            let choice = (BoundConditionalExpression)value
+            return BoundConditionalExpression(value.range, required, choice.condition,
+                wrap(choice.whenTrue, required, context, callables, hierarchy),
+                wrap(choice.whenFalse, required, context, callables, hierarchy))
+        }
+        // Native interpolation may concatenate native scalars directly. A declared
+        // reference instead needs Flat dispatch, before the host can coerce it.
+        if (value.class.isOfType(BoundInterpolatedStringExpression.class) &&
+            context.candidates("flat/operators/PlusOperator").isNotEmpty) {
+            let segments = ((BoundInterpolatedStringExpression)value).segmentValues()
+            if (segments.any((part) => !part.literal() && declaredTextReference(part.expression.semanticType))) {
+                var BoundExpression result
+                for (part in segments) {
+                    var BoundExpression operand = part.literal() ? BoundLiteralExpression(part.range, SemanticTypes.stringType(),
+                        part.literalSourceValue) : part.expression
+                    // A neighboring reference needs declared dispatch, but it must not
+                    // turn primitive interpolation into a source-level scalar + overload.
+                    if (operand.semanticType.kind() == "primitive") {
+                        operand = BoundInterpolatedStringExpression(part.range, [part])
+                    }
+                    if (!result) result = textOperand(operand, required, context, callables, hierarchy)
+                    else {
+                        result = plus(result, operand, context, callables, hierarchy, value.range)
+                        if (!result) throw Exception("Declared interpolation requires canonical String addition")
+                    }
+                }
+                return result
+            }
+        }
         let targets = callables.filter((candidate) => candidate.callableKind.value == "constructor" &&
             candidate.ownerType.value() == owner.value() && candidate.returnType.value() == owner.value() &&
             candidate.parameterTypes().count == 1 && candidate.optionalParameterCount == 0 &&
@@ -169,8 +199,8 @@ class {
                         // ordinary nullable lift; native references stay native.
                         adapted.add((sourceTextOnly || required.kind() == "nullable") &&
                             sourceArguments && index < sourceArguments.count ?
-                            storageText(sourceArguments[index], argument, required, context, callables) :
-                            sourceTextOnly ? argument : wrap(argument, required, context, callables))
+                            storageText(sourceArguments[index], argument, required, context, callables, hierarchy) :
+                            sourceTextOnly ? argument : wrap(argument, required, context, callables, hierarchy))
                     } catch (Exception error) {
                         rejected = true
                     }
@@ -204,7 +234,7 @@ class {
     /** Resolve the source-declared canonical String addition contract, never a native coercion. */
     public static plus(BoundExpression left, BoundExpression right,
         PrimitiveResolvedDeclarationContext context, CallableSignature[] callables,
-        TypeHierarchyComponent hierarchy) -> BoundCallExpression {
+        TypeHierarchyComponent hierarchy, SourceRange callRange = null) -> BoundCallExpression {
         if (!context) return null
         let strings = context.candidates("flat/String")
         let operators = context.candidates("flat/operators/PlusOperator")
@@ -232,16 +262,19 @@ class {
         let candidates = callables.filter((candidate) => candidate.callableKind.value == "instance-method" &&
             candidate.ownerType.value() == ownerType.value() && candidate.name == "plus" &&
             candidate.returnType.value() == ownerType.value())
-        return call("plus", candidates, receiver, [argument], context, callables, hierarchy)
+        return call("plus", candidates, receiver, [argument], context, callables, hierarchy, callRange: callRange)
     }
+
+    static declaredTextReference(SemanticType type) -> Bool => type.kind() == "generic-parameter" ||
+        type.kind() == "user-class" || type.kind() == "generic-instance"
 
     /** Primitive concatenation follows canonical source-declared scalar toString contracts. */
     static textOperand(BoundExpression value, SemanticType required,
         PrimitiveResolvedDeclarationContext context, CallableSignature[] callables,
         TypeHierarchyComponent hierarchy) -> BoundExpression {
         if (value.semanticType.value() == required.value()) return value
-        if (value.semanticType.kind() == "string") return wrap(value, required, context, callables)
-        if (value.semanticType.kind() == "generic-parameter") {
+        if (value.semanticType.kind() == "string") return wrap(value, required, context, callables, hierarchy)
+        if (declaredTextReference(value.semanticType)) {
             let roots = context.candidates("flat/Object")
             if (roots.count != 1 || !hierarchy || !hierarchy.isRootClass(UserClassSemanticType(roots.first)))
                 throw Exception("Generic text conversion requires a registered canonical Object root")

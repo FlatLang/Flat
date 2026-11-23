@@ -1,0 +1,16 @@
+package probe
+class Duo<K, V> { public construct(visible K key, visible V item) {} }
+class Check {
+    visible var Int number
+    visible var Bool flag
+    public construct(Duo<Int, Bool> source) { number = source.key; flag = source.item; }
+}
+class Main {
+    public static main() {
+        let p = Duo<Int, Bool>(17, true)
+        let result = Check(p)
+        let n = result.number
+        let b = result.flag
+        external js { if (#{n} !== 17 || #{b} !== true) throw Error('constructor type order'); console.log('17,true'); }
+    }
+}

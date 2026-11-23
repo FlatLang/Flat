@@ -1,5 +1,6 @@
 package flat/writer/es6/bound
 
+import flat/lexer/Lexer
 import flat/io
 import flat/system
 import flat/time/Time
@@ -9,6 +10,27 @@ import flat/compiler/models
 import flat/semantic/types
 
 testable class {
+    async test `executes ordered generic storage and reification`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:ordered-generic-execution"), "one")
+        let stream = Lexer().lex("class Duo<K, V> { construct(visible K key, visible V item) {} get() -> V { return this.item; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveGenericClassBinder().instantiateArguments(syntax, snapshot,
+            [SemanticTypes.intType(), SemanticTypes.stringType()], GenericInstantiationMemo(2))
+        let output = Es6UnitOrchestrator().emitType(unit, 0)
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let getter = Es6NameMangler.mangle(unit.functionUnits().last.identity.value)
+        let root = File(".flat-es6-ordered-generic-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "ordered.js")
+        Es6ArtifactCommitter().commit(destination, output.fragment.code + "console.log(new " + owner +
+            "(7,'second')." + getter + "(), " + owner + ".__flatReified.slice(-2).join(','));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("second primitive:Int,builtin:String\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `reified generic instantiation emits deterministic runtime metadata`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:generic-execute"), "revision:one"

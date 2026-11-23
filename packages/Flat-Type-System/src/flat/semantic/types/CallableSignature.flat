@@ -22,8 +22,12 @@ data class {
         visible GenericInstanceSemanticType ownerInstance = null,
         visible Bool asyncFunction = false,
         visible String externalName = null,
-        visible String dispatchIdentity = null
+        visible String dispatchIdentity = null,
+        visible Bool staticLazyProperty = false
     ) {
+        if (staticLazyProperty && (!callableKind || callableKind.value != "static-method" || !parameterTypes || parameterTypes.isNotEmpty)) {
+            throw Exception("Static lazy getters require a zero-parameter static signature")
+        }
         if (!identity || !name || name.trim().count == 0 || !callableKind ||
             !parameterTypes || parameterTypes.any({ !_ }) || !returnType ||
             optionalParameterCount < 0 || optionalParameterCount > parameterTypes.count ||
@@ -113,7 +117,7 @@ data class {
         let substitution = GenericSubstitution(ownerGenericDeclaration.genericParameters(), receiver.typeArguments())
         return CallableSignature(identity, name, callableKind, parameters.map({ substitution.apply(_) }),
             substitution.apply(returnType), ownerType, optionalParameterCount, parameterNames(),
-            genericParameters(), ownerGenericDeclaration, receiver, asyncFunction, externalName, dispatchIdentity)
+            genericParameters(), ownerGenericDeclaration, receiver, asyncFunction, externalName, dispatchIdentity, staticLazyProperty)
     }
 
     public genericParameters() -> GenericParameterSemanticType[] {

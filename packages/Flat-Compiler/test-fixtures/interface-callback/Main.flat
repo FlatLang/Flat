@@ -1,0 +1,11 @@
+package probe
+class Event { construct(visible Int value) {} }
+trait Listener { public async notify(onResult(Event) = {}) { onResult(Event(3)) } }
+class DefaultListener implements Listener {}
+class CustomListener implements Listener {
+    public async notify(onResult(Event) = {}) { onResult(Event(7)) }
+}
+class Main {
+    static record(Event event) { let n = event.value; external js { console.log(#{n}); } }
+    public static async main() { DefaultListener().notify({ Main.record(_) }); CustomListener().notify({ Main.record(_) }) }
+}

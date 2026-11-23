@@ -1,0 +1,13 @@
+package probe
+class Value {
+    visible Int first = 3
+    Int second
+    construct(Int n) { this.second = n }
+    public sum() -> Int => first + second
+}
+class Main {
+    public static main() {
+        let actual = Value(4).sum()
+        external js { console.log(#{actual}); }
+    }
+}

@@ -7,12 +7,14 @@ import flat/semantic/types
 data class {
     var BoundExpression[] arguments
     var TypeConversion[] conversions
+    var Int[] slots
 
     public construct(
         visible CallableSignature target,
         BoundExpression[] argumentValues,
         TypeConversion[] argumentConversions,
-        visible SourceRange range
+        visible SourceRange range,
+        Int[] parameterSlots = null
     ) {
         if (!target || target.callableKind.value != "constructor" ||
             !argumentValues || !argumentConversions || !range ||
@@ -21,17 +23,26 @@ data class {
             argumentValues.count > target.parameterTypes().count) {
             throw Exception("Bound constructor delegation requires selected target and arguments")
         }
+        slots = Int[]
+        if (parameterSlots && parameterSlots.count != argumentValues.count) throw Exception("Constructor delegation slot count mismatch")
         var Int index
         while (index < argumentValues.count) {
+            var Int slot = index
+            if (parameterSlots) slot = parameterSlots[index]
+            if (slot < 0 || slot >= target.parameterTypes().count || slots.contains(slot)) throw Exception("Invalid constructor delegation slot")
+            slots.add(slot)
             if (!argumentValues[index] || !argumentConversions[index] ||
                 !argumentConversions[index].applicable ||
                 argumentConversions[index].fromType.value() !=
                     argumentValues[index].semanticType.value() ||
                 argumentConversions[index].toType.value() !=
-                    target.parameterTypes()[index].value()) {
+                    target.parameterTypes()[slot].value()) {
                 throw Exception("Bound constructor delegation conversion is invalid")
             }
             index++
+        }
+        for (required in 0..(target.parameterTypes().count - target.optionalParameterCount)) {
+            if (!slots.contains(required)) throw Exception("Missing required constructor delegation slot")
         }
         arguments = BoundExpression[]
         arguments.addAll(argumentValues)
@@ -39,6 +50,7 @@ data class {
         conversions.addAll(argumentConversions)
     }
 
+    public parameterSlots() -> Int[] => Int[]:addAll(slots)
     public argumentValues() -> BoundExpression[] => BoundExpression[]:addAll(arguments)
     public argumentConversions() -> TypeConversion[] => TypeConversion[]:addAll(conversions)
 }

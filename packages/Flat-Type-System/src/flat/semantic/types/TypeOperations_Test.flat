@@ -1,6 +1,20 @@
 package flat/semantic/types
 
 testable class {
+    test `bit mask requires compatible integral operands and preserves width`() {
+        let range = TypeSystem_TestFixture().range()
+        let wide = SemanticTypes.longType()
+        let narrow = SemanticTypes.intType()
+        expect(TypeOperations.binary("&", wide, narrow, range).semanticType.value()).toBe(wide.value())
+        expect(TypeOperations.binary("&", narrow, wide, range).semanticType.value()).toBe(wide.value())
+        SemanticType[] rejected = [SemanticTypes.doubleType(), SemanticTypes.boolType(), SemanticTypes.stringType(), SemanticTypes.unsignedIntType()]
+        for (bad in rejected) {
+            let result = TypeOperations.binary("&", bad, narrow, range)
+            expect(result.valid).toBe(false)
+            expect(result.diagnostic.range).toBe(range)
+        }
+    }
+
     test `conditional respects explicit generic bounds before admitting root`() {
         let fixture = TypeSystem_TestFixture()
         let root = fixture.userType("Object", 1)

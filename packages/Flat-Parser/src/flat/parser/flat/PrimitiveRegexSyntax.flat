@@ -1,0 +1,11 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Source spelling only; pattern compilation and flag semantics belong to consumers. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(SourceRange range, visible String patternSource, visible String flagSource) {
+        super(range)
+    }
+    override public expressionKind() => "regex"
+}

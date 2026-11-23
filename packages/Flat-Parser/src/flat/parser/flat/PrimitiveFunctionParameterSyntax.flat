@@ -14,13 +14,14 @@ class {
         visible Bool privateParameter = false,
         visible Bool nativeArrayStorage = false,
         String[] callbackNamesValue = null,
-        visible Bool nativeScalarStorage = false
+        visible Bool nativeScalarStorage = false,
+        visible Bool omittedLambdaType = false
     ) {
         retainedCallbackParameterNames = String[]
         if (callbackNamesValue) {
             for (callbackName in callbackNamesValue) retainedCallbackParameterNames.add(callbackName)
         }
-        if (!range || !typeName || typeName.trim().count == 0 ||
+        if (!range || (omittedLambdaType != (typeName == null)) || (typeName && typeName.trim().isEmpty) ||
             !name || name.trim().count == 0) {
             throw Exception("Primitive function parameter requires range, type, and name")
         }

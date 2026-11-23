@@ -1,0 +1,23 @@
+package probe
+class Commands {
+    visible Int setup = 1
+    visible Int install = 2
+}
+class Main {
+    static dispatch(Commands commands, Int command) {
+        match (command) {
+            commands.setup => record(1)
+            commands.install => record(2)
+            default => record(9)
+        }
+    }
+    static record(Int value) { external js { globalThis.trace += #{value}; } }
+    public static main() {
+        external js { globalThis.trace = ''; }
+        let commands = Commands()
+        dispatch(commands, 2)
+        dispatch(commands, 1)
+        dispatch(commands, 0)
+        external js { if (globalThis.trace !== '219') throw Error(globalThis.trace); console.log(globalThis.trace); }
+    }
+}

@@ -178,8 +178,9 @@ testable class {
                 try { files.write(CompilerArtifact("a.js", "replacement")) }
                 catch (Exception error) { rejected = true }
                 expect(rejected).toBe(true)
-                expect(Es6ArtifactFiles.read(File(root, "a.js"))).toBe("A")
             } finally { external { #{File.FileGlobal.fs}.lstatSync = #{originalStat}; } }
+            // Verify published bytes before retry, with ordinary destination inspection restored.
+            expect(Es6ArtifactFiles.read(File(root, "a.js"))).toBe("A")
             files.retryCleanup()
             expect(files.pendingCleanupCount).toBe(0)
             expect(observer.publications).toBe(1)

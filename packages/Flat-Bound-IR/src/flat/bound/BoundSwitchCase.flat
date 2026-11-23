@@ -2,7 +2,8 @@ package flat/bound
 
 import flat/compiler/models
 
-/** Immutable typed branch in one switch statement. */
+/** Immutable typed branch in one switch statement. A labeled arm that completes
+ * normally falls into the next arm when fallsThrough is set, even after work. */
 data class {
     var BoundStatement[] body
 
@@ -14,7 +15,7 @@ data class {
         visible Bool fallsThrough = false
     ) {
         if (!range || (defaultCase == (label != null)) || !statements ||
-            statements.any({ !_ }) || (fallsThrough && statements.isNotEmpty)) {
+            statements.any({ !_ }) || (defaultCase && fallsThrough && statements.isNotEmpty)) {
             throw Exception("Bound switch case requires one label/default and valid body")
         }
         body = BoundStatement[]

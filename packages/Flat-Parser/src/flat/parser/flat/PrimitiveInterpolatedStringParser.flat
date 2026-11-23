@@ -5,6 +5,21 @@ import flat/parser/ParserDiagnostic
 
 /** Parses all Flat string interpolation segments without target-specific lowering. */
 class {
+    public hasMarker(String source) -> Bool => nextMarker(source, 1) < source.count - 1
+
+    // Scan literal text only. An escape consumes the following character, so an
+    // odd run of backslashes quotes the hash and an even run leaves it active.
+    nextMarker(String source, Int start) -> Int {
+        var Int cursor = start
+        let end = source.count - 1
+        while (cursor < end) {
+            if (source.chars[cursor] == '#') return cursor
+            if (source.chars[cursor] == '\\') cursor++
+            cursor++
+        }
+        return end
+    }
+
     public parse(
         Token token,
         SourceSnapshotIdentity snapshot,
@@ -19,10 +34,8 @@ class {
         var Int literalStart = cursor
         let contentEnd = source.count - 1
         while (cursor < contentEnd) {
-            if (source.chars[cursor] != '#') {
-                cursor++
-                continue
-            }
+            cursor = nextMarker(source, cursor)
+            if (cursor == contentEnd) break
             if (cursor > literalStart) {
                 segments.add(literal(token, snapshot, tokenIndex, literalStart, cursor))
             }

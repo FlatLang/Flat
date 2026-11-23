@@ -12,7 +12,8 @@ class {
     visible PrimitiveSourceBindingContext owner
 
     public construct(PrimitiveSourceBindingContext owner, PrimitiveSourceBindingContext[] contexts,
-        PrimitiveSourceBindingContext[] lexicalSources = PrimitiveSourceBindingContext[]) {
+        PrimitiveSourceBindingContext[] lexicalSources = PrimitiveSourceBindingContext[],
+        visible PrimitiveClassSyntax lexicalType = null) {
         if (!owner || !contexts || contexts.any({ !_ })) throw Exception("Resolved declaration scope requires sources")
         this.owner = owner
         sources = PrimitiveSourceBindingContext[]:addAll(contexts)
@@ -29,8 +30,8 @@ class {
     public candidates(String qualifiedName) -> DeclarationIdentity[] {
         let result = DeclarationIdentity[]
         for (source in sources) {
-            for (syntax in source.classValues()) {
-                let qualified = source.namespaceName.isEmpty ? syntax.name : "#{source.namespaceName}/#{syntax.name}"
+            for (syntax in source.allClassValues()) {
+                let qualified = source.namespaceName.isEmpty ? syntax.declarationPath() : "#{source.namespaceName}/#{syntax.declarationPath()}"
                 if (qualified == qualifiedName) {
                     let identity = classIdentity(syntax)
                     if (result.none((existing) => existing.value == identity.value)) result.add(identity)
@@ -142,6 +143,15 @@ class {
 
     public visibleCandidates(String name, SourceRange consumerRange = null) -> DeclarationIdentity[] {
         if (name.contains("/")) return candidates(name)
+        var PrimitiveClassSyntax container = lexicalType
+        while (container) {
+            let nested = container.nestedClasses().firstOrNull({ _.name == name })
+            if (nested) return [classIdentity(nested)]
+            if (container.name == name) return [classIdentity(container)]
+            if (!container.enclosingPath) break
+            let parentPath = container.enclosingPath
+            container = owner.allClassValues().firstOrNull({ _.declarationPath() == parentPath })
+        }
         let found = candidates(owner.namespaceName.isEmpty ? name : "#{owner.namespaceName}/#name")
         if (found.isNotEmpty) return found
         for (lexical in lexicalSources) {
@@ -160,9 +170,9 @@ class {
     /** Canonical spelling is used only while transporting already-resolved syntax type edges. */
     public qualifiedName(DeclarationIdentity identity) -> String {
         for (source in sources) {
-            for (syntax in source.classValues()) {
+            for (syntax in source.allClassValues()) {
                 if (classIdentity(syntax).value == identity.value)
-                    return source.namespaceName.isEmpty ? syntax.name : source.namespaceName + "/" + syntax.name
+                    return source.namespaceName.isEmpty ? syntax.declarationPath() : source.namespaceName + "/" + syntax.declarationPath()
             }
             for (syntax in source.interfaceValues()) {
                 if (interfaceIdentity(syntax).value == identity.value)
@@ -181,7 +191,7 @@ class {
 
     public classFor(DeclarationIdentity identity) -> PrimitiveClassSyntax {
         for (source in sources) {
-            let syntax = source.classValues().firstOrNull({ classIdentity(_).value == identity.value })
+            let syntax = source.allClassValues().firstOrNull({ classIdentity(_).value == identity.value })
             if (syntax) return syntax
         }
         return null
@@ -206,9 +216,9 @@ class {
 
     public scopeFor(DeclarationIdentity identity) -> PrimitiveResolvedDeclarationContext {
         let source = sources.firstOrNull((candidate) =>
-            candidate.classValues().any((syntax) => classIdentity(syntax).value == identity.value) ||
+            candidate.allClassValues().any((syntax) => classIdentity(syntax).value == identity.value) ||
             candidate.interfaceValues().any((syntax) => interfaceIdentity(syntax).value == identity.value))
         if (!source) throw Exception("Resolved declaration requires an admitted owner")
-        return PrimitiveResolvedDeclarationContext(source, sources)
+        return PrimitiveResolvedDeclarationContext(source, sources, lexicalType: classFor(identity))
     }
 }

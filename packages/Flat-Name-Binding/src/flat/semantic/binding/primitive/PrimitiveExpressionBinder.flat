@@ -208,14 +208,14 @@ class {
             if (canonical && canonical.count == 1 && TypeConversions.classify(
                 UserClassSemanticType(canonical.first), required, hierarchy: currentHierarchy).applicable) {
                 adapted = PrimitiveStringAdapter.conditionalText(syntax, value, required,
-                    currentDeclarationContext, callables)
+                    currentDeclarationContext, callables, currentHierarchy)
             }
         }
         if (required.kind() == "user-class" &&
             ((UserClassSemanticType)required).declarationIdentity.name == "String" &&
             value.semanticType.kind() == "string") {
             try {
-                adapted = PrimitiveStringAdapter.wrap(value, required, currentDeclarationContext, callables)
+                adapted = PrimitiveStringAdapter.wrap(value, required, currentDeclarationContext, callables, currentHierarchy)
             } catch (Exception error) {
                 throw arrayDiagnostic(
                     "type.array-element-conversion", error.message ?: "Invalid array text element", value.range)
@@ -356,28 +356,7 @@ class {
             var BoundExpression expression = bindSyntax(syntax, locals, callables, requiredType)
             if (requiredType && requiredType.kind() == "function") expression = adaptCallbackReference(
                 expression, (FunctionSemanticType)requiredType, currentDeclarationContext, callables)
-            if (!requiredType) return PrimitiveExpressionBindingResult(expression: expression)
-            let conversion = TypeConversions.classify(
-                expression.semanticType, requiredType, explicit: explicitConversion, hierarchy: currentHierarchy
-            )
-            if (!conversion.applicable) {
-                return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
-                    "type.primitive-conversion",
-                    "Primitive expression '#{expression.semanticType.value()}' cannot convert to '#{requiredType.value()}'",
-                    expression.range
-                ))
-            }
-            if (conversion.conversionKind == "numeric-unboxing") {
-                return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
-                    "binding.numeric-unboxing-projection-unsupported",
-                    "Numeric unboxing requires resolved Number projection evidence", expression.range))
-            }
-            if (conversion.conversionKind == "identity") {
-                return PrimitiveExpressionBindingResult(expression: expression)
-            }
-            return PrimitiveExpressionBindingResult(expression: BoundConversionExpression(
-                expression.range, requiredType, expression, conversion
-            ))
+            return convertBound(expression, requiredType, explicitConversion, currentHierarchy)
         } catch (Exception error) {
             if (error.class.isOfType(PrimitiveContextBindingException.class)) {
                 let diagnostic = ((PrimitiveContextBindingException)error).diagnostic
@@ -390,6 +369,31 @@ class {
                 syntax.range
             ))
         }
+    }
+
+    public static convertBound(BoundExpression expression, SemanticType requiredType, Bool explicitConversion, TypeHierarchyComponent hierarchy) -> PrimitiveExpressionBindingResult {
+        if (!requiredType) return PrimitiveExpressionBindingResult(expression: expression)
+        let conversion = TypeConversions.classify(
+            expression.semanticType, requiredType, explicit: explicitConversion, hierarchy: hierarchy
+        )
+        if (!conversion.applicable) {
+            return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                "type.primitive-conversion",
+                "Primitive expression '#{expression.semanticType.value()}' cannot convert to '#{requiredType.value()}'",
+                expression.range
+            ))
+        }
+        if (conversion.conversionKind == "numeric-unboxing") {
+            return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                "binding.numeric-unboxing-projection-unsupported",
+                "Numeric unboxing requires resolved Number projection evidence", expression.range))
+        }
+        if (conversion.conversionKind == "identity") {
+            return PrimitiveExpressionBindingResult(expression: expression)
+        }
+        return PrimitiveExpressionBindingResult(expression: BoundConversionExpression(
+            expression.range, requiredType, expression, conversion
+        ))
     }
 
     namedType(String name) -> SemanticType {
@@ -428,6 +432,9 @@ class {
         if (syntax.class.isOfType(PrimitiveInterpolatedStringSyntax.class)) {
             return ((PrimitiveInterpolatedStringSyntax)syntax).segmentValues().any((segment) =>
                 !segment.literal() && referencesName(segment.expression, name))
+        }
+        if (syntax.class.isOfType(PrimitiveThrowArmSyntax.class)) {
+            return referencesName(((PrimitiveThrowArmSyntax)syntax).operand, name)
         }
         if (syntax.class.isOfType(PrimitiveConditionalSyntax.class)) {
             let conditional = (PrimitiveConditionalSyntax)syntax
@@ -1062,7 +1069,10 @@ class {
                 if (parameters.any({ _.name == parameter.name })) {
                     throw Exception("Duplicate lambda parameter '#{parameter.name}'")
                 }
-                let type = namedType(parameter.typeName)
+                let type = parameter.typeName && parameter.typeName.contains("<")
+                    ? PrimitiveStructuralTypeResolver(callables: callables, declarationContext: currentDeclarationContext,
+                        lookupRange: parameter.range).resolveParameter(parameter)
+                    : namedType(parameter.typeName)
                 if (expected && type.value() != expected.parameterTypes()[parameterIndex].value()) {
                     throw Exception("Lambda parameter type does not match expected function")
                 }
@@ -1333,18 +1343,25 @@ class {
             let value = (PrimitiveConditionalSyntax)syntax
             let condition = PrimitiveControlStatementBinder().conditionValue(
                 bindSyntax(value.condition, locals, callables))
+            let guarded = PrimitiveThrowArmBinding.bind(value, condition, (branch, positive, throwing) => {
+                let result = bindSyntax(branch, locals, callables, throwing ? null : requiredType)
+                if (!throwing && requiredType) return PrimitiveStringAdapter.conditionalText(branch, result, requiredType,
+                    currentDeclarationContext, callables, currentHierarchy)
+                return result
+            })
+            if (guarded) return guarded
             var BoundExpression whenTrue = bindSyntax(value.whenTrue, locals, callables, requiredType)
             var BoundExpression whenFalse = bindSyntax(value.whenFalse, locals, callables, requiredType)
             if (requiredType) {
                 whenTrue = PrimitiveStringAdapter.conditionalText(value.whenTrue, whenTrue,
-                    requiredType, currentDeclarationContext, callables)
+                    requiredType, currentDeclarationContext, callables, currentHierarchy)
                 whenFalse = PrimitiveStringAdapter.conditionalText(value.whenFalse, whenFalse,
-                    requiredType, currentDeclarationContext, callables)
+                    requiredType, currentDeclarationContext, callables, currentHierarchy)
             }
             whenTrue = PrimitiveStringAdapter.conditionalText(value.whenTrue, whenTrue,
-                whenFalse.semanticType, currentDeclarationContext, callables)
+                whenFalse.semanticType, currentDeclarationContext, callables, currentHierarchy)
             whenFalse = PrimitiveStringAdapter.conditionalText(value.whenFalse, whenFalse,
-                whenTrue.semanticType, currentDeclarationContext, callables)
+                whenTrue.semanticType, currentDeclarationContext, callables, currentHierarchy)
             let joined = TypeOperations.conditional(condition.semanticType,
                 whenTrue.semanticType, whenFalse.semanticType, value.range, currentHierarchy)
             if (!joined.valid) throw PrimitiveContextBindingException(BindingDiagnostic(

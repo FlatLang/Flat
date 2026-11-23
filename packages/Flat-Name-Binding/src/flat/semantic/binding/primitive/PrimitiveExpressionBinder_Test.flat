@@ -12,6 +12,28 @@ testable class {
         return SourceRange(snapshot, 0, 1, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 12))
     }
 
+    test `conditional throw arm produces no join value and rejects invalid operands`() {
+        let range = expressionRange("throw-arm")
+        let condition = PrimitiveLiteralSyntax(range, Token.Type.BOOL, "true")
+        let number = PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "7")
+        let operand = PrimitiveLiteralSyntax(range, Token.Type.STRING, "\"reason\"")
+        let arm = PrimitiveThrowArmSyntax(range, operand)
+        let result = PrimitiveExpressionBinder().bind(PrimitiveConditionalSyntax(range, condition, arm, number))
+        expect(result.succeeded).toBe(true)
+        Object bound = result.expression
+        let evaluation = (BoundEvaluationExpression)bound
+        expect(evaluation.value.semanticType.value()).toBe(SemanticTypes.intType().value())
+        let guardStatement = evaluation.setup().first
+        let guard = (BoundIfStatement)guardStatement
+        expect(guard.thenValues().first.unitKind()).toBe("throw")
+        expect(guard.elseValues().count).toBe(0)
+        let invalid = PrimitiveExpressionBinder().bind(PrimitiveConditionalSyntax(range, condition, number, PrimitiveThrowArmSyntax(range, number)))
+        expect(invalid.diagnostic.code).toBe("type.invalid-throw-operand")
+        expect(invalid.diagnostic.range).toBe(number.range)
+        let noValue = PrimitiveExpressionBinder().bind(PrimitiveConditionalSyntax(range, condition, arm, arm))
+        expect(noValue.diagnostic.code).toBe("type.no-conditional-value")
+    }
+
     test `floating literal context retains canonical provenance and precise failure range`() {
         let range = expressionRange("floating-context")
         let syntax = PrimitiveLiteralSyntax(range, Token.Type.FLOAT, "0.00000001")

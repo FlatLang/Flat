@@ -4,6 +4,14 @@ import flat/compiler/models
 
 /** Immutable syntax-only reduced class declaration. */
 data class {
+    var PrimitiveClassSyntax[] children
+    public nestedClasses() -> PrimitiveClassSyntax[] => PrimitiveClassSyntax[]:addAll(children)
+    public declarationPath() -> String => enclosingPath ? enclosingPath + "/" + name : name
+
+    var PrimitiveClassParameterSyntax[] parameters
+
+    public genericParameters() -> PrimitiveClassParameterSyntax[] => PrimitiveClassParameterSyntax[]:addAll(parameters)
+
     var PrimitiveFieldSyntax[] fields
     var PrimitiveFunctionSyntax[] methods
     var String[] implementedTypes
@@ -22,7 +30,11 @@ data class {
         visible Bool abstractClass = false,
         PrimitiveArrayOverrideSyntax[] arrayOverrideValues = PrimitiveArrayOverrideSyntax[],
         PrimitiveConstructorSyntax[] constructorValues = PrimitiveConstructorSyntax[],
-        visible PrimitiveTypeReferenceSyntax parentType = null
+        visible PrimitiveTypeReferenceSyntax parentType = null,
+        visible SourceRange extensionModifierRange = null,
+        PrimitiveClassParameterSyntax[] parameterValues = PrimitiveClassParameterSyntax[],
+        visible String enclosingPath = null, PrimitiveClassSyntax[] nestedValues = PrimitiveClassSyntax[],
+        visible SourceRange nestedPublicRange = null, visible SourceRange nestedStaticRange = null
     ) {
         if (!range || !name || name.trim().count == 0 ||
             (genericParameterName && genericParameterName.trim().count == 0) ||
@@ -37,6 +49,16 @@ data class {
                 parentType.nullableType))) {
             throw Exception("Primitive class syntax requires range name fields constructor and methods")
         }
+        children = PrimitiveClassSyntax[]:addAll(nestedValues)
+        parameters = PrimitiveClassParameterSyntax[]
+        for (parameter in parameterValues) {
+            if (!parameter || parameter.position != parameters.count || parameters.any({ _.name == parameter.name })) {
+                throw Exception("Invalid class parameter order or duplicate name")
+            }
+            parameters.add(parameter)
+        }
+        if (parameters.isEmpty && genericParameterName) parameters.add(PrimitiveClassParameterSyntax(genericParameterName, 0, range))
+        if (parameters.isNotEmpty && parameters.first.name != genericParameterName) throw Exception("Class parameter name mismatch")
         fields = PrimitiveFieldSyntax[]
         fields.addAll(fieldValues)
         methods = PrimitiveFunctionSyntax[]
@@ -51,6 +73,7 @@ data class {
     }
 
     public mergedWith(PrimitiveClassSyntax overlay) -> PrimitiveClassSyntax {
+        if (overlay && overlay.nestedClasses().isNotEmpty) throw Exception("Nested type overlays require explicit declaration merging")
         if (!overlay || overlay.name != name || overlay.parentName != null ||
             overlay.implementedTypeNames().isNotEmpty) {
             throw Exception("Class overlay merge requires same-name syntax")
@@ -89,6 +112,7 @@ data class {
             while (candidateIndex < overlay.methodValues().count && !duplicate) {
                 let candidate = overlay.methodValues()[candidateIndex]
                 if (candidate.name == method.name &&
+                    sameExtensionReceiver(candidate, method) &&
                     candidate.staticMethod == method.staticMethod &&
                     sameParameterSignature(candidate.parameterValues(),
                         method.parameterValues())) duplicate = method
@@ -104,6 +128,7 @@ data class {
             while (methodIndex < methods.count && existingIndex < 0) {
                 let existing = methods[methodIndex]
                 if (existing.name == method.name &&
+                    sameExtensionReceiver(existing, method) &&
                     existing.staticMethod == method.staticMethod &&
                     sameParameterSignature(existing.parameterValues(),
                         method.parameterValues())) existingIndex = methodIndex
@@ -114,6 +139,8 @@ data class {
         }
         let mergedConstructors = constructorValues()
         for (overlayConstructor in overlay.constructorValues()) {
+            // A parser-provided default is not a declaration in the overlay.
+            if (overlayConstructor.implicitDefault) continue
             var Int existingConstructorIndex = -1
             var Int constructorIndex
             while (constructorIndex < mergedConstructors.count &&
@@ -133,13 +160,17 @@ data class {
             fields, mergedConstructors.first, methods, implementedTypeNames(), abstractClass,
             overlay.arrayOverrideValues().isNotEmpty ?
                 overlay.arrayOverrideValues() : arrayOverrideValues(),
-            mergedConstructors, parentType
+            mergedConstructors, parentType, extensionModifierRange, parameters, enclosingPath, children, nestedPublicRange, nestedStaticRange
         )
     }
 
     /** Exact syntax signature, not argument compatibility. Nullable/generic/array
      * shape remains in typeName; storage representation is independent evidence.
-     * Parameter names, defaults and promotion visibility do not select overloads. */
+     * Parameter names, defaults and promotion visibility do not select overloads. */    sameExtensionReceiver(PrimitiveFunctionSyntax left, PrimitiveFunctionSyntax right) -> Bool {
+        if (!left.extensionReceiver || !right.extensionReceiver) return !left.extensionReceiver && !right.extensionReceiver
+        return left.extensionReceiver.name == right.extensionReceiver.name
+    }
+
     sameParameterSignature(
         PrimitiveFunctionParameterSyntax[] left,
         PrimitiveFunctionParameterSyntax[] right

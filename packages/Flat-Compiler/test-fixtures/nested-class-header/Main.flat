@@ -1,0 +1,20 @@
+package probe
+class Left {
+    class Child<T> {
+        static value() -> Int => 11
+    }
+    public static read() -> Int { return Child.value(); }
+}
+class Right {
+    class Child<T> {
+        static value() -> Int => 22
+    }
+    public static read() -> Int { return Child.value(); }
+}
+class Main {
+    public static main() {
+        let a = Left.read()
+        let b = Right.read()
+        external js { if (#{a} !== 11 || #{b} !== 22) throw Error('nested identity'); console.log('11,22'); }
+    }
+}

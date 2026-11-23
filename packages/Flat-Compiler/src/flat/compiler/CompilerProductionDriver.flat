@@ -16,7 +16,12 @@ import flat/system
  */
 class CompilerProductionDriver {
     public static async main(String[] args) {
-        System.exit(run(args))
+        // Bootstrap mains receive the script token; generated mains receive only user argv.
+        native var Int userArgumentCount
+        external js { #{userArgumentCount} = process.argv.length - 2; }
+        if (args.count == userArgumentCount) System.exit(run(args))
+        else if (args.count == userArgumentCount + 1) System.exit(run(args.skip(1)))
+        else throw Exception("Invalid production driver entrypoint argument boundary")
     }
 
     /** In-process entrypoint shares all production observations without exiting the host. */

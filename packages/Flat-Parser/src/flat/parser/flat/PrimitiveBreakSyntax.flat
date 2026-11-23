@@ -1,0 +1,9 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Unresolved break; the enclosing control target is a binding decision. */
+data class extends PrimitiveStatementSyntax {
+    public construct(SourceRange range) { super(range) }
+    override public statementKind() => "break"
+}
