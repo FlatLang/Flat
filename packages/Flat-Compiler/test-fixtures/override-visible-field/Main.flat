@@ -1,0 +1,20 @@
+package probe
+class Token {}
+trait Modifier { visible Token aliasUsed }
+class Concrete implements Modifier {
+    override visible Token aliasUsed
+    construct(Token input) { aliasUsed = input; }
+}
+class Main {
+    static read(Concrete modifier) -> Token { return modifier.aliasUsed; }
+    public static main() {
+        let first = Token()
+        let second = Token()
+        let a = Concrete(first)
+        let b = Concrete(second)
+        let direct = a.aliasUsed
+        let stored = read(a)
+        let other = read(b)
+        external js { if (#{direct} !== #{first} || #{stored} !== #{first} || #{other} !== #{second}) throw Error('wrong storage'); console.log('direct:stored:distinct'); }
+    }
+}

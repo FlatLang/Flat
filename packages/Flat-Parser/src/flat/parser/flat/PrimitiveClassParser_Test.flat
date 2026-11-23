@@ -1029,6 +1029,26 @@ testable class {
         expect(failure != null).toBe(true)
     }
 
+    async test `override visible storage retains type name visibility and modifier range`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:override-visible"), "one")
+        let stream = Lexer().lex("class Concrete {\noverride visible Token aliasUsed\n}")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let field = parsed.fieldValues().first
+        expect(field.name).toBe("aliasUsed")
+        expect(field.typeName).toBe("Token")
+        expect(field.visibleField).toBe(true)
+        expect(field.mutableField).toBe(false)
+        expect(field.range.start.column).toBe(1)
+        expect(field.range.end.column).toBe(33)
+        let invalid = Lexer().lex("class Concrete { override visible Token }")
+        invalid.emit("start")
+        var String failure
+        try { PrimitiveClassParser().parse(invalid.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+    }
+
     async test `parses visible property with generic return type`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-property"), "one")
         let stream = Lexer().lex("class Box<E> { override visible ArrayIterator<E> iterator => create()\n}")

@@ -285,8 +285,10 @@ class {
                     [PrimitiveReturnSyntax(range(expressionStart, expressionEnd), value)]
                 ))
                 index = end
-            } else if (tokens[index].value == "visible") {
+            } else if (tokens[index].value == "visible" ||
+                (tokens[index].value == "override" && index + 1 < tokens.count && tokens[index + 1].value == "visible")) {
                 fieldModifierStart = index
+                if (tokens[index].value == "override") index++
                 visibleField = true
                 index++
                 if (index < tokens.count && tokens[index].value == "static") {
