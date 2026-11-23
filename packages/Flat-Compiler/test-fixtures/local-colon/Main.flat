@@ -1,0 +1,18 @@
+package probe
+class Box {
+    visible var Int count = 0
+    public addAll(Int n) -> Int { count += n; return 11; }
+}
+class Main {
+    static wrapLine() -> Int { external js { globalThis.calls++; } return 3; }
+    static wrap(Box lines, Bool ready) -> Box { return ready ? lines : lines:addAll(wrapLine()); }
+    public static main() {
+        let lines = Box()
+        external js { globalThis.calls = 0; }
+        let before = wrap(lines, true)
+        let after = wrap(lines, false)
+        let count = lines.count
+        let dotted = lines.addAll(1)
+        external js { if (#{before} !== #{lines} || #{after} !== #{lines} || #{count} !== 3 || #{dotted} !== 11 || globalThis.calls !== 1) throw Error('navigation'); console.log('same:3:11:1'); }
+    }
+}

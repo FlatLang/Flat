@@ -7,6 +7,7 @@ class {
     var Token[] sourceSlice
     var Token[] tokens
     var Int index
+    var Bool expectsConditionalSeparator
     var Int tokenIndexOffset
     var SourceRange containingRange
     var SourceSnapshotIdentity snapshot
@@ -29,6 +30,7 @@ class {
         tokenIndexOffset = sourceTokenIndexOffset
         containingRange = expressionContainingRange
         index = 0
+        expectsConditionalSeparator = false
         var Token suffix
         if (tokens.count > 0 && tokens.last.value == "$") {
             suffix = tokens.last
@@ -69,22 +71,25 @@ class {
         return safe
     }
 
-    parseConditional() -> PrimitiveExpressionSyntax {
+    parseConditional(Bool beforeSeparator = false) -> PrimitiveExpressionSyntax {
+        let enclosing = expectsConditionalSeparator
+        expectsConditionalSeparator = beforeSeparator
         let start = index
         let condition = parseLevel(0)
+        expectsConditionalSeparator = enclosing
         if (index < tokens.count && tokens[index].value == "?:") {
             index++
-            let fallback = parseConditional()
+            let fallback = parseConditional(beforeSeparator)
             return PrimitiveBinarySyntax(range(start, index), "?:", condition, fallback)
         }
         if (index >= tokens.count || tokens[index].value != "?") return condition
         index++
-        let whenTrue = parseConditional()
+        let whenTrue = parseConditional(true)
         if (index >= tokens.count || tokens[index].value != ":") {
             syntax("Expected ':' in conditional expression", index)
         }
         index++
-        let whenFalse = parseConditional()
+        let whenFalse = parseConditional(beforeSeparator)
         return PrimitiveConditionalSyntax(
             range(start, index),
             condition, whenTrue, whenFalse
@@ -433,10 +438,12 @@ class {
             var PrimitiveExpressionSyntax expression
             if (index < tokens.count && tokens[index].value == "(") {
                 expression = parseCall(tokenIndex, token.value)
-                if (token.value[0] >= 'A' && token.value[0] <= 'Z' && index < tokens.count && tokens[index].value == ":") return parsePostfix(tokenIndex, expression, true)
             } else expression = PrimitiveReferenceSyntax(
                 range(tokenIndex, tokenIndex + 1), token.value
             )
+            if (index < tokens.count && tokens[index].value == ":" && !expectsConditionalSeparator) {
+                return parsePostfix(tokenIndex, expression, true)
+            }
             while (index < tokens.count && (tokens[index].value == "." || safeMemberOperator() || tokens[index].value == "[")) {
                 if (tokens[index].value == "[") {
                     index++
@@ -584,7 +591,7 @@ class {
     ) -> PrimitiveExpressionSyntax {
         var PrimitiveExpressionSyntax expression = initial
         while (index < tokens.count && (tokens[index].value == "." || safeMemberOperator() ||
-            (colonCall && tokens[index].value == ":") || tokens[index].value == "[")) {
+            (colonCall && !expectsConditionalSeparator && tokens[index].value == ":") || tokens[index].value == "[")) {
             if (tokens[index].value == "[") {
                 index++
                 let accessIndex = parseConditional()

@@ -490,6 +490,18 @@ testable class {
         expect(rejected).toBe(3)
     }
 
+    async test `colon navigation on a local keeps the conditional separator distinct`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:local-chain"), "one")
+        let stream = Lexer().lex("ready ? lines : lines:addAll(next())")
+        stream.emit("start")
+        let expression = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let choice = (PrimitiveConditionalSyntax)expression
+        expect(choice.whenTrue.expressionKind()).toBe("reference")
+        let chain = (PrimitiveMemberCallSyntax)choice.whenFalse
+        expect(chain.chainNavigation).toBe(true)
+        expect(chain.memberName).toBe("addAll")
+    }
+
     async test `colon call retains navigation intent distinct from dot`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:colon-intent"), "one")
         let stream = Lexer().lex("Array<Char>():add('a')")
