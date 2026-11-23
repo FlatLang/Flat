@@ -36,6 +36,14 @@ testable class {
         let parsed = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
         expect(parsed.statements().map({ _.statementKind() })).toBe(["expression", "expression"])
     }
+    async test `typed local starts a new statement after a negative initializer`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:typed-local-boundary"), "one")
+        let stream = Lexer().lex("Int default = -1\nInt exactCodeEnd = findEnd()")
+        stream.emit("start")
+        let parsed = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.statements().map({ _.statementKind() })).toBe(["local-declaration", "local-declaration"])
+    }
+
     async test `match starts a new statement after an indexed initializer`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:match-boundary"), "one")
         let stream = Lexer().lex("let next = text[0]\nmatch next { ' ' => return 0 }")

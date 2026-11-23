@@ -434,6 +434,8 @@ class {
             tokenIndex + 1 >= tokens.count) return false
         if (value == "native_array") return true
         let next = tokens[tokenIndex + 1].value
+        if (tokens[tokenIndex + 1].type == Token.Type.IDENTIFIER && tokenIndex + 2 < tokens.count &&
+            tokens[tokenIndex + 2].value == "=") return true
         if (next == "[" && tokenIndex + 2 < tokens.count) {
             var Int close = tokenIndex + 2
             while (close < tokens.count && tokens[close].value != "]") close++

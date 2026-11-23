@@ -1,0 +1,13 @@
+package probe
+class Main {
+    static findEnd(Int fallback) -> Int {
+        external js { globalThis.calls++; }
+        return fallback + 5
+    }
+    public static main() {
+        external js { globalThis.calls = 0; }
+        Int default = -1
+        Int exactCodeEnd = findEnd(default)
+        external js { if (#{default} !== -1 || #{exactCodeEnd} !== 4 || globalThis.calls !== 1) throw Error('typed locals'); console.log('-1,4,1'); }
+    }
+}
