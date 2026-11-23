@@ -4,6 +4,14 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `constructor retains nested ordered argument types`() {
+        let stream = Lexer().lex("class Duo<K, V> { construct(Duo<K, V> other, Array<Duo<V, K>> entries) {} }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:ordered-construct"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(syntax.constructorValue.parameterValues().map({ _.typeName })).toBe(["Duo<K,V>", "Array<Duo<V,K>>"])
+    }
+
     async test `nested type is not an outer field`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-owner"), "one")
         let stream = Lexer().lex("class HashMap<K, V> { class HashMapIterator<K, V> implements Iterator<Pair<K, V>> { construct(visible V item) {} } }")

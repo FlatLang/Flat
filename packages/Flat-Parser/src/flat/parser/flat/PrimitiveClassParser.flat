@@ -677,16 +677,11 @@ class {
                 else nativeModifier = true
                 index++
             }
-            var String typeName = identifier("Expected parameter type")
-            if (index + 1 < tokens.count && tokens[index].value == "[" &&
-                tokens[index + 1].value == "]") {
-                typeName += "[]"
-                index += 2
-            }
-            if (index < tokens.count && tokens[index].value == "?") {
-                typeName += "?"
-                index++
-            }
+            let typeStart = index
+            let typeEnd = fieldTypeEnd(typeStart)
+            if (typeEnd <= typeStart) syntax("Expected parameter type", typeStart)
+            let typeName = PrimitiveFunctionParser().parseTypeTokens(tokens.skip(typeStart).take(typeEnd - typeStart), snapshot, tokenIndexOffset + typeStart)
+            index = typeEnd
             let name = identifier("Expected parameter name")
             if (result.any({ _.name == name })) syntax("Duplicate parameter '#name'", start)
             var PrimitiveExpressionSyntax defaultValue
