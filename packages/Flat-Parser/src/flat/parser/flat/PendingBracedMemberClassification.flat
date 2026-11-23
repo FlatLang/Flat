@@ -5,6 +5,7 @@ package flat/parser/flat
  * whose opening brace has not yet been consumed.
  */
 data class {
+    public static String NESTED_TYPE = "nested-type"
     public static String FUNCTION = "function"
     public static String STATIC_BLOCK = "static-block"
 
@@ -12,7 +13,7 @@ data class {
         visible String memberKind,
         visible String parserName
     ) {
-        if (memberKind != FUNCTION && memberKind != STATIC_BLOCK) {
+        if (memberKind != FUNCTION && memberKind != STATIC_BLOCK && memberKind != NESTED_TYPE) {
             throw Exception("Pending braced member classification requires a supported member kind")
         }
         if (!parserName || parserName.trim().isEmpty) {

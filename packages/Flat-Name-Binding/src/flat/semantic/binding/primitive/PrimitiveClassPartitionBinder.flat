@@ -26,6 +26,7 @@ class {
             !interfaceSyntaxValues || interfaceSyntaxValues.any({ !_ })) {
             throw Exception("Primitive class partition binding requires syntax snapshot and capacity")
         }
+        if (syntaxValues.any({ _.nestedClasses().isNotEmpty })) throw Exception("Nested declarations require source binding contexts")
         interfaces = PrimitiveInterfaceSyntax[]:addAll(interfaceSyntaxValues)
         let effectiveSyntaxValues = syntaxValues.map({
             withImplicitRootParent(withTraitImplementations(_), syntaxValues)
@@ -199,10 +200,10 @@ class {
         let contracts = PrimitiveInterfaceSyntax[]
         for (source in ordered) {
             if (source.importValues().count + source.defaultImportValues().count > maxImportsPerContext ||
-                syntaxes.count + contracts.count + source.classValues().count + source.interfaceValues().count > maxTypes) {
+                syntaxes.count + contracts.count + source.allClassValues().count + source.interfaceValues().count > maxTypes) {
                 throw Exception("Context binding exceeds configured declaration or import capacity")
             }
-            syntaxes.addAll(source.classValues())
+            syntaxes.addAll(source.allClassValues())
             contracts.addAll(source.interfaceValues())
         }
         let signatures = CallableSignature[]
@@ -211,14 +212,15 @@ class {
         try {
             for (source in ordered) {
                 signatureContext = PrimitiveResolvedDeclarationContext(source, ordered)
-                for (syntax in source.classValues()) {
-                    let found = signatureContext.candidates(source.namespaceName.isEmpty ? syntax.name :
-                        "#{source.namespaceName}/#{syntax.name}")
+                for (syntax in source.allClassValues()) {
+                    let found = signatureContext.candidates(source.namespaceName.isEmpty ? syntax.declarationPath() :
+                        source.namespaceName + "/" + syntax.declarationPath())
                     if (found.count > 1) signatureContext.fail("binding.namespace-duplicate", syntax.name, syntax.range, found)
                 }
                 signatureContext.validateImports()
                 interfaces = contracts
-                for (original in source.classValues()) {
+                for (original in source.allClassValues()) {
+                    signatureContext = PrimitiveResolvedDeclarationContext(source, ordered, lexicalType: original)
                     let syntax = withTraitImplementations(withImplicitRootParent(original, syntaxes))
                     effectiveSyntaxes.add(syntax)
                     signatureLookupRange = syntax.range
@@ -326,7 +328,7 @@ class {
                 DeclarationIdentity(SyntaxIslandIdentity(syntax.range.snapshot, "class", syntax.range.startTokenIndex), "class", syntax.name).value == arrayDeclaration.value
             )
             if (!selected) throw Exception("Selected Array declaration is outside the admitted component")
-            let source = ordered.firstOrNull((candidate) => candidate.classValues().any((syntax) =>
+            let source = ordered.firstOrNull((candidate) => candidate.allClassValues().any((syntax) =>
                 syntax.range.snapshot == selected.range.snapshot && syntax.range.startTokenIndex == selected.range.startTokenIndex))
             let scope = PrimitiveResolvedDeclarationContext(source, ordered)
             contextHierarchy = arrayHierarchy(selected, effectiveSyntaxes, null, context: scope)
@@ -334,8 +336,8 @@ class {
         if (!contextHierarchy) {
             contextHierarchy = TypeHierarchyComponent()
             for (source in ordered) {
-                let scope = PrimitiveResolvedDeclarationContext(source, ordered)
-                for (syntax in source.classValues()) {
+                for (syntax in source.allClassValues()) {
+                    let scope = PrimitiveResolvedDeclarationContext(source, ordered, lexicalType: syntax)
                     let type = UserClassSemanticType(scope.classIdentity(syntax))
                     let parents = UserClassSemanticType[]
                     if (syntax.parentName) parents.add(UserClassSemanticType(scope.resolve(syntax.parentName, syntax.range)))
@@ -361,8 +363,8 @@ class {
         while (units.count < syntaxes.count) {
             var Bool progressed
             for (source in ordered) {
-                let scope = PrimitiveResolvedDeclarationContext(source, ordered)
-                for (original in source.classValues()) {
+                for (original in source.allClassValues()) {
+                    let scope = PrimitiveResolvedDeclarationContext(source, ordered, lexicalType: original)
                     let identity = scope.classIdentity(original)
                     let syntax = effectiveSyntaxes.firstOrNull({ scope.classIdentity(_).value == identity.value })
                     if (completed.contains(identity.value)) continue

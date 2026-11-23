@@ -94,6 +94,11 @@ class {
             if (spans.count != 1) continue
 
             let parserName = spans.first.parserName
+            if (parserName == ClassParser.class.name) {
+                return PendingBracedMemberClassification(
+                    PendingBracedMemberClassification.NESTED_TYPE, parserName
+                )
+            }
             if (parserName == FunctionParser.class.name) {
                 return PendingBracedMemberClassification(
                     PendingBracedMemberClassification.FUNCTION,

@@ -4,6 +4,10 @@ import flat/compiler/models
 
 /** Immutable syntax-only reduced class declaration. */
 data class {
+    var PrimitiveClassSyntax[] children
+    public nestedClasses() -> PrimitiveClassSyntax[] => PrimitiveClassSyntax[]:addAll(children)
+    public declarationPath() -> String => enclosingPath ? enclosingPath + "/" + name : name
+
     var PrimitiveClassParameterSyntax[] parameters
 
     public genericParameters() -> PrimitiveClassParameterSyntax[] => PrimitiveClassParameterSyntax[]:addAll(parameters)
@@ -28,7 +32,9 @@ data class {
         PrimitiveConstructorSyntax[] constructorValues = PrimitiveConstructorSyntax[],
         visible PrimitiveTypeReferenceSyntax parentType = null,
         visible SourceRange extensionModifierRange = null,
-        PrimitiveClassParameterSyntax[] parameterValues = PrimitiveClassParameterSyntax[]
+        PrimitiveClassParameterSyntax[] parameterValues = PrimitiveClassParameterSyntax[],
+        visible String enclosingPath = null, PrimitiveClassSyntax[] nestedValues = PrimitiveClassSyntax[],
+        visible SourceRange nestedPublicRange = null, visible SourceRange nestedStaticRange = null
     ) {
         if (!range || !name || name.trim().count == 0 ||
             (genericParameterName && genericParameterName.trim().count == 0) ||
@@ -43,6 +49,7 @@ data class {
                 parentType.nullableType))) {
             throw Exception("Primitive class syntax requires range name fields constructor and methods")
         }
+        children = PrimitiveClassSyntax[]:addAll(nestedValues)
         parameters = PrimitiveClassParameterSyntax[]
         for (parameter in parameterValues) {
             if (!parameter || parameter.position != parameters.count || parameters.any({ _.name == parameter.name })) {
@@ -66,6 +73,7 @@ data class {
     }
 
     public mergedWith(PrimitiveClassSyntax overlay) -> PrimitiveClassSyntax {
+        if (overlay && overlay.nestedClasses().isNotEmpty) throw Exception("Nested type overlays require explicit declaration merging")
         if (!overlay || overlay.name != name || overlay.parentName != null ||
             overlay.implementedTypeNames().isNotEmpty) {
             throw Exception("Class overlay merge requires same-name syntax")
@@ -152,7 +160,7 @@ data class {
             fields, mergedConstructors.first, methods, implementedTypeNames(), abstractClass,
             overlay.arrayOverrideValues().isNotEmpty ?
                 overlay.arrayOverrideValues() : arrayOverrideValues(),
-            mergedConstructors, parentType, extensionModifierRange, parameters
+            mergedConstructors, parentType, extensionModifierRange, parameters, enclosingPath, children, nestedPublicRange, nestedStaticRange
         )
     }
 

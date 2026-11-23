@@ -45,7 +45,17 @@ class {
         snapshot = sourceSnapshot
         tokenIndexOffset = sourceTokenIndexOffset
         index = 0
+        let declaration = parseClass(implicitName, null)
+        if (index != tokens.count) syntax("Unexpected trailing class token", index)
+        return declaration
+    }
+
+    parseClass(String implicitName, String enclosingPath) -> PrimitiveClassSyntax {
         let start = index
+        var SourceRange nestedPublicRange
+        var SourceRange nestedStaticRange
+        if (enclosingPath && tokens[index].value == "public") { nestedPublicRange = range(index, index + 1); index++ }
+        if (enclosingPath && tokens[index].value == "static") { nestedStaticRange = range(index, index + 1); index++ }
         var Bool abstractClass
         var SourceRange extensionModifierRange
         if (index < tokens.count && tokens[index].value == "extension") {
@@ -101,6 +111,8 @@ class {
             }
         }
         require("{")
+        let children = PrimitiveClassSyntax[]
+        let path = enclosingPath ? enclosingPath + "/" + name : name
         let fields = PrimitiveFieldSyntax[]
         var PrimitiveConstructorSyntax constructorValue
         let constructorValues = PrimitiveConstructorSyntax[]
@@ -113,6 +125,17 @@ class {
         var Bool nativeFieldModifier
         var Int fieldModifierStart = -1
         while (index < tokens.count && tokens[index].value != "}") {
+            var Int classIndex = index
+            if (tokens[classIndex].value == "public") classIndex++
+            if (classIndex < tokens.count && tokens[classIndex].value == "static") classIndex++
+            if (classIndex < tokens.count && tokens[classIndex].value == "class") {
+                if (fieldModifierStart >= 0) syntax("Unsupported nested type modifier", fieldModifierStart)
+                let childStart = index
+                let child = parseClass(null, path)
+                if (children.any({ _.name == child.name })) syntax("Duplicate nested type '#{child.name}'", childStart)
+                children.add(child)
+                continue
+            }
             if (isFunctionModifier(tokens[index].value) || tokens[index].value == "visible") {
                 let propertyStart = index
                 var Int propertyCursor = index
@@ -453,7 +476,6 @@ class {
         }
         if (visibleField || staticField) syntax("Expected field declaration", index)
         require("}")
-        if (index != tokens.count) syntax("Unexpected trailing class token", index)
         if (!constructorValue) {
             constructorValue = PrimitiveConstructorSyntax(
                 range(start, index), PrimitiveFunctionParameterSyntax[], PrimitiveStatementSyntax[], implicitDefault: true
@@ -463,7 +485,7 @@ class {
         return PrimitiveClassSyntax(
             range(start, index), name, genericParameterName, parentName,
             fields, constructorValue, methods, implementedTypeNames, abstractClass,
-            arrayOverrides, constructorValues, parentType, extensionModifierRange, parameters
+            arrayOverrides, constructorValues, parentType, extensionModifierRange, parameters, enclosingPath, children, nestedPublicRange, nestedStaticRange
         )
     }
 

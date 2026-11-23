@@ -5,6 +5,17 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `preserves nested generic type header`() {
+        let source = "class HashMapIterator<K, V> implements Iterator<Pair<K, V>> { }"
+        let islands = collect(source)
+        var BracedMemberHeaderSyntaxIsland header
+        header = (BracedMemberHeaderSyntaxIsland)islands.first
+        expect(islands.count).toBe(2)
+        expect(header.memberKind).toBe("nested-type")
+        expect(header.name).toBe("HashMapIterator")
+        expect(header.range.startTokenIndex).toBe(0)
+    }
+
     async test `HashMap fields and braced indexer publish disjoint headers`() {
         let source = "Pair<K, V>[][] buckets\n\n    visible var Int count\n\n    this[K key] -> V {\n        get { return value }\n        set { count++ }\n    }"
         let islands = collect(source)

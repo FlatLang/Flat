@@ -4,6 +4,27 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `nested type is not an outer field`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-owner"), "one")
+        let stream = Lexer().lex("class HashMap<K, V> { class HashMapIterator<K, V> implements Iterator<Pair<K, V>> { construct(visible V item) {} } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(syntax.fieldValues().isEmpty).toBe(true)
+        let child = syntax.nestedClasses().first
+        expect(child.declarationPath()).toBe("HashMap/HashMapIterator")
+        expect(child.genericParameters().map({ _.name })).toBe(["K", "V"])
+        expect(child.range.start.column).toBe(23)
+        let badSources = ["class Outer { class Same {} class Same {} }", "class Outer { class {} }"]
+        for (source in badSources) {
+            let bad = Lexer().lex(source)
+            bad.emit("start")
+            var ParseFailure failure
+            try { PrimitiveClassParser().parse(bad.consumeAll<Token>("data"), snapshot) }
+            catch (ParseFailure error) { failure = error }
+            expect(failure.diagnostic.code).toBe("invalid-class-syntax")
+        }
+    }
+
     async test `callback input can omit its own name`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Listener.flat"), "one")
         let stream = Lexer().lex("trait Listener { public async notify(onResult(Event, Int count) = {}) {} }")
