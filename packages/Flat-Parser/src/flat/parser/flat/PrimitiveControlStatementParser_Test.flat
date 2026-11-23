@@ -36,6 +36,14 @@ testable class {
         let parsed = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
         expect(parsed.statements().map({ _.statementKind() })).toBe(["expression", "expression"])
     }
+    async test `match starts a new statement after an indexed initializer`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:match-boundary"), "one")
+        let stream = Lexer().lex("let next = text[0]\nmatch next { ' ' => return 0 }")
+        stream.emit("start")
+        let parsed = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.statements().map({ _.statementKind() })).toBe(["local-declaration", "switch"])
+    }
+
     async test `fallthrough after work retains the arm body and marker range`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:fallthrough"), "one")
         let stream = Lexer().lex("match c { 1 => {\nif (ready) { work() }\nfallthrough\n}\ndefault => break }")

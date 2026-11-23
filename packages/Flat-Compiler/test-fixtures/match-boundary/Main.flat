@@ -1,0 +1,16 @@
+package probe
+class Main {
+    static classify(Int[] values) -> Int {
+        let next = values[0]
+        match next {
+            1 => 2 => 3 => 4 => return 0
+        }
+        return 9
+    }
+    public static main() {
+        let a = classify([1])
+        let b = classify([4])
+        let c = classify([5])
+        external js { if (#{a} !== 0 || #{b} !== 0 || #{c} !== 9) throw Error('match dispatch'); console.log('0,0,9'); }
+    }
+}

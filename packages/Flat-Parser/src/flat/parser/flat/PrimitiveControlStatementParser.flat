@@ -421,7 +421,7 @@ class {
     controlStart(Int tokenIndex) -> Bool {
         if (tokenIndex >= tokens.count) return false
         let value = tokens[tokenIndex].value
-        return value == "if" || value == "switch" || value == "while" || value == "for" ||
+        return value == "if" || value == "switch" || value == "match" || value == "while" || value == "for" ||
             value == "try" || value == "external"
     }
 
