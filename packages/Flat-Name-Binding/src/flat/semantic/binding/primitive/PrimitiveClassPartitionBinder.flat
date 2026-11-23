@@ -399,7 +399,7 @@ class {
                                 signature.returnType.kind() == "unknown" ? function.returnType : signature.returnType, signature.ownerType,
                                 signature.optionalParameterCount, signature.parameterNames(), signature.genericParameters(),
                                 signature.ownerGenericDeclaration, signature.ownerInstance,
-                                signature.asyncFunction, signature.externalName, function.dispatchIdentity)
+                                signature.asyncFunction, signature.externalName, function.dispatchIdentity, signature.staticLazyProperty)
                         }
                         signatureIndex++
                     }
@@ -986,6 +986,22 @@ class {
         }
         let parameters = contract.genericParameterNames()
         if (arguments.count != parameters.count) throw Exception("Trait implementation generic arity mismatch")
+        for (property in contract.staticPropertyDefaults()) {
+            if (parameters.isNotEmpty) throw Exception("Generic static trait property defaults are unsupported")
+            if (syntax.fieldValues().any({ _.name == property.name })) throw Exception("Field conflicts with static trait property")
+            let overrideMethod = syntax.methodValues().firstOrNull((candidate) => candidate.name == property.name && candidate.parameterValues().isEmpty)
+            if (overrideMethod) {
+                if (!overrideMethod.staticMethod || !overrideMethod.lazyProperty || overrideMethod.returnTypeName != property.returnTypeName) {
+                    throw Exception("Incompatible override of static trait property '#{property.name}'")
+                }
+                continue
+            }
+            let existing = methods.firstOrNull((candidate) => candidate.name == property.name && candidate.parameterValues().isEmpty)
+            if (!existing) methods.add(property)
+            else if (existing.range.snapshot != property.range.snapshot || existing.range.startTokenIndex != property.range.startTokenIndex) {
+                throw Exception("Ambiguous static trait property '#{property.name}' requires a class implementation")
+            }
+        }
         for (member in contract.methodValues()) {
             let implementation = member.implementation()
             if (!implementation || syntax.methodValues().any((method) =>
@@ -1304,7 +1320,8 @@ class {
                     method.parameterValues().filter({ _.defaultValue != null }).count,
                     method.parameterValues().map({ _.name }), methodGenerics,
                     classGeneric.isNotEmpty ? GenericDeclaration(owner.declarationIdentity, classGeneric, owner) : null,
-                    asyncFunction: method.asyncMethod, externalName: method.externalName
+                    asyncFunction: method.asyncMethod, externalName: method.externalName,
+                staticLazyProperty: method.staticMethod && method.lazyProperty
                 ))
                 ordinal++
             }

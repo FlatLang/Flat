@@ -251,7 +251,8 @@ class {
                 method.parameterValues().filter({ _.defaultValue != null }).count,
                 method.parameterValues().map({ _.name }), methodGenerics,
                 classParameters.isNotEmpty ? GenericDeclaration(typeIdentity, classParameters, type) : null,
-                asyncFunction: method.asyncMethod, externalName: method.externalName
+                asyncFunction: method.asyncMethod, externalName: method.externalName,
+                staticLazyProperty: method.staticMethod && method.lazyProperty
             ))
         }
         let fields = BoundFieldUnit[]
@@ -3328,6 +3329,7 @@ class {
                     )
                     if (staticCandidates.count == 1) {
                         let target = staticCandidates.first
+                        if (target.staticLazyProperty) return BoundCallExpression(access.range, target.returnType, target, null, BoundExpression[], TypeConversion[])
                         var FunctionSemanticType functionType = FunctionSemanticType(
                             target.parameterTypes(), target.returnType
                         )

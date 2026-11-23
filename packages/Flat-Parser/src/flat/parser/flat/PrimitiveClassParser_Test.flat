@@ -1049,6 +1049,20 @@ testable class {
         expect(failure != null).toBe(true)
     }
 
+    async test `parses computed defaults separately from instance contracts`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:trait-static-property"), "one")
+        let stream = Lexer().lex("trait Modifier {\nstatic visible lazy String[] aliases => Array<String>()\nvisible Token aliasUsed\n}")
+        stream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let property = contract.staticPropertyDefaults().first
+        expect(property.name).toBe("aliases")
+        expect(property.returnTypeName).toBe("String[]")
+        expect(property.range.start.lineNumber).toBe(2)
+        expect(property.range.end.lineNumber).toBe(2)
+        expect(property.staticMethod && property.lazyProperty).toBe(true)
+        expect(contract.methodValues().map({ _.name })).toBe(["aliasUsed"])
+    }
+
     async test `parses visible property with generic return type`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-property"), "one")
         let stream = Lexer().lex("class Box<E> { override visible ArrayIterator<E> iterator => create()\n}")

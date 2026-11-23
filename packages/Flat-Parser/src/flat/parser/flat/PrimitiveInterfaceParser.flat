@@ -77,8 +77,35 @@ class {
         }
         require("{")
         let methods = PrimitiveInterfaceMethodSyntax[]
+        let staticDefaults = PrimitiveFunctionSyntax[]
         while (index < tokens.count && tokens[index].value != "}") {
             let memberStart = index
+            if (tokens[index].value == "static") {
+                require("static")
+                require("visible")
+                require("lazy")
+                let typeName = parseTypeName("Expected static lazy property type")
+                let propertyName = identifier("Expected static lazy property name")
+                if (staticDefaults.any({ _.name == propertyName })) syntax("Duplicate static lazy property", memberStart)
+                require("=>")
+                let bodyStart = index
+                var Int depth
+                while (index < tokens.count) {
+                    let word = tokens[index].value
+                    if (depth == 0 && (word == "}" || word == ";" || word == "static" ||
+                        modifier(word) || propertyBoundary(index))) break
+                    if (word == "(" || word == "[" || word == "{") depth++
+                    else if (word == ")" || word == "]" || word == "}") depth--
+                    index++
+                }
+                if (index == bodyStart) syntax("Expected static lazy property value")
+                let expr = PrimitiveExpressionParser().parse(tokens.skip(bodyStart).take(index - bodyStart), snapshot, bodyStart + tokenIndexOffset)
+                staticDefaults.add(PrimitiveFunctionSyntax(range(memberStart, index), propertyName,
+                    PrimitiveFunctionParameterSyntax[], typeName, [PrimitiveReturnSyntax(expr.range, expr)],
+                    staticMethod: true, lazyProperty: true))
+                if (index < tokens.count && tokens[index].value == ";") index++
+                continue
+            }
             var SourceRange nativeReturnRange
             var SourceRange nativeArrayReturnRange
             while (index < tokens.count && modifier(tokens[index].value)) {
@@ -262,7 +289,7 @@ class {
         }
         require("}")
         if (index != tokens.count) syntax("Unexpected interface tokens")
-        return PrimitiveInterfaceSyntax(range(start, index), name, genericParameterName, methods, genericParameters, parentTypes)
+        return PrimitiveInterfaceSyntax(range(start, index), name, genericParameterName, methods, genericParameters, parentTypes, staticDefaults)
     }
 
     validateNativeReturn(String typeName, SourceRange scalarRange, SourceRange arrayRange) {

@@ -6,6 +6,7 @@ import flat/compiler/models
 data class {
     var PrimitiveInterfaceMethodSyntax[] methods
     var String[] parameterNames
+    var PrimitiveFunctionSyntax[] staticDefaults
     var String[] parents
 
     public construct(
@@ -14,7 +15,8 @@ data class {
         visible String genericParameterName,
         PrimitiveInterfaceMethodSyntax[] methodValues,
         String[] genericParameters = String[],
-        String[] parentTypes = String[]
+        String[] parentTypes = String[],
+        PrimitiveFunctionSyntax[] staticPropertyDefaults = PrimitiveFunctionSyntax[]
     ) {
         if (!range || !name || name.trim().isEmpty ||
             (genericParameterName && genericParameterName.trim().isEmpty) ||
@@ -33,10 +35,16 @@ data class {
         if (!parentTypes || parentTypes.any((name) => !name || name.trim().isEmpty)) {
             throw Exception("Interface parents must be valid type names")
         }
+        if (!staticPropertyDefaults || staticPropertyDefaults.any((property) => !property || !property.staticMethod || !property.lazyProperty)) {
+            throw Exception("Interface static defaults must be static lazy properties")
+        }
+        staticDefaults = PrimitiveFunctionSyntax[]:addAll(staticPropertyDefaults)
         parents = String[]:addAll(parentTypes)
         methods = PrimitiveInterfaceMethodSyntax[]
         methods.addAll(methodValues)
     }
+
+    public staticPropertyDefaults() -> PrimitiveFunctionSyntax[] => PrimitiveFunctionSyntax[]:addAll(staticDefaults)
 
     public parentTypeNames() -> String[] => String[]:addAll(parents)
 
