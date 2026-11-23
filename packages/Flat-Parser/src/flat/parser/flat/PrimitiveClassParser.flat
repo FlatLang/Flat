@@ -396,6 +396,7 @@ class {
                 index = typeEnd
                 let fieldName = tokens[index++].value
                 var PrimitiveExpressionSyntax initializer
+                var Bool followingField = fieldHeaderAt(index, fieldStart)
                 if (index < tokens.count && tokens[index].value == "=") {
                     index++
                     let initializerStart = index
@@ -404,6 +405,10 @@ class {
                         let value = tokens[index].value
                         if (value == "(" || value == "[") initializerDepth++
                         else if (value == ")" || value == "]") initializerDepth--
+                        if (initializerDepth == 0 && fieldHeaderAt(index, initializerStart)) {
+                            followingField = true
+                            break
+                        }
                         if (initializerDepth == 0 && (value == ";" ||
                             value == "public" || value == "private" ||
                             value == "protected" || value == "visible" || value == "static" ||
@@ -418,12 +423,12 @@ class {
                     )
                 }
                 if (index < tokens.count && tokens[index].value == ";") index++
-                else if (index >= tokens.count || (tokens[index].value != "public" &&
+                else if (!followingField && (index >= tokens.count || (tokens[index].value != "public" &&
                     tokens[index].value != "private" && tokens[index].value != "protected" &&
                     tokens[index].value != "visible" && tokens[index].value != "static" &&
                     tokens[index].value != "override" &&
                     tokens[index].value != "constructor" &&
-                    tokens[index].value != "var" && tokens[index].value != "construct" && tokens[index].value != "}")) require(";")
+                    tokens[index].value != "var" && tokens[index].value != "construct" && tokens[index].value != "}"))) require(";")
                 if (fields.any({ _.name == fieldName })) syntax("Duplicate field '#fieldName'", fieldStart)
                 fields.add(PrimitiveFieldSyntax(
                     range(fieldStart, index), typeName, fieldName,
@@ -983,6 +988,18 @@ class {
     }
 
     /** Locate a finite field type; signature grammar validates its spelling. */
+    fieldHeaderAt(Int cursor, Int expressionStart) -> Bool {
+        if (cursor <= expressionStart || cursor + 2 >= tokens.count || tokens[cursor].type != Token.Type.IDENTIFIER ||
+            tokens[cursor].location.lineNumber <= tokens[cursor - 1].location.lineNumber) return false
+        var Int end = cursor + 1
+        while (end < tokens.count && tokens[end].location.lineNumber == tokens[cursor].location.lineNumber &&
+            tokens[end].value != "=" && tokens[end].value != ";" && tokens[end].value != "}") end++
+        if (end <= cursor + 1 || tokens[end - 1].type != Token.Type.IDENTIFIER) return false
+        try { PrimitiveFunctionParser().parseTypeTokens(tokens.skip(cursor).take(end - cursor - 1), snapshot) }
+        catch (ParseFailure error) { return false }
+        return true
+    }
+
     fieldTypeEnd(Int start) -> Int {
         if (start >= tokens.count || tokens[start].type != Token.Type.IDENTIFIER) return start
         var Int cursor = start + 1

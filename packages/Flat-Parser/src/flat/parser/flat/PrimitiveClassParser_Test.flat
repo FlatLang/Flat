@@ -4,6 +4,19 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `bare fields terminate a completed initializer on a later line`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:bare-field"), "one")
+        let stream = Lexer().lex("class Test<X> {\nInt pre = 1\nInt first = 2 +\n3\nX data\nX[] items\n}")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let fields = parsed.fieldValues()
+        expect(fields.count).toBe(4)
+        expect(fields[1].initializer.range.end.lineNumber).toBe(4)
+        expect(fields[2].name).toBe("data")
+        expect(fields[2].range.start.lineNumber).toBe(5)
+        expect(fields.last.typeName).toBe("X[]")
+    }
+
     async test `static lazy array property does not require visible modifier`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:lazy-array"), "one")
         let stream = Lexer().lex("class Codes { static lazy String[] CODES => [\"one\", \"two\"] }")
