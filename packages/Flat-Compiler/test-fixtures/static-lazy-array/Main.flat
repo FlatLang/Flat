@@ -1,0 +1,18 @@
+package probe
+class Codes {
+    static lazy Int[] EXACT_ESCAPE_CODES => [next(), next()]
+    static next() -> Int {
+        external js { return ++globalThis.lazyCalls; }
+    }
+    public static read() -> Int[] { return Codes.EXACT_ESCAPE_CODES; }
+}
+class Main {
+    public static main() {
+        external js { if (globalThis.lazyCalls !== undefined) throw Error('eager evaluation'); globalThis.lazyCalls = 0; }
+        let a = Codes.read()
+        let b = Codes.read()
+        let first = a[0]
+        let second = b[1]
+        external js { if (#{first} !== 1 || #{second} !== 2 || #{a} !== #{b} || globalThis.lazyCalls !== 2) throw Error('lazy cache'); console.log('once:same:1,2'); }
+    }
+}

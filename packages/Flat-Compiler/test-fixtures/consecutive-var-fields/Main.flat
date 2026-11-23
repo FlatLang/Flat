@@ -1,0 +1,19 @@
+package probe
+class Flags {
+    var Bool checked = false
+    var Bool started = true
+    public step() -> Int {
+        if (checked) return 2
+        checked = started
+        return 1
+    }
+}
+class Main {
+    public static main() {
+        let flags = Flags()
+        let first = flags.step()
+        let second = flags.step()
+        let fresh = Flags().step()
+        external js { if (#{first} !== 1 || #{second} !== 2 || #{fresh} !== 1) throw Error('field state'); console.log('1,2,1'); }
+    }
+}

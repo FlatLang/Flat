@@ -4,6 +4,29 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `static lazy array property does not require visible modifier`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:lazy-array"), "one")
+        let stream = Lexer().lex("class Codes { static lazy String[] CODES => [\"one\", \"two\"] }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let getter = parsed.methodValues().first
+        expect(getter.name).toBe("CODES")
+        expect(getter.staticMethod).toBe(true)
+        expect(getter.lazyProperty).toBe(true)
+        expect(getter.returnTypeName).toBe("String[]")
+    }
+
+    async test `consecutive mutable fields retain separate initializers`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:field-boundaries"), "one")
+        let stream = Lexer().lex("class Flags {\nvar Bool checked = false\nvar Bool started = true\n}")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let fields = parsed.fieldValues()
+        expect(fields.map({ _.name })).toBe(["checked", "started"])
+        expect(fields.first.initializer.range.end.lineNumber).toBe(2)
+        expect(fields.last.initializer.range.start.lineNumber).toBe(3)
+    }
+
     async test `var starts a stored field after an uninitialized field`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Array.flat"), "one")
         let stream = Lexer().lex("class Array<E> { visible var Int count\nvar E last\nconstruct() {} }")

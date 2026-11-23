@@ -145,7 +145,8 @@ class {
                     propertyCursor++
                 }
                 let typeStart = propertyCursor
-                if (visibleProperty && propertyCursor < tokens.count &&
+                let typedProperty = visibleProperty || lazyProperty
+                if (typedProperty && propertyCursor < tokens.count &&
                     tokens[propertyCursor].type == Token.Type.IDENTIFIER) {
                     propertyCursor++
                     if (propertyCursor < tokens.count && tokens[propertyCursor].value == "<") {
@@ -162,7 +163,7 @@ class {
                         propertyCursor += 2
                     }
                 }
-                if (visibleProperty && propertyCursor + 1 < tokens.count &&
+                if (typedProperty && propertyCursor + 1 < tokens.count &&
                     tokens[propertyCursor].type == Token.Type.IDENTIFIER &&
                     (tokens[propertyCursor + 1].value == "=>" ||
                     tokens[propertyCursor + 1].value == "<=>")) {
@@ -406,7 +407,7 @@ class {
                         if (initializerDepth == 0 && (value == ";" ||
                             value == "public" || value == "private" ||
                             value == "protected" || value == "visible" || value == "static" ||
-                            value == "override" ||
+                            value == "override" || value == "var" ||
                             value == "constructor" || value == "construct" || value == "}")) break
                         index++
                     }
